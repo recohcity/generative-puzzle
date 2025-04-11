@@ -15,7 +15,6 @@ interface Point {
 interface PuzzlePiece {
   points: Point[]
   rotation: number
-  path?: Path2D
 }
 
 // 在组件顶部添加calculateCenter函数
@@ -27,6 +26,41 @@ const calculateCenter = (points: Point[]) => {
     }),
     { x: 0, y: 0 },
   )
+}
+
+// 判断点是否在多边形内的辅助函数
+function isPointInPolygon(x: number, y: number, polygon: Point[]): boolean {
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i].x, yi = polygon[i].y;
+    const xj = polygon[j].x, yj = polygon[j].y;
+    
+    const intersect = ((yi > y) !== (yj > y))
+        && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
+// 计算点相对于中心点的旋转
+function rotatePoint(x: number, y: number, cx: number, cy: number, angle: number): {x: number, y: number} {
+  const radians = (angle * Math.PI) / 180;
+  const cos = Math.cos(radians);
+  const sin = Math.sin(radians);
+  
+  // 将点相对于中心点平移
+  const nx = x - cx;
+  const ny = y - cy;
+  
+  // 应用旋转
+  const rotatedX = nx * cos - ny * sin;
+  const rotatedY = nx * sin + ny * cos;
+  
+  // 平移回原始坐标系
+  return {
+    x: rotatedX + cx,
+    y: rotatedY + cy
+  };
 }
 
 // 内联renderUtils函数
@@ -132,16 +166,7 @@ const drawPiece = (
   isDarkMode: boolean,
 ) => {
   // 计算中心点用于旋转
-  const center = piece.points.reduce(
-    (acc, point) => ({
-      x: acc.x + point.x / piece.points.length,
-      y: acc.y + point.y / piece.points.length,
-    }),
-    { x: 0, y: 0 },
-  )
-
-  // 创建路径
-  const path = new Path2D()
+  const center = calculateCenter(piece.points)
 
   ctx.save()
 
@@ -151,7 +176,8 @@ const drawPiece = (
   ctx.translate(-center.x, -center.y)
 
   // 绘制路径
-  path.moveTo(piece.points[0].x, piece.points[0].y)
+  ctx.beginPath()
+  ctx.moveTo(piece.points[0].x, piece.points[0].y)
 
   for (let i = 1; i < piece.points.length; i++) {
     const prev = piece.points[i - 1]
@@ -165,37 +191,37 @@ const drawPiece = (
       const nextMidX = (current.x + next.x) / 2
       const nextMidY = (current.y + next.y) / 2
 
-      path.quadraticCurveTo(current.x, current.y, nextMidX, nextMidY)
+      ctx.quadraticCurveTo(current.x, current.y, nextMidX, nextMidY)
     } else {
       // 对于多边形和切割线，使用直线
-      path.lineTo(current.x, current.y)
+      ctx.lineTo(current.x, current.y)
     }
   }
 
-  path.closePath()
+  ctx.closePath()
 
   // 填充颜色
   const colors = [
-    "#FF6B6B",
-    "#4ECDC4",
-    "#45B7D1",
-    "#FFA07A",
-    "#98FB98",
-    "#FFD166",
-    "#06D6A0",
-    "#118AB2",
-    "#073B4C",
-    "#F78C6B",
+    "#FF9F40", // 橙色
+    "#FF6B6B", // 红色
+    "#FFD166", // 黄色
+    "#F68E5F", // 珊瑚色
+    "#FFB17A", // 浅珊瑚色
+    "#FFE3C1", // 浅橙色
+    "#FFBB7C", // 杏色
+    "#FF8A5B", // 胡萝卜色
+    "#FF785A", // 番茄色
+    "#F26419", // 深橙色
   ]
 
   if (isDarkMode) {
-    // 深色模式下使用更暗的色调
-    ctx.fillStyle = isCompleted ? "rgba(56, 189, 248, 0.7)" : colors[index % colors.length] + "99"
+    // 深色模式下使用更鲜艳的色调
+    ctx.fillStyle = isCompleted ? "rgba(242, 100, 25, 0.8)" : colors[index % colors.length] + "CC"
   } else {
-    ctx.fillStyle = isCompleted ? "skyblue" : colors[index % colors.length]
+    ctx.fillStyle = isCompleted ? "rgba(255, 211, 101, 0.8)" : colors[index % colors.length]
   }
 
-  ctx.fill(path)
+  ctx.fill()
 
   // 绘制边框
   if (!isCompleted) {
@@ -209,15 +235,12 @@ const drawPiece = (
       ctx.lineWidth = 1
     }
 
-    ctx.stroke(path)
+    ctx.stroke()
     ctx.setLineDash([])
     ctx.lineWidth = 1
   }
 
   ctx.restore()
-
-  // 存储路径供后续点击检测
-  piece.path = path
 }
 
 // 改进提示轮廓显示
@@ -318,23 +341,16 @@ const drawStars = (ctx: CanvasRenderingContext2D, bounds: any) => {
   }
 }
 
-// 绘制五角星
-const drawStar = (
-  ctx: CanvasRenderingContext2D,
-  cx: number,
-  cy: number,
-  spikes: number,
-  outerRadius: number,
-  innerRadius: number,
-) => {
-  let rot = (Math.PI / 2) * 3
+// 绘制星星函数
+function drawStar(ctx: CanvasRenderingContext2D, cx: number, cy: number, spikes: number, innerRadius: number, outerRadius: number) {
+  let rot = Math.PI / 2 * 3
   let x = cx
   let y = cy
   const step = Math.PI / spikes
 
   ctx.beginPath()
   ctx.moveTo(cx, cy - outerRadius)
-
+  
   for (let i = 0; i < spikes; i++) {
     x = cx + Math.cos(rot) * outerRadius
     y = cy + Math.sin(rot) * outerRadius
@@ -346,23 +362,23 @@ const drawStar = (
     ctx.lineTo(x, y)
     rot += step
   }
-
+  
   ctx.lineTo(cx, cy - outerRadius)
   ctx.closePath()
   ctx.fill()
 }
 
-// 改进完成效果
+// 修改完成效果，使用儿童暖色系
 const drawCompletionEffect = (ctx: CanvasRenderingContext2D, shape: Point[], shapeType: string) => {
   ctx.save()
 
-  // 绘制柔和的发光效果，但不绘制实际轮廓线
-  ctx.shadowColor = "rgba(0, 255, 128, 0.9)"
+  // 绘制柔和的发光效果
+  ctx.shadowColor = "rgba(255, 159, 64, 0.9)" // 暖橙色发光
   ctx.shadowBlur = 35
-  ctx.strokeStyle = "rgba(0, 255, 128, 0.1)" // 几乎透明的描边，只为了创建发光效果
+  ctx.strokeStyle = "rgba(255, 159, 64, 0.3)" // 半透明的橙色描边
   ctx.lineWidth = 10
 
-  // 绘制原始形状的不可见轮廓(只为了创建发光效果)
+  // 绘制原始形状的轮廓
   ctx.beginPath()
   ctx.moveTo(shape[0].x, shape[0].y)
 
@@ -386,12 +402,9 @@ const drawCompletionEffect = (ctx: CanvasRenderingContext2D, shape: Point[], sha
   }
 
   ctx.closePath()
-  ctx.stroke() // 仍然需要stroke来创建阴影效果，但线条几乎透明
+  ctx.stroke() // 创建阴影效果
 
-  // 重置阴影效果
-  ctx.shadowBlur = 0
-
-  // 计算形状中心
+  // 画星星和彩带效果
   const bounds = shape.reduce(
     (acc, point) => ({
       minX: Math.min(acc.minX, point.x),
@@ -407,29 +420,89 @@ const drawCompletionEffect = (ctx: CanvasRenderingContext2D, shape: Point[], sha
     },
   )
 
-  // 绘制完成文本 - 将文字移到屏幕上方居中
-  ctx.font = "bold 36px Arial, sans-serif"
+  // 绘制小星星
+  const centerX = (bounds.minX + bounds.maxX) / 2
+  const centerY = (bounds.minY + bounds.maxY) / 2
+  const radius = Math.max(bounds.maxX - bounds.minX, bounds.maxY - bounds.minY) / 2
+
+  // 绘制彩带效果
+  for (let i = 0; i < 15; i++) {
+    const angle = Math.random() * Math.PI * 2
+    const length = radius * (0.5 + Math.random() * 0.5)
+    const startX = centerX
+    const startY = centerY
+    const endX = centerX + Math.cos(angle) * length
+    const endY = centerY + Math.sin(angle) * length
+    
+    // 彩带宽度
+    ctx.lineWidth = 3 + Math.random() * 5
+    
+    // 彩带颜色 - 儿童暖色系
+    const colors = [
+      "#FF9F40", // 橙色
+      "#FF6B6B", // 红色
+      "#FFD166", // 黄色
+      "#F68E5F", // 珊瑚色
+      "#FFB17A", // 浅珊瑚色
+      "#FFE3C1", // 浅橙色
+      "#FFBB7C", // 杏色
+      "#FF8A5B", // 胡萝卜色
+      "#FF785A", // 番茄色
+      "#F26419", // 深橙色
+    ]
+    
+    ctx.strokeStyle = colors[Math.floor(Math.random() * colors.length)]
+    ctx.shadowBlur = 0 // 关闭彩带的阴影
+    
+    // 绘制彩带
+    ctx.beginPath()
+    ctx.moveTo(startX, startY)
+    
+    // 添加随机控制点使彩带弯曲
+    const ctrlX = (startX + endX) / 2 + (Math.random() - 0.5) * 50
+    const ctrlY = (startY + endY) / 2 + (Math.random() - 0.5) * 50
+    ctx.quadraticCurveTo(ctrlX, ctrlY, endX, endY)
+    ctx.stroke()
+  }
+  
+  // 绘制小星星
+  for (let i = 0; i < 20; i++) {
+    const x = bounds.minX + Math.random() * (bounds.maxX - bounds.minX)
+    const y = bounds.minY + Math.random() * (bounds.maxY - bounds.minY)
+    const size = 5 + Math.random() * 15
+    
+    // 星星颜色 - 明亮暖色
+    const starColors = ["#FFD700", "#FFA500", "#FF8C00", "#FFE3C1", "#FFFACD"]
+    ctx.fillStyle = starColors[Math.floor(Math.random() * starColors.length)]
+    
+    // 画星星
+    drawStar(ctx, x, y, 5, size / 2, size)
+  }
+
+  // 绘制完成文本
+  ctx.shadowBlur = 0
+  ctx.font = "bold 36px 'Comic Sans MS', cursive, sans-serif" // 使用更活泼的字体
   ctx.textAlign = "center"
   ctx.textBaseline = "middle"
 
-  // 文本 - 更亮的金色，添加描边和发光效果，去掉黑色背景
+  // 文本 - 使用多彩文字
   const canvasCenterX = ctx.canvas.width / 2
-  const textY = 50 // 距离顶部50像素
-
-  // 添加文字发光效果
-  ctx.fillStyle = "#FFD700"
-  ctx.shadowColor = "rgba(255, 215, 0, 0.8)"
-  ctx.shadowBlur = 15
-  ctx.fillText("恭喜完成!", canvasCenterX, textY)
+  const textY = ctx.canvas.height / 2 - radius / 2
   
-  // 添加文字描边，使其在任何背景上都更加清晰
-  ctx.lineWidth = 2
-  ctx.strokeStyle = "rgba(0, 0, 0, 0.8)"
-  ctx.shadowBlur = 0 // 关闭描边的阴影
+  // 文字阴影
+  ctx.shadowColor = "rgba(0, 0, 0, 0.3)"
+  ctx.shadowBlur = 5
+  ctx.shadowOffsetX = 2
+  ctx.shadowOffsetY = 2
+  
+  // 文字描边
+  ctx.strokeStyle = "#F26419"
+  ctx.lineWidth = 6
   ctx.strokeText("恭喜完成!", canvasCenterX, textY)
-
-  // 添加更多星星效果
-  drawStars(ctx, bounds)
+  
+  // 文字填充
+  ctx.fillStyle = "#FFD166"
+  ctx.fillText("恭喜完成!", canvasCenterX, textY)
 
   ctx.restore()
 }
@@ -444,9 +517,18 @@ export default function PuzzleCanvas() {
   useEffect(() => {
     const handleResize = () => {
       if (containerRef.current) {
-        const width = Math.min(containerRef.current.clientWidth, 1000)
-        const height = Math.min(600, width * 0.6)
-        setCanvasSize({ width, height })
+        const containerWidth = containerRef.current.clientWidth;
+        const containerHeight = containerRef.current.clientHeight;
+        
+        // 完全填充容器，不留空隙
+        let width = containerWidth;
+        let height = containerHeight;
+        
+        // 确保画布不超过容器大小
+        width = Math.min(width, containerWidth);
+        height = Math.min(height, containerHeight);
+        
+        setCanvasSize({ width, height });
       }
     }
 
@@ -463,8 +545,48 @@ export default function PuzzleCanvas() {
     const ctx = bgCanvas.getContext("2d")
     if (!ctx) return
 
-    ctx.clearRect(0, 0, bgCanvas.width, bgCanvas.height)
-    drawShape(ctx, state.originalShape, state.shapeType, isDarkMode)
+    // 重新计算原始形状的位置，确保它在画布中心
+    if (state.originalShape.length > 0) {
+      // 计算原始形状的边界
+      const bounds = state.originalShape.reduce(
+        (acc, point) => ({
+          minX: Math.min(acc.minX, point.x),
+          maxX: Math.max(acc.maxX, point.x),
+          minY: Math.min(acc.minY, point.y),
+          maxY: Math.max(acc.maxY, point.y),
+        }),
+        {
+          minX: Number.POSITIVE_INFINITY,
+          maxX: Number.NEGATIVE_INFINITY,
+          minY: Number.POSITIVE_INFINITY,
+          maxY: Number.NEGATIVE_INFINITY,
+        }
+      );
+      
+      // 计算原始形状的尺寸
+      const shapeWidth = bounds.maxX - bounds.minX;
+      const shapeHeight = bounds.maxY - bounds.minY;
+      
+      // 画布中心
+      const canvasCenterX = bgCanvas.width / 2;
+      const canvasCenterY = bgCanvas.height / 2;
+      
+      // 计算需要移动的距离，使形状居中
+      const offsetX = canvasCenterX - (bounds.minX + shapeWidth / 2);
+      const offsetY = canvasCenterY - (bounds.minY + shapeHeight / 2);
+      
+      // 清除画布
+      ctx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+      
+      // 绘制形状，确保它居中显示
+      ctx.save();
+      ctx.translate(offsetX, offsetY);
+      drawShape(ctx, state.originalShape, state.shapeType, isDarkMode);
+      ctx.restore();
+    } else {
+      ctx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+      drawShape(ctx, state.originalShape, state.shapeType, isDarkMode);
+    }
   }, [state.originalShape, state.shapeType, isDarkMode, canvasSize.width, canvasSize.height])
 
   // 绘制拼图
@@ -505,7 +627,7 @@ export default function PuzzleCanvas() {
       }
 
       ctx.closePath()
-      ctx.fillStyle = isDarkMode ? "rgba(56, 189, 248, 0.9)" : "rgba(135, 206, 250, 0.95)"
+      ctx.fillStyle = isDarkMode ? "rgba(242, 100, 25, 0.8)" : "rgba(255, 211, 101, 0.8)" // 使用暖色系
       ctx.fill()
       
       // 绘制完成效果
@@ -543,20 +665,26 @@ export default function PuzzleCanvas() {
     const rect = canvas.getBoundingClientRect()
     const x = e.clientX - rect.left
     const y = e.clientY - rect.top
-    const ctx = canvas.getContext("2d")
-    if (!ctx) return
 
     // 检查点击的是哪个拼图片段
     let clickedPieceIndex = -1
 
-    // 先尝试使用Path2D的isPointInPath方法
+    // 使用多边形点包含检测
     for (let i = state.puzzle.length - 1; i >= 0; i--) {
       // 跳过已完成的拼图，不允许拖拽
       if (state.completedPieces.includes(i)) continue
 
-      if (state.puzzle[i].path && ctx.isPointInPath(state.puzzle[i].path, x, y)) {
-        clickedPieceIndex = i
-        break
+      const piece = state.puzzle[i];
+      const center = calculateCenter(piece.points);
+      
+      // 将鼠标点逆向旋转，以匹配未旋转的形状
+      const rotationAngle = -piece.rotation; // 逆向旋转
+      const rotatedPoint = rotatePoint(x, y, center.x, center.y, rotationAngle);
+      
+      // 检查旋转后的点是否在形状内
+      if (isPointInPolygon(rotatedPoint.x, rotatedPoint.y, piece.points)) {
+        clickedPieceIndex = i;
+        break;
       }
     }
 
@@ -606,17 +734,58 @@ export default function PuzzleCanvas() {
     const dx = x - state.draggingPiece.startX
     const dy = y - state.draggingPiece.startY
 
+    // 获取当前拖动的拼图
+    const piece = state.puzzle[state.draggingPiece.index];
+    
+    // 计算拼图的边界，考虑旋转角度的影响
+    const center = calculateCenter(piece.points);
+    
+    // 确定拼图的边界框（考虑旋转）
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    
+    piece.points.forEach(point => {
+      // 考虑当前旋转角度计算真实坐标
+      const rotated = rotatePoint(point.x, point.y, center.x, center.y, piece.rotation);
+      minX = Math.min(minX, rotated.x);
+      maxX = Math.max(maxX, rotated.x);
+      minY = Math.min(minY, rotated.y);
+      maxY = Math.max(maxY, rotated.y);
+    });
+    
+    // 设置画布边界的安全边距
+    const padding = 5;
+    
+    // 计算约束后的移动距离，确保拼图不会超出画布边界
+    let constrainedDx = dx;
+    let constrainedDy = dy;
+    
+    // 约束左右边界
+    if (minX + dx < padding) {
+      constrainedDx = padding - minX;
+    }
+    if (maxX + dx > canvas.width - padding) {
+      constrainedDx = canvas.width - padding - maxX;
+    }
+    
+    // 约束上下边界
+    if (minY + dy < padding) {
+      constrainedDy = padding - minY;
+    }
+    if (maxY + dy > canvas.height - padding) {
+      constrainedDy = canvas.height - padding - maxY;
+    }
+
     // 更新拼图位置
     dispatch({
       type: "UPDATE_PIECE_POSITION",
-      payload: { index: state.draggingPiece.index, dx, dy },
-    })
+      payload: { index: state.draggingPiece.index, dx: constrainedDx, dy: constrainedDy },
+    });
 
     // 更新拖动起点
     dispatch({
       type: "SET_DRAGGING_PIECE",
       payload: { ...state.draggingPiece, startX: x, startY: y },
-    })
+    });
   }
 
   // 鼠标释放事件
@@ -741,24 +910,26 @@ export default function PuzzleCanvas() {
   return (
     <div
       ref={containerRef}
-      className="relative w-full border border-gray-300 rounded-lg overflow-hidden bg-white dark:bg-gray-800 shadow-md"
+      className="relative w-full h-full flex items-center justify-center dark:bg-[#2A2835] rounded-lg shadow-inner overflow-hidden"
     >
-      <canvas
-        ref={backgroundCanvasRef}
-        width={canvasSize.width}
-        height={canvasSize.height}
-        className="absolute top-0 left-0"
-      />
-      <canvas
-        ref={canvasRef}
-        width={canvasSize.width}
-        height={canvasSize.height}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        className="relative cursor-pointer"
-      />
+      <div className="relative flex items-center justify-center w-full h-full">
+        <canvas
+          ref={backgroundCanvasRef}
+          width={canvasSize.width}
+          height={canvasSize.height}
+          className="absolute top-0 left-0 w-full h-full"
+        />
+        <canvas
+          ref={canvasRef}
+          width={canvasSize.width}
+          height={canvasSize.height}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          className="relative cursor-pointer w-full h-full"
+        />
+      </div>
     </div>
   )
 }
