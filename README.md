@@ -1,6 +1,6 @@
 # Generative Puzzle
 
-![生成式拼图游戏界面](/public/puzzle-preview.png)
+![生成式拼图游戏界面](./public/puzzle-preview.png)
 
 一个基于Next.js和React的生成式拼图游戏项目，提供丰富的交互式拼图体验。
 
