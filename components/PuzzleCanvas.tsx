@@ -3,7 +3,7 @@
 import type React from "react"
 import { useEffect, useRef, useState } from "react"
 import { useGame } from "@/contexts/GameContext"
-import { useTheme } from "@/contexts/ThemeContext"
+import { useTheme } from "next-themes"
 import { playPieceSelectSound, playPieceSnapSound, playPuzzleCompletedSound } from "@/utils/soundEffects"
 
 // 定义类型
@@ -511,9 +511,12 @@ const drawCompletionEffect = (ctx: CanvasRenderingContext2D, shape: Point[], sha
 
 export default function PuzzleCanvas() {
   const { state, dispatch, canvasRef, backgroundCanvasRef } = useGame()
-  const { isDarkMode } = useTheme()
+  const { theme } = useTheme()
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 })
   const containerRef = useRef<HTMLDivElement>(null)
+
+  // Determine isDarkMode based on the theme string
+  const isDarkMode = theme === 'dark'
 
   // 响应式设置画布大小
   useEffect(() => {
