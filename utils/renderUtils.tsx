@@ -303,7 +303,7 @@ export const drawCompletionEffect = (ctx: CanvasRenderingContext2D, shape: Point
 
   // 文本
   ctx.fillStyle = "gold"
-  ctx.fillText("恭喜完成!", centerX, centerY)
+  ctx.fillText("你好犀利吖!", centerX, centerY)
 
   // 添加星星效果
   drawStars(ctx, bounds)

@@ -4,6 +4,7 @@ import type React from "react"
 import { useEffect, useRef, useState } from "react"
 import { useGame } from "@/contexts/GameContext"
 import { useTheme } from "@/contexts/ThemeContext"
+import { playPieceSelectSound, playPieceSnapSound, playPuzzleCompletedSound } from "@/utils/soundEffects"
 
 // 定义类型
 interface Point {
@@ -487,7 +488,8 @@ const drawCompletionEffect = (ctx: CanvasRenderingContext2D, shape: Point[], sha
 
   // 文本 - 使用多彩文字
   const canvasCenterX = ctx.canvas.width / 2
-  const textY = ctx.canvas.height / 2 - radius / 2
+  const textY = bounds.minY - 40; // 40 pixels above the top of the shape
+  const finalY = Math.max(50, textY); // Ensure at least 50px margin from the canvas top
   
   // 文字阴影
   ctx.shadowColor = "rgba(0, 0, 0, 0.3)"
@@ -498,11 +500,11 @@ const drawCompletionEffect = (ctx: CanvasRenderingContext2D, shape: Point[], sha
   // 文字描边
   ctx.strokeStyle = "#F26419"
   ctx.lineWidth = 6
-  ctx.strokeText("恭喜完成!", canvasCenterX, textY)
+  ctx.strokeText("你好犀利吖!", canvasCenterX, finalY)
   
   // 文字填充
   ctx.fillStyle = "#FFD166"
-  ctx.fillText("恭喜完成!", canvasCenterX, textY)
+  ctx.fillText("你好犀利吖!", canvasCenterX, finalY)
 
   ctx.restore()
 }
@@ -658,6 +660,7 @@ export default function PuzzleCanvas() {
   // 鼠标按下事件
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!state.puzzle) return
+    if (!state.isScattered) return; // Prevent interaction if not scattered
 
     const canvas = canvasRef.current
     if (!canvas) return
@@ -710,11 +713,20 @@ export default function PuzzleCanvas() {
     }
 
     if (clickedPieceIndex !== -1) {
-      dispatch({ type: "SET_SELECTED_PIECE", payload: clickedPieceIndex })
-      dispatch({
-        type: "SET_DRAGGING_PIECE",
-        payload: { index: clickedPieceIndex, startX: x, startY: y },
-      })
+      // 设置选中的拼图块
+      dispatch({ type: "SET_SELECTED_PIECE", payload: clickedPieceIndex });
+
+      // 如果是鼠标左键点击，设置拖动信息
+      if (e.button === 0) {
+        dispatch({ type: "SET_DRAGGING_PIECE", payload: {
+            index: clickedPieceIndex,
+            startX: x,
+            startY: y,
+          } });
+      }
+
+      // 播放音效
+      playPieceSelectSound();
     } else {
       dispatch({ type: "SET_SELECTED_PIECE", payload: null })
     }
@@ -790,107 +802,59 @@ export default function PuzzleCanvas() {
 
   // 鼠标释放事件
   const handleMouseUp = () => {
-    if (state.draggingPiece && state.puzzle && state.originalPositions.length > 0) {
-      const pieceIndex = state.draggingPiece.index
-      const piece = state.puzzle[pieceIndex]
-      const originalPiece = state.originalPositions[pieceIndex]
+    if (!state.isScattered) return; // Prevent interaction if not scattered
+    if (!state.draggingPiece || !state.puzzle || !state.originalPositions) return; // Exit if not dragging or puzzle/positions not ready
 
-      // 增强磁吸效果 - 降低吸附阈值并检查旋转是否接近正确值
-      let isNearOriginal = false
+    const pieceIndex = state.draggingPiece.index
+    // Check puzzle again after the early return confirms it's not null
+    const piece = state.puzzle[pieceIndex]
+    const originalPiece = state.originalPositions[pieceIndex]
+
+    // 增强磁吸效果 - 降低吸附阈值并检查旋转是否接近正确值
+    let isNearOriginal = false
+    
+    // 确保角度在0-360度范围内并计算差异
+    const pieceRotation = (piece.rotation % 360 + 360) % 360;
+    const originalRotation = (originalPiece.rotation % 360 + 360) % 360;
+    const rotationDiff = Math.min(
+      Math.abs(pieceRotation - originalRotation),
+      360 - Math.abs(pieceRotation - originalRotation)
+    );
+    
+    const isRotationCorrect = rotationDiff < 10; // 允许10度误差
+
+    if (isRotationCorrect) {
+      // 计算中心点
+      const pieceCenter = calculateCenter(piece.points)
+      const originalCenter = calculateCenter(originalPiece.points)
+
+      // 检查中心点是否接近
+      const distanceThreshold = 40 // 增加吸附范围
+      const dx = pieceCenter.x - originalCenter.x
+      const dy = pieceCenter.y - originalCenter.y
+      const distance = Math.sqrt(dx * dx + dy * dy)
+
+      isNearOriginal = distance < distanceThreshold
+    }
+
+    if (isNearOriginal) {
+      // 如果旋转和位置都接近正确，将其设置为完全正确的位置和旋转
+      dispatch({ type: "RESET_PIECE_TO_ORIGINAL", payload: pieceIndex })
+      dispatch({ type: "ADD_COMPLETED_PIECE", payload: pieceIndex })
       
-      // 确保角度在0-360度范围内并计算差异
-      const pieceRotation = (piece.rotation % 360 + 360) % 360;
-      const originalRotation = (originalPiece.rotation % 360 + 360) % 360;
-      const rotationDiff = Math.min(
-        Math.abs(pieceRotation - originalRotation),
-        360 - Math.abs(pieceRotation - originalRotation)
-      );
-      
-      const isRotationCorrect = rotationDiff < 10; // 允许10度误差
+      // 播放拼图吸附音效
+      playPieceSnapSound()
 
-      if (isRotationCorrect) {
-        // 计算中心点
-        const pieceCenter = calculateCenter(piece.points)
-        const originalCenter = calculateCenter(originalPiece.points)
+      // 检查是否所有拼图都已完成
+      // Check puzzle again before accessing length
+      if (state.puzzle && state.completedPieces.length + 1 >= state.puzzle.length) {
+        // 延迟一帧，确保所有拼图都已经渲染到正确位置
+        setTimeout(() => {
+          dispatch({ type: "SET_IS_COMPLETED", payload: true })
 
-        // 检查中心点是否接近
-        const distanceThreshold = 40 // 增加吸附范围
-        const dx = pieceCenter.x - originalCenter.x
-        const dy = pieceCenter.y - originalCenter.y
-        const distance = Math.sqrt(dx * dx + dy * dy)
-
-        isNearOriginal = distance < distanceThreshold
-      }
-
-      // 如果靠近原始位置，重置到原始位置
-      if (isNearOriginal) {
-        dispatch({
-          type: "RESET_PIECE_TO_ORIGINAL",
-          payload: pieceIndex,
-        })
-
-        // 添加到已完成列表
-        if (!state.completedPieces.includes(pieceIndex)) {
-          dispatch({
-            type: "ADD_COMPLETED_PIECE",
-            payload: pieceIndex,
-          })
-
-          // 播放吸附音效
-          try {
-            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-            const oscillator = audioContext.createOscillator()
-            const gainNode = audioContext.createGain()
-
-            oscillator.type = "sine"
-            oscillator.frequency.setValueAtTime(880, audioContext.currentTime) // A5
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2)
-
-            oscillator.connect(gainNode)
-            gainNode.connect(audioContext.destination)
-
-            oscillator.start()
-            oscillator.stop(audioContext.currentTime + 0.2)
-          } catch (e) {
-            console.log("Audio not supported")
-          }
-        }
-
-        // 检查是否所有拼图都已完成
-        if (state.completedPieces.length + 1 >= state.puzzle.length) {
-          // 延迟一帧，确保所有拼图都已经渲染到正确位置
-          setTimeout(() => {
-            dispatch({ type: "SET_IS_COMPLETED", payload: true })
-
-            // 播放完成音效
-            try {
-              const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-
-              // 播放上升的音阶
-              const notes = [523.25, 659.25, 783.99, 1046.5] // C5, E5, G5, C6
-
-              notes.forEach((freq, i) => {
-                const oscillator = audioContext.createOscillator()
-                const gainNode = audioContext.createGain()
-
-                oscillator.type = "sine"
-                oscillator.frequency.value = freq
-
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3)
-
-                oscillator.connect(gainNode)
-                gainNode.connect(audioContext.destination)
-
-                oscillator.start(audioContext.currentTime + i * 0.1)
-                oscillator.stop(audioContext.currentTime + i * 0.1 + 0.3)
-              })
-            } catch (e) {
-              console.log("Audio not supported")
-            }
-          }, 50)
-        }
+          // 播放完成音效
+          playPuzzleCompletedSound()
+        }, 50)
       }
     }
 
