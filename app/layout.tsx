@@ -7,8 +7,8 @@ import { ThemeProvider } from "@/components/theme-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "拼图游戏优化测试",
-  description: "模块化、高性能的React拼图游戏演示",
+  title: "生成式拼图游戏",
+  description: "一个基于Next.js和React的生成式拼图游戏项目",
 }
 
 export default function RootLayout({

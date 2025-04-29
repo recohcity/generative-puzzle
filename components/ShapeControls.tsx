@@ -3,7 +3,7 @@ import { useGame } from "@/contexts/GameContext"
 import { Button } from "@/components/ui/button"
 import { Check, Hexagon, Circle, CloudyIcon as BlobIcon } from "lucide-react"
 import { ShapeType } from "@/types/types"
-import { playButtonClickSound } from "@/utils/soundEffects"
+import { playButtonClickSound } from "@/utils/rendering/soundEffects"
 
 export default function ShapeControls() {
   const { state, dispatch, generateShape } = useGame()
@@ -58,7 +58,7 @@ export default function ShapeControls() {
             <Circle
               className="w-6 h-6 text-white"
             />
-            <span className="text-xs">曲线形状</span>
+            <span className="text-xs">曲凸形状</span>
           </Button>
 
           <Button
@@ -76,7 +76,7 @@ export default function ShapeControls() {
             <BlobIcon
               className="w-6 h-6 text-white"
             />
-            <span className="text-xs">不规则形状</span>
+            <span className="text-xs">云朵形状</span>
           </Button>
         </div>
       </div>

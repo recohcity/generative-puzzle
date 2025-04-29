@@ -1,17 +1,18 @@
 "use client"
 
-import { useCallback, useReducer, useRef } from "react"
+import { useCallback, useReducer, useRef, createContext, useContext } from "react"
 
-import type React, { ReactNode } from "react"
+import type { ReactNode } from "react"
 import { ShapeType, CutType } from "@/types/types"
-import { ShapeGenerator } from "@/utils/ShapeGenerator"
-import { PuzzleGenerator } from "@/utils/PuzzleGenerator"
-import { ScatterPuzzle } from "@/utils/ScatterPuzzle"
+import { ShapeGenerator } from "@/utils/shape/ShapeGenerator"
+import { PuzzleGenerator } from "@/utils/puzzle/PuzzleGenerator"
+import { ScatterPuzzle } from "@/utils/puzzle/ScatterPuzzle"
 
 // Define types
 interface Point {
   x: number
   y: number
+  isOriginal?: boolean
 }
 
 interface PuzzlePiece {
@@ -31,6 +32,18 @@ interface DraggingPiece {
   startY: number
 }
 
+// 添加一个接口描述边界信息
+interface PieceBounds {
+  minX: number
+  maxX: number
+  minY: number
+  maxY: number
+  width: number
+  height: number
+  centerX: number
+  centerY: number
+}
+
 interface GameState {
   originalShape: Point[]
   puzzle: PuzzlePiece[] | null
@@ -44,20 +57,29 @@ interface GameState {
   cutType: CutType
   cutCount: number
   originalPositions: PuzzlePiece[]
+  lastShapeOffsetX?: number
+  lastShapeOffsetY?: number
+  // 添加画布尺寸信息，用于边界检查
+  canvasWidth?: number
+  canvasHeight?: number
 }
 
-// 更新GameContextProps接口以包含resetGame函数
+// 更新GameContextProps接口
 interface GameContextProps {
   state: GameState
   dispatch: React.Dispatch<GameAction>
-  canvasRef: React.RefObject<HTMLCanvasElement>
-  backgroundCanvasRef: React.RefObject<HTMLCanvasElement>
+  canvasRef: React.RefObject<HTMLCanvasElement | null>
+  backgroundCanvasRef: React.RefObject<HTMLCanvasElement | null>
   generateShape: () => void
   generatePuzzle: () => void
   scatterPuzzle: () => void
   rotatePiece: (clockwise: boolean) => void
   showHintOutline: () => void
   resetGame: () => void
+  // 添加边界检查函数
+  calculatePieceBounds: (piece: PuzzlePiece) => PieceBounds
+  ensurePieceInBounds: (piece: PuzzlePiece, dx: number, dy: number, safeMargin?: number) => { constrainedDx: number, constrainedDy: number }
+  updateCanvasSize: (width: number, height: number) => void
 }
 
 const initialState: GameState = {
@@ -69,10 +91,12 @@ const initialState: GameState = {
   isCompleted: false,
   isScattered: false,
   showHint: false,
-  shapeType: ShapeType.Circle,
+  shapeType: ShapeType.Polygon,
   cutType: CutType.Straight,
-  cutCount: 5,
+  cutCount: 1,
   originalPositions: [],
+  canvasWidth: 800,  // 默认画布宽度
+  canvasHeight: 600, // 默认画布高度
 }
 
 type GameAction =
@@ -98,6 +122,11 @@ type GameAction =
   | { type: "HIDE_HINT" }
   | { type: "RESET_GAME" }
   | { type: "SET_ORIGINAL_POSITIONS"; payload: PuzzlePiece[] }
+  | { type: "SET_SHAPE_OFFSET"; payload: { offsetX: number; offsetY: number } }
+  | { type: "BATCH_UPDATE"; payload: { puzzle: PuzzlePiece[]; originalPositions: PuzzlePiece[] } }
+  | { type: "SYNC_ALL_POSITIONS"; payload: { originalShape: Point[]; puzzle: PuzzlePiece[]; originalPositions: PuzzlePiece[]; shapeOffset: { offsetX: number; offsetY: number } } }
+  | { type: "UPDATE_CANVAS_SIZE"; payload: { width: number; height: number } }
+  | { type: "NO_CHANGE" }
 
 // 在gameReducer中添加RESET_GAME动作处理
 function gameReducer(state: GameState, action: GameAction): GameState {
@@ -185,12 +214,42 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       }
     case "SET_ORIGINAL_POSITIONS":
       return { ...state, originalPositions: action.payload }
+    case "SET_SHAPE_OFFSET":
+      return { 
+        ...state, 
+        lastShapeOffsetX: action.payload.offsetX, 
+        lastShapeOffsetY: action.payload.offsetY 
+      }
+    case "BATCH_UPDATE":
+      // 批量更新多个状态值
+      return {
+        ...state,
+        puzzle: action.payload.puzzle,
+        originalPositions: action.payload.originalPositions
+      }
+    case "SYNC_ALL_POSITIONS":
+      // 同步更新所有与位置相关的状态
+      return {
+        ...state,
+        originalShape: action.payload.originalShape,
+        puzzle: action.payload.puzzle,
+        originalPositions: action.payload.originalPositions,
+        lastShapeOffsetX: action.payload.shapeOffset.offsetX,
+        lastShapeOffsetY: action.payload.shapeOffset.offsetY
+      }
+    case "UPDATE_CANVAS_SIZE":
+      return {
+        ...state,
+        canvasWidth: action.payload.width,
+        canvasHeight: action.payload.height
+      }
+    case "NO_CHANGE":
+      // 不做任何改变
+      return state
     default:
       return state
   }
 }
-
-import { createContext, useContext } from "react"
 
 export const GameContext = createContext<GameContextProps | undefined>(undefined)
 
@@ -256,11 +315,29 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [state.originalShape, state.cutType, state.cutCount])
 
   const scatterPuzzle = useCallback(() => {
-    if (!state.puzzle) return
-    const scatteredPuzzle = ScatterPuzzle.scatterPuzzle(state.puzzle)
+    if (!state.puzzle) {
+      console.warn("Cannot scatter puzzle: No puzzle pieces generated")
+      return
+    }
+
+    // 检查是否已经散开
+    if (state.isScattered) {
+      console.warn("Puzzle already scattered")
+      return
+    }
+
+    // 传递当前的画布尺寸信息给ScatterPuzzle
+    const scatteredPuzzle = ScatterPuzzle.scatterPuzzle(state.puzzle, {
+      canvasWidth: state.canvasWidth,
+      canvasHeight: state.canvasHeight
+    })
+    
     dispatch({ type: "SET_PUZZLE", payload: scatteredPuzzle })
     dispatch({ type: "SET_IS_SCATTERED", payload: true })
-  }, [state.puzzle])
+    
+    // 记录散开后的拼图位置
+    console.log("Scattered puzzle pieces:", scatteredPuzzle.length);
+  }, [state.puzzle, state.isScattered, state.canvasWidth, state.canvasHeight, dispatch])
 
   const rotatePiece = useCallback(
     (clockwise: boolean) => {
@@ -331,6 +408,79 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }
 
+  // 添加计算拼图边界的函数
+  const calculatePieceBounds = useCallback((piece: PuzzlePiece): PieceBounds => {
+    if (!piece.points || piece.points.length === 0) {
+      console.warn("Empty piece or no points found");
+      return {
+        minX: 0, maxX: 0, minY: 0, maxY: 0,
+        width: 0, height: 0, centerX: 0, centerY: 0
+      };
+    }
+    
+    // 计算拼图的边界框
+    const minX = Math.min(...piece.points.map(p => p.x));
+    const maxX = Math.max(...piece.points.map(p => p.x));
+    const minY = Math.min(...piece.points.map(p => p.y));
+    const maxY = Math.max(...piece.points.map(p => p.y));
+    
+    // 计算尺寸和中心点
+    const width = maxX - minX;
+    const height = maxY - minY;
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    
+    return { minX, maxX, minY, maxY, width, height, centerX, centerY };
+  }, []);
+  
+  // 确保拼图在画布范围内的函数
+  const ensurePieceInBounds = useCallback((piece: PuzzlePiece, dx: number, dy: number, safeMargin = 15): { constrainedDx: number, constrainedDy: number } => {
+    const bounds = calculatePieceBounds(piece);
+    
+    // 确保使用最新的画布尺寸
+    const { canvasWidth = 800, canvasHeight = 600 } = state;
+    
+    // 计算新位置时拼图的边缘坐标
+    const newMinX = bounds.minX + dx;
+    const newMaxX = bounds.maxX + dx;
+    const newMinY = bounds.minY + dy;
+    const newMaxY = bounds.maxY + dy;
+    
+    // 初始化约束后的移动距离
+    let constrainedDx = dx;
+    let constrainedDy = dy;
+    
+    // 左边缘约束
+    if (newMinX < safeMargin) {
+      constrainedDx = safeMargin - bounds.minX;
+    }
+    
+    // 右边缘约束
+    if (newMaxX > canvasWidth - safeMargin) {
+      constrainedDx = (canvasWidth - safeMargin) - bounds.maxX;
+    }
+    
+    // 上边缘约束
+    if (newMinY < safeMargin) {
+      constrainedDy = safeMargin - bounds.minY;
+    }
+    
+    // 下边缘约束
+    if (newMaxY > canvasHeight - safeMargin) {
+      constrainedDy = (canvasHeight - safeMargin) - bounds.maxY;
+    }
+    
+    return { constrainedDx, constrainedDy };
+  }, [state, calculatePieceBounds]);
+  
+  // 更新画布尺寸的函数
+  const updateCanvasSize = useCallback((width: number, height: number) => {
+    dispatch({ 
+      type: "UPDATE_CANVAS_SIZE", 
+      payload: { width, height } 
+    });
+  }, [dispatch]);
+
   // 组装上下文值，添加resetGame函数
   const contextValue: GameContextProps = {
     state,
@@ -343,6 +493,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     rotatePiece,
     showHintOutline,
     resetGame,
+    calculatePieceBounds,
+    ensurePieceInBounds,
+    updateCanvasSize
   }
 
   return <GameContext.Provider value={contextValue}>{children}</GameContext.Provider>

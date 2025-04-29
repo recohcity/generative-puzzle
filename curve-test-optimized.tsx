@@ -18,13 +18,14 @@ export default function CurveTestOptimized() {
     // Removed custom ThemeProvider wrapper
     <GameProvider>
       <div className="min-h-screen w-full bg-gradient-to-b from-[#2A2835] to-[#1F1D2B] p-4 lg:p-6 flex items-center justify-center">
-        <div className="flex flex-col lg:flex-row gap-6 max-w-[1400px] mx-auto w-full h-[calc(100vh-80px)] lg:justify-center">
-          {/* 左侧控制面板 - Apply consistent style */}
-          <div className="lg:w-[350px] lg:min-w-[350px] h-full overflow-y-auto">
+        {/* 外层容器添加最大宽度和高度限制，保持横屏比例 */}
+        <div className="flex flex-col lg:flex-row gap-6 max-w-[1400px] w-full max-h-[800px] h-[calc(100vh-80px)] mx-auto lg:justify-center relative">
+          {/* 左侧控制面板 - 固定宽度不变 */}
+          <div className="lg:w-[350px] lg:min-w-[350px] h-full overflow-y-auto flex-shrink-0">
             {/* Consistent style: bg, rounded, border, padding */}
             <div className="bg-[#36323E] rounded-3xl border-2 border-[#463E50] p-6 h-full flex flex-col">
               <div className="flex items-center justify-between mb-4 flex-shrink-0">
-                <h1 className="text-xl font-bold text-[#FFB17A]">拼图游戏</h1>
+                <h1 className="text-xl font-bold text-[#FFB17A]">生成式拼图游戏</h1>
               </div>
               
               {/* Added overflow-y-auto to this div to allow scrolling within the background */}
@@ -41,10 +42,10 @@ export default function CurveTestOptimized() {
             </div>
           </div>
 
-          {/* 右侧画布区域 - Apply consistent style */}
+          {/* 右侧画布区域 - 添加固定宽高比容器 */}
           <div className="flex-1 flex flex-col h-full overflow-hidden">
-            {/* Consistent style: bg, rounded, border, padding. Adjusted padding from p-2 to p-6 */}
-            <div className="flex-1 relative bg-[#36323E] rounded-3xl border-2 border-[#463E50] p-6">
+            {/* 直接将画布容器放在这里，移除多层嵌套结构 */}
+            <div className="w-full h-full relative bg-[#36323E] rounded-3xl border-2 border-[#463E50] overflow-hidden">
               <PuzzleCanvas />
             </div>
           </div>

@@ -1,6 +1,6 @@
 import type { CutType } from "@/types/types"
-import { generateCuts } from "@/utils/cutGenerators"
-import { splitPolygon } from "@/utils/puzzleUtils"
+import { generateCuts } from "@/utils/puzzle/cutGenerators"
+import { splitPolygon } from "@/utils/puzzle/puzzleUtils"
 
 type Point = {
   x: number

@@ -98,3 +98,13 @@
   animation: float 3.5s ease-in-out 0.7s infinite alternate-reverse;
 }
 
+/* 加载进度条脉冲动画 - 修改为只增加不减少 */
+@keyframes loading-pulse {
+  0% { width: 15%; }
+  100% { width: 35%; }
+}
+
+.animate-loading-pulse {
+  animation: loading-pulse 1.5s ease-in-out infinite alternate;
+}
+

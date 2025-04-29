@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { PuzzleIcon, ScatterChart, Lightbulb, RotateCcw, RotateCw, RefreshCw, Check } from "lucide-react"
 import { CutType } from "@/types/types"
-import { playButtonClickSound, playRotateSound } from "@/utils/soundEffects"
+import { playButtonClickSound, playRotateSound } from "@/utils/rendering/soundEffects"
 
 // 修改PuzzleControls组件，添加canvasRef引用
 export default function PuzzleControls() {
@@ -140,7 +140,7 @@ export default function PuzzleControls() {
                   ${!canModifySettings ? disabledClass : "cursor-pointer"}
                 `}
               >
-                直线切割
+                直线
               </Label>
             </div>
             <div className="relative">
@@ -159,7 +159,7 @@ export default function PuzzleControls() {
                   ${!canModifySettings ? disabledClass : "cursor-pointer"}
                 `}
               >
-                斜线切割
+                斜线
               </Label>
             </div>
           </RadioGroup>
@@ -174,7 +174,7 @@ export default function PuzzleControls() {
           className={`w-full bg-[#F68E5F] hover:bg-[#F26419] text-white border-2 border-[#F26419] rounded-xl shadow-md ${(!isShapeGenerated || state.isScattered) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
         >
           <PuzzleIcon className="w-4 h-4 mr-2" />
-          生成拼图
+          切割形状
         </Button>
 
         <Button

@@ -4,7 +4,7 @@ import type React from "react"
 import { useEffect, useRef, useState } from "react"
 import { useGame } from "@/contexts/GameContext"
 import { useTheme } from "next-themes"
-import { playPieceSelectSound, playPieceSnapSound, playPuzzleCompletedSound } from "@/utils/soundEffects"
+import { playPieceSelectSound, playPieceSnapSound, playPuzzleCompletedSound } from "@/utils/rendering/soundEffects"
 
 // 定义类型
 interface Point {
@@ -15,7 +15,13 @@ interface Point {
 
 interface PuzzlePiece {
   points: Point[]
+  originalPoints: Point[]
   rotation: number
+  originalRotation: number
+  x: number
+  y: number
+  originalX: number
+  originalY: number
 }
 
 // 在组件顶部添加calculateCenter函数
@@ -272,28 +278,23 @@ const drawHintOutline = (ctx: CanvasRenderingContext2D, piece: PuzzlePiece) => {
 
   // 添加"放在这里"的文本提示
   const bounds = piece.points.reduce(
-    (acc, point) => ({
+    (acc: {minX: number, maxX: number, minY: number, maxY: number}, point: Point) => ({
       minX: Math.min(acc.minX, point.x),
       maxX: Math.max(acc.maxX, point.x),
       minY: Math.min(acc.minY, point.y),
-      maxY: Math.max(acc.maxY, point.y),
+      maxY: Math.max(acc.maxY, point.y)
     }),
-    {
-      minX: Number.POSITIVE_INFINITY,
-      maxX: Number.NEGATIVE_INFINITY,
-      minY: Number.POSITIVE_INFINITY,
-      maxY: Number.NEGATIVE_INFINITY,
-    },
+    { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
   )
 
   const centerX = (bounds.minX + bounds.maxX) / 2
   const centerY = (bounds.minY + bounds.maxY) / 2
 
-  ctx.fillStyle = "rgba(0, 0, 0, 0.7)"
-  ctx.font = "bold 14px Arial"
+  ctx.fillStyle = "rgb(255, 255, 255)"
+  ctx.font = "lighter 14px Arial"
   ctx.textAlign = "center"
   ctx.textBaseline = "middle"
-  ctx.fillText("放在这里", centerX, centerY)
+  ctx.fillText("拖到这里", centerX, centerY)
 
   ctx.restore()
 }
@@ -407,18 +408,13 @@ const drawCompletionEffect = (ctx: CanvasRenderingContext2D, shape: Point[], sha
 
   // 画星星和彩带效果
   const bounds = shape.reduce(
-    (acc, point) => ({
+    (acc: {minX: number, maxX: number, minY: number, maxY: number}, point: Point) => ({
       minX: Math.min(acc.minX, point.x),
       maxX: Math.max(acc.maxX, point.x),
       minY: Math.min(acc.minY, point.y),
-      maxY: Math.max(acc.maxY, point.y),
+      maxY: Math.max(acc.maxY, point.y)
     }),
-    {
-      minX: Number.POSITIVE_INFINITY,
-      maxX: Number.NEGATIVE_INFINITY,
-      minY: Number.POSITIVE_INFINITY,
-      maxY: Number.NEGATIVE_INFINITY,
-    },
+    { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
   )
 
   // 绘制小星星
@@ -510,62 +506,109 @@ const drawCompletionEffect = (ctx: CanvasRenderingContext2D, shape: Point[], sha
 }
 
 export default function PuzzleCanvas() {
-  const { state, dispatch, canvasRef, backgroundCanvasRef } = useGame()
+  const { 
+    state, 
+    dispatch, 
+    canvasRef, 
+    backgroundCanvasRef, 
+    ensurePieceInBounds, 
+    updateCanvasSize 
+  } = useGame()
   const { theme } = useTheme()
+  // 使用固定的初始画布尺寸，不再随窗口大小变化
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 })
   const containerRef = useRef<HTMLDivElement>(null)
 
   // Determine isDarkMode based on the theme string
   const isDarkMode = theme === 'dark'
 
-  // 响应式设置画布大小
+  // 响应式设置画布大小，但保持固定比例
   useEffect(() => {
-    const handleResize = () => {
+    // 在组件第一次加载时设置画布尺寸
+    const setInitialCanvasSize = () => {
       if (containerRef.current) {
         const containerWidth = containerRef.current.clientWidth;
         const containerHeight = containerRef.current.clientHeight;
         
-        // 完全填充容器，不留空隙
-        let width = containerWidth;
-        let height = containerHeight;
+        // 使用整数值避免浮点误差
+        const finalWidth = Math.floor(containerWidth);
+        const finalHeight = Math.floor(containerHeight);
         
-        // 确保画布不超过容器大小
-        width = Math.min(width, containerWidth);
-        height = Math.min(height, containerHeight);
+        setCanvasSize({ width: finalWidth, height: finalHeight });
         
-        setCanvasSize({ width, height });
+        // 更新GameContext中的画布尺寸，用于边界检查
+        updateCanvasSize(finalWidth, finalHeight);
       }
-    }
+    };
+    
+    // 初始设置
+    setInitialCanvasSize();
+    
+    // 使用防抖函数处理resize事件
+    let resizeTimeout: NodeJS.Timeout | undefined;
+    const handleResize = () => {
+      if (!containerRef.current || state.isScattered) return;
+      
+      if (resizeTimeout) {
+        clearTimeout(resizeTimeout);
+      }
+      
+      resizeTimeout = setTimeout(() => {
+        if (containerRef.current) {
+          const containerWidth = containerRef.current.clientWidth;
+          const containerHeight = containerRef.current.clientHeight;
+          
+          const finalWidth = Math.floor(containerWidth);
+          const finalHeight = Math.floor(containerHeight);
+          
+          // 只有当尺寸有显著变化时才更新（100像素阈值）
+          if (Math.abs(finalWidth - canvasSize.width) > 100 || 
+              Math.abs(finalHeight - canvasSize.height) > 100) {
+            setCanvasSize({ width: finalWidth, height: finalHeight });
+            
+            // 更新GameContext中的画布尺寸，确保边界检查使用正确的尺寸
+            updateCanvasSize(finalWidth, finalHeight);
+          }
+        }
+      }, 500); // 增加防抖时间到500ms
+    };
+    
+    window.addEventListener("resize", handleResize);
+    
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      if (resizeTimeout) {
+        clearTimeout(resizeTimeout);
+      }
+    };
+  }, [updateCanvasSize, state.isScattered, canvasSize.width, canvasSize.height]);
 
-    handleResize()
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
-
+  // 记录任何requestAnimationFrame请求，以便在清理时取消
+  const requestAnimationFrameIdRef = useRef<number | undefined>(undefined);
+  
   // 绘制原始形状
   useEffect(() => {
-    const bgCanvas = backgroundCanvasRef.current
-    if (!bgCanvas || !state.originalShape) return
+    const bgCanvas = backgroundCanvasRef.current;
+    if (!bgCanvas || !state.originalShape) return;
 
-    const ctx = bgCanvas.getContext("2d")
-    if (!ctx) return
+    const ctx = bgCanvas.getContext("2d");
+    if (!ctx) return;
+
+    // 设置画布尺寸以匹配当前的canvasSize
+    bgCanvas.width = canvasSize.width;
+    bgCanvas.height = canvasSize.height;
 
     // 重新计算原始形状的位置，确保它在画布中心
     if (state.originalShape.length > 0) {
       // 计算原始形状的边界
       const bounds = state.originalShape.reduce(
-        (acc, point) => ({
+        (acc: {minX: number, maxX: number, minY: number, maxY: number}, point: Point) => ({
           minX: Math.min(acc.minX, point.x),
           maxX: Math.max(acc.maxX, point.x),
           minY: Math.min(acc.minY, point.y),
-          maxY: Math.max(acc.maxY, point.y),
+          maxY: Math.max(acc.maxY, point.y)
         }),
-        {
-          minX: Number.POSITIVE_INFINITY,
-          maxX: Number.NEGATIVE_INFINITY,
-          minY: Number.POSITIVE_INFINITY,
-          maxY: Number.NEGATIVE_INFINITY,
-        }
+        { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
       );
       
       // 计算原始形状的尺寸
@@ -583,6 +626,23 @@ export default function PuzzleCanvas() {
       // 清除画布
       ctx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
       
+      // 检查是否需要更新偏移量 - 增加偏移判断阈值，减少不必要的更新
+      const currentOffsetX = state.lastShapeOffsetX;
+      const currentOffsetY = state.lastShapeOffsetY;
+      
+      // 如果是初次设置或偏移量变化显著，保存当前偏移量（增大阈值到100）
+      if (!currentOffsetX || !currentOffsetY || 
+          Math.abs(offsetX - currentOffsetX) > 100 || 
+          Math.abs(offsetY - currentOffsetY) > 100) {
+        // 仅当没有散开的拼图时更新偏移量，避免散开后重置位置
+        if (!state.isScattered) {
+          dispatch({ 
+            type: "SET_SHAPE_OFFSET", 
+            payload: { offsetX, offsetY } 
+          });
+        }
+      }
+      
       // 绘制形状，确保它居中显示
       ctx.save();
       ctx.translate(offsetX, offsetY);
@@ -592,74 +652,235 @@ export default function PuzzleCanvas() {
       ctx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
       drawShape(ctx, state.originalShape, state.shapeType, isDarkMode);
     }
-  }, [state.originalShape, state.shapeType, isDarkMode, canvasSize.width, canvasSize.height])
+  }, [state.originalShape, state.shapeType, isDarkMode, canvasSize.width, canvasSize.height]);
+  
+  // 单独的useEffect来处理形状偏移量变化时的拼图位置更新 - 简化依赖
+  useEffect(() => {
+    // 仅当画布尺寸变化且已散开拼图时才执行重新定位
+    if (!state.puzzle || 
+        !state.originalPositions.length || 
+        !state.isScattered || 
+        state.lastShapeOffsetX === undefined || 
+        state.lastShapeOffsetY === undefined ||
+        !state.originalShape ||
+        state.originalShape.length === 0) {
+      return;
+    }
+    
+    const updatePositions = () => {
+      // 获取画布中心位置
+      const canvasCenterX = canvasSize.width / 2;
+      const canvasCenterY = canvasSize.height / 2;
+      
+      // 计算原始形状当前应该处于的位置
+      const bounds = state.originalShape.reduce(
+        (acc: {minX: number, maxX: number, minY: number, maxY: number}, point: Point) => ({
+          minX: Math.min(acc.minX, point.x),
+          maxX: Math.max(acc.maxX, point.x),
+          minY: Math.min(acc.minY, point.y),
+          maxY: Math.max(acc.maxY, point.y)
+        }),
+        { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
+      );
+      
+      // 计算形状尺寸
+      const shapeWidth = bounds.maxX - bounds.minX;
+      const shapeHeight = bounds.maxY - bounds.minY;
+      
+      // 计算新的目标偏移量，使形状居中
+      const targetOffsetX = canvasCenterX - (bounds.minX + shapeWidth / 2);
+      const targetOffsetY = canvasCenterY - (bounds.minY + shapeHeight / 2);
+      
+      // 获取当前的偏移量，确保存在
+      const currentOffsetX = state.lastShapeOffsetX || 0;
+      const currentOffsetY = state.lastShapeOffsetY || 0;
+      
+      // 计算偏移量差值
+      const deltaX = targetOffsetX - currentOffsetX;
+      const deltaY = targetOffsetY - currentOffsetY;
+      
+      // 只在偏移量变化显著时更新，避免小变化触发更新循环（增大阈值到100）
+      if (Math.abs(deltaX) > 100 || Math.abs(deltaY) > 100) {
+        // 首先更新原始形状位置
+        const updatedOriginalShape = state.originalShape.map((point: Point) => ({
+          ...point,
+          x: point.x + deltaX,
+          y: point.y + deltaY
+        }));
+        
+        // 更新原始拼图位置
+        const updatedOriginalPositions = state.originalPositions.map((piece: PuzzlePiece) => {
+          const newPoints = piece.points.map((point: Point) => ({
+            ...point,
+            x: point.x + deltaX,
+            y: point.y + deltaY
+          }));
+          
+          return {
+            ...piece,
+            points: newPoints,
+            x: piece.x + deltaX,
+            y: piece.y + deltaX,
+            originalX: piece.originalX + deltaX,
+            originalY: piece.originalY + deltaY
+          };
+        });
+        
+        // 更新拼图位置，对已完成和未完成的拼图块分别处理
+        if (state.puzzle) {
+          const updatedPuzzle = state.puzzle.map((piece: PuzzlePiece, index: number) => {
+            // 如果已经完成，则对齐到原始位置
+            if (state.completedPieces.includes(index)) {
+              const originalPiece = updatedOriginalPositions[index];
+              return {
+                ...piece,
+                points: JSON.parse(JSON.stringify(originalPiece.points)),
+                x: originalPiece.x,
+                y: originalPiece.y,
+                rotation: originalPiece.rotation
+              };
+            }
+            
+            // 未完成的拼图块，保持相对偏移量不变
+            const newPoints = piece.points.map((point: Point) => ({
+              ...point,
+              x: point.x + deltaX,
+              y: point.y + deltaY
+            }));
+            
+            return {
+              ...piece,
+              points: newPoints,
+              x: piece.x + deltaX,
+              y: piece.y + deltaY,
+              originalX: piece.originalX + deltaX,
+              originalY: piece.originalY + deltaY
+            };
+          });
+          
+          // 批量更新所有状态，确保所有元素同步移动
+          dispatch({ 
+            type: "SYNC_ALL_POSITIONS", 
+            payload: {
+              originalShape: updatedOriginalShape,
+              puzzle: updatedPuzzle,
+              originalPositions: updatedOriginalPositions,
+              shapeOffset: { offsetX: targetOffsetX, offsetY: targetOffsetY }
+            }
+          });
+        }
+      }
+    };
+    
+    // 使用一次性延迟处理窗口改变后的位置更新，避免动画帧频繁触发
+    const handleDelayedPositionUpdate = () => {
+      if (positionUpdateTimeoutRef.current) {
+        clearTimeout(positionUpdateTimeoutRef.current);
+      }
+      positionUpdateTimeoutRef.current = setTimeout(() => {
+        updatePositions();
+      }, 300);
+    };
+    
+    // 调用位置更新
+    handleDelayedPositionUpdate();
+    
+    // 清理函数
+    return () => {
+      if (positionUpdateTimeoutRef.current) {
+        clearTimeout(positionUpdateTimeoutRef.current);
+      }
+    };
+  }, [canvasSize.width, canvasSize.height, dispatch]);
+  
+  // 引用用于延迟更新位置的timeout
+  const positionUpdateTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // 绘制拼图
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas || !state.puzzle) return
+    const canvas = canvasRef.current;
+    if (!canvas || !state.puzzle) return;
 
-    const ctx = canvas.getContext("2d")
-    if (!ctx) return
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    
+    // 确保画布尺寸与canvasSize匹配
+    canvas.width = canvasSize.width;
+    canvas.height = canvasSize.height;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    // 在每次绘制前清除旧内容，确保不会覆盖
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // 如果游戏完成，先绘制一个完整的无缝形状
     if (state.isCompleted && state.originalShape) {
       // 绘制完整形状
-      ctx.beginPath()
-      ctx.moveTo(state.originalShape[0].x, state.originalShape[0].y)
+      ctx.beginPath();
+      ctx.moveTo(state.originalShape[0].x, state.originalShape[0].y);
 
       if (state.shapeType === "polygon") {
         // 多边形使用直线
-        state.originalShape.forEach((point) => {
-          ctx.lineTo(point.x, point.y)
-        })
+        state.originalShape.forEach((point: Point) => {
+          ctx.lineTo(point.x, point.y);
+        });
       } else {
         // 曲线形状使用贝塞尔曲线
         for (let i = 1; i < state.originalShape.length; i++) {
-          const prev = state.originalShape[i - 1]
-          const current = state.originalShape[i]
-          const next = state.originalShape[(i + 1) % state.originalShape.length]
+          const prev = state.originalShape[i - 1];
+          const current = state.originalShape[i];
+          const next = state.originalShape[(i + 1) % state.originalShape.length];
 
-          const midX = (prev.x + current.x) / 2
-          const midY = (prev.y + current.y) / 2
-          const nextMidX = (current.x + next.x) / 2
-          const nextMidY = (current.y + next.y) / 2
+          const midX = (prev.x + current.x) / 2;
+          const midY = (prev.y + current.y) / 2;
+          const nextMidX = (current.x + next.x) / 2;
+          const nextMidY = (current.y + next.y) / 2;
 
-          ctx.quadraticCurveTo(current.x, current.y, nextMidX, nextMidY)
+          ctx.quadraticCurveTo(current.x, current.y, nextMidX, nextMidY);
         }
       }
 
-      ctx.closePath()
-      ctx.fillStyle = isDarkMode ? "rgba(242, 100, 25, 0.8)" : "rgba(255, 211, 101, 0.8)" // 使用暖色系
-      ctx.fill()
+      ctx.closePath();
+      ctx.fillStyle = isDarkMode ? "rgba(242, 100, 25, 0.8)" : "rgba(255, 211, 101, 0.8)"; // 使用暖色系
+      ctx.fill();
       
       // 绘制完成效果
-      drawCompletionEffect(ctx, state.originalShape, state.shapeType)
+      drawCompletionEffect(ctx, state.originalShape, state.shapeType);
     } else {
       // 如果还没完成，绘制各个拼图片段
-      drawPuzzle(ctx, state.puzzle, state.completedPieces, state.selectedPiece, state.shapeType, isDarkMode, state.originalShape)
+      drawPuzzle(
+        ctx, 
+        state.puzzle, 
+        state.completedPieces, 
+        state.selectedPiece, 
+        state.shapeType, 
+        isDarkMode, 
+        state.originalShape
+      );
       
       // 绘制提示轮廓（如果需要）
       if (state.showHint && state.selectedPiece !== null && state.originalPositions.length > 0) {
-        drawHintOutline(ctx, state.originalPositions[state.selectedPiece])
+        drawHintOutline(ctx, state.originalPositions[state.selectedPiece]);
       }
     }
+    
+    return () => {
+      // 清除任何可能挂起的动画帧请求
+      if (requestAnimationFrameIdRef.current) {
+        cancelAnimationFrame(requestAnimationFrameIdRef.current);
+      }
+    };
   }, [
     state.puzzle,
     state.completedPieces,
-    state.selectedPiece,
+    state.selectedPiece, 
     state.showHint,
     state.isCompleted,
     state.originalShape,
-    state.originalPositions,
     state.shapeType,
     isDarkMode,
     canvasSize.width,
     canvasSize.height,
-  ])
-
+  ]);
+  
   // 鼠标按下事件
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!state.puzzle) return
@@ -752,43 +973,11 @@ export default function PuzzleCanvas() {
     // 获取当前拖动的拼图
     const piece = state.puzzle[state.draggingPiece.index];
     
-    // 计算拼图的边界，考虑旋转角度的影响
-    const center = calculateCenter(piece.points);
+    // 使用GameContext提供的统一边界处理函数，确保在所有地方使用一致的边界逻辑
+    const { constrainedDx, constrainedDy } = ensurePieceInBounds(piece, dx, dy, 15);
     
-    // 确定拼图的边界框（考虑旋转）
-    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-    
-    piece.points.forEach(point => {
-      // 考虑当前旋转角度计算真实坐标
-      const rotated = rotatePoint(point.x, point.y, center.x, center.y, piece.rotation);
-      minX = Math.min(minX, rotated.x);
-      maxX = Math.max(maxX, rotated.x);
-      minY = Math.min(minY, rotated.y);
-      maxY = Math.max(maxY, rotated.y);
-    });
-    
-    // 设置画布边界的安全边距
-    const padding = 5;
-    
-    // 计算约束后的移动距离，确保拼图不会超出画布边界
-    let constrainedDx = dx;
-    let constrainedDy = dy;
-    
-    // 约束左右边界
-    if (minX + dx < padding) {
-      constrainedDx = padding - minX;
-    }
-    if (maxX + dx > canvas.width - padding) {
-      constrainedDx = canvas.width - padding - maxX;
-    }
-    
-    // 约束上下边界
-    if (minY + dy < padding) {
-      constrainedDy = padding - minY;
-    }
-    if (maxY + dy > canvas.height - padding) {
-      constrainedDy = canvas.height - padding - maxY;
-    }
+    // 调试日志，帮助排查问题
+    // console.log("移动约束", { dx, dy, constrainedDx, constrainedDy });
 
     // 更新拼图位置
     dispatch({
@@ -796,10 +985,17 @@ export default function PuzzleCanvas() {
       payload: { index: state.draggingPiece.index, dx: constrainedDx, dy: constrainedDy },
     });
 
-    // 更新拖动起点
+    // 根据实际移动距离计算新的起点，确保下一次移动从正确位置开始
+    const realStartX = state.draggingPiece.startX + constrainedDx;
+    const realStartY = state.draggingPiece.startY + constrainedDy;
+    
     dispatch({
       type: "SET_DRAGGING_PIECE",
-      payload: { ...state.draggingPiece, startX: x, startY: y },
+      payload: { 
+        index: state.draggingPiece.index,
+        startX: realStartX,
+        startY: realStartY
+      },
     });
   }
 
@@ -877,9 +1073,15 @@ export default function PuzzleCanvas() {
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full flex items-center justify-center dark:bg-[#2A2835] rounded-lg shadow-inner overflow-hidden"
+      className="w-full h-full flex items-center justify-center dark:bg-[#2A2835] rounded-2xl shadow-inner overflow-hidden"
     >
-      <div className="relative flex items-center justify-center w-full h-full">
+      {/* 移除尺寸限制，确保画布填满整个容器区域 */}
+      <div 
+        className="relative flex items-center justify-center w-full h-full"
+        style={{ 
+          padding: "2px" // 仅保留最小内边距
+        }}
+      >
         <canvas
           ref={backgroundCanvasRef}
           width={canvasSize.width}
@@ -900,4 +1102,3 @@ export default function PuzzleCanvas() {
     </div>
   )
 }
-
