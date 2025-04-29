@@ -75,3 +75,26 @@
   }
 }
 
+/* 加载页面动画 */
+@keyframes float {
+  0% { transform: translateY(0) rotate(0deg); }
+  100% { transform: translateY(-20px) rotate(10deg); }
+}
+
+/* 不同的浮动动画方向 */
+.float-1 {
+  animation: float 3s ease-in-out 0s infinite alternate;
+}
+
+.float-2 {
+  animation: float 4s ease-in-out 0.5s infinite alternate-reverse;
+}
+
+.float-3 {
+  animation: float 5s ease-in-out 0.3s infinite alternate;
+}
+
+.float-4 {
+  animation: float 3.5s ease-in-out 0.7s infinite alternate-reverse;
+}
+
