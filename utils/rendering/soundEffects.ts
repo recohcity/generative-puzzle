@@ -11,6 +11,83 @@ const createAudioContext = (): AudioContext | null => {
   }
 };
 
+// 背景音乐控制
+let backgroundAudio: HTMLAudioElement | null = null;
+let isBackgroundAudioPlaying = false;
+
+// 初始化并播放背景音乐
+export const initBackgroundMusic = (): void => {
+  if (typeof window === 'undefined') return; // 确保在浏览器环境中运行
+  
+  if (!backgroundAudio) {
+    backgroundAudio = new Audio('/puzzle-pieces.mp3');
+    backgroundAudio.loop = true;
+    backgroundAudio.volume = 0.3; // 设置适当的音量
+    
+    // 添加音频加载错误处理
+    backgroundAudio.onerror = (e) => {
+      console.error('背景音乐加载失败:', e);
+      backgroundAudio = null;
+    };
+  }
+  
+  // 默认自动播放
+  playBackgroundMusic();
+};
+
+// 播放背景音乐
+export const playBackgroundMusic = (): void => {
+  if (!backgroundAudio) {
+    initBackgroundMusic();
+    return;
+  }
+  
+  // 处理自动播放策略
+  const playPromise = backgroundAudio.play();
+  
+  if (playPromise !== undefined) {
+    playPromise
+      .then(() => {
+        isBackgroundAudioPlaying = true;
+      })
+      .catch(error => {
+        // 自动播放被阻止，通常需要用户交互
+        console.warn('背景音乐自动播放被阻止，需要用户交互:', error);
+      });
+  }
+};
+
+// 暂停背景音乐
+export const pauseBackgroundMusic = (): void => {
+  if (backgroundAudio && !backgroundAudio.paused) {
+    backgroundAudio.pause();
+    isBackgroundAudioPlaying = false;
+  }
+};
+
+// 切换背景音乐状态
+export const toggleBackgroundMusic = (): boolean => {
+  if (!backgroundAudio) {
+    initBackgroundMusic();
+    return true;
+  }
+  
+  if (backgroundAudio.paused) {
+    playBackgroundMusic();
+    isBackgroundAudioPlaying = true;
+    return true;
+  } else {
+    pauseBackgroundMusic();
+    isBackgroundAudioPlaying = false;
+    return false;
+  }
+};
+
+// 获取背景音乐状态
+export const getBackgroundMusicStatus = (): boolean => {
+  return isBackgroundAudioPlaying;
+};
+
 // Play a click sound for buttons
 export const playButtonClickSound = (): void => {
   const audioContext = createAudioContext();

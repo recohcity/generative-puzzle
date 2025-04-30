@@ -108,3 +108,33 @@
   animation: loading-pulse 1.5s ease-in-out infinite alternate;
 }
 
+/* 修复面板和画布的圆角问题 */
+canvas {
+  border-radius: inherit;
+  background-color: transparent !important;
+}
+
+.rounded-3xl, .rounded-2xl {
+  isolation: isolate;
+}
+
+/* 确保所有容器完全遵循圆角 */
+div[class*="rounded"] {
+  mask-image: radial-gradient(white, black);
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+}
+
+/* 添加玻璃效果和发光效果 */
+.bg-white\/20 {
+  background-color: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(12px);
+  box-shadow: 
+    inset 0 0 15px rgba(255, 255, 255, 0.2),
+    0 0 30px rgba(255, 255, 255, 0.1);
+}
+
+/* 增强画布内容在透明背景上的可见性 */
+.cursor-pointer.w-full.h-full {
+  mix-blend-mode: lighten;
+}
+

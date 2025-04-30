@@ -7,7 +7,7 @@
 ```
 generative-puzzle/
 ├── app/                      # Next.js App Router 文件
-│   ├── globals.css           # 全局样式
+│   ├── globals.css           # 全局样式 (含圆角修复, 玻璃效果)
 │   ├── layout.tsx            # 根布局组件
 │   └── page.tsx              # 主页面组件 (优化加载体验)
 ├── components/               # UI组件
@@ -20,19 +20,22 @@ generative-puzzle/
 │   ├── loading/              # 加载相关组件
 │   │   ├── LoadingScreen.tsx # 动态加载屏幕组件
 │   │   └── LoadingScreenStatic.tsx # 静态加载屏幕组件
-│   ├── PuzzleCanvas.tsx      # 画布渲染组件 (响应式适配)
-│   ├── PuzzleControls.tsx    # 拼图控制组件 (优化文字表述)
+│   ├── PuzzleCanvas.tsx      # 画布渲染组件 (响应式, 透明背景, 动态阴影)
+│   ├── PuzzleControls.tsx    # 拼图控制组件 (优化文字, 背景音乐控制)
 │   ├── ShapeControls.tsx     # 形状控制组件
 │   └── theme-provider.tsx    # 主题提供者组件
 ├── contexts/                 # 状态管理
-│   └── GameContext.tsx       # 游戏状态管理 (含画布尺寸控制)
+│   └── GameContext.tsx       # 游戏状态管理 (含画布尺寸, isScattered状态)
 ├── hooks/                    # 自定义React钩子
 │   ├── use-mobile.tsx        # 移动设备检测
 │   └── use-toast.ts          # Toast通知
 ├── lib/                      # 通用工具函数
 │   └── utils.ts              # 工具函数
 ├── public/                   # 静态资源
-│   └── puzzle-preview.png    # 预览图片
+│   ├── bg.jpg                # 游戏背景图
+│   ├── puzzle-pieces.mp3     # 循环背景音乐
+│   ├── puzzle-preview01.png  # 预览图片1
+│   └── puzzle-preview02.png  # 预览图片2
 ├── types/                    # 类型定义
 │   └── types.ts              # 共享类型
 └── utils/                    # 游戏逻辑工具
@@ -47,7 +50,7 @@ generative-puzzle/
     │   ├── cutGenerators.ts  # 切割线生成器
     │   └── puzzleUtils.ts    # 拼图操作工具
     └── rendering/            # 渲染相关工具
-        └── soundEffects.ts   # 音效处理
+        └── soundEffects.ts   # 音效处理 (含背景音乐控制)
 ```
 
 ## 核心模块说明
@@ -58,36 +61,44 @@ Next.js 15 应用路由系统的入口点。
 
 - `page.tsx`: 应用的主页面，包含游戏UI的主要布局和优化的加载屏幕逻辑
 - `layout.tsx`: 应用的布局组件，提供全局上下文和主题
-- `globals.css`: 全局样式定义，包括Tailwind CSS的基础配置和加载动画
+- `globals.css`: 全局样式定义，包括Tailwind CSS基础配置、加载动画、圆角修复和玻璃效果样式
 
 ### components 目录
 
 包含所有React组件，包括游戏界面和UI元素。
 
-- `loading/LoadingScreen.tsx`: 动态加载页面组件，显示标题、进度条和动画拼图碎片
-- `loading/LoadingScreenStatic.tsx`: 静态加载页面组件，作为动态组件加载前的占位
-- `PuzzleCanvas.tsx`: 核心画布组件，处理形状和拼图的渲染与交互，支持屏幕适配
-- `PuzzleControls.tsx`: 拼图操作控制面板，优化了按钮文字表述，提供重置、提示等功能
-- `ShapeControls.tsx`: 形状生成控制面板，配置形状类型和切割参数
+- `loading/LoadingScreen.tsx`: 动态加载页面组件
+- `loading/LoadingScreenStatic.tsx`: 静态加载页面组件
+- `PuzzleCanvas.tsx`: 核心画布组件，处理渲染与交互，支持透明背景、动态拼图阴影和屏幕适配
+- `PuzzleControls.tsx`: 拼图操作控制面板，提供重置、提示、背景音乐开关等功能
+- `ShapeControls.tsx`: 形状生成控制面板
 - `theme-provider.tsx`: 提供主题切换功能
-- `ui/`: 基于Shadcn UI的基础组件库，提供一致的设计系统
+- `ui/`: 基于Shadcn UI的基础组件库
 
 ### contexts 目录
 
 React Context API实现的状态管理。
 
-- `GameContext.tsx`: 核心游戏状态管理，包括形状、拼图片段、交互状态、画布尺寸等
+- `GameContext.tsx`: 核心游戏状态管理，包括形状、拼图、交互状态、画布尺寸、拼图散开状态 (`isScattered`) 等
 
 ### hooks 目录
 
 自定义React钩子函数。
 
-- `use-mobile.tsx`: 检测移动设备并优化界面
+- `use-mobile.tsx`: 检测移动设备
 - `use-toast.ts`: 提供轻量级通知功能
+
+### public 目录
+
+存放静态资源文件。
+
+- `bg.jpg`: 游戏界面的背景图片
+- `puzzle-pieces.mp3`: 游戏的循环背景音乐
+- `puzzle-preview*.png`: 项目预览图片
 
 ### utils 目录
 
-游戏核心逻辑和辅助功能实现，按功能分组组织。
+游戏核心逻辑和辅助功能实现。
 
 - `shape/`: 形状生成和几何运算
   - `ShapeGenerator.ts`: 基于参数生成各种类型的形状
@@ -98,7 +109,7 @@ React Context API实现的状态管理。
   - `cutGenerators.ts`: 生成不同类型的切割线
   - `puzzleUtils.ts`: 拼图操作的专用工具
 - `rendering/`: 渲染和视觉效果
-  - `soundEffects.ts`: 音效播放和管理
+  - `soundEffects.ts`: 音效播放和管理，包含背景音乐的播放、暂停、切换功能
 - `constants.ts`: 游戏常量定义
 - `helper.ts`: 通用辅助函数
 

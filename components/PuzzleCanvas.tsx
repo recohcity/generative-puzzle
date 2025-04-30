@@ -75,8 +75,9 @@ function rotatePoint(x: number, y: number, cx: number, cy: number, angle: number
 const drawShape = (ctx: CanvasRenderingContext2D, shape: Point[], shapeType: string, isDarkMode = false) => {
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 
-  ctx.fillStyle = isDarkMode ? "rgba(45, 55, 72, 0.3)" : "rgba(200, 200, 200, 0.3)"
-  ctx.strokeStyle = isDarkMode ? (isDarkMode ? "#cbd5e1" : "#333333") : "#333333"
+  // 使用更透明的填充，适应透明背景
+  ctx.fillStyle = isDarkMode ? "rgba(45, 55, 72, 0.2)" : "rgba(200, 200, 200, 0.15)"
+  ctx.strokeStyle = isDarkMode ? "rgba(203, 213, 225, 0.5)" : "rgba(51, 51, 51, 0.4)"
 
   ctx.beginPath()
 
@@ -108,7 +109,15 @@ const drawShape = (ctx: CanvasRenderingContext2D, shape: Point[], shapeType: str
 
   ctx.closePath()
   ctx.fill()
+  
+  // 添加轻微发光效果
+  ctx.shadowColor = isDarkMode ? "rgba(255, 255, 255, 0.2)" : "rgba(255, 255, 255, 0.3)"
+  ctx.shadowBlur = 10
+  ctx.lineWidth = 1.5
   ctx.stroke()
+  
+  // 重置阴影
+  ctx.shadowBlur = 0
 }
 
 const drawPuzzle = (
@@ -118,7 +127,8 @@ const drawPuzzle = (
   selectedPiece: number | null,
   shapeType: string,
   isDarkMode = false,
-  originalShape?: Point[]
+  originalShape?: Point[],
+  isScattered: boolean = false
 ) => {
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 
@@ -152,12 +162,33 @@ const drawPuzzle = (
     }
 
     ctx.closePath()
-    ctx.fillStyle = isDarkMode ? "rgba(56, 189, 248, 0.8)" : "rgba(135, 206, 250, 0.9)"
+    
+    // 使用半透明的亮色填充
+    const gradientColor = isDarkMode ? "rgba(242, 100, 25, 0.85)" : "rgba(255, 211, 101, 0.85)"
+    
+    // 添加径向渐变为完成效果
+    const center = calculateCenter(originalShape)
+    const radius = Math.max(ctx.canvas.width, ctx.canvas.height) / 3
+    const gradient = ctx.createRadialGradient(center.x, center.y, radius * 0.3, center.x, center.y, radius)
+    gradient.addColorStop(0, gradientColor)
+    gradient.addColorStop(1, isDarkMode ? "rgba(242, 100, 25, 0.6)" : "rgba(255, 211, 101, 0.6)")
+    
+    ctx.fillStyle = gradient
+    
+    // 添加发光效果
+    ctx.shadowColor = isDarkMode ? "rgba(255, 159, 64, 0.7)" : "rgba(255, 211, 101, 0.7)"
+    ctx.shadowBlur = 20
     ctx.fill()
+    
+    // 重置阴影
+    ctx.shadowBlur = 0
+    
+    // 绘制完成效果
+    drawCompletionEffect(ctx, originalShape, shapeType)
   } else {
     // 如果还没有全部完成，按原来的方式绘制各个拼图片段
     pieces.forEach((piece, index) => {
-      drawPiece(ctx, piece, index, completedPieces.includes(index), selectedPiece === index, shapeType, isDarkMode)
+      drawPiece(ctx, piece, index, completedPieces.includes(index), selectedPiece === index, shapeType, isDarkMode, isScattered)
     })
   }
 }
@@ -171,6 +202,7 @@ const drawPiece = (
   isSelected: boolean,
   shapeType: string,
   isDarkMode: boolean,
+  isScattered: boolean = false
 ) => {
   // 计算中心点用于旋转
   const center = calculateCenter(piece.points)
@@ -181,6 +213,72 @@ const drawPiece = (
   ctx.translate(center.x, center.y)
   ctx.rotate((piece.rotation * Math.PI) / 180)
   ctx.translate(-center.x, -center.y)
+
+  // 仅当拼图已散开且未完成或被选中时绘制阴影
+  if (isScattered && (!isCompleted || isSelected)) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(piece.points[0].x, piece.points[0].y);
+
+    for (let i = 1; i < piece.points.length; i++) {
+      const prev = piece.points[i - 1];
+      const current = piece.points[i];
+      const next = piece.points[(i + 1) % piece.points.length];
+
+      if (shapeType !== "polygon" && prev.isOriginal && current.isOriginal) {
+        // 对于曲线形状，使用二次贝塞尔曲线
+        const midX = (prev.x + current.x) / 2;
+        const midY = (prev.y + current.y) / 2;
+        const nextMidX = (current.x + next.x) / 2;
+        const nextMidY = (current.y + next.y) / 2;
+
+        ctx.quadraticCurveTo(current.x, current.y, nextMidX, nextMidY);
+      } else {
+        // 对于多边形和切割线，使用直线
+        ctx.lineTo(current.x, current.y);
+      }
+    }
+
+    ctx.closePath();
+    
+    // 为被选中拼图绘制更明显的阴影
+    if (isSelected) {
+      ctx.shadowColor = isDarkMode ? 'rgba(0, 0, 0, 0.7)' : 'rgba(0, 0, 0, 0.5)';
+      ctx.shadowBlur = 15;
+      ctx.shadowOffsetX = 5;
+      ctx.shadowOffsetY = 5;
+    } 
+    // 为未完成拼图绘制较小的阴影
+    else if (!isCompleted) {
+      ctx.shadowColor = isDarkMode ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.3)';
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetX = 3;
+      ctx.shadowOffsetY = 3;
+    }
+    
+    // 填充形状以显示阴影
+    const colors = [
+      "#FF9F40", // 橙色
+      "#FF6B6B", // 红色
+      "#FFD166", // 黄色
+      "#F68E5F", // 珊瑚色
+      "#FFB17A", // 浅珊瑚色
+      "#FFE3C1", // 浅橙色
+      "#FFBB7C", // 杏色
+      "#FF8A5B", // 胡萝卜色
+      "#FF785A", // 番茄色
+      "#F26419", // 深橙色
+    ];
+
+    if (isDarkMode) {
+      ctx.fillStyle = colors[index % colors.length] + "CC";
+    } else {
+      ctx.fillStyle = colors[index % colors.length];
+    }
+
+    ctx.fill();
+    ctx.restore();
+  }
 
   // 绘制路径
   ctx.beginPath()
@@ -853,7 +951,8 @@ export default function PuzzleCanvas() {
         state.selectedPiece, 
         state.shapeType, 
         isDarkMode, 
-        state.originalShape
+        state.originalShape,
+        state.isScattered
       );
       
       // 绘制提示轮廓（如果需要）
@@ -876,6 +975,7 @@ export default function PuzzleCanvas() {
     state.isCompleted,
     state.originalShape,
     state.shapeType,
+    state.isScattered,
     isDarkMode,
     canvasSize.width,
     canvasSize.height,
@@ -1073,14 +1173,12 @@ export default function PuzzleCanvas() {
   return (
     <div
       ref={containerRef}
-      className="w-full h-full flex items-center justify-center dark:bg-[#2A2835] rounded-2xl shadow-inner overflow-hidden"
+      className="w-full h-full flex items-center justify-center rounded-2xl overflow-hidden"
     >
-      {/* 移除尺寸限制，确保画布填满整个容器区域 */}
+      {/* 添加轻微的内部发光效果 */}
+      <div className="absolute inset-0 pointer-events-none bg-white/5 rounded-2xl"></div>
       <div 
         className="relative flex items-center justify-center w-full h-full"
-        style={{ 
-          padding: "2px" // 仅保留最小内边距
-        }}
       >
         <canvas
           ref={backgroundCanvasRef}
