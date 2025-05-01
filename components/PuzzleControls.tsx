@@ -4,9 +4,10 @@ import { Slider } from "@/components/ui/slider"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { PuzzleIcon, ScatterChart, Lightbulb, RotateCcw, RotateCw, RefreshCw, Check } from "lucide-react"
+import { PuzzleIcon, ScatterChart, Lightbulb, RotateCcw, RotateCw, RefreshCw, Check, Maximize, Minimize } from "lucide-react"
 import { CutType } from "@/types/types"
 import { playButtonClickSound, playRotateSound } from "@/utils/rendering/soundEffects"
+import { useState, useEffect } from "react"
 
 // 修改PuzzleControls组件，添加canvasRef引用
 export default function PuzzleControls() {
@@ -21,11 +22,68 @@ export default function PuzzleControls() {
     canvasRef,
     backgroundCanvasRef,
   } = useGame()
-
+  
+  // 追踪全屏状态
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  
   // 检查是否已生成形状
   const isShapeGenerated = state.originalShape.length > 0
   // 检查是否可以修改拼图设置
   const canModifySettings = isShapeGenerated && !state.isScattered
+
+  // 监听全屏状态变化
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(
+        !!(document.fullscreenElement || 
+          (document as any).webkitFullscreenElement || 
+          (document as any).mozFullScreenElement || 
+          (document as any).msFullscreenElement)
+      );
+    };
+    
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+    
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+    };
+  }, []);
+  
+  // 全屏切换函数
+  const toggleFullscreen = () => {
+    playButtonClickSound();
+    
+    if (!isFullscreen) {
+      // 进入全屏
+      const docEl = document.documentElement;
+      if (docEl.requestFullscreen) {
+        docEl.requestFullscreen();
+      } else if ((docEl as any).webkitRequestFullscreen) {
+        (docEl as any).webkitRequestFullscreen();
+      } else if ((docEl as any).mozRequestFullScreen) {
+        (docEl as any).mozRequestFullScreen();
+      } else if ((docEl as any).msRequestFullscreen) {
+        (docEl as any).msRequestFullscreen();
+      }
+    } else {
+      // 退出全屏
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if ((document as any).webkitExitFullscreen) {
+        (document as any).webkitExitFullscreen();
+      } else if ((document as any).mozCancelFullScreen) {
+        (document as any).mozCancelFullScreen();
+      } else if ((document as any).msExitFullscreen) {
+        (document as any).msExitFullscreen();
+      }
+    }
+  };
 
   const handleCutCountChange = (value: number[]) => {
     if (!canModifySettings) return
@@ -84,7 +142,7 @@ export default function PuzzleControls() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
       {/* 切割设置 */}
       <div className="space-y-4">
         <div>

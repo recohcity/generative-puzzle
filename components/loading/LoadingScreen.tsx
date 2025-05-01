@@ -65,15 +65,21 @@ export default function LoadingScreen({ onLoadComplete }: LoadingScreenProps) {
           // 标记加载已完成
           loadingCompleted.current = true;
           
-          // 完成后延迟适当时间再切换，避免闪烁
-          setTimeout(onLoadComplete, remainingTime);
+          // 加载完成后延迟适当时间再进入游戏，不自动进入全屏
+          setTimeout(() => {
+            onLoadComplete();
+          }, 800); // 给用户一点时间看到100%加载完成的状态
         }, 200);
       } catch (error) {
         console.error('加载游戏组件失败:', error);
         // 出错时也显示100%并进入游戏
         setProgress(100);
         loadingCompleted.current = true;
-        setTimeout(onLoadComplete, 500);
+        
+        // 延迟后进入游戏，不自动进入全屏
+        setTimeout(() => {
+          onLoadComplete();
+        }, 800);
       }
     };
     
@@ -86,6 +92,8 @@ export default function LoadingScreen({ onLoadComplete }: LoadingScreenProps) {
         console.log('触发加载超时保护');
         setProgress(100);
         loadingCompleted.current = true;
+        
+        // 超时后进入游戏，不自动进入全屏
         onLoadComplete();
       }
     }, 4000); // 4秒超时保护

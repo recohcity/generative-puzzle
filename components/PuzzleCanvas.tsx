@@ -4,7 +4,7 @@ import type React from "react"
 import { useEffect, useRef, useState } from "react"
 import { useGame } from "@/contexts/GameContext"
 import { useTheme } from "next-themes"
-import { playPieceSelectSound, playPieceSnapSound, playPuzzleCompletedSound } from "@/utils/rendering/soundEffects"
+import { playPieceSelectSound, playPieceSnapSound, playPuzzleCompletedSound, playRotateSound } from "@/utils/rendering/soundEffects"
 
 // 定义类型
 interface Point {
@@ -68,6 +68,11 @@ function rotatePoint(x: number, y: number, cx: number, cy: number, angle: number
     x: rotatedX + cx,
     y: rotatedY + cy
   };
+}
+
+// 计算两点之间角度的函数（用于多点触摸旋转）
+function calculateAngle(x1: number, y1: number, x2: number, y2: number): number {
+  return Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
 }
 
 // 内联renderUtils函数
@@ -610,12 +615,17 @@ export default function PuzzleCanvas() {
     canvasRef, 
     backgroundCanvasRef, 
     ensurePieceInBounds, 
-    updateCanvasSize 
+    updateCanvasSize,
+    rotatePiece 
   } = useGame()
   const { theme } = useTheme()
   // 使用固定的初始画布尺寸，不再随窗口大小变化
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 })
   const containerRef = useRef<HTMLDivElement>(null)
+  
+  // 追踪触摸事件相关状态
+  const [touchStartAngle, setTouchStartAngle] = useState<number | null>(null)
+  const lastTouchRef = useRef<{x: number, y: number} | null>(null)
 
   // Determine isDarkMode based on the theme string
   const isDarkMode = theme === 'dark'
@@ -1170,6 +1180,317 @@ export default function PuzzleCanvas() {
     }
   }, [state.puzzle])
 
+  // 处理触摸开始事件
+  const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!state.puzzle) return
+    if (!state.isScattered) return // Prevent interaction if not scattered
+
+    e.preventDefault() // 防止滚动
+    e.stopPropagation() // 阻止事件冒泡，防止触发浏览器手势
+    
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const rect = canvas.getBoundingClientRect()
+    
+    // 检查是否是单点触摸（拖拽）或多点触摸（旋转）
+    if (e.touches.length === 1) {
+      // 单点触摸 - 处理拼图选择/拖拽
+      const touch = e.touches[0]
+      const x = touch.clientX - rect.left
+      const y = touch.clientY - rect.top
+      
+      lastTouchRef.current = { x, y }
+      
+      // 检查点击的是哪个拼图片段 - 复用鼠标点击的逻辑
+      let clickedPieceIndex = -1
+
+      // 使用多边形点包含检测
+      for (let i = state.puzzle.length - 1; i >= 0; i--) {
+        // 跳过已完成的拼图，不允许拖拽
+        if (state.completedPieces.includes(i)) continue
+
+        const piece = state.puzzle[i]
+        const center = calculateCenter(piece.points)
+        
+        // 将触摸点逆向旋转，以匹配未旋转的形状
+        const rotationAngle = -piece.rotation // 逆向旋转
+        const rotatedPoint = rotatePoint(x, y, center.x, center.y, rotationAngle)
+        
+        // 检查旋转后的点是否在形状内
+        if (isPointInPolygon(rotatedPoint.x, rotatedPoint.y, piece.points)) {
+          clickedPieceIndex = i
+          break
+        }
+      }
+
+      // 如果没有找到，使用更宽松的距离检测
+      if (clickedPieceIndex === -1) {
+        const hitDistance = 20 // 增加点击容差
+        for (let i = state.puzzle.length - 1; i >= 0; i--) {
+          // 跳过已完成的拼图，不允许拖拽
+          if (state.completedPieces.includes(i)) continue
+
+          const piece = state.puzzle[i]
+          const center = calculateCenter(piece.points)
+          const dx = center.x - x
+          const dy = center.y - y
+          const distance = Math.sqrt(dx * dx + dy * dy)
+
+          // 如果点击位置在拼图中心附近，也算作点击
+          if (distance < hitDistance * 2) {
+            clickedPieceIndex = i
+            break
+          }
+        }
+      }
+
+      if (clickedPieceIndex !== -1) {
+        // 设置选中的拼图块
+        dispatch({ type: "SET_SELECTED_PIECE", payload: clickedPieceIndex })
+        // 设置拖动信息
+        dispatch({ 
+          type: "SET_DRAGGING_PIECE", 
+          payload: {
+            index: clickedPieceIndex,
+            startX: x,
+            startY: y,
+          } 
+        })
+        // 播放音效
+        playPieceSelectSound()
+      } else {
+        dispatch({ type: "SET_SELECTED_PIECE", payload: null })
+      }
+    } 
+    else if (e.touches.length === 2 && state.selectedPiece !== null) {
+      // 双指触摸 - 处理旋转
+      const touch1 = e.touches[0]
+      const touch2 = e.touches[1]
+      
+      // 计算两个触摸点形成的角度
+      const angle = calculateAngle(
+        touch1.clientX - rect.left, 
+        touch1.clientY - rect.top,
+        touch2.clientX - rect.left, 
+        touch2.clientY - rect.top
+      )
+      
+      // 保存初始角度用于计算旋转
+      setTouchStartAngle(angle)
+    }
+  }
+
+  // 处理触摸移动事件
+  const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!state.puzzle) return
+    if (!state.isScattered) return
+    
+    e.preventDefault() // 防止滚动
+    e.stopPropagation() // 阻止事件冒泡，防止触发浏览器手势
+    
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const rect = canvas.getBoundingClientRect()
+    
+    if (e.touches.length === 1 && state.draggingPiece) {
+      // 单指拖拽
+      const touch = e.touches[0]
+      const x = touch.clientX - rect.left
+      const y = touch.clientY - rect.top
+      
+      // 计算移动距离
+      const lastX = lastTouchRef.current?.x || state.draggingPiece.startX
+      const lastY = lastTouchRef.current?.y || state.draggingPiece.startY
+      const dx = x - lastX
+      const dy = y - lastY
+      
+      // 更新最后触摸位置
+      lastTouchRef.current = { x, y }
+      
+      // 获取当前拖动的拼图
+      const piece = state.puzzle[state.draggingPiece.index]
+      
+      // 使用边界检查确保拼图在画布内
+      const { constrainedDx, constrainedDy } = ensurePieceInBounds(piece, dx, dy, 15)
+      
+      // 更新拼图位置
+      dispatch({
+        type: "UPDATE_PIECE_POSITION",
+        payload: { index: state.draggingPiece.index, dx: constrainedDx, dy: constrainedDy },
+      })
+    } 
+    else if (e.touches.length === 2 && state.selectedPiece !== null && touchStartAngle !== null) {
+      // 双指旋转
+      const touch1 = e.touches[0]
+      const touch2 = e.touches[1]
+      
+      // 计算当前角度
+      const currentAngle = calculateAngle(
+        touch1.clientX - rect.left, 
+        touch1.clientY - rect.top,
+        touch2.clientX - rect.left, 
+        touch2.clientY - rect.top
+      )
+      
+      // 计算角度差
+      let angleDiff = currentAngle - touchStartAngle
+      
+      // 标准化角度到-180到180之间
+      if (angleDiff > 180) angleDiff -= 360
+      if (angleDiff < -180) angleDiff += 360
+      
+      // 分段旋转 - 每累积5度旋转一次，使用旋转量的符号决定方向
+      if (Math.abs(angleDiff) >= 5) {
+        const clockwise = angleDiff > 0
+        // 添加旋转音效
+        playRotateSound()
+        rotatePiece(clockwise)
+        
+        // 重置起始角度
+        setTouchStartAngle(currentAngle)
+      }
+    }
+  }
+
+  // 处理触摸结束事件
+  const handleTouchEnd = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault(); // 防止iOS上的默认事件
+    e.stopPropagation(); // 阻止事件传播
+    
+    // 检查是否所有触摸点都已结束
+    if (e.touches.length === 0) {
+      // 复用鼠标释放的逻辑处理拖动结束
+      handleMouseUp()
+      
+      // 重置触摸状态
+      lastTouchRef.current = null
+      setTouchStartAngle(null)
+    }
+    // 如果仍有一个触摸点，更新lastTouch为当前位置
+    else if (e.touches.length === 1) {
+      const canvas = canvasRef.current
+      if (!canvas) return
+      
+      const rect = canvas.getBoundingClientRect()
+      const touch = e.touches[0]
+      lastTouchRef.current = { 
+        x: touch.clientX - rect.left, 
+        y: touch.clientY - rect.top 
+      }
+      
+      // 重置旋转状态
+      setTouchStartAngle(null)
+    }
+  }
+
+  // 创建副作用来处理全局文档的触摸事件，防止向下滑动退出全屏
+  useEffect(() => {
+    // 仅在客户端执行
+    if (typeof window === 'undefined') return;
+    
+    // 保存触摸开始位置
+    let touchStartY = 0;
+    
+    // 为iPad特别优化：完全阻止导致退出全屏的手势
+    const handleTouchStart = (e: TouchEvent) => {
+      // 检查是否在全屏模式
+      const isFullscreenActive = !!(
+        document.fullscreenElement || 
+        (document as any).webkitFullscreenElement || 
+        (document as any).mozFullScreenElement || 
+        (document as any).msFullscreenElement
+      );
+      
+      // 仅在全屏模式下处理
+      if (isFullscreenActive) {
+        // 排除按钮和交互元素
+        if (e.target instanceof Element) {
+          const isInteractive = e.target.tagName === 'BUTTON' || 
+                               e.target.closest('button') || 
+                               e.target.tagName === 'INPUT' ||
+                               e.target.tagName === 'SELECT' ||
+                               e.target.hasAttribute('role') && 
+                               ['button', 'checkbox', 'radio', 'switch'].includes(e.target.getAttribute('role') || '') ||
+                               e.target.classList.contains('cursor-pointer');
+          
+          if (isInteractive) return;
+        }
+        
+        // 记录触摸起始位置
+        if (e.touches.length > 0) {
+          touchStartY = e.touches[0].clientY;
+          
+          // 对iOS设备，阻止默认行为以避免触发系统手势
+          if (/(iPad|iPhone|iPod)/i.test(navigator.userAgent)) {
+            e.preventDefault();
+          }
+        }
+      }
+    };
+    
+    const handleTouchMove = (e: TouchEvent) => {
+      // 检查是否在全屏模式
+      const isFullscreenActive = !!(
+        document.fullscreenElement || 
+        (document as any).webkitFullscreenElement || 
+        (document as any).mozFullScreenElement || 
+        (document as any).msFullscreenElement
+      );
+      
+      // 仅在全屏模式下处理
+      if (isFullscreenActive) {
+        // 排除按钮和交互元素
+        if (e.target instanceof Element) {
+          const isInteractive = e.target.tagName === 'BUTTON' || 
+                               e.target.closest('button') || 
+                               e.target.tagName === 'INPUT' ||
+                               e.target.tagName === 'SELECT' ||
+                               e.target.hasAttribute('role') && 
+                               ['button', 'checkbox', 'radio', 'switch'].includes(e.target.getAttribute('role') || '') ||
+                               e.target.classList.contains('cursor-pointer');
+          
+          if (isInteractive) return;
+        }
+        
+        // 确保是单指操作
+        if (e.touches.length === 1) {
+          const currentTouchY = e.touches[0].clientY;
+          const deltaY = currentTouchY - touchStartY;
+          
+          // 任何向下滑动（无论多小）都阻止默认行为
+          if (deltaY > 0) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // 对于iOS设备，重置起始位置避免累积滑动效果
+            if (/(iPad|iPhone|iPod)/i.test(navigator.userAgent)) {
+              touchStartY = currentTouchY;
+            }
+          }
+        }
+      }
+    };
+    
+    // 处理触摸结束，重置状态
+    const handleTouchEnd = () => {
+      touchStartY = 0;
+    };
+    
+    // 添加事件监听器
+    document.addEventListener('touchstart', handleTouchStart, { passive: false });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd);
+    
+    // 清理函数
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, []);
+
   return (
     <div
       ref={containerRef}
@@ -1194,6 +1515,9 @@ export default function PuzzleCanvas() {
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
           className="relative cursor-pointer w-full h-full"
         />
       </div>

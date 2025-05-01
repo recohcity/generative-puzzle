@@ -7,8 +7,8 @@
 ```
 generative-puzzle/
 ├── app/                      # Next.js App Router 文件
-│   ├── globals.css           # 全局样式 (含圆角修复, 玻璃效果)
-│   ├── layout.tsx            # 根布局组件
+│   ├── globals.css           # 全局样式 (含圆角修复, 玻璃效果, 移动端触控优化, 全屏模式增强)
+│   ├── layout.tsx            # 根布局组件 (含移动设备meta标签优化)
 │   └── page.tsx              # 主页面组件 (优化加载体验)
 ├── components/               # UI组件
 │   ├── ui/                   # 基础UI组件 (Shadcn UI)
@@ -20,8 +20,8 @@ generative-puzzle/
 │   ├── loading/              # 加载相关组件
 │   │   ├── LoadingScreen.tsx # 动态加载屏幕组件
 │   │   └── LoadingScreenStatic.tsx # 静态加载屏幕组件
-│   ├── PuzzleCanvas.tsx      # 画布渲染组件 (响应式, 透明背景, 动态阴影)
-│   ├── PuzzleControls.tsx    # 拼图控制组件 (优化文字, 背景音乐控制)
+│   ├── PuzzleCanvas.tsx      # 画布渲染组件 (响应式, 透明背景, 动态阴影, 移动端触控支持, 双指旋转)
+│   ├── PuzzleControls.tsx    # 拼图控制组件 (优化文字, 背景音乐控制, 全屏切换)
 │   ├── ShapeControls.tsx     # 形状控制组件
 │   └── theme-provider.tsx    # 主题提供者组件
 ├── contexts/                 # 状态管理
@@ -50,7 +50,7 @@ generative-puzzle/
     │   ├── cutGenerators.ts  # 切割线生成器
     │   └── puzzleUtils.ts    # 拼图操作工具
     └── rendering/            # 渲染相关工具
-        └── soundEffects.ts   # 音效处理 (含背景音乐控制)
+        └── soundEffects.ts   # 音效处理 (含背景音乐控制, 设备适配音量)
 ```
 
 ## 核心模块说明
@@ -60,8 +60,8 @@ generative-puzzle/
 Next.js 15 应用路由系统的入口点。
 
 - `page.tsx`: 应用的主页面，包含游戏UI的主要布局和优化的加载屏幕逻辑
-- `layout.tsx`: 应用的布局组件，提供全局上下文和主题
-- `globals.css`: 全局样式定义，包括Tailwind CSS基础配置、加载动画、圆角修复和玻璃效果样式
+- `layout.tsx`: 应用的布局组件，提供全局上下文和主题，包含移动设备视口优化和全屏模式增强
+- `globals.css`: 全局样式定义，包括Tailwind CSS基础配置、加载动画、圆角修复、玻璃效果样式、移动端触控优化和全屏控制增强
 
 ### components 目录
 
@@ -69,8 +69,8 @@ Next.js 15 应用路由系统的入口点。
 
 - `loading/LoadingScreen.tsx`: 动态加载页面组件
 - `loading/LoadingScreenStatic.tsx`: 静态加载页面组件
-- `PuzzleCanvas.tsx`: 核心画布组件，处理渲染与交互，支持透明背景、动态拼图阴影和屏幕适配
-- `PuzzleControls.tsx`: 拼图操作控制面板，提供重置、提示、背景音乐开关等功能
+- `PuzzleCanvas.tsx`: 核心画布组件，处理渲染与交互，支持透明背景、动态拼图阴影、屏幕适配、移动端触控操作和双指旋转
+- `PuzzleControls.tsx`: 拼图操作控制面板，提供重置、提示、背景音乐开关、全屏切换等功能
 - `ShapeControls.tsx`: 形状生成控制面板
 - `theme-provider.tsx`: 提供主题切换功能
 - `ui/`: 基于Shadcn UI的基础组件库
@@ -109,11 +109,20 @@ React Context API实现的状态管理。
   - `cutGenerators.ts`: 生成不同类型的切割线
   - `puzzleUtils.ts`: 拼图操作的专用工具
 - `rendering/`: 渲染和视觉效果
-  - `soundEffects.ts`: 音效播放和管理，包含背景音乐的播放、暂停、切换功能
+  - `soundEffects.ts`: 音效播放和管理，包含背景音乐的播放、暂停、切换功能，设备适配音量控制
 - `constants.ts`: 游戏常量定义
 - `helper.ts`: 通用辅助函数
 
 ## 优化项目说明
+
+### 移动端交互优化
+- 添加了移动设备触摸操作支持，实现触摸拖拽、双指旋转等功能
+- 全屏模式增强，防止意外退出全屏的触摸事件处理
+- 针对不同设备类型（iPad/iPhone/Android）的音量自适应调整
+- 添加了touch-action控制，防止浏览器默认的滚动和缩放行为
+- 优化了触摸事件处理，确保按钮和控件在触摸设备上可正常工作
+- 全面优化iPad浏览器体验，防止向下滑动导致退出全屏
+- 添加了移动设备视口meta标签，提供更好的全屏体验
 
 ### 加载体验优化
 
@@ -127,6 +136,7 @@ React Context API实现的状态管理。
 - 画布自动检测并适应屏幕尺寸
 - 响应式布局，支持不同设备尺寸
 - 拼图与屏幕边界的智能碰撞检测
+- 移动设备视口meta标签优化，提供更好的全屏体验
 
 ### 拼图分布优化
 

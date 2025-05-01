@@ -49,6 +49,56 @@ export default function PuzzleTestPage() {
     }
   }, [])
   
+  // 禁用页面滚动效果，解决移动设备上的滚动问题
+  useEffect(() => {
+    // 禁用触摸移动事件的默认行为
+    const preventDefaultTouchMove = (e: TouchEvent) => {
+      e.preventDefault();
+    };
+    
+    // 禁用滚轮事件的默认行为
+    const preventDefaultWheel = (e: WheelEvent) => {
+      e.preventDefault();
+    };
+    
+    // 禁用iOS Safari特有的弹性滚动效果
+    const preventIosOverscroll = (e: Event) => {
+      e.preventDefault();
+    };
+    
+    // 注册全局事件监听器 - 使用passive: false确保可以preventDefault
+    document.addEventListener('touchmove', preventDefaultTouchMove, { passive: false });
+    document.addEventListener('wheel', preventDefaultWheel, { passive: false });
+    document.addEventListener('gesturestart', preventIosOverscroll, { passive: false });
+    
+    // 补充设置，确保在所有设备上禁用滚动
+    document.documentElement.style.overflow = 'hidden';
+    document.documentElement.style.overscrollBehavior = 'none';
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+    document.body.style.position = 'fixed';
+    document.body.style.top = '0';
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.bottom = '0';
+    
+    // 清理函数
+    return () => {
+      document.removeEventListener('touchmove', preventDefaultTouchMove);
+      document.removeEventListener('wheel', preventDefaultWheel);
+      document.removeEventListener('gesturestart', preventIosOverscroll);
+      document.documentElement.style.overflow = '';
+      document.documentElement.style.overscrollBehavior = '';
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.bottom = '';
+    };
+  }, []);
+  
   const handleLoadComplete = () => {
     console.log('加载完成，显示游戏组件')
     setIsLoading(false)

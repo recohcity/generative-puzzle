@@ -75,6 +75,88 @@
   }
 }
 
+/* 阻止移动端拖拽时页面滚动 */
+html, body {
+  overscroll-behavior: none; /* 阻止页面滚动传播到外部容器 */
+  overflow: hidden; /* 阻止页面滚动 */
+  position: fixed; /* 固定位置防止滚动 */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  /* 修改触摸行为设置以允许按钮点击 */
+  touch-action: pan-x pan-y; /* 允许基本的平移触摸操作，但阻止其他手势 */
+  -webkit-overflow-scrolling: touch; /* 使用更标准的设置 */
+  -webkit-user-select: none; /* 禁止用户选择文本以避免相关手势 */
+  -webkit-touch-callout: none; /* 禁止长按链接弹出菜单 */
+}
+
+/* 特定地禁止canvas触摸事件的滚动行为，但允许按钮正常工作 */
+canvas {
+  touch-action: none !important; /* 禁用默认触摸手势，如滑动、缩放等 */
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+
+/* 确保按钮可以正常触摸点击 */
+button, 
+[role="button"],
+.cursor-pointer {
+  touch-action: manipulation !important; /* 允许按钮的点击操作 */
+  -webkit-touch-callout: default !important; /* 允许默认行为 */
+  cursor: pointer !important;
+}
+
+/* 针对iOS全屏模式的特别优化 */
+:fullscreen,
+:-webkit-full-screen,
+:-moz-full-screen {
+  width: 100vw !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  touch-action: none !important;
+  -webkit-overflow-scrolling: none !important;
+  overscroll-behavior: none !important;
+  position: fixed !important;
+}
+
+/* 全屏模式下的容器调整 */
+:fullscreen #root,
+:-webkit-full-screen #root,
+:-moz-full-screen #root,
+:fullscreen main,
+:-webkit-full-screen main,
+:-moz-full-screen main,
+:fullscreen div,
+:-webkit-full-screen div,
+:-moz-full-screen div {
+  width: 100vw !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overscroll-behavior: none !important;
+  -webkit-overflow-scrolling: none !important;
+}
+
+/* 专门针对iPad的全屏优化 */
+@supports (-webkit-touch-callout: none) {
+  /* iOS设备特有的CSS */
+  body:has(:fullscreen),
+  body:has(:-webkit-full-screen) {
+    position: fixed !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+    touch-action: none !important;
+    -webkit-overflow-scrolling: none !important;
+    overscroll-behavior: none !important;
+  }
+}
+
 /* 加载页面动画 */
 @keyframes float {
   0% { transform: translateY(0) rotate(0deg); }
@@ -136,5 +218,15 @@ div[class*="rounded"] {
 /* 增强画布内容在透明背景上的可见性 */
 .cursor-pointer.w-full.h-full {
   mix-blend-mode: lighten;
+}
+
+/* 添加全屏按钮的淡入动画 */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
 }
 
