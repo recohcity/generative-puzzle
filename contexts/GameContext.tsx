@@ -54,6 +54,7 @@ interface GameState {
   isScattered: boolean
   showHint: boolean
   shapeType: ShapeType
+  pendingShapeType: ShapeType | null // 待生成的形状类型
   cutType: CutType
   cutCount: number
   originalPositions: PuzzlePiece[]
@@ -92,6 +93,7 @@ const initialState: GameState = {
   isScattered: false,
   showHint: false,
   shapeType: ShapeType.Polygon,
+  pendingShapeType: null,
   cutType: CutType.Straight,
   cutCount: 1,
   originalPositions: [],
@@ -110,6 +112,7 @@ type GameAction =
   | { type: "SET_IS_SCATTERED"; payload: boolean }
   | { type: "SET_SHOW_HINT"; payload: boolean }
   | { type: "SET_SHAPE_TYPE"; payload: ShapeType }
+  | { type: "SET_SHAPE_TYPE_WITHOUT_REGENERATE"; payload: ShapeType }
   | { type: "SET_CUT_TYPE"; payload: CutType }
   | { type: "SET_CUT_COUNT"; payload: number }
   | { type: "GENERATE_SHAPE" }
@@ -150,7 +153,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case "SET_SHOW_HINT":
       return { ...state, showHint: action.payload }
     case "SET_SHAPE_TYPE":
-      return { ...state, shapeType: action.payload }
+      return { ...state, shapeType: action.payload, pendingShapeType: null }
+    case "SET_SHAPE_TYPE_WITHOUT_REGENERATE":
+      return { ...state, pendingShapeType: action.payload }
     case "SET_CUT_TYPE":
       return { ...state, cutType: action.payload }
     case "SET_CUT_COUNT":
@@ -260,12 +265,15 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const backgroundCanvasRef = useRef<HTMLCanvasElement>(null)
 
   const generateShape = useCallback(() => {
+    // 如果有待生成的形状类型，则使用它
+    const currentShapeType = state.pendingShapeType || state.shapeType;
+    
     // 获取实际画布尺寸以确保形状居中
     if (canvasRef.current) {
       const canvasWidth = canvasRef.current.width
       const canvasHeight = canvasRef.current.height
       // 创建形状时考虑实际画布尺寸
-      const shape = ShapeGenerator.generateShape(state.shapeType)
+      const shape = ShapeGenerator.generateShape(currentShapeType)
       
       // 确保形状居中
       const bounds = shape.reduce(
@@ -296,12 +304,22 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }))
       
       dispatch({ type: "SET_ORIGINAL_SHAPE", payload: centeredShape })
+      
+      // 如果有待生成的形状类型，则更新形状类型
+      if (state.pendingShapeType) {
+        dispatch({ type: "SET_SHAPE_TYPE", payload: state.pendingShapeType })
+      }
     } else {
       // 如果画布引用不可用，使用默认方法
-      const shape = ShapeGenerator.generateShape(state.shapeType)
+      const shape = ShapeGenerator.generateShape(currentShapeType)
       dispatch({ type: "SET_ORIGINAL_SHAPE", payload: shape })
+      
+      // 如果有待生成的形状类型，则更新形状类型
+      if (state.pendingShapeType) {
+        dispatch({ type: "SET_SHAPE_TYPE", payload: state.pendingShapeType })
+      }
     }
-  }, [state.shapeType, canvasRef])
+  }, [state.shapeType, state.pendingShapeType, canvasRef, dispatch])
 
   const generatePuzzle = useCallback(() => {
     if (!state.originalShape) return

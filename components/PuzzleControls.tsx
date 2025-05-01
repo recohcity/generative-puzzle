@@ -88,7 +88,7 @@ export default function PuzzleControls() {
       {/* 切割设置 */}
       <div className="space-y-4">
         <div>
-          <Label htmlFor="cutCount" className="text-sm font-medium mb-3 block text-[#33272A] dark:text-[#FFD5AB]">
+          <Label htmlFor="cutCount" className="text-sm font-medium mb-3 block text-[#FFD5AB]">
             选择切割次数
           </Label>
           <div className="flex justify-between w-full gap-2 mb-1">
@@ -97,10 +97,10 @@ export default function PuzzleControls() {
                 key={num}
                 onClick={() => canModifySettings && handleCutCountChange([num])}
                 className={`
-                  flex-1 aspect-square rounded-lg flex items-center justify-center text-lg transition-all duration-200
+                  flex-1 aspect-square rounded-lg flex items-center justify-center text-lg transition-all duration-200 border-2 shadow-sm
                   ${state.cutCount === num 
-                    ? "bg-[#F68E5F] text-white border-2 border-[#F26419]" 
-                    : "bg-[#3D3852] text-white border-2 border-transparent hover:border-[#504C67]"}
+                    ? "bg-[#F68E5F] text-white border-[#F26419] hover:bg-[#F47B42] hover:border-[#E15A0F] active:bg-[#E15A0F]" 
+                    : "bg-[#3D3852] text-white border-transparent hover:border-[#504C67] hover:bg-[#4D4862] active:bg-[#302B45]"}
                   ${!canModifySettings ? disabledClass : ""}
                 `}
                 aria-label={`选择切割${num}次`}
@@ -110,14 +110,14 @@ export default function PuzzleControls() {
               </button>
             ))}
           </div>
-          <div className="flex justify-between text-xs text-[#F26419] dark:text-[#FFD5AB] px-1 mt-1">
+          <div className="flex justify-between text-xs text-[#F26419] px-1 mt-1">
             <span>简单</span>
             <span>困难</span>
           </div>
         </div>
 
         <div>
-          <Label className="text-sm font-medium block mb-3 text-[#33272A] dark:text-[#FFD5AB]">选择切割类型</Label>
+          <Label className="text-sm font-medium block mb-3 text-[#FFD5AB]">选择切割类型</Label>
           <RadioGroup 
             value={state.cutType} 
             onValueChange={canModifySettings ? handleCutTypeChange : undefined} 
@@ -135,8 +135,8 @@ export default function PuzzleControls() {
                 htmlFor="straight"
                 className={`flex items-center justify-center p-2 border-2 rounded-lg transition-all shadow-sm 
                   ${state.cutType === CutType.Straight 
-                  ? "bg-[#F68E5F] text-white border-[#F26419]" 
-                  : "bg-[#3D3852] text-white border-transparent hover:border-[#504C67]"}
+                  ? "bg-[#F68E5F] text-white border-[#F26419] hover:bg-[#F47B42] hover:border-[#E15A0F] active:bg-[#E15A0F]" 
+                  : "bg-[#3D3852] text-white border-transparent hover:border-[#504C67] hover:bg-[#4D4862] active:bg-[#302B45]"}
                   ${!canModifySettings ? disabledClass : "cursor-pointer"}
                 `}
               >
@@ -154,8 +154,8 @@ export default function PuzzleControls() {
                 htmlFor="diagonal"
                 className={`flex items-center justify-center p-2 border-2 rounded-lg transition-all shadow-sm 
                   ${state.cutType === CutType.Diagonal 
-                  ? "bg-[#F68E5F] text-white border-[#F26419]" 
-                  : "bg-[#3D3852] text-white border-transparent hover:border-[#504C67]"}
+                  ? "bg-[#F68E5F] text-white border-[#F26419] hover:bg-[#F47B42] hover:border-[#E15A0F] active:bg-[#E15A0F]" 
+                  : "bg-[#3D3852] text-white border-transparent hover:border-[#504C67] hover:bg-[#4D4862] active:bg-[#302B45]"}
                   ${!canModifySettings ? disabledClass : "cursor-pointer"}
                 `}
               >
@@ -171,7 +171,7 @@ export default function PuzzleControls() {
         <Button 
           onClick={handleGeneratePuzzle} 
           disabled={!isShapeGenerated || state.isScattered} 
-          className={`w-full bg-[#F68E5F] hover:bg-[#F26419] text-white border-2 border-[#F26419] rounded-xl shadow-md ${(!isShapeGenerated || state.isScattered) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+          className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white border-2 border-[#F26419] hover:border-[#E15A0F] active:bg-[#E15A0F] rounded-xl shadow-md ${(!isShapeGenerated || state.isScattered) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
         >
           <PuzzleIcon className="w-4 h-4 mr-2" />
           切割形状
@@ -180,7 +180,7 @@ export default function PuzzleControls() {
         <Button
           onClick={handleScatterPuzzle}
           disabled={!state.puzzle || state.isScattered}
-          className={`w-full bg-[#F68E5F] hover:bg-[#F26419] text-white border-2 border-[#F26419] rounded-xl shadow-md ${(!state.puzzle || state.isScattered) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+          className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white border-2 border-[#F26419] hover:border-[#E15A0F] active:bg-[#E15A0F] rounded-xl shadow-md ${(!state.puzzle || state.isScattered) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
           variant="ghost"
         >
           <ScatterChart className="w-4 h-4 mr-2" />
@@ -190,7 +190,7 @@ export default function PuzzleControls() {
         <Button 
           onClick={handleResetGame} 
           variant="outline" 
-          className="w-full border-2 border-[#FFD5AB] hover:bg-[#FFF8F0] dark:border-[#504C67] dark:hover:bg-[#3D3852] rounded-xl shadow-md text-[#33272A] dark:text-white"
+          className="w-full bg-[#1E1A2A] hover:bg-[#141022] text-white border-2 border-[#504C67] hover:border-[#706B89] active:bg-[#0F0B19] rounded-xl shadow-md"
         >
           <RefreshCw className="w-4 h-4 mr-2" />
           重置游戏
@@ -207,7 +207,7 @@ export default function PuzzleControls() {
               state.selectedPiece === null ||
               state.completedPieces.includes(state.selectedPiece || -1)
             }
-            className={`w-full h-10 px-0 bg-[#F68E5F] hover:bg-[#F26419] text-white border-2 border-[#F26419] rounded-xl shadow-md 
+            className={`w-full h-10 px-0 bg-[#F68E5F] hover:bg-[#F47B42] text-white border-2 border-[#F26419] hover:border-[#E15A0F] active:bg-[#E15A0F] rounded-xl shadow-md 
               ${!state.isScattered || state.selectedPiece === null || 
                 state.completedPieces.includes(state.selectedPiece || -1) 
                 ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
@@ -220,7 +220,7 @@ export default function PuzzleControls() {
           <Button
             onClick={() => handleRotatePiece(false)}
             disabled={!state.isScattered || state.selectedPiece === null}
-            className={`w-full h-10 px-0 bg-[#F68E5F] hover:bg-[#F26419] text-white border-2 border-[#F26419] rounded-xl shadow-md 
+            className={`w-full h-10 px-0 bg-[#F68E5F] hover:bg-[#F47B42] text-white border-2 border-[#F26419] hover:border-[#E15A0F] active:bg-[#E15A0F] rounded-xl shadow-md 
               ${!state.isScattered || state.selectedPiece === null ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
             title="逆时针旋转"
             variant="ghost"
@@ -231,7 +231,7 @@ export default function PuzzleControls() {
           <Button
             onClick={() => handleRotatePiece(true)}
             disabled={!state.isScattered || state.selectedPiece === null}
-            className={`w-full h-10 px-0 bg-[#F68E5F] hover:bg-[#F26419] text-white border-2 border-[#F26419] rounded-xl shadow-md 
+            className={`w-full h-10 px-0 bg-[#F68E5F] hover:bg-[#F47B42] text-white border-2 border-[#F26419] hover:border-[#E15A0F] active:bg-[#E15A0F] rounded-xl shadow-md 
               ${!state.isScattered || state.selectedPiece === null ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
             title="顺时针旋转"
             variant="ghost"
@@ -242,7 +242,7 @@ export default function PuzzleControls() {
         
         {state.selectedPiece !== null && state.puzzle && (
           <div className="text-center text-sm">
-            <div className="text-[#33272A] dark:text-[#FFD5AB] font-medium">
+            <div className="text-[#FFD5AB] font-medium">
               当前角度: {Math.round(state.puzzle[state.selectedPiece].rotation)}°
             </div>
             <div className="text-xs text-[#F68E5F] mt-1 font-medium">

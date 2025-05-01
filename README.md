@@ -1,4 +1,4 @@
-# Generative Puzzle v1.0.0
+# Generative Puzzle v1.0.1
 
 <div style="display: flex; justify-content: center; gap: 10px;">
   <img src="./public/p1.png" alt="生成式拼图游戏界面1" width="400">
