@@ -13,6 +13,54 @@ export default function LoadingScreen({ onLoadComplete }: LoadingScreenProps) {
   const startTime = useRef(Date.now())
   const preloadStarted = useRef(false)
   
+  // 在移动设备上尝试自动进入全屏
+  useEffect(() => {
+    // 检测是否为移动设备
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      // 设置延迟，确保在用户交互后尝试全屏
+      const tryFullscreen = () => {
+        // 获取根元素
+        const docElement = document.documentElement;
+        
+        if (docElement.requestFullscreen) {
+          docElement.requestFullscreen().catch(err => {
+            console.log('全屏请求被拒绝:', err);
+          });
+        } else if ((docElement as any).webkitRequestFullscreen) {
+          (docElement as any).webkitRequestFullscreen().catch(err => {
+            console.log('WebKit全屏请求被拒绝:', err);
+          });
+        } else if ((docElement as any).msRequestFullscreen) {
+          (docElement as any).msRequestFullscreen().catch(err => {
+            console.log('MS全屏请求被拒绝:', err);
+          });
+        }
+      };
+      
+      // 监听用户交互，以便能够请求全屏
+      const handleUserAction = () => {
+        // 移除所有事件监听器
+        document.removeEventListener('click', handleUserAction);
+        document.removeEventListener('touchstart', handleUserAction);
+        
+        // 尝试进入全屏
+        tryFullscreen();
+      };
+      
+      // 添加事件监听器，等待用户交互
+      document.addEventListener('click', handleUserAction);
+      document.addEventListener('touchstart', handleUserAction);
+      
+      return () => {
+        // 清理事件监听器
+        document.removeEventListener('click', handleUserAction);
+        document.removeEventListener('touchstart', handleUserAction);
+      };
+    }
+  }, []);
+  
   // 预加载主要资源
   useEffect(() => {
     if (preloadStarted.current) return;
@@ -65,7 +113,7 @@ export default function LoadingScreen({ onLoadComplete }: LoadingScreenProps) {
           // 标记加载已完成
           loadingCompleted.current = true;
           
-          // 加载完成后延迟适当时间再进入游戏，不自动进入全屏
+          // 加载完成后延迟适当时间再进入游戏
           setTimeout(() => {
             onLoadComplete();
           }, 800); // 给用户一点时间看到100%加载完成的状态
@@ -76,7 +124,7 @@ export default function LoadingScreen({ onLoadComplete }: LoadingScreenProps) {
         setProgress(100);
         loadingCompleted.current = true;
         
-        // 延迟后进入游戏，不自动进入全屏
+        // 延迟后进入游戏
         setTimeout(() => {
           onLoadComplete();
         }, 800);
@@ -93,7 +141,7 @@ export default function LoadingScreen({ onLoadComplete }: LoadingScreenProps) {
         setProgress(100);
         loadingCompleted.current = true;
         
-        // 超时后进入游戏，不自动进入全屏
+        // 超时后进入游戏
         onLoadComplete();
       }
     }, 4000); // 4秒超时保护
@@ -180,8 +228,8 @@ export default function LoadingScreen({ onLoadComplete }: LoadingScreenProps) {
       ))}
       
       <div className="relative z-10 flex flex-col items-center">
-        <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#F68E5F] to-[#F26419] mb-8 animate-pulse">
-          Generative Puzzle
+        <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#F68E5F] to-[#F26419] mb-8 animate-pulse md:text-6xl text-4xl sm:text-center text-left w-full px-6">
+          Generative<br className="md:hidden" /> Puzzle
         </h1>
         
         <div className="w-80 h-3 bg-[#3D3852] rounded-full overflow-hidden border-2 border-[#504C67]">

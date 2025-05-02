@@ -22,6 +22,10 @@ generative-puzzle/
 │   │   └── LoadingScreenStatic.tsx # 静态加载屏幕组件
 │   ├── PuzzleCanvas.tsx      # 画布渲染组件 (响应式, 透明背景, 动态阴影, 移动端触控支持, 双指旋转)
 │   ├── PuzzleControls.tsx    # 拼图控制组件 (优化文字, 背景音乐控制, 全屏切换)
+│   ├── PuzzleControlsCutCount.tsx  # 切割次数控制组件
+│   ├── PuzzleControlsCutType.tsx   # 切割类型控制组件
+│   ├── PuzzleControlsGamepad.tsx   # 游戏控制组件
+│   ├── PuzzleControlsScatter.tsx   # 拼图散开控制组件
 │   ├── ShapeControls.tsx     # 形状控制组件
 │   └── theme-provider.tsx    # 主题提供者组件
 ├── contexts/                 # 状态管理
@@ -34,8 +38,8 @@ generative-puzzle/
 ├── public/                   # 静态资源
 │   ├── bg.jpg                # 游戏背景图
 │   ├── puzzle-pieces.mp3     # 循环背景音乐
-│   ├── puzzle-preview01.png  # 预览图片1
-│   └── puzzle-preview02.png  # 预览图片2
+│   ├── p1.png                # 预览图片1
+│   └── p2.png                # 预览图片2
 ├── types/                    # 类型定义
 │   └── types.ts              # 共享类型
 └── utils/                    # 游戏逻辑工具
@@ -71,6 +75,10 @@ Next.js 15 应用路由系统的入口点。
 - `loading/LoadingScreenStatic.tsx`: 静态加载页面组件
 - `PuzzleCanvas.tsx`: 核心画布组件，处理渲染与交互，支持透明背景、动态拼图阴影、屏幕适配、移动端触控操作和双指旋转
 - `PuzzleControls.tsx`: 拼图操作控制面板，提供重置、提示、背景音乐开关、全屏切换等功能
+- `PuzzleControlsCutCount.tsx`: 切割次数控制组件，用于设置拼图的切割次数
+- `PuzzleControlsCutType.tsx`: 切割类型控制组件，用于选择直线或斜线切割
+- `PuzzleControlsGamepad.tsx`: 游戏控制组件，包含提示、重置等游戏操作按钮
+- `PuzzleControlsScatter.tsx`: 拼图散开控制组件，用于控制拼图片段的分散与排列
 - `ShapeControls.tsx`: 形状生成控制面板
 - `theme-provider.tsx`: 提供主题切换功能
 - `ui/`: 基于Shadcn UI的基础组件库
@@ -94,7 +102,8 @@ React Context API实现的状态管理。
 
 - `bg.jpg`: 游戏界面的背景图片
 - `puzzle-pieces.mp3`: 游戏的循环背景音乐
-- `puzzle-preview*.png`: 项目预览图片
+- `p1.png`: 项目预览图片1
+- `p2.png`: 项目预览图片2
 
 ### utils 目录
 
@@ -123,6 +132,22 @@ React Context API实现的状态管理。
 - 优化了触摸事件处理，确保按钮和控件在触摸设备上可正常工作
 - 全面优化iPad浏览器体验，防止向下滑动导致退出全屏
 - 添加了移动设备视口meta标签，提供更好的全屏体验
+
+### 手机端特别优化
+- 针对手机竖屏模式做了特别适配，确保游戏界面完全可用
+- 优化了控制面板在竖屏模式下的展示，使所有选项能在较小屏幕上显示
+- 调整了形状显示方式，解决了在手机竖屏模式下形状变形的问题
+- 实现了正方形画布自动计算，保证形状在任何屏幕上都保持比例
+- 增强了边界检测机制，防止拼图移动到屏幕外无法取回
+- 改进触摸旋转提示文本，使用更友好的表述方式
+
+### 拼图散开优化
+- 使用设备检测自动调整拼图分布策略
+- 针对手机端实现螺旋形分布算法，替代原有网格分布
+- 动态计算拼图安全边距，根据屏幕大小和方向自动调整
+- 优化小屏设备的拼图摆放，使用更紧凑的布局
+- 实现智能的边界约束处理，防止拼图放置在屏幕外不可见区域
+- 增加高级碰撞检测，确保每个拼图在旋转后仍然保持在可见区域内
 
 ### 加载体验优化
 

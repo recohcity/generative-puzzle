@@ -269,54 +269,95 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const currentShapeType = state.pendingShapeType || state.shapeType;
     
     // 获取实际画布尺寸以确保形状居中
+    console.log("开始生成形状, 当前类型:", currentShapeType);
+    
     if (canvasRef.current) {
-      const canvasWidth = canvasRef.current.width
-      const canvasHeight = canvasRef.current.height
+      const canvasWidth = canvasRef.current.width;
+      const canvasHeight = canvasRef.current.height;
+      
+      // 日志输出当前画布状态
+      console.log("Canvas尺寸:", canvasWidth, "x", canvasHeight);
+      console.log("使用画布引用生成形状");
+      
+      // 确保画布尺寸有效
+      if (canvasWidth <= 0 || canvasHeight <= 0) {
+        console.warn("画布尺寸无效 - 使用默认值");
+      }
+      
       // 创建形状时考虑实际画布尺寸
-      const shape = ShapeGenerator.generateShape(currentShapeType)
-      
-      // 确保形状居中
-      const bounds = shape.reduce(
-        (acc, point) => ({
-          minX: Math.min(acc.minX, point.x),
-          minY: Math.min(acc.minY, point.y),
-          maxX: Math.max(acc.maxX, point.x),
-          maxY: Math.max(acc.maxY, point.y),
-        }),
-        { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
-      )
-      
-      // 计算形状中心和画布中心之间的差值
-      const shapeCenterX = (bounds.minX + bounds.maxX) / 2
-      const shapeCenterY = (bounds.minY + bounds.maxY) / 2
-      const canvasCenterX = canvasWidth / 2
-      const canvasCenterY = canvasHeight / 2
-      
-      // 计算需要移动的距离
-      const offsetX = canvasCenterX - shapeCenterX
-      const offsetY = canvasCenterY - shapeCenterY
-      
-      // 移动所有点以居中形状
-      const centeredShape = shape.map(point => ({
-        ...point,
-        x: point.x + offsetX,
-        y: point.y + offsetY
-      }))
-      
-      dispatch({ type: "SET_ORIGINAL_SHAPE", payload: centeredShape })
-      
-      // 如果有待生成的形状类型，则更新形状类型
-      if (state.pendingShapeType) {
-        dispatch({ type: "SET_SHAPE_TYPE", payload: state.pendingShapeType })
+      try {
+        // 调用ShapeGenerator生成形状
+        const shape = ShapeGenerator.generateShape(currentShapeType);
+        console.log(`形状生成成功: ${shape.length}个点`);
+        
+        if (shape.length === 0) {
+          console.error("生成的形状没有点");
+          return;
+        }
+        
+        // 确保形状居中
+        const bounds = shape.reduce(
+          (acc, point) => ({
+            minX: Math.min(acc.minX, point.x),
+            minY: Math.min(acc.minY, point.y),
+            maxX: Math.max(acc.maxX, point.x),
+            maxY: Math.max(acc.maxY, point.y),
+          }),
+          { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
+        );
+        
+        // 计算形状中心和画布中心之间的差值
+        const shapeCenterX = (bounds.minX + bounds.maxX) / 2;
+        const shapeCenterY = (bounds.minY + bounds.maxY) / 2;
+        const canvasCenterX = canvasWidth / 2;
+        const canvasCenterY = canvasHeight / 2;
+        
+        // 计算需要移动的距离
+        const offsetX = canvasCenterX - shapeCenterX;
+        const offsetY = canvasCenterY - shapeCenterY;
+        
+        console.log("形状边界:", bounds);
+        console.log("形状中心:", shapeCenterX, shapeCenterY);
+        console.log("画布中心:", canvasCenterX, canvasCenterY);
+        console.log("偏移量:", offsetX, offsetY);
+        
+        // 移动所有点以居中形状
+        const centeredShape = shape.map(point => ({
+          ...point,
+          x: point.x + offsetX,
+          y: point.y + offsetY
+        }));
+        
+        dispatch({ type: "SET_ORIGINAL_SHAPE", payload: centeredShape });
+        
+        // 如果有待生成的形状类型，则更新形状类型
+        if (state.pendingShapeType) {
+          dispatch({ type: "SET_SHAPE_TYPE", payload: state.pendingShapeType });
+        }
+      } catch (error) {
+        console.error("形状生成失败:", error);
       }
     } else {
-      // 如果画布引用不可用，使用默认方法
-      const shape = ShapeGenerator.generateShape(currentShapeType)
-      dispatch({ type: "SET_ORIGINAL_SHAPE", payload: shape })
+      // 如果画布引用不可用，提供详细日志
+      console.warn("画布引用不可用 - 尝试使用默认方法");
       
-      // 如果有待生成的形状类型，则更新形状类型
-      if (state.pendingShapeType) {
-        dispatch({ type: "SET_SHAPE_TYPE", payload: state.pendingShapeType })
+      try {
+        const shape = ShapeGenerator.generateShape(currentShapeType);
+        console.log(`使用默认方法生成形状: ${shape.length}个点`);
+        
+        if (shape.length === 0) {
+          console.error("生成的形状没有点");
+          return;
+        }
+        
+        dispatch({ type: "SET_ORIGINAL_SHAPE", payload: shape });
+        
+        // 如果有待生成的形状类型，则更新形状类型
+        if (state.pendingShapeType) {
+          dispatch({ type: "SET_SHAPE_TYPE", payload: state.pendingShapeType });
+        }
+      } catch (error) {
+        console.error("默认形状生成失败:", error);
       }
     }
   }, [state.shapeType, state.pendingShapeType, canvasRef, dispatch])
@@ -344,6 +385,14 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return
     }
 
+    // 调试输出 - 检查散开前的原始形状状态
+    console.log("散开前状态:", {
+      originalShapeExists: state.originalShape && state.originalShape.length > 0,
+      originalShapePoints: state.originalShape.length,
+      puzzlePieces: state.puzzle.length,
+      canvasSize: { width: state.canvasWidth, height: state.canvasHeight }
+    });
+
     // 传递当前的画布尺寸信息给ScatterPuzzle
     const scatteredPuzzle = ScatterPuzzle.scatterPuzzle(state.puzzle, {
       canvasWidth: state.canvasWidth,
@@ -355,7 +404,13 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     // 记录散开后的拼图位置
     console.log("Scattered puzzle pieces:", scatteredPuzzle.length);
-  }, [state.puzzle, state.isScattered, state.canvasWidth, state.canvasHeight, dispatch])
+    
+    // 调试输出 - 确认散开后原始形状仍然存在
+    console.log("散开后状态:", {
+      originalShapeExists: state.originalShape && state.originalShape.length > 0,
+      originalShapePoints: state.originalShape.length
+    });
+  }, [state.puzzle, state.isScattered, state.canvasWidth, state.canvasHeight, state.originalShape, dispatch])
 
   const rotatePiece = useCallback(
     (clockwise: boolean) => {
@@ -451,53 +506,76 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return { minX, maxX, minY, maxY, width, height, centerX, centerY };
   }, []);
   
-  // 确保拼图在画布范围内的函数
-  const ensurePieceInBounds = useCallback((piece: PuzzlePiece, dx: number, dy: number, safeMargin = 15): { constrainedDx: number, constrainedDy: number } => {
+  // 添加边界约束函数
+  const ensurePieceInBounds = useCallback((piece: PuzzlePiece, dx: number, dy: number, safeMargin: number = 10): { constrainedDx: number, constrainedDy: number } => {
     const bounds = calculatePieceBounds(piece);
     
-    // 确保使用最新的画布尺寸
-    const { canvasWidth = 800, canvasHeight = 600 } = state;
+    // 如果未设置画布尺寸，则不应用约束
+    if (!state.canvasWidth || !state.canvasHeight) {
+      console.warn("Canvas size not set, cannot constrain piece");
+      return { constrainedDx: dx, constrainedDy: dy };
+    }
     
-    // 计算新位置时拼图的边缘坐标
+    // 计算预期的新位置
     const newMinX = bounds.minX + dx;
     const newMaxX = bounds.maxX + dx;
     const newMinY = bounds.minY + dy;
     const newMaxY = bounds.maxY + dy;
     
-    // 初始化约束后的移动距离
+    // 添加安全边距，确保拼图不会完全移出视图
+    const canvasBounds = {
+      minX: safeMargin,
+      maxX: state.canvasWidth - safeMargin,
+      minY: safeMargin,
+      maxY: state.canvasHeight - safeMargin
+    };
+    
+    // 计算约束后的移动距离
     let constrainedDx = dx;
     let constrainedDy = dy;
     
-    // 左边缘约束
-    if (newMinX < safeMargin) {
-      constrainedDx = safeMargin - bounds.minX;
+    // 水平约束 - 确保至少有一部分拼图仍然可见
+    if (newMaxX < canvasBounds.minX) {
+      // 如果整个拼图都超出了左边界，则约束到左边界
+      constrainedDx = canvasBounds.minX - bounds.maxX;
+    } else if (newMinX > canvasBounds.maxX) {
+      // 如果整个拼图都超出了右边界，则约束到右边界
+      constrainedDx = canvasBounds.maxX - bounds.minX;
     }
     
-    // 右边缘约束
-    if (newMaxX > canvasWidth - safeMargin) {
-      constrainedDx = (canvasWidth - safeMargin) - bounds.maxX;
-    }
-    
-    // 上边缘约束
-    if (newMinY < safeMargin) {
-      constrainedDy = safeMargin - bounds.minY;
-    }
-    
-    // 下边缘约束
-    if (newMaxY > canvasHeight - safeMargin) {
-      constrainedDy = (canvasHeight - safeMargin) - bounds.maxY;
+    // 垂直约束 - 确保至少有一部分拼图仍然可见
+    if (newMaxY < canvasBounds.minY) {
+      // 如果整个拼图都超出了上边界，则约束到上边界
+      constrainedDy = canvasBounds.minY - bounds.maxY;
+    } else if (newMinY > canvasBounds.maxY) {
+      // 如果整个拼图都超出了下边界，则约束到下边界
+      constrainedDy = canvasBounds.maxY - bounds.minY;
     }
     
     return { constrainedDx, constrainedDy };
-  }, [state, calculatePieceBounds]);
+  }, [calculatePieceBounds, state.canvasWidth, state.canvasHeight]);
   
-  // 更新画布尺寸的函数
+  // 添加updateCanvasSize函数用于更新画布尺寸
   const updateCanvasSize = useCallback((width: number, height: number) => {
-    dispatch({ 
-      type: "UPDATE_CANVAS_SIZE", 
-      payload: { width, height } 
-    });
-  }, [dispatch]);
+    console.log(`更新GameContext中的画布尺寸: ${width}x${height}`);
+    
+    // 至少确保有一个最小尺寸
+    const finalWidth = Math.max(width, 300);
+    const finalHeight = Math.max(height, 200);
+    
+    // 如果尺寸发生变化，则更新状态
+    if (finalWidth !== state.canvasWidth || finalHeight !== state.canvasHeight) {
+      dispatch({
+        type: "UPDATE_CANVAS_SIZE",
+        payload: { width: finalWidth, height: finalHeight }
+      });
+      
+      // 如果已经有形状，则需要考虑调整形状位置以适应新的画布尺寸
+      if (state.originalShape.length > 0) {
+        console.log("画布尺寸变化，考虑调整形状位置");
+      }
+    }
+  }, [dispatch, state.canvasWidth, state.canvasHeight, state.originalShape.length]);
 
   // 组装上下文值，添加resetGame函数
   const contextValue: GameContextProps = {

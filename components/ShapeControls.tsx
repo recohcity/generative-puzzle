@@ -4,9 +4,31 @@ import { Button } from "@/components/ui/button"
 import { Check, Hexagon, Circle, CloudyIcon as BlobIcon } from "lucide-react"
 import { ShapeType } from "@/types/types"
 import { playButtonClickSound } from "@/utils/rendering/soundEffects"
+import { useState, useEffect } from "react"
 
-export default function ShapeControls() {
+interface ShapeControlsProps {
+  goToNextTab?: () => void;
+}
+
+export default function ShapeControls({ goToNextTab }: ShapeControlsProps) {
   const { state, dispatch, generateShape } = useGame()
+
+  // 检测设备类型
+  const [isPhone, setIsPhone] = useState(false);
+  
+  // 设备检测
+  useEffect(() => {
+    const checkDevice = () => {
+      const ua = navigator.userAgent;
+      const isMobile = /iPhone|Android/i.test(ua);
+      const isPortrait = window.innerHeight > window.innerWidth;
+      setIsPhone(isMobile && isPortrait);
+    };
+    
+    checkDevice();
+    window.addEventListener('resize', checkDevice);
+    return () => window.removeEventListener('resize', checkDevice);
+  }, []);
 
   // 获取当前活跃的形状类型（无论是实际使用的还是待使用的）
   const activeShapeType = state.pendingShapeType || state.shapeType
@@ -33,16 +55,22 @@ export default function ShapeControls() {
   const handleGenerateShape = () => {
     playButtonClickSound()
     generateShape()
+    // 生成形状后自动跳转到下一个tab
+    if (goToNextTab) {
+      setTimeout(() => {
+        goToNextTab()
+      }, 300)
+    }
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div>
         <div className="grid grid-cols-3 gap-2">
           <Button
             variant="ghost"
             className={`
-              flex flex-col items-center justify-center py-3 h-auto gap-2 rounded-lg border-2 shadow-sm transition-all duration-200
+              flex flex-col items-center justify-center ${isPhone ? 'py-2' : 'py-3'} h-auto gap-1 rounded-lg border-2 shadow-sm transition-all duration-200
               ${activeShapeType === ShapeType.Polygon 
                 ? "bg-[#F68E5F] text-white border-[#F26419] hover:bg-[#F47B42] hover:border-[#E15A0F] active:bg-[#E15A0F]" 
                 : "bg-[#3D3852] text-white border-transparent hover:border-[#504C67] hover:bg-[#4D4862] active:bg-[#302B45]"}
@@ -52,15 +80,15 @@ export default function ShapeControls() {
             disabled={state.puzzle !== null}
           >
             <Hexagon
-              className="w-6 h-6 text-white"
+              className={`${isPhone ? 'w-5 h-5' : 'w-6 h-6'} text-white`}
             />
-            <span className="text-xs">多边形</span>
+            <span className={`${isPhone ? 'text-[10px]' : 'text-xs'}`}>多边形</span>
           </Button>
 
           <Button
             variant="ghost"
             className={`
-              flex flex-col items-center justify-center py-3 h-auto gap-2 rounded-lg border-2 shadow-sm transition-all duration-200
+              flex flex-col items-center justify-center ${isPhone ? 'py-2' : 'py-3'} h-auto gap-1 rounded-lg border-2 shadow-sm transition-all duration-200
               ${activeShapeType === ShapeType.Curve 
                 ? "bg-[#F68E5F] text-white border-[#F26419] hover:bg-[#F47B42] hover:border-[#E15A0F] active:bg-[#E15A0F]" 
                 : "bg-[#3D3852] text-white border-transparent hover:border-[#504C67] hover:bg-[#4D4862] active:bg-[#302B45]"}
@@ -70,15 +98,15 @@ export default function ShapeControls() {
             disabled={state.puzzle !== null}
           >
             <Circle
-              className="w-6 h-6 text-white"
+              className={`${isPhone ? 'w-5 h-5' : 'w-6 h-6'} text-white`}
             />
-            <span className="text-xs">曲凸形状</span>
+            <span className={`${isPhone ? 'text-[10px]' : 'text-xs'}`}>曲凸形状</span>
           </Button>
 
           <Button
             variant="ghost"
             className={`
-              flex flex-col items-center justify-center py-3 h-auto gap-2 rounded-lg border-2 shadow-sm transition-all duration-200
+              flex flex-col items-center justify-center ${isPhone ? 'py-2' : 'py-3'} h-auto gap-1 rounded-lg border-2 shadow-sm transition-all duration-200
               ${activeShapeType === ShapeType.Circle 
                 ? "bg-[#F68E5F] text-white border-[#F26419] hover:bg-[#F47B42] hover:border-[#E15A0F] active:bg-[#E15A0F]" 
                 : "bg-[#3D3852] text-white border-transparent hover:border-[#504C67] hover:bg-[#4D4862] active:bg-[#302B45]"}
@@ -88,16 +116,16 @@ export default function ShapeControls() {
             disabled={state.puzzle !== null}
           >
             <BlobIcon
-              className="w-6 h-6 text-white"
+              className={`${isPhone ? 'w-5 h-5' : 'w-6 h-6'} text-white`}
             />
-            <span className="text-xs">云朵形状</span>
+            <span className={`${isPhone ? 'text-[10px]' : 'text-xs'}`}>云朵形状</span>
           </Button>
         </div>
       </div>
 
       <Button 
         onClick={handleGenerateShape} 
-        className="w-full bg-[#36B37E] hover:bg-[#00875A] text-white border-2 border-[#00875A] rounded-xl shadow-md font-medium disabled:opacity-30 disabled:hover:bg-[#36B37E] active:bg-[#00734D]"
+        className={`w-full ${isPhone ? 'py-1.5 text-xs' : ''} bg-[#36B37E] hover:bg-[#00875A] text-white border-2 border-[#00875A] rounded-xl shadow-md font-medium disabled:opacity-30 disabled:hover:bg-[#36B37E] active:bg-[#00734D]`}
         disabled={state.puzzle !== null}
       >
         {state.originalShape.length > 0 ? "重新生成形状" : "生成形状"}

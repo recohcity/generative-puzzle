@@ -65,8 +65,8 @@ export default function LoadingScreenStatic() {
       />
       
       <div className="relative z-10 flex flex-col items-center">
-        <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#F68E5F] to-[#F26419] mb-8 animate-pulse">
-          Generative Puzzle
+        <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#F68E5F] to-[#F26419] mb-8 animate-pulse md:text-6xl text-4xl sm:text-center text-left w-full px-6">
+          Generative<br className="md:hidden" /> Puzzle
         </h1>
         
         <div className="w-80 h-3 bg-[#3D3852] rounded-full overflow-hidden border-2 border-[#504C67]">

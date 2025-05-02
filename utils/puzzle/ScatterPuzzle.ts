@@ -23,24 +23,20 @@ interface GameContextState {
 
 export class ScatterPuzzle {
   static scatterPuzzle(pieces: PuzzlePiece[], contextState?: GameContextState): PuzzlePiece[] {
-    // 优先使用GameContext中的画布尺寸信息
+    // 获取画布尺寸信息
     let canvasWidth = contextState?.canvasWidth || 800;
     let canvasHeight = contextState?.canvasHeight || 600;
     
     try {
-      // 只有在没有提供GameContext尺寸时才尝试从DOM获取
+      // 尝试获取画布尺寸（如果没有提供）
       if (!contextState?.canvasWidth || !contextState?.canvasHeight) {
-        // 使用类型安全的方法获取画布元素
         const canvasElements = Array.from(document.querySelectorAll('canvas'));
-        // 过滤非空画布并转换为HTMLCanvasElement
         const validCanvases = canvasElements.filter((canvas): canvas is HTMLCanvasElement => 
           canvas instanceof HTMLCanvasElement);
         
-        // 初始化变量
         let mainCanvas: HTMLCanvasElement | null = null;
         let maxArea = 0;
         
-        // 找到最大的画布
         for (const canvas of validCanvases) {
           const area = canvas.width * canvas.height;
           if (area > maxArea) {
@@ -54,7 +50,7 @@ export class ScatterPuzzle {
           canvasHeight = mainCanvas.height;
           console.log(`Using detected canvas: ${canvasWidth}x${canvasHeight}`);
         } else {
-          console.warn("No canvas element found, using default or context dimensions");
+          console.warn("No canvas element found, using default dimensions");
         }
       } else {
         console.log(`Using context canvas: ${canvasWidth}x${canvasHeight}`);
@@ -63,25 +59,56 @@ export class ScatterPuzzle {
       console.error("Error detecting canvas:", e);
     }
     
-    // 更大的安全边距，确保拼图完全在画布内
-    const margin = 100; // 从70增加到100
+    // 检测设备类型和屏幕方向
+    const ua = navigator.userAgent;
+    const isIPhone = /iPhone/i.test(ua);
+    const isAndroid = /Android/i.test(ua);
+    const isMobile = isIPhone || isAndroid;
+    const isPortrait = window.innerHeight > window.innerWidth;
+    const isSmallScreen = canvasWidth < 400 || canvasHeight < 400;
     
-    // 确保有效范围
-    const safeWidth = Math.max(canvasWidth - margin * 2, 400);
-    const safeHeight = Math.max(canvasHeight - margin * 2, 300);
+    console.log(`设备检测: 移动=${isMobile}, 竖屏=${isPortrait}, 小屏幕=${isSmallScreen}`);
+    
+    // 根据设备类型调整安全边距
+    let margin;
+    if (isMobile && isPortrait) {
+      // 竖屏手机模式下使用更小的边距，让拼图更紧凑
+      margin = Math.min(50, Math.floor(canvasWidth * 0.1));
+      console.log(`手机竖屏模式，使用紧凑边距: ${margin}px`);
+    } else if (isSmallScreen) {
+      // 小屏幕设备
+      margin = Math.min(60, Math.floor(canvasWidth * 0.12));
+      console.log(`小屏幕设备，使用中等边距: ${margin}px`);
+    } else {
+      // 普通设备
+      margin = Math.min(80, Math.floor(canvasWidth * 0.15));
+      console.log(`普通设备，使用标准边距: ${margin}px`);
+    }
+    
+    // 确保可用区域
+    const safeWidth = Math.max(canvasWidth - margin * 2, 200);
+    const safeHeight = Math.max(canvasHeight - margin * 2, 200);
 
-    // 创建一个网格，但使用更小的区域来确保不会太靠近边缘
+    // 创建更紧凑的网格
     const gridSize = Math.ceil(Math.sqrt(pieces.length));
-    const cellWidth = safeWidth / gridSize;
-    const cellHeight = safeHeight / gridSize;
+    let cellWidth, cellHeight;
+    
+    if (isMobile && isPortrait) {
+      // 手机竖屏模式下使用更紧凑的网格
+      cellWidth = safeWidth / Math.max(gridSize, 2);
+      cellHeight = safeHeight / Math.max(gridSize, 2);
+    } else {
+      // 普通设备使用标准网格
+      cellWidth = safeWidth / gridSize;
+      cellHeight = safeHeight / gridSize;
+    }
 
-    // 确保我们有拼图数据且不会导致无限循环
+    // 数据验证
     if (!pieces.length) {
       console.warn("ScatterPuzzle: No pieces to scatter");
       return pieces;
     }
 
-    // 检查所有拼图是否有必要的属性
     const validPieces = pieces.every(piece => {
       return piece.points && piece.points.length > 0;
     });
@@ -91,7 +118,7 @@ export class ScatterPuzzle {
       return pieces;
     }
 
-    // 记录起始位置用于调试
+    // 记录画布信息
     console.log(`Canvas size: ${canvasWidth}x${canvasHeight}, Safe area: ${safeWidth}x${safeHeight}, Grid: ${gridSize}x${gridSize}`);
     
     return pieces.map((piece, index) => {
@@ -110,16 +137,27 @@ export class ScatterPuzzle {
         const centerX = (bounds.minX + bounds.maxX) / 2;
         const centerY = (bounds.minY + bounds.maxY) / 2;
         
-        // 计算该拼图所需的安全边距 - 考虑大尺寸拼图可能需要更大边距
-        const pieceSafeMargin = Math.max(margin, 
-                                        Math.ceil(pieceWidth * 0.1), 
-                                        Math.ceil(pieceHeight * 0.1));
+        // 为每个拼图调整安全边距
+        const pieceSafeMargin = isMobile && isPortrait 
+          ? Math.max(margin / 2, Math.ceil(pieceWidth * 0.05), Math.ceil(pieceHeight * 0.05))
+          : Math.max(margin, Math.ceil(pieceWidth * 0.1), Math.ceil(pieceHeight * 0.1));
 
-        // 计算网格位置 - 使用真正居中的位置
-        const gridX = index % gridSize;
-        const gridY = Math.floor(index / gridSize);
+        // 计算网格位置 - 使用不同的拼图分布策略
+        let gridX, gridY;
         
-        // 计算目标位置 - 网格单元格中心，使用画布中心开始布局
+        if (isMobile && isPortrait) {
+          // 竖屏手机模式下使用更均匀的分布
+          // 使用螺旋形分布替代网格，避免重叠
+          const spiralPosition = ScatterPuzzle.getSpiralPosition(index, gridSize);
+          gridX = spiralPosition.x;
+          gridY = spiralPosition.y;
+        } else {
+          // 普通设备使用标准网格
+          gridX = index % gridSize;
+          gridY = Math.floor(index / gridSize);
+        }
+        
+        // 计算目标位置 - 从画布中心开始分布
         const centerOffsetX = (canvasWidth - (cellWidth * gridSize)) / 2;
         const centerOffsetY = (canvasHeight - (cellHeight * gridSize)) / 2;
         
@@ -127,11 +165,11 @@ export class ScatterPuzzle {
         const cellCenterX = centerOffsetX + (gridX * cellWidth) + (cellWidth / 2);
         const cellCenterY = centerOffsetY + (gridY * cellHeight) + (cellHeight / 2);
         
-        // 使用非常小的确定性偏移量，避免所有拼图在格子中心重叠
-        const maxOffsetX = Math.min(cellWidth / 8, 8); 
-        const maxOffsetY = Math.min(cellHeight / 8, 8);
+        // 添加小的随机偏移，避免完全重叠
+        const maxOffsetX = Math.min(cellWidth / 10, 5); 
+        const maxOffsetY = Math.min(cellHeight / 10, 5);
         
-        // 确定性随机偏移
+        // 确定性随机偏移 - 使用更小的偏移量
         const seed = (index + 1) * 37.5;
         const offsetX = Math.cos(seed) * maxOffsetX;
         const offsetY = Math.sin(seed) * maxOffsetY;
@@ -146,11 +184,11 @@ export class ScatterPuzzle {
         const targetMinY = targetY - (centerY - bounds.minY);
         const targetMaxY = targetY + (bounds.maxY - centerY);
         
-        // 初始位置
+        // 初始位置调整
         let adjustedX = targetX;
         let adjustedY = targetY;
         
-        // 强制约束所有边缘都在画布内
+        // 边界约束
         // 左边缘约束
         if (targetMinX < pieceSafeMargin) {
             adjustedX = pieceSafeMargin + (centerX - bounds.minX);
@@ -190,9 +228,16 @@ export class ScatterPuzzle {
           isOriginal: point.isOriginal,
         }));
         
-        // 确认式的旋转选项 - 避免随机旋转
-        const rotationOptions = [0, 90, 180, 270];
-        const rotation = rotationOptions[index % rotationOptions.length];
+        // 旋转逻辑 - 对手机端使用更简单的旋转选择
+        let rotation;
+        if (isMobile) {
+          // 手机端使用简单的90度旋转
+          const rotationOptions = [0, 90, 180, 270];
+          rotation = rotationOptions[index % rotationOptions.length];
+        } else {
+          // 桌面端增加更多变化
+          rotation = Math.floor((index % 8) * 45); // 0, 45, 90, 135, 180, 225, 270, 315
+        }
         
         // 最终边界检查
         const finalBounds = {
@@ -227,6 +272,37 @@ export class ScatterPuzzle {
         return piece; // 返回原始拼图，避免错误导致的中断
       }
     });
+  }
+  
+  // 辅助函数：计算螺旋位置
+  static getSpiralPosition(index: number, size: number): {x: number, y: number} {
+    if (index === 0) return {x: Math.floor(size/2), y: Math.floor(size/2)}; // 中心点
+    
+    let layer = 1;
+    while ((2*layer+1)*(2*layer+1) <= index) {
+      layer++;
+    }
+    
+    const layerStart = (2*(layer-1)+1)*(2*(layer-1)+1);
+    const sideLength = 2 * layer + 1;
+    const sidePosition = index - layerStart;
+    const side = Math.floor(sidePosition / (sideLength - 1));
+    const posInSide = sidePosition % (sideLength - 1);
+    
+    const centerOffset = Math.floor(size/2);
+    
+    switch(side) {
+      case 0: // 上边
+        return {x: centerOffset - layer + posInSide, y: centerOffset - layer};
+      case 1: // 右边
+        return {x: centerOffset + layer, y: centerOffset - layer + posInSide};
+      case 2: // 下边
+        return {x: centerOffset + layer - posInSide, y: centerOffset + layer};
+      case 3: // 左边
+        return {x: centerOffset - layer, y: centerOffset + layer - posInSide};
+      default:
+        return {x: centerOffset, y: centerOffset};
+    }
   }
 }
 

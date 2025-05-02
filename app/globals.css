@@ -230,3 +230,274 @@ div[class*="rounded"] {
   animation: fadeIn 0.5s ease-out forwards;
 }
 
+/* 添加竖屏布局切换样式 */
+.order-swap .order-1 {
+  order: 2 !important;
+}
+
+.order-swap .order-2 {
+  order: 1 !important;
+}
+
+/* 改善移动设备触摸体验 */
+@media (max-width: 768px) {
+  :root {
+    touch-action: none;
+  }
+  
+  html, body {
+    overscroll-behavior: none;
+    touch-action: pan-y;
+  }
+  
+  .prevent-overscroll {
+    overscroll-behavior: none;
+  }
+  
+  /* 竖屏模式下的布局调整 */
+  @media (orientation: portrait) {
+    /* 增加主控制面板的最小高度 */
+    .order-2 {
+      min-height: 50vh !important;
+    }
+    
+    /* 确保画布容器有足够高度 */
+    .order-1 {
+      min-height: 45vh !important;
+    }
+  }
+  
+  /* 交互优化 */
+  canvas {
+    touch-action: none;
+  }
+  
+  /* 移动设备上隐藏鼠标交互的提示文本 */
+  .mouse-hint {
+    display: none;
+  }
+  
+  /* 移动设备上增大按钮点击区域 */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* 确保所有可交互元素有足够的点击范围 */
+  .cursor-pointer {
+    min-height: 32px;
+    min-width: 32px;
+  }
+}
+
+/* 全屏模式下的样式优化 */
+:fullscreen, :fullscreen > div {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+/* 设备特定样式 */
+/* 手机设备样式 */
+.flex-col {
+  /* 默认样式适用于所有设备 */
+  display: flex;
+  gap: 1.5rem;
+}
+
+/* 手机模式下的切换布局时的过渡动画 */
+@media (max-width: 640px) {
+  .flex-col > div {
+    transition: order 0.3s ease-in-out;
+  }
+  
+  /* 用于手机上滑动切换面板的效果 */
+  @keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  
+  @keyframes slideInLeft {
+    from { transform: translateX(-100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  
+  .slide-in-right {
+    animation: slideInRight 0.3s forwards;
+  }
+  
+  .slide-in-left {
+    animation: slideInLeft 0.3s forwards;
+  }
+  
+  /* 手机模式下的标签切换效果 */
+  .tab-content-enter {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  
+  .tab-content-enter-active {
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 300ms, transform 300ms;
+  }
+  
+  .tab-content-exit {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  
+  .tab-content-exit-active {
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: opacity 300ms, transform 300ms;
+  }
+}
+
+/* 解决之前的order-swap样式 */
+.order-swap .order-1 {
+  order: 2 !important;
+}
+
+.order-swap .order-2 {
+  order: 1 !important;
+}
+
+/* 改善移动设备触摸体验 */
+@media (max-width: 768px) {
+  :root {
+    touch-action: none;
+  }
+  
+  html, body {
+    overscroll-behavior: none;
+    touch-action: pan-y;
+  }
+  
+  .prevent-overscroll {
+    overscroll-behavior: none;
+  }
+  
+  /* 竖屏模式下的布局调整 */
+  @media (orientation: portrait) {
+    /* 增加主控制面板的最小高度 */
+    .order-2 {
+      min-height: 50vh !important;
+    }
+    
+    /* 确保画布容器有足够高度 */
+    .order-1 {
+      min-height: 45vh !important;
+    }
+  }
+  
+  /* 交互优化 */
+  canvas {
+    touch-action: none;
+  }
+  
+  /* 移动设备上隐藏鼠标交互的提示文本 */
+  .mouse-hint {
+    display: none;
+  }
+  
+  /* 移动设备上增大按钮点击区域 */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* 确保所有可交互元素有足够的点击范围 */
+  .cursor-pointer {
+    min-height: 32px;
+    min-width: 32px;
+  }
+}
+
+/* 特别针对Safari的样式 */
+@supports (-webkit-touch-callout: none) {
+  /* iOS设备的SVG修复 */
+  svg {
+    stroke-width: inherit !important;
+    stroke-linecap: inherit !important;
+    stroke-linejoin: inherit !important;
+  }
+}
+
+/* 专门为电脑全屏模式优化 */
+@media (min-width: 1024px) {
+  :fullscreen .flex-col, 
+  :-webkit-full-screen .flex-col, 
+  :-moz-full-screen .flex-col {
+    flex-direction: row !important;
+    justify-content: center;
+  }
+  
+  :fullscreen .flex-col > div, 
+  :-webkit-full-screen .flex-col > div, 
+  :-moz-full-screen .flex-col > div {
+    height: calc(100vh - 32px) !important;
+  }
+  
+  :fullscreen .flex-col > div:first-child, 
+  :-webkit-full-screen .flex-col > div:first-child, 
+  :-moz-full-screen .flex-col > div:first-child {
+    width: 350px !important;
+    min-width: 350px !important;
+    flex-shrink: 0 !important;
+    order: 1 !important;
+  }
+  
+  :fullscreen .flex-col > div:nth-child(2), 
+  :-webkit-full-screen .flex-col > div:nth-child(2), 
+  :-moz-full-screen .flex-col > div:nth-child(2) {
+    flex: 1 !important;
+    order: 2 !important;
+  }
+}
+
+/* 修复Safari中SVG属性和固定位置问题 */
+svg {
+  stroke-width: inherit;
+  stroke-linecap: inherit;
+  stroke-linejoin: inherit;
+}
+
+/* 针对Safari浏览器的专门优化 */
+@media not all and (min-resolution:.001dpcm) { 
+  @supports (-webkit-appearance:none) {
+    svg {
+      /* 在Safari中使用驼峰命名的属性 */
+      strokeWidth: inherit;
+      strokeLinecap: inherit;
+      strokeLinejoin: inherit;
+    }
+    
+    /* 解决Safari中的固定定位问题 */
+    .fixed {
+      position: -webkit-sticky;
+      position: sticky;
+      z-index: 50;
+    }
+    
+    /* 针对Safari的全屏优化 */
+    :-webkit-full-screen {
+      width: 100vw !important;
+      height: 100vh !important;
+    }
+  }
+}
+
+/* 添加响应式设计的边界情况处理 */
+@media (min-width: 1024px) and (max-width: 1280px) {
+  /* 针对中等大小屏幕的优化 */
+  .lg\:w-\[350px\] {
+    width: 300px !important;
+  }
+  
+  .lg\:min-w-\[350px\] {
+    min-width: 300px !important;
+  }
+}
+
