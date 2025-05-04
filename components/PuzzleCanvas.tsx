@@ -267,9 +267,19 @@ const drawPuzzle = (
       ctx.restore();
     }
 
-    // 绘制各个拼图片段
+    // 修改渲染顺序：将已完成和未完成的拼图分开绘制
+    // 1. 先绘制已完成的拼图（放在底层）
+    completedPieces.forEach(index => {
+      const piece = pieces[index];
+      drawPiece(ctx, piece, index, true, false, shapeType, isDarkMode, isScattered);
+    });
+    
+    // 2. 再绘制未完成的拼图（放在顶层）
     pieces.forEach((piece, index) => {
-      drawPiece(ctx, piece, index, completedPieces.includes(index), selectedPiece === index, shapeType, isDarkMode, isScattered)
+      // 只绘制未完成的拼图
+      if (!completedPieces.includes(index)) {
+        drawPiece(ctx, piece, index, false, selectedPiece === index, shapeType, isDarkMode, isScattered);
+      }
     });
   }
 }
@@ -295,8 +305,8 @@ const drawPiece = (
   ctx.rotate((piece.rotation * Math.PI) / 180)
   ctx.translate(-center.x, -center.y)
 
-  // 仅当拼图已散开且未完成或被选中时绘制阴影
-  if (isScattered && (!isCompleted || isSelected)) {
+  // 仅当拼图已散开且未完成时绘制阴影，已完成的拼图永远不显示阴影
+  if (isScattered && !isCompleted) {
     ctx.save();
     ctx.beginPath();
     ctx.moveTo(piece.points[0].x, piece.points[0].y);
@@ -330,7 +340,7 @@ const drawPiece = (
       ctx.shadowOffsetY = 5;
     } 
     // 为未完成拼图绘制较小的阴影
-    else if (!isCompleted) {
+    else {
       ctx.shadowColor = isDarkMode ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.3)';
       ctx.shadowBlur = 10;
       ctx.shadowOffsetX = 3;
@@ -409,12 +419,12 @@ const drawPiece = (
 
   ctx.fill()
 
-  // 绘制边框
+  // 绘制边框 - 只为未完成的拼图绘制边框，完成的拼图不绘制边框
   if (!isCompleted) {
-    ctx.strokeStyle = isDarkMode ? "#e2e8f0" : "black"
-
+    ctx.strokeStyle = isDarkMode ? "#e2e8f0" : "white" // 修改为白色轮廓线
+    
     if (isSelected) {
-      ctx.setLineDash([5, 5])
+      ctx.setLineDash([5, 5]) // 选中时使用虚线
       ctx.lineWidth = 2
     } else {
       ctx.setLineDash([])
@@ -549,17 +559,68 @@ function drawStar(ctx: CanvasRenderingContext2D, cx: number, cy: number, spikes:
   ctx.fill()
 }
 
-// 修改完成效果，使用儿童暖色系
+// 修改完成效果，更简洁不遮挡拼图
 const drawCompletionEffect = (ctx: CanvasRenderingContext2D, shape: Point[], shapeType: string) => {
   ctx.save()
 
-  // 绘制柔和的发光效果
-  ctx.shadowColor = "rgba(255, 159, 64, 0.9)" // 暖橙色发光
-  ctx.shadowBlur = 35
-  ctx.strokeStyle = "rgba(255, 159, 64, 0.3)" // 半透明的橙色描边
-  ctx.lineWidth = 10
+  // 计算形状的边界框
+  const bounds = shape.reduce(
+    (acc: {minX: number, maxX: number, minY: number, maxY: number}, point: Point) => ({
+      minX: Math.min(acc.minX, point.x),
+      maxX: Math.max(acc.maxX, point.x),
+      minY: Math.min(acc.minY, point.y),
+      maxY: Math.max(acc.maxY, point.y)
+    }),
+    { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
+  )
 
-  // 绘制原始形状的轮廓
+  const centerX = (bounds.minX + bounds.maxX) / 2
+  const centerY = (bounds.minY + bounds.maxY) / 2
+  
+  // 绘制水平压扁的椭圆阴影，制造悬浮效果
+  ctx.save()
+  
+  // 计算阴影尺寸 - 宽度稍大于形状本身
+  const shapeWidth = bounds.maxX - bounds.minX
+  const shapeHeight = bounds.maxY - bounds.minY
+  const shadowWidthRadius = shapeWidth * 0.65  // 控制阴影的宽度半径
+  const shadowHeightRadius = shapeWidth * 0.2  // 高度比宽度小很多，创造扁平效果
+  
+  // 阴影的位置 - 在形状下方，增加与拼图的距离
+  const shadowX = centerX
+  const shadowY = bounds.maxY + shadowHeightRadius * 1.2  // 显著增加阴影距离，确保不遮挡拼图
+  
+  // 创建渐变 - 从中心向外渐变消失
+  const gradient = ctx.createRadialGradient(
+    shadowX, shadowY, 0,
+    shadowX, shadowY, shadowWidthRadius
+  )
+  
+  // 精细调整渐变过渡，中心稍黑但保持良好羽化
+  gradient.addColorStop(0, 'rgba(0, 0, 0, 0.32)')   // 稍微加深中心点透明度
+  gradient.addColorStop(0.35, 'rgba(0, 0, 0, 0.18)') // 内部区域
+  gradient.addColorStop(0.65, 'rgba(0, 0, 0, 0.07)') // 外围区域
+  gradient.addColorStop(1, 'rgba(0, 0, 0, 0)')      // 边缘完全透明
+  
+  // 保存当前状态以便应用变换
+  ctx.save()
+  
+  // 设置变换矩阵使圆形在垂直方向压扁（扁平比例约0.3）
+  ctx.translate(shadowX, shadowY)
+  ctx.scale(1, 0.3)  // Y轴缩放为原来的0.3倍，创造扁平椭圆
+  ctx.translate(-shadowX, -shadowY)
+  
+  // 应用渐变填充
+  ctx.fillStyle = gradient
+  ctx.beginPath()
+  ctx.arc(shadowX, shadowY, shadowWidthRadius, 0, Math.PI * 2)
+  ctx.fill()
+  
+  // 恢复变换状态
+  ctx.restore()
+  ctx.restore()
+  
+  // 绘制边缘光晕效果（不遮挡形状）
   ctx.beginPath()
   ctx.moveTo(shape[0].x, shape[0].y)
 
@@ -583,103 +644,62 @@ const drawCompletionEffect = (ctx: CanvasRenderingContext2D, shape: Point[], sha
   }
 
   ctx.closePath()
-  ctx.stroke() // 创建阴影效果
-
-  // 画星星和彩带效果
-  const bounds = shape.reduce(
-    (acc: {minX: number, maxX: number, minY: number, maxY: number}, point: Point) => ({
-      minX: Math.min(acc.minX, point.x),
-      maxX: Math.max(acc.maxX, point.x),
-      minY: Math.min(acc.minY, point.y),
-      maxY: Math.max(acc.maxY, point.y)
-    }),
-    { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
-  )
-
-  // 绘制小星星
-  const centerX = (bounds.minX + bounds.maxX) / 2
-  const centerY = (bounds.minY + bounds.maxY) / 2
-  const radius = Math.max(bounds.maxX - bounds.minX, bounds.maxY - bounds.minY) / 2
-
-  // 绘制彩带效果
-  for (let i = 0; i < 15; i++) {
-    const angle = Math.random() * Math.PI * 2
-    const length = radius * (0.5 + Math.random() * 0.5)
-    const startX = centerX
-    const startY = centerY
-    const endX = centerX + Math.cos(angle) * length
-    const endY = centerY + Math.sin(angle) * length
-    
-    // 彩带宽度
-    ctx.lineWidth = 3 + Math.random() * 5
-    
-    // 彩带颜色 - 儿童暖色系
-    const colors = [
-      "#FF9F40", // 橙色
-      "#FF6B6B", // 红色
-      "#FFD166", // 黄色
-      "#F68E5F", // 珊瑚色
-      "#FFB17A", // 浅珊瑚色
-      "#FFE3C1", // 浅橙色
-      "#FFBB7C", // 杏色
-      "#FF8A5B", // 胡萝卜色
-      "#FF785A", // 番茄色
-      "#F26419", // 深橙色
-    ]
-    
-    ctx.strokeStyle = colors[Math.floor(Math.random() * colors.length)]
-    ctx.shadowBlur = 0 // 关闭彩带的阴影
-    
-    // 绘制彩带
-    ctx.beginPath()
-    ctx.moveTo(startX, startY)
-    
-    // 添加随机控制点使彩带弯曲
-    const ctrlX = (startX + endX) / 2 + (Math.random() - 0.5) * 50
-    const ctrlY = (startY + endY) / 2 + (Math.random() - 0.5) * 50
-    ctx.quadraticCurveTo(ctrlX, ctrlY, endX, endY)
-    ctx.stroke()
-  }
   
-  // 绘制小星星
-  for (let i = 0; i < 20; i++) {
-    const x = bounds.minX + Math.random() * (bounds.maxX - bounds.minX)
-    const y = bounds.minY + Math.random() * (bounds.maxY - bounds.minY)
-    const size = 5 + Math.random() * 15
-    
-    // 星星颜色 - 明亮暖色
-    const starColors = ["#FFD700", "#FFA500", "#FF8C00", "#FFE3C1", "#FFFACD"]
-    ctx.fillStyle = starColors[Math.floor(Math.random() * starColors.length)]
-    
-    // 画星星
-    drawStar(ctx, x, y, 5, size / 2, size)
-  }
-
-  // 绘制完成文本
+  // 绘制金色光晕边框，减小宽度
+  ctx.strokeStyle = "rgba(255, 215, 0, 0.7)"  // 金色光晕
+  ctx.lineWidth = 5  // 减小边框宽度
+  ctx.shadowColor = "rgba(255, 215, 0, 0.8)" 
+  ctx.shadowBlur = 15  // 稍微减小光晕模糊半径
+  ctx.stroke()
+  
+  // 重置阴影效果
   ctx.shadowBlur = 0
-  ctx.font = "bold 36px 'Comic Sans MS', cursive, sans-serif" // 使用更活泼的字体
+  
+  // 绘制完成文本 - 使用更精确的字体堆栈
+  const fontSize = Math.min(36, Math.max(24, ctx.canvas.width / 15)); // 根据画布宽度自适应字体大小
+  ctx.font = `bold ${fontSize}px 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'STHeiti', 'SimHei', 'WenQuanYi Micro Hei', sans-serif`
   ctx.textAlign = "center"
   ctx.textBaseline = "middle"
-
-  // 文本 - 使用多彩文字
-  const canvasCenterX = ctx.canvas.width / 2
-  const textY = bounds.minY - 40; // 40 pixels above the top of the shape
-  const finalY = Math.max(50, textY); // Ensure at least 50px margin from the canvas top
   
-  // 文字阴影
-  ctx.shadowColor = "rgba(0, 0, 0, 0.3)"
-  ctx.shadowBlur = 5
+  // 文本位置 - 移到形状上方，避免遮挡
+  const textY = bounds.minY - 40
+  const finalY = Math.max(50, textY)
+  const completeText = "你好犀利吖!"
+  
+  // 多层渲染技术，确保在所有设备上的一致性
+  // 1. 外发光效果 - 较大模糊
+  ctx.shadowColor = "rgba(255, 140, 0, 0.7)" // 橙色发光
+  ctx.shadowBlur = 12
+  ctx.shadowOffsetX = 0
+  ctx.shadowOffsetY = 0
+  ctx.fillStyle = "rgba(255, 215, 0, 0.4)" // 半透明金色
+  ctx.fillText(completeText, centerX, finalY)
+  
+  // 2. 描边阴影 - 增加深度
+  ctx.shadowColor = "rgba(0, 0, 0, 0.7)"
+  ctx.shadowBlur = 3
   ctx.shadowOffsetX = 2
   ctx.shadowOffsetY = 2
+  ctx.strokeStyle = "#FF7700" // 亮橙色
+  ctx.lineWidth = Math.max(3, fontSize / 12) // 根据字体大小比例设置描边宽度
+  ctx.strokeText(completeText, centerX, finalY)
   
-  // 文字描边
-  ctx.strokeStyle = "#F26419"
-  ctx.lineWidth = 6
-  ctx.strokeText("你好犀利吖!", canvasCenterX, finalY)
+  // 3. 清除阴影，绘制主体文字
+  ctx.shadowColor = "transparent"
+  ctx.shadowBlur = 0
+  ctx.shadowOffsetX = 0
+  ctx.shadowOffsetY = 0
   
-  // 文字填充
-  ctx.fillStyle = "#FFD166"
-  ctx.fillText("你好犀利吖!", canvasCenterX, finalY)
+  // 4. 渐变填充效果
+  const textGradient = ctx.createLinearGradient(
+    centerX, finalY - fontSize/2,
+    centerX, finalY + fontSize/2
+  );
+  textGradient.addColorStop(0, "#FFD700"); // 金色顶部
+  textGradient.addColorStop(0.5, "#FFCC00"); // 中间色
+  textGradient.addColorStop(1, "#FF9500"); // 橙色底部
+  ctx.fillStyle = textGradient;
+  ctx.fillText(completeText, centerX, finalY);
 
   ctx.restore()
 }
@@ -738,26 +758,17 @@ export default function PuzzleCanvas() {
     console.log(`设备信息: iPhone=${isIPhone}, iPad=${isIPad}, Android=${isAndroid}, 竖屏=${isPortrait}, 屏幕=${screenWidth}x${screenHeight}`);
 
     if (isMobile && isPortrait) {
-      // 移动设备竖屏模式 - 使用更接近正方形的画布，确保形状不变形
-      if (screenWidth < 375) {
-        // 非常小的屏幕（如iPhone SE等）
-        const minDimension = Math.min(containerWidth, containerHeight, 300);
-        canvasWidth = minDimension;
-        canvasHeight = minDimension;
-        console.log("小屏幕移动设备，使用1:1画布:", canvasWidth, "x", canvasHeight);
-      } else if (screenWidth < 414) {
-        // 标准手机屏幕（如iPhone X等）
-        const minDimension = Math.min(containerWidth, containerHeight, 350);
-        canvasWidth = minDimension;
-        canvasHeight = minDimension;
-        console.log("标准移动设备，使用1:1画布:", canvasWidth, "x", canvasHeight);
-      } else {
-        // 大屏手机（如iPhone Pro Max等）
-        const minDimension = Math.min(containerWidth, containerHeight, 400);
-        canvasWidth = minDimension;
-        canvasHeight = minDimension;
-        console.log("大屏移动设备，使用1:1画布:", canvasWidth, "x", canvasHeight);
-      }
+      // 移动设备竖屏模式 - 使用严格的正方形画布，保持较小尺寸以确保拼图完全可见
+      // 获取容器的较小边作为画布的宽高，确保是正方形
+      const minDimension = Math.min(containerWidth, containerHeight);
+      // 进一步限制最大尺寸，确保不会过大导致拼图超出屏幕
+      const maxSize = Math.min(minDimension, 
+                             isIPhone ? 320 : 360, // iPhone设备上使用更保守的尺寸
+                             Math.min(screenWidth, screenHeight) * 0.9); // 确保不超过屏幕较小边的90%
+                             
+      canvasWidth = maxSize;
+      canvasHeight = maxSize;
+      console.log("移动设备竖屏模式，强制使用严格限制的1:1正方形画布:", canvasWidth, "x", canvasHeight);
     } else if (isIPad || (screenWidth < 1024 && screenHeight < 1024)) {
       // iPad或平板设备
       const aspectRatio = containerWidth / containerHeight;
@@ -844,26 +855,17 @@ export default function PuzzleCanvas() {
       let newWidth, newHeight
       
       if (isMobile && isPortrait) {
-        // 移动设备竖屏模式 - 使用更接近正方形的画布，确保形状不变形
-        if (screenWidth < 375) {
-          // 非常小的屏幕（如iPhone SE等）
-          const minDimension = Math.min(containerWidth, containerHeight, 300);
-          newWidth = minDimension;
-          newHeight = minDimension;
-          console.log("小屏幕移动设备，使用1:1画布:", newWidth, "x", newHeight);
-        } else if (screenWidth < 414) {
-          // 标准手机屏幕（如iPhone X等）
-          const minDimension = Math.min(containerWidth, containerHeight, 350);
-          newWidth = minDimension;
-          newHeight = minDimension;
-          console.log("标准移动设备，使用1:1画布:", newWidth, "x", newHeight);
-        } else {
-          // 大屏手机（如iPhone Pro Max等）
-          const minDimension = Math.min(containerWidth, containerHeight, 400);
-          newWidth = minDimension;
-          newHeight = minDimension;
-          console.log("大屏移动设备，使用1:1画布:", newWidth, "x", newHeight);
-        }
+        // 移动设备竖屏模式 - 使用严格的正方形画布，并保持较小尺寸
+        // 获取容器的较小边作为画布的宽高，确保是正方形
+        const minDimension = Math.min(containerWidth, containerHeight);
+        // 进一步限制最大尺寸
+        const maxSize = Math.min(minDimension, 
+                               isIPhone ? 320 : 360, // iPhone设备上使用更保守的尺寸
+                               Math.min(screenWidth, screenHeight) * 0.9); // 确保不超过屏幕较小边的90%
+                               
+        newWidth = maxSize;
+        newHeight = maxSize;
+        console.log("移动设备竖屏模式，强制使用严格限制的1:1正方形画布:", newWidth, "x", newHeight);
       } else if (isIPad || (screenWidth < 1024 && screenHeight < 1024)) {
         // iPad或平板设备
         const aspectRatio = containerWidth / containerHeight;
@@ -1147,9 +1149,8 @@ export default function PuzzleCanvas() {
 
       // 播放音效
       playPieceSelectSound();
-    } else {
-      dispatch({ type: "SET_SELECTED_PIECE", payload: null })
     }
+    // 不再点击空白区域时清除选中状态
   }
 
   // 鼠标移动事件
@@ -1216,7 +1217,7 @@ export default function PuzzleCanvas() {
       360 - Math.abs(pieceRotation - originalRotation)
     );
     
-    const isRotationCorrect = rotationDiff < 10; // 允许10度误差
+    const isRotationCorrect = rotationDiff < 15; // 允许15度误差，适配旋转按钮15度的增量
 
     if (isRotationCorrect) {
       // 计算中心点
@@ -1237,19 +1238,187 @@ export default function PuzzleCanvas() {
       dispatch({ type: "RESET_PIECE_TO_ORIGINAL", payload: pieceIndex })
       dispatch({ type: "ADD_COMPLETED_PIECE", payload: pieceIndex })
       
+      // 强制清除选中状态 - 放在添加完成拼图之后
+      dispatch({ type: "SET_SELECTED_PIECE", payload: null })
+      setIsDragging(false)
+      
       // 播放拼图吸附音效
       playPieceSnapSound()
+      
+      // 添加视觉反馈 - 在拼图完成位置显示闪光效果
+      if (canvasRef.current) {
+        const ctx = canvasRef.current.getContext('2d');
+        if (ctx) {
+          // 保存当前绘图状态
+          ctx.save();
+          
+          // 清空画布并重新绘制所有拼图（确保选中状态被清除）
+          ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+          
+          // 立即重绘拼图 - 确保没有选中状态
+          if (state.puzzle) {
+            drawPuzzle(
+              ctx,
+              state.puzzle,
+              [...state.completedPieces, pieceIndex], // 确保包含刚完成的拼图
+              null, // 强制不选中任何拼图
+              state.shapeType,
+              isDarkMode,
+              state.originalShape,
+              state.isScattered
+            );
+          }
+          
+          // 绘制白色闪光
+          const center = calculateCenter(originalPiece.points);
+          const radius = Math.max(originalPiece.points.reduce((max, p) => 
+            Math.max(max, Math.hypot(p.x - center.x, p.y - center.y)), 0) * 1.5, 30);
+          
+          // 创建径向渐变
+          const gradient = ctx.createRadialGradient(
+            center.x, center.y, 0,
+            center.x, center.y, radius
+          );
+          gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+          gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.5)');
+          gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+          
+          ctx.fillStyle = gradient;
+          ctx.globalCompositeOperation = 'lighter';
+          
+          // 绘制圆形闪光
+          ctx.beginPath();
+          ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // 恢复原来的绘图状态
+          ctx.restore();
+          
+          // 使用动画缩小闪光效果
+          let animationStep = 0;
+          const animateFlash = () => {
+            if (animationStep >= 10) return;
+            
+            animationFrameRef.current = requestAnimationFrame(() => {
+              ctx.save();
+              ctx.clearRect(0, 0, canvasRef.current!.width, canvasRef.current!.height);
+              
+              // 重新绘制所有拼图（确保不会只有闪光效果）
+              if (state.puzzle) {
+                drawPuzzle(
+                  ctx,
+                  state.puzzle,
+                  [...state.completedPieces, pieceIndex], // 包含刚完成的拼图
+                  null, // 强制不选中任何拼图
+                  state.shapeType,
+                  isDarkMode,
+                  state.originalShape,
+                  state.isScattered
+                );
+              }
+              
+              // 绘制逐渐消失的闪光
+              const fadeOutRadius = radius * (1 - animationStep / 10);
+              const fadeOutOpacity = 0.8 * (1 - animationStep / 10);
+              
+              const fadeGradient = ctx.createRadialGradient(
+                center.x, center.y, 0,
+                center.x, center.y, fadeOutRadius
+              );
+              fadeGradient.addColorStop(0, `rgba(255, 255, 255, ${fadeOutOpacity})`);
+              fadeGradient.addColorStop(0.5, `rgba(255, 255, 255, ${fadeOutOpacity/2})`);
+              fadeGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+              
+              ctx.fillStyle = fadeGradient;
+              ctx.globalCompositeOperation = 'lighter';
+              
+              ctx.beginPath();
+              ctx.arc(center.x, center.y, fadeOutRadius, 0, Math.PI * 2);
+              ctx.fill();
+              
+              ctx.restore();
+              
+              animationStep++;
+              if (animationStep < 10) {
+                animateFlash();
+              } else {
+                // 动画结束后，再次强制重绘以确保状态正确
+                ctx.clearRect(0, 0, canvasRef.current!.width, canvasRef.current!.height);
+                if (state.puzzle) {
+                  drawPuzzle(
+                    ctx,
+                    state.puzzle,
+                    [...state.completedPieces, pieceIndex],
+                    null,
+                    state.shapeType,
+                    isDarkMode,
+                    state.originalShape,
+                    state.isScattered
+                  );
+                }
+              }
+            });
+          };
+          
+          // 开始闪光动画
+          animateFlash();
+        }
+      }
 
       // 检查是否所有拼图都已完成
       // Check puzzle again before accessing length
       if (state.puzzle && state.completedPieces.length + 1 >= state.puzzle.length) {
-        // 延迟一帧，确保所有拼图都已经渲染到正确位置
+        // 先播放完成音效
+        playPuzzleCompletedSound();
+        
+        // 等待闪光动画完成后再显示游戏完成效果
         setTimeout(() => {
-          dispatch({ type: "SET_IS_COMPLETED", payload: true })
-
-          // 播放完成音效
-          playPuzzleCompletedSound()
-        }, 50)
+          // 设置游戏为完成状态
+          dispatch({ type: "SET_IS_COMPLETED", payload: true });
+          
+          // 强制重绘游戏完成状态
+          if (canvasRef.current) {
+            const completeCtx = canvasRef.current.getContext('2d');
+            if (completeCtx && state.originalShape) {
+              // 清空画布
+              completeCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+              
+              // 绘制完整形状
+              completeCtx.beginPath();
+              completeCtx.moveTo(state.originalShape[0].x, state.originalShape[0].y);
+              
+              if (state.shapeType === "polygon") {
+                // 多边形使用直线
+                state.originalShape.forEach((point: Point) => {
+                  completeCtx.lineTo(point.x, point.y);
+                });
+              } else {
+                // 曲线形状使用贝塞尔曲线
+                for (let i = 1; i < state.originalShape.length; i++) {
+                  const prev = state.originalShape[i - 1];
+                  const current = state.originalShape[i];
+                  const next = state.originalShape[(i + 1) % state.originalShape.length];
+                  
+                  const midX = (prev.x + current.x) / 2;
+                  const midY = (prev.y + current.y) / 2;
+                  const nextMidX = (current.x + next.x) / 2;
+                  const nextMidY = (current.y + next.y) / 2;
+                  
+                  completeCtx.quadraticCurveTo(current.x, current.y, nextMidX, nextMidY);
+                }
+              }
+              
+              completeCtx.closePath();
+              
+              // 填充完整形状
+              completeCtx.fillStyle = isDarkMode ? "rgba(242, 100, 25, 0.8)" : "rgba(255, 211, 101, 0.8)";
+              completeCtx.fill();
+              
+              // 绘制游戏完成特效
+              drawCompletionEffect(completeCtx, state.originalShape, state.shapeType);
+            }
+          }
+        }, 500); // 等待闪光动画完成
       }
     }
 
@@ -1265,7 +1434,30 @@ export default function PuzzleCanvas() {
     setInitialCanvasSize();
     
     // 添加窗口大小变化的监听器
+    const handleOrientationChange = () => {
+      console.log('方向变化检测到，强制重新计算画布尺寸');
+      // 清除之前的定时器
+      if (resizeTimer.current) {
+        clearTimeout(resizeTimer.current as any);
+      }
+      
+      // 设置新的定时器，确保DOM完全更新
+      resizeTimer.current = setTimeout(() => {
+        handleResize();
+        
+        // 对于移动设备，添加额外检查
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+          setTimeout(() => {
+            console.log('移动设备方向变化后额外检查');
+            setInitialCanvasSize(); // 完全重置画布大小
+          }, 500);
+        }
+      }, 300) as any;
+    };
+    
     window.addEventListener('resize', handleResize);
+    // 特别监听方向变化
+    window.addEventListener('orientationchange', handleOrientationChange);
     
     // 添加一个延迟的强制重新计算，确保在所有DOM元素完全渲染后执行
     const timeoutId = setTimeout(() => {
@@ -1276,7 +1468,7 @@ export default function PuzzleCanvas() {
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
         setTimeout(() => {
           console.log('移动设备额外尺寸检查...');
-          handleResize();
+          setInitialCanvasSize(); // 使用初始化函数而不是handleResize
         }, 500);
       }
     }, 300);
@@ -1284,6 +1476,7 @@ export default function PuzzleCanvas() {
     // 清理函数
     return () => {
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleOrientationChange);
       clearTimeout(timeoutId);
       if (resizeTimer.current) {
         clearTimeout(resizeTimer.current as any);
@@ -1293,6 +1486,21 @@ export default function PuzzleCanvas() {
       }
     };
   }, []);
+  
+  // 监听游戏状态变化，确保在重置游戏时重新计算画布尺寸
+  useEffect(() => {
+    // 检查游戏状态重置
+    if (!state.isScattered && !state.isCompleted && state.completedPieces.length === 0) {
+      console.log('检测到游戏重置状态，确保画布尺寸正确');
+      
+      // 延迟执行以确保其他状态都已更新
+      const timeoutId = setTimeout(() => {
+        setInitialCanvasSize();
+      }, 100);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [state.isScattered, state.isCompleted, state.completedPieces.length]);
 
   // 优化触摸事件处理
   const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
@@ -1350,7 +1558,7 @@ export default function PuzzleCanvas() {
         // 播放音效
         playPieceSelectSound()
       } else {
-        dispatch({ type: "SET_SELECTED_PIECE", payload: null })
+        // 不再在触摸空白区域时清除选中状态
       }
     } 
     else if (e.touches.length === 2 && state.selectedPiece !== null) {
@@ -1435,12 +1643,12 @@ export default function PuzzleCanvas() {
       if (angleDiff > 180) angleDiff -= 360;
       if (angleDiff < -180) angleDiff += 360;
       
-      // 分段旋转 - 每累积5度旋转一次，使用旋转量的符号决定方向
-      if (Math.abs(angleDiff) >= 5) {
+      // 分段旋转 - 每累积15度旋转一次，使用旋转量的符号决定方向
+      if (Math.abs(angleDiff) >= 15) {
         const clockwise = angleDiff > 0;
         // 添加旋转音效
         playRotateSound();
-        rotatePiece(clockwise);
+        rotatePiece(clockwise); // 旋转1次，总计15度
         
         // 重置起始角度
         setTouchStartAngle(currentAngle);
@@ -1457,6 +1665,9 @@ export default function PuzzleCanvas() {
     if (e.touches.length === 0) {
       // 复用鼠标释放的逻辑处理拖动结束
       handleMouseUp()
+      
+      // 只清除拖动状态，但保留选中状态
+      setIsDragging(false)
       
       // 重置触摸状态
       lastTouchRef.current = null
@@ -1508,10 +1719,13 @@ export default function PuzzleCanvas() {
           onTouchEnd={handleTouchEnd}
           className="relative cursor-pointer w-full h-full"
         />
-      </div>
-      {/* 添加可视反馈 */}
-      <div className="absolute bottom-4 left-4 px-3 py-1 bg-black/20 backdrop-blur-sm rounded-full text-white text-xs hidden md:block">
-        {state.completedPieces.length} / {state.puzzle?.length || 0} 已完成
+        
+        {/* 拼图进度提示 - 只在游戏未完成时显示 */}
+        {!state.isCompleted && (
+          <div className="absolute top-2 left-1/2 transform -translate-x-1/2 px-3 py-1 bg-black/20 backdrop-blur-sm rounded-full text-white text-xs z-10">
+            {state.completedPieces.length} / {state.puzzle?.length || 0} 块拼图已完成
+          </div>
+        )}
       </div>
     </div>
   )

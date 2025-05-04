@@ -22,6 +22,7 @@ export default function PuzzleControlsCutCount({ goToNextTab }: PuzzleControlsCu
   
   // 检测设备类型
   const [isPhone, setIsPhone] = useState(false);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
   
   // 设备检测
   useEffect(() => {
@@ -30,6 +31,11 @@ export default function PuzzleControlsCutCount({ goToNextTab }: PuzzleControlsCu
       const isMobile = /iPhone|Android/i.test(ua);
       const isPortrait = window.innerHeight > window.innerWidth;
       setIsPhone(isMobile && isPortrait);
+      
+      // 检测小屏幕设备
+      setIsSmallScreen(window.innerWidth < 600);
+      
+      console.log(`设备检测: 移动=${isMobile}, 竖屏=${isPortrait}, 小屏幕=${window.innerWidth < 600}`);
     };
     
     checkDevice();
@@ -65,22 +71,30 @@ export default function PuzzleControlsCutCount({ goToNextTab }: PuzzleControlsCu
       }, 300)
     }
   }
+  
+  // 难度选择按钮的样式
+  const getDifficultyButtonStyle = (num: number) => {
+    return `
+      flex-1 aspect-square rounded-lg flex items-center justify-center 
+      ${isPhone ? 'text-xs' : isSmallScreen ? 'text-sm' : 'text-base'} 
+      transition-all duration-200 border border-2 shadow-sm min-w-0
+      ${localCutCount === num 
+        ? "bg-[#F68E5F] text-white border-[#F26419] hover:bg-[#F47B42] hover:border-[#E15A0F] active:bg-[#E15A0F]" 
+        : "bg-[#3D3852] text-white border-transparent hover:border-[#504C67] hover:bg-[#4D4862] active:bg-[#302B45]"}
+      ${!canModifySettings ? disabledClass : ""}
+    `;
+  };
 
   return (
-    <div className="space-y-4">
-      <div>
-        <div className="flex justify-between w-full gap-2 mb-1">
-          {[1, 2, 3, 4, 5].map((num) => (
+    <div className="space-y-4 w-full overflow-visible">
+      <div className="w-full">
+        {/* 所有按钮放在一行：1-8 */}
+        <div className="flex justify-between w-full gap-[2px] sm:gap-1 mb-1">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
             <button
               key={num}
               onClick={() => canModifySettings && handleCutCountChange(num)}
-              className={`
-                flex-1 aspect-square rounded-lg flex items-center justify-center ${isPhone ? 'text-base' : 'text-lg'} transition-all duration-200 border-2 shadow-sm
-                ${localCutCount === num 
-                  ? "bg-[#F68E5F] text-white border-[#F26419] hover:bg-[#F47B42] hover:border-[#E15A0F] active:bg-[#E15A0F]" 
-                  : "bg-[#3D3852] text-white border-transparent hover:border-[#504C67] hover:bg-[#4D4862] active:bg-[#302B45]"}
-                ${!canModifySettings ? disabledClass : ""}
-              `}
+              className={getDifficultyButtonStyle(num)}
               aria-label={`选择切割${num}次`}
               disabled={!canModifySettings}
             >
@@ -88,12 +102,15 @@ export default function PuzzleControlsCutCount({ goToNextTab }: PuzzleControlsCu
             </button>
           ))}
         </div>
+        
+        {/* 难度指示器 */}
         <div className="flex justify-between text-xs text-[#F26419] px-1 mt-1">
           <span>简单</span>
-          <span>困难</span>
+          <span className="ml-auto">困难</span>
         </div>
       </div>
 
+      {/* 切割按钮 */}
       <Button 
         onClick={handleGeneratePuzzle} 
         disabled={!isShapeGenerated || state.isScattered || !hasSelectedCount} 

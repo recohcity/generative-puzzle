@@ -170,7 +170,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (!state.puzzle || state.selectedPiece === null) return state
       const newPuzzle = [...state.puzzle]
       const piece = newPuzzle[state.selectedPiece]
-      piece.rotation = (piece.rotation + (action.payload.clockwise ? 5 : -5) + 360) % 360
+      const oldRotation = piece.rotation;
+      piece.rotation = (piece.rotation + (action.payload.clockwise ? 15 : -15) + 360) % 360
+      console.log(`[GameReducer] ROTATE_PIECE: Selected piece ${state.selectedPiece}, Old Angle: ${oldRotation}, New Angle: ${piece.rotation}, Clockwise: ${action.payload.clockwise}`);
       return { ...state, puzzle: newPuzzle }
     case "UPDATE_PIECE_POSITION":
       if (!state.puzzle) return state
@@ -216,6 +218,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         shapeType: state.shapeType, // 保留当前形状类型设置
         cutType: state.cutType, // 保留当前切割类型设置
         cutCount: state.cutCount, // 保留当前切割次数设置
+        // 重要：保留当前画布尺寸信息
+        canvasWidth: state.canvasWidth,
+        canvasHeight: state.canvasHeight
       }
     case "SET_ORIGINAL_POSITIONS":
       return { ...state, originalPositions: action.payload }
@@ -393,10 +398,41 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       canvasSize: { width: state.canvasWidth, height: state.canvasHeight }
     });
 
+    // 计算原始形状的边界和中心点
+    let targetShape = null;
+    if (state.originalShape && state.originalShape.length > 0) {
+      // 计算原始形状的边界
+      const bounds = state.originalShape.reduce(
+        (acc, point) => ({
+          minX: Math.min(acc.minX, point.x),
+          minY: Math.min(acc.minY, point.y),
+          maxX: Math.max(acc.maxX, point.x),
+          maxY: Math.max(acc.maxY, point.y),
+        }),
+        { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
+      );
+      
+      // 计算原始形状的中心点和半径
+      const centerX = (bounds.minX + bounds.maxX) / 2;
+      const centerY = (bounds.minY + bounds.maxY) / 2;
+      const radius = Math.max(
+        (bounds.maxX - bounds.minX) / 2,
+        (bounds.maxY - bounds.minY) / 2
+      ) * 1.2; // 增加20%的边距
+      
+      targetShape = {
+        center: { x: centerX, y: centerY },
+        radius: radius
+      };
+      
+      console.log("目标形状信息:", targetShape);
+    }
+
     // 传递当前的画布尺寸信息给ScatterPuzzle
     const scatteredPuzzle = ScatterPuzzle.scatterPuzzle(state.puzzle, {
       canvasWidth: state.canvasWidth,
-      canvasHeight: state.canvasHeight
+      canvasHeight: state.canvasHeight,
+      targetShape: targetShape
     })
     
     dispatch({ type: "SET_PUZZLE", payload: scatteredPuzzle })
@@ -414,7 +450,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const rotatePiece = useCallback(
     (clockwise: boolean) => {
+      console.log(`[GameContext] rotatePiece called, clockwise: ${clockwise}`);
       dispatch({ type: "ROTATE_PIECE", payload: { clockwise } })
+      console.log('[GameContext] ROTATE_PIECE dispatched');
     },
     [dispatch],
   )
@@ -428,8 +466,41 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // 添加重置游戏函数
   const resetGame = useCallback(() => {
-    dispatch({ type: "RESET_GAME" })
-  }, [dispatch])
+    console.log("重置游戏状态");
+    
+    // 确保保留当前画布尺寸和设备信息
+    const currentCanvasWidth = state.canvasWidth;
+    const currentCanvasHeight = state.canvasHeight;
+    
+    // 记录当前设备信息，用于日志
+    const isPortrait = window.innerHeight > window.innerWidth;
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    console.log(`重置时设备信息: 移动=${isMobile}, 竖屏=${isPortrait}, 画布=${currentCanvasWidth}x${currentCanvasHeight}`);
+    
+    // 清除状态
+    dispatch({ type: "RESET_GAME" });
+    
+    // 重要：确保画布尺寸已正确设置
+    if (canvasRef.current) {
+      const hasCorrectSize = 
+        canvasRef.current.width === currentCanvasWidth && 
+        canvasRef.current.height === currentCanvasHeight;
+      
+      console.log(`重置后画布尺寸: ${canvasRef.current.width}x${canvasRef.current.height}, 是否正确: ${hasCorrectSize}`);
+      
+      // 如果尺寸不匹配，强制更新
+      if (!hasCorrectSize && currentCanvasWidth && currentCanvasHeight) {
+        console.log("重置后画布尺寸不正确，强制更新");
+        canvasRef.current.width = currentCanvasWidth;
+        canvasRef.current.height = currentCanvasHeight;
+        
+        if (backgroundCanvasRef.current) {
+          backgroundCanvasRef.current.width = currentCanvasWidth;
+          backgroundCanvasRef.current.height = currentCanvasHeight;
+        }
+      }
+    }
+  }, [dispatch, state.canvasWidth, state.canvasHeight, canvasRef, backgroundCanvasRef]);
 
   // 简单的音效函数
   const playSnapSound = () => {
@@ -516,6 +587,21 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return { constrainedDx: dx, constrainedDy: dy };
     }
     
+    // 检测设备类型和屏幕方向
+    const isPortrait = window.innerHeight > window.innerWidth;
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
+    // 为移动设备设置额外大的安全边距
+    let actualSafeMargin = safeMargin;
+    if (isMobile && isPortrait) {
+      // 手机竖屏模式使用非常严格的边距
+      actualSafeMargin = Math.max(safeMargin, Math.floor(state.canvasWidth * 0.08));
+      console.log(`手机竖屏模式边界检查，使用更大的安全边距: ${actualSafeMargin}px`);
+    } else if (isMobile) {
+      // 手机横屏模式
+      actualSafeMargin = Math.max(safeMargin, Math.floor(state.canvasWidth * 0.05)); 
+    }
+    
     // 计算预期的新位置
     const newMinX = bounds.minX + dx;
     const newMaxX = bounds.maxX + dx;
@@ -524,32 +610,73 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     // 添加安全边距，确保拼图不会完全移出视图
     const canvasBounds = {
-      minX: safeMargin,
-      maxX: state.canvasWidth - safeMargin,
-      minY: safeMargin,
-      maxY: state.canvasHeight - safeMargin
+      minX: actualSafeMargin,
+      maxX: state.canvasWidth - actualSafeMargin,
+      minY: actualSafeMargin,
+      maxY: state.canvasHeight - actualSafeMargin
     };
     
     // 计算约束后的移动距离
     let constrainedDx = dx;
     let constrainedDy = dy;
     
-    // 水平约束 - 确保至少有一部分拼图仍然可见
-    if (newMaxX < canvasBounds.minX) {
-      // 如果整个拼图都超出了左边界，则约束到左边界
-      constrainedDx = canvasBounds.minX - bounds.maxX;
-    } else if (newMinX > canvasBounds.maxX) {
-      // 如果整个拼图都超出了右边界，则约束到右边界
-      constrainedDx = canvasBounds.maxX - bounds.minX;
-    }
-    
-    // 垂直约束 - 确保至少有一部分拼图仍然可见
-    if (newMaxY < canvasBounds.minY) {
-      // 如果整个拼图都超出了上边界，则约束到上边界
-      constrainedDy = canvasBounds.minY - bounds.maxY;
-    } else if (newMinY > canvasBounds.maxY) {
-      // 如果整个拼图都超出了下边界，则约束到下边界
-      constrainedDy = canvasBounds.maxY - bounds.minY;
+    // 如果是移动设备，使用更严格的约束
+    if (isMobile) {
+      // 更严格的水平约束 - 确保整个拼图都在画布范围内
+      if (newMinX < canvasBounds.minX) {
+        constrainedDx = canvasBounds.minX - bounds.minX;
+      } else if (newMaxX > canvasBounds.maxX) {
+        constrainedDx = canvasBounds.maxX - bounds.maxX;
+      }
+      
+      // 更严格的垂直约束 - 确保整个拼图都在画布范围内
+      if (newMinY < canvasBounds.minY) {
+        constrainedDy = canvasBounds.minY - bounds.minY;
+      } else if (newMaxY > canvasBounds.maxY) {
+        constrainedDy = canvasBounds.maxY - bounds.maxY;
+      }
+      
+      // 额外的安全检查 - 确保在约束后拼图真的在画布内
+      const constrainedMinX = bounds.minX + constrainedDx;
+      const constrainedMaxX = bounds.maxX + constrainedDx;
+      const constrainedMinY = bounds.minY + constrainedDy;
+      const constrainedMaxY = bounds.maxY + constrainedDy;
+      
+      if (constrainedMinX < canvasBounds.minX) {
+        console.log("X轴约束仍不足，应用额外约束");
+        constrainedDx = canvasBounds.minX - bounds.minX;
+      }
+      if (constrainedMaxX > canvasBounds.maxX) {
+        console.log("X轴约束仍不足，应用额外约束");
+        constrainedDx = canvasBounds.maxX - bounds.maxX;
+      }
+      if (constrainedMinY < canvasBounds.minY) {
+        console.log("Y轴约束仍不足，应用额外约束");
+        constrainedDy = canvasBounds.minY - bounds.minY;
+      }
+      if (constrainedMaxY > canvasBounds.maxY) {
+        console.log("Y轴约束仍不足，应用额外约束");
+        constrainedDy = canvasBounds.maxY - bounds.maxY;
+      }
+    } else {
+      // 标准设备的宽松约束，确保至少有一部分拼图仍然可见
+      // 水平约束
+      if (newMaxX < canvasBounds.minX) {
+        // 如果整个拼图都超出了左边界，则约束到左边界
+        constrainedDx = canvasBounds.minX - bounds.maxX;
+      } else if (newMinX > canvasBounds.maxX) {
+        // 如果整个拼图都超出了右边界，则约束到右边界
+        constrainedDx = canvasBounds.maxX - bounds.minX;
+      }
+      
+      // 垂直约束
+      if (newMaxY < canvasBounds.minY) {
+        // 如果整个拼图都超出了上边界，则约束到上边界
+        constrainedDy = canvasBounds.minY - bounds.maxY;
+      } else if (newMinY > canvasBounds.maxY) {
+        // 如果整个拼图都超出了下边界，则约束到下边界
+        constrainedDy = canvasBounds.maxY - bounds.minY;
+      }
     }
     
     return { constrainedDx, constrainedDy };

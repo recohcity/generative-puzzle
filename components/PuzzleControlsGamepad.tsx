@@ -45,8 +45,11 @@ export default function PuzzleControlsGamepad({ goToFirstTab }: PuzzleControlsGa
   }
 
   const handleRotatePiece = (clockwise: boolean) => {
+    console.log(`[PuzzleControlsGamepad] handleRotatePiece called, clockwise: ${clockwise}`);
     playRotateSound()
+    // 旋转1次，每次15度，总共旋转15度
     rotatePiece(clockwise)
+    console.log('[PuzzleControlsGamepad] handleRotatePiece finished');
   }
 
   const handleResetGame = () => {

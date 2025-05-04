@@ -106,8 +106,11 @@ export default function PuzzleControls({ goToNextTab, goToFirstTab }: PuzzleCont
   }
 
   const handleRotatePiece = (clockwise: boolean) => {
+    console.log(`[PuzzleControls] handleRotatePiece called, clockwise: ${clockwise}`);
     playRotateSound()
+    // 旋转1次，每次15度，总共旋转15度
     rotatePiece(clockwise)
+    console.log('[PuzzleControls] handleRotatePiece finished');
   }
 
   return (
@@ -169,13 +172,13 @@ export default function PuzzleControls({ goToNextTab, goToFirstTab }: PuzzleCont
           <Label htmlFor="cutCount" className="text-sm font-medium mb-3 block text-[#FFD5AB]">
             选择切割次数
           </Label>
-          <div className="flex justify-between w-full gap-2 mb-1">
-            {[1, 2, 3, 4, 5].map((num) => (
+          <div className="flex justify-between w-full gap-[2px] sm:gap-1 mb-1">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
               <button
                 key={num}
                 onClick={() => canModifySettings && handleCutCountChange([num])}
                 className={`
-                  flex-1 aspect-square rounded-lg flex items-center justify-center text-lg transition-all duration-200 border-2 shadow-sm
+                  flex-1 aspect-square rounded-lg flex items-center justify-center text-xs sm:text-sm md:text-base transition-all duration-200 border-2 shadow-sm min-w-0
                   ${state.cutCount === num 
                     ? "bg-[#F68E5F] text-white border-[#F26419] hover:bg-[#F47B42] hover:border-[#E15A0F] active:bg-[#E15A0F]" 
                     : "bg-[#3D3852] text-white border-transparent hover:border-[#504C67] hover:bg-[#4D4862] active:bg-[#302B45]"}
@@ -190,7 +193,7 @@ export default function PuzzleControls({ goToNextTab, goToFirstTab }: PuzzleCont
           </div>
           <div className="flex justify-between text-xs text-[#F26419] px-1 mt-1">
             <span>简单</span>
-            <span>困难</span>
+            <span className="ml-auto">困难</span>
           </div>
         </div>
       </div>

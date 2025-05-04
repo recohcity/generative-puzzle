@@ -306,41 +306,43 @@ export default function CurveTestOptimized() {
         `}>
           {/* 手机竖屏布局时的标题和控制按钮 */}
           {deviceType === 'phone' && (
-            <div className="flex items-center justify-between">
-              <h1 className="text-xl font-bold text-[#FFB17A]">生成式拼图游戏</h1>
-              
-              <div className="flex items-center space-x-2">
-                {/* 音乐控制按钮 */}
-                <Button
-                  onClick={handleToggleMusic}
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full w-8 h-8 text-[#FFB17A] hover:text-[#F26419] hover:bg-[#463E50] transition-colors"
-                  aria-label={isMusicPlaying ? "关闭背景音乐" : "开启背景音乐"}
-                  title={isMusicPlaying ? "关闭背景音乐" : "开启背景音乐"}
-                >
-                  {isMusicPlaying ? (
-                    <Volume2 className="h-5 w-5" />
-                  ) : (
-                    <VolumeX className="h-5 w-5" />
-                  )}
-                </Button>
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between">
+                <h1 className="text-xl font-bold text-[#FFB17A]">生成式拼图游戏</h1>
                 
-                {/* 全屏切换按钮 */}
-                <Button
-                  onClick={toggleFullscreen}
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full w-8 h-8 text-[#FFB17A] hover:text-[#F26419] hover:bg-[#463E50] transition-colors"
-                  aria-label={isFullscreen ? "退出全屏" : "进入全屏"}
-                  title={isFullscreen ? "退出全屏" : "进入全屏"}
-                >
-                  {isFullscreen ? (
-                    <Minimize className="h-5 w-5" />
-                  ) : (
-                    <Maximize className="h-5 w-5" />
-                  )}
-                </Button>
+                <div className="flex items-center space-x-2">
+                  {/* 音乐控制按钮 */}
+                  <Button
+                    onClick={handleToggleMusic}
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full w-8 h-8 text-[#FFB17A] hover:text-[#F26419] hover:bg-[#463E50] transition-colors"
+                    aria-label={isMusicPlaying ? "关闭背景音乐" : "开启背景音乐"}
+                    title={isMusicPlaying ? "关闭背景音乐" : "开启背景音乐"}
+                  >
+                    {isMusicPlaying ? (
+                      <Volume2 className="h-5 w-5" />
+                    ) : (
+                      <VolumeX className="h-5 w-5" />
+                    )}
+                  </Button>
+                  
+                  {/* 全屏切换按钮 */}
+                  <Button
+                    onClick={toggleFullscreen}
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full w-8 h-8 text-[#FFB17A] hover:text-[#F26419] hover:bg-[#463E50] transition-colors"
+                    aria-label={isFullscreen ? "退出全屏" : "进入全屏"}
+                    title={isFullscreen ? "退出全屏" : "进入全屏"}
+                  >
+                    {isFullscreen ? (
+                      <Minimize className="h-5 w-5" />
+                    ) : (
+                      <Maximize className="h-5 w-5" />
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
           )}
@@ -354,41 +356,43 @@ export default function CurveTestOptimized() {
             <div className="bg-[#36323E] rounded-3xl border-2 border-[#463E50] p-4 lg:p-6 h-full flex flex-col shadow-[0_10px_25px_rgba(0,0,0,0.3)] overflow-hidden">
               {/* 非手机设备显示的标题和控制按钮 */}
               {deviceType !== 'phone' && (
-                <div className="flex items-center justify-between mb-4 flex-shrink-0">
-                  <h1 className="text-xl font-bold text-[#FFB17A]">生成式拼图游戏</h1>
-                  
-                  <div className="flex items-center space-x-2">
-                    {/* 音乐控制按钮 */}
-                    <Button
-                      onClick={handleToggleMusic}
-                      variant="ghost"
-                      size="icon"
-                      className="rounded-full w-8 h-8 text-[#FFB17A] hover:text-[#F26419] hover:bg-[#463E50] transition-colors"
-                      aria-label={isMusicPlaying ? "关闭背景音乐" : "开启背景音乐"}
-                      title={isMusicPlaying ? "关闭背景音乐" : "开启背景音乐"}
-                    >
-                      {isMusicPlaying ? (
-                        <Volume2 className="h-5 w-5" />
-                      ) : (
-                        <VolumeX className="h-5 w-5" />
-                      )}
-                    </Button>
+                <div className="flex flex-col mb-4 flex-shrink-0">
+                  <div className="flex items-center justify-between">
+                    <h1 className="text-xl font-bold text-[#FFB17A]">生成式拼图游戏</h1>
                     
-                    {/* 全屏切换按钮 */}
-                    <Button
-                      onClick={toggleFullscreen}
-                      variant="ghost"
-                      size="icon"
-                      className="rounded-full w-8 h-8 text-[#FFB17A] hover:text-[#F26419] hover:bg-[#463E50] transition-colors"
-                      aria-label={isFullscreen ? "退出全屏" : "进入全屏"}
-                      title={isFullscreen ? "退出全屏" : "进入全屏"}
-                    >
-                      {isFullscreen ? (
-                        <Minimize className="h-5 w-5" />
-                      ) : (
-                        <Maximize className="h-5 w-5" />
-                      )}
-                    </Button>
+                    <div className="flex items-center space-x-2">
+                      {/* 音乐控制按钮 */}
+                      <Button
+                        onClick={handleToggleMusic}
+                        variant="ghost"
+                        size="icon"
+                        className="rounded-full w-8 h-8 text-[#FFB17A] hover:text-[#F26419] hover:bg-[#463E50] transition-colors"
+                        aria-label={isMusicPlaying ? "关闭背景音乐" : "开启背景音乐"}
+                        title={isMusicPlaying ? "关闭背景音乐" : "开启背景音乐"}
+                      >
+                        {isMusicPlaying ? (
+                          <Volume2 className="h-5 w-5" />
+                        ) : (
+                          <VolumeX className="h-5 w-5" />
+                        )}
+                      </Button>
+                      
+                      {/* 全屏切换按钮 */}
+                      <Button
+                        onClick={toggleFullscreen}
+                        variant="ghost"
+                        size="icon"
+                        className="rounded-full w-8 h-8 text-[#FFB17A] hover:text-[#F26419] hover:bg-[#463E50] transition-colors"
+                        aria-label={isFullscreen ? "退出全屏" : "进入全屏"}
+                        title={isFullscreen ? "退出全屏" : "进入全屏"}
+                      >
+                        {isFullscreen ? (
+                          <Minimize className="h-5 w-5" />
+                        ) : (
+                          <Maximize className="h-5 w-5" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}
