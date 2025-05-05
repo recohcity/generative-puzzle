@@ -596,10 +596,18 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (isMobile && isPortrait) {
       // 手机竖屏模式使用非常严格的边距
       actualSafeMargin = Math.max(safeMargin, Math.floor(state.canvasWidth * 0.08));
-      console.log(`手机竖屏模式边界检查，使用更大的安全边距: ${actualSafeMargin}px`);
     } else if (isMobile) {
       // 手机横屏模式
       actualSafeMargin = Math.max(safeMargin, Math.floor(state.canvasWidth * 0.05)); 
+    }
+    
+    // 为小拼图特别处理 - 通过拼图尺寸判断是否为小拼图
+    const isSmallPiece = bounds.width < state.canvasWidth * 0.15 || bounds.height < state.canvasHeight * 0.15;
+    
+    // 如果是小拼图，减小边界约束的严格度，让用户可以更容易地操作
+    if (isSmallPiece && isMobile) {
+      // 减小边界约束，允许更多操作空间
+      actualSafeMargin = Math.max(5, Math.floor(actualSafeMargin * 0.7));
     }
     
     // 计算预期的新位置
@@ -643,19 +651,15 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const constrainedMaxY = bounds.maxY + constrainedDy;
       
       if (constrainedMinX < canvasBounds.minX) {
-        console.log("X轴约束仍不足，应用额外约束");
         constrainedDx = canvasBounds.minX - bounds.minX;
       }
       if (constrainedMaxX > canvasBounds.maxX) {
-        console.log("X轴约束仍不足，应用额外约束");
         constrainedDx = canvasBounds.maxX - bounds.maxX;
       }
       if (constrainedMinY < canvasBounds.minY) {
-        console.log("Y轴约束仍不足，应用额外约束");
         constrainedDy = canvasBounds.minY - bounds.minY;
       }
       if (constrainedMaxY > canvasBounds.maxY) {
-        console.log("Y轴约束仍不足，应用额外约束");
         constrainedDy = canvasBounds.maxY - bounds.maxY;
       }
     } else {

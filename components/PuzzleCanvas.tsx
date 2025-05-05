@@ -196,25 +196,31 @@ const drawPuzzle = (
 
     ctx.closePath()
     
-    // 使用半透明的亮色填充
-    const gradientColor = isDarkMode ? "rgba(242, 100, 25, 0.85)" : "rgba(255, 211, 101, 0.85)"
+    // 使用纯色填充，不使用半透明
+    const fillColor = isDarkMode ? "#F26419" : "#FFD166"
     
-    // 添加径向渐变为完成效果
-    const center = calculateCenter(originalShape)
-    const radius = Math.max(ctx.canvas.width, ctx.canvas.height) / 3
-    const gradient = ctx.createRadialGradient(center.x, center.y, radius * 0.3, center.x, center.y, radius)
-    gradient.addColorStop(0, gradientColor)
-    gradient.addColorStop(1, isDarkMode ? "rgba(242, 100, 25, 0.6)" : "rgba(255, 211, 101, 0.6)")
+    // 先填充纯色
+    ctx.fillStyle = fillColor
     
-    ctx.fillStyle = gradient
-    
-    // 添加发光效果
-    ctx.shadowColor = isDarkMode ? "rgba(255, 159, 64, 0.7)" : "rgba(255, 211, 101, 0.7)"
-    ctx.shadowBlur = 20
+    // 不使用模糊阴影，保持边缘锐利
+    ctx.shadowColor = "transparent"
+    ctx.shadowBlur = 0
     ctx.fill()
     
-    // 重置阴影
-    ctx.shadowBlur = 0
+    // 在边缘外围增加淡淡的发光效果，确保与填充色有明显区分
+    ctx.save()
+    ctx.shadowColor = isDarkMode ? "rgba(255, 159, 64, 0.6)" : "rgba(255, 220, 120, 0.6)"
+    ctx.shadowBlur = 15
+    ctx.shadowOffsetX = 0
+    ctx.shadowOffsetY = 0
+    
+    // 使用比填充色更淡的颜色绘制外发光形状
+    ctx.strokeStyle = isDarkMode ? "rgba(255, 159, 64, 0.3)" : "rgba(255, 220, 120, 0.3)"
+    ctx.lineWidth = 5
+    
+    // 仅绘制描边而不再次填充，发光效果只影响描边
+    ctx.stroke()
+    ctx.restore()
     
     // 绘制完成效果
     drawCompletionEffect(ctx, originalShape, shapeType)
@@ -588,7 +594,7 @@ const drawCompletionEffect = (ctx: CanvasRenderingContext2D, shape: Point[], sha
   
   // 阴影的位置 - 在形状下方，增加与拼图的距离
   const shadowX = centerX
-  const shadowY = bounds.maxY + shadowHeightRadius * 1.2  // 显著增加阴影距离，确保不遮挡拼图
+  const shadowY = bounds.maxY + shadowHeightRadius * 1.5  // 进一步增加阴影距离，确保不遮挡拼图
   
   // 创建渐变 - 从中心向外渐变消失
   const gradient = ctx.createRadialGradient(
@@ -597,9 +603,9 @@ const drawCompletionEffect = (ctx: CanvasRenderingContext2D, shape: Point[], sha
   )
   
   // 精细调整渐变过渡，中心稍黑但保持良好羽化
-  gradient.addColorStop(0, 'rgba(0, 0, 0, 0.32)')   // 稍微加深中心点透明度
-  gradient.addColorStop(0.35, 'rgba(0, 0, 0, 0.18)') // 内部区域
-  gradient.addColorStop(0.65, 'rgba(0, 0, 0, 0.07)') // 外围区域
+  gradient.addColorStop(0, 'rgba(0, 0, 0, 0.3)')   // 稍微加深中心点透明度
+  gradient.addColorStop(0.4, 'rgba(0, 0, 0, 0.15)') // 内部区域
+  gradient.addColorStop(0.7, 'rgba(0, 0, 0, 0.05)') // 外围区域
   gradient.addColorStop(1, 'rgba(0, 0, 0, 0)')      // 边缘完全透明
   
   // 保存当前状态以便应用变换
@@ -619,41 +625,6 @@ const drawCompletionEffect = (ctx: CanvasRenderingContext2D, shape: Point[], sha
   // 恢复变换状态
   ctx.restore()
   ctx.restore()
-  
-  // 绘制边缘光晕效果（不遮挡形状）
-  ctx.beginPath()
-  ctx.moveTo(shape[0].x, shape[0].y)
-
-  if (shapeType === "polygon") {
-    for (let i = 1; i < shape.length; i++) {
-      ctx.lineTo(shape[i].x, shape[i].y)
-    }
-  } else {
-    for (let i = 1; i < shape.length; i++) {
-      const prev = shape[i - 1]
-      const current = shape[i]
-      const next = shape[(i + 1) % shape.length]
-
-      const midX = (prev.x + current.x) / 2
-      const midY = (prev.y + current.y) / 2
-      const nextMidX = (current.x + next.x) / 2
-      const nextMidY = (current.y + next.y) / 2
-
-      ctx.quadraticCurveTo(current.x, current.y, nextMidX, nextMidY)
-    }
-  }
-
-  ctx.closePath()
-  
-  // 绘制金色光晕边框，减小宽度
-  ctx.strokeStyle = "rgba(255, 215, 0, 0.7)"  // 金色光晕
-  ctx.lineWidth = 5  // 减小边框宽度
-  ctx.shadowColor = "rgba(255, 215, 0, 0.8)" 
-  ctx.shadowBlur = 15  // 稍微减小光晕模糊半径
-  ctx.stroke()
-  
-  // 重置阴影效果
-  ctx.shadowBlur = 0
   
   // 绘制完成文本 - 使用更精确的字体堆栈
   const fontSize = Math.min(36, Math.max(24, ctx.canvas.width / 15)); // 根据画布宽度自适应字体大小
@@ -723,6 +694,16 @@ export default function PuzzleCanvas() {
   const resizeTimer = useRef<ReturnType<typeof setTimeout>>(null)
   const lastTouchRef = useRef<{x: number, y: number} | null>(null)
   const isDarkMode = theme === 'dark'
+  
+  // 设备检测
+  const [isAndroid, setIsAndroid] = useState(false)
+  
+  // 组件挂载时进行设备检测
+  useEffect(() => {
+    const userAgent = navigator.userAgent.toLowerCase()
+    const isAndroidDevice = /android/.test(userAgent)
+    setIsAndroid(isAndroidDevice)
+  }, [])
   
   // 更新设置初始画布大小的函数
   const setInitialCanvasSize = () => {
@@ -1410,9 +1391,24 @@ export default function PuzzleCanvas() {
               
               completeCtx.closePath();
               
-              // 填充完整形状
-              completeCtx.fillStyle = isDarkMode ? "rgba(242, 100, 25, 0.8)" : "rgba(255, 211, 101, 0.8)";
+              // 使用纯色填充，保持边缘清晰
+              const fillColor = isDarkMode ? "#F26419" : "#FFD166";
+              completeCtx.fillStyle = fillColor;
+              // 不使用模糊阴影
+              completeCtx.shadowColor = "transparent";
+              completeCtx.shadowBlur = 0;
               completeCtx.fill();
+              
+              // 添加微妙的外发光效果
+              completeCtx.save();
+              completeCtx.shadowColor = isDarkMode ? "rgba(255, 159, 64, 0.6)" : "rgba(255, 220, 120, 0.6)";
+              completeCtx.shadowBlur = 15;
+              completeCtx.shadowOffsetX = 0;
+              completeCtx.shadowOffsetY = 0;
+              completeCtx.strokeStyle = isDarkMode ? "rgba(255, 159, 64, 0.3)" : "rgba(255, 220, 120, 0.3)";
+              completeCtx.lineWidth = 5;
+              completeCtx.stroke();
+              completeCtx.restore();
               
               // 绘制游戏完成特效
               drawCompletionEffect(completeCtx, state.originalShape, state.shapeType);
@@ -1543,6 +1539,27 @@ export default function PuzzleCanvas() {
         }
       }
 
+      // 如果没有找到，使用更宽松的距离检测
+      if (clickedPieceIndex === -1) {
+        const hitDistance = 30 // 增加触摸容差，比鼠标点击的容差更大
+        for (let i = state.puzzle.length - 1; i >= 0; i--) {
+          // 跳过已完成的拼图，不允许拖拽
+          if (state.completedPieces.includes(i)) continue
+
+          const piece = state.puzzle[i]
+          const center = calculateCenter(piece.points)
+          const dx = center.x - touchX
+          const dy = center.y - touchY
+          const distance = Math.sqrt(dx * dx + dy * dy)
+
+          // 如果触摸位置在拼图中心附近，也算作点击
+          if (distance < hitDistance * 2) {
+            clickedPieceIndex = i
+            break
+          }
+        }
+      }
+
       if (clickedPieceIndex !== -1) {
         // 设置选中的拼图块
         dispatch({ type: "SET_SELECTED_PIECE", payload: clickedPieceIndex })
@@ -1617,11 +1634,27 @@ export default function PuzzleCanvas() {
       // 使用边界检查确保拼图在画布内
       const { constrainedDx, constrainedDy } = ensurePieceInBounds(piece, dx, dy, 20);
       
-      // 更新拼图位置
-      dispatch({
-        type: "UPDATE_PIECE_POSITION",
-        payload: { index: state.draggingPiece.index, dx: constrainedDx, dy: constrainedDy },
-      });
+      // 只有在有实际移动距离时才更新位置，避免微小抖动导致的无效更新
+      if (Math.abs(constrainedDx) > 0.5 || Math.abs(constrainedDy) > 0.5) {
+        // 更新拼图位置
+        dispatch({
+          type: "UPDATE_PIECE_POSITION",
+          payload: { index: state.draggingPiece.index, dx: constrainedDx, dy: constrainedDy },
+        });
+      
+        // 更新拖动起始点，确保下一次移动计算正确
+        const newStartX = state.draggingPiece.startX + constrainedDx;
+        const newStartY = state.draggingPiece.startY + constrainedDy;
+        
+        dispatch({
+          type: "SET_DRAGGING_PIECE",
+          payload: { 
+            index: state.draggingPiece.index,
+            startX: newStartX,
+            startY: newStartY
+          },
+        });
+      }
     } 
     else if (e.touches.length === 2 && state.selectedPiece !== null) {
       // 双指旋转
@@ -1722,7 +1755,19 @@ export default function PuzzleCanvas() {
         
         {/* 拼图进度提示 - 只在游戏未完成时显示 */}
         {!state.isCompleted && (
-          <div className="absolute top-2 left-1/2 transform -translate-x-1/2 px-3 py-1 bg-black/20 backdrop-blur-sm rounded-full text-white text-xs z-10">
+          <div className="absolute top-2 left-1/2 transform -translate-x-1/2 px-3 py-1 bg-black/20 backdrop-blur-sm rounded-full text-white z-10" 
+            style={{
+              fontSize: isAndroid ? '10px' : '12px', // 安卓设备使用更小的字体
+              lineHeight: '1.2',
+              maxWidth: '90%',
+              textAlign: 'center',
+              fontFamily: "'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif", // 固定字体
+              WebkitTextSizeAdjust: '100%', // 防止iOS和安卓字体自动调整大小不一致
+              MozTextSizeAdjust: '100%',
+              textSizeAdjust: '100%',
+              padding: isAndroid ? '2px 8px' : '4px 12px', // 安卓设备减小内边距
+            }}
+          >
             {state.completedPieces.length} / {state.puzzle?.length || 0} 块拼图已完成
           </div>
         )}
