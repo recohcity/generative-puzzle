@@ -750,6 +750,15 @@ export default function PuzzleCanvas() {
       canvasWidth = maxSize;
       canvasHeight = maxSize;
       console.log("移动设备竖屏模式，强制使用严格限制的1:1正方形画布:", canvasWidth, "x", canvasHeight);
+    } else if (isMobile && !isPortrait) {
+      // 移动设备横屏模式 - 利用宽屏空间，使用更宽的矩形画布
+      const availableHeight = Math.min(containerHeight, screenHeight * 0.8); // 高度占屏幕80%
+      // 宽高比设为 16:9 或者其他适合横屏的比例
+      const aspectRatio = 16/9;
+      // 限制宽度不超过容器宽度
+      canvasWidth = Math.min(availableHeight * aspectRatio, containerWidth * 0.9);
+      canvasHeight = availableHeight;
+      console.log("移动设备横屏模式，使用宽屏比例画布:", canvasWidth, "x", canvasHeight);
     } else if (isIPad || (screenWidth < 1024 && screenHeight < 1024)) {
       // iPad或平板设备
       const aspectRatio = containerWidth / containerHeight;
@@ -770,7 +779,7 @@ export default function PuzzleCanvas() {
       }
       console.log("平板设备，使用调整比例画布:", canvasWidth, "x", canvasHeight);
     } else {
-      // 桌面设备或横屏模式
+      // 桌面设备
       canvasWidth = containerWidth;
       canvasHeight = containerHeight;
       console.log("桌面设备，使用全尺寸画布:", canvasWidth, "x", canvasHeight);
@@ -847,6 +856,15 @@ export default function PuzzleCanvas() {
         newWidth = maxSize;
         newHeight = maxSize;
         console.log("移动设备竖屏模式，强制使用严格限制的1:1正方形画布:", newWidth, "x", newHeight);
+      } else if (isMobile && !isPortrait) {
+        // 移动设备横屏模式 - 利用宽屏空间，使用更宽的矩形画布
+        const availableHeight = Math.min(containerHeight, screenHeight * 0.8); // 高度占屏幕80%
+        // 宽高比设为 16:9 或者其他适合横屏的比例
+        const aspectRatio = 16/9;
+        // 限制宽度不超过容器宽度
+        newWidth = Math.min(availableHeight * aspectRatio, containerWidth * 0.9);
+        newHeight = availableHeight;
+        console.log("移动设备横屏模式，使用宽屏比例画布:", newWidth, "x", newHeight);
       } else if (isIPad || (screenWidth < 1024 && screenHeight < 1024)) {
         // iPad或平板设备
         const aspectRatio = containerWidth / containerHeight;
@@ -867,7 +885,7 @@ export default function PuzzleCanvas() {
         }
         console.log("平板设备，使用调整比例画布:", newWidth, "x", newHeight);
       } else {
-        // 桌面设备或横屏模式
+        // 桌面设备
         newWidth = containerWidth
         newHeight = containerHeight
         console.log("桌面设备，使用全尺寸画布:", newWidth, "x", newHeight);
@@ -926,6 +944,8 @@ export default function PuzzleCanvas() {
     // 检测设备和方向
     const ua = navigator.userAgent;
     const isIPhone = /iPhone/i.test(ua);
+    const isAndroid = /Android/i.test(ua);
+    const isMobile = isIPhone || isAndroid;
     const isPortrait = window.innerHeight > window.innerWidth;
 
     // 计算形状的包围盒
@@ -944,14 +964,20 @@ export default function PuzzleCanvas() {
 
     // 调整不同设备上的缩放比例
     let scale = 0.8 // 默认缩放比例
-    if (isIPhone && isPortrait) {
-      // 在iPhone竖屏模式下，形状应该占据画布的更大比例
+    if (isMobile && isPortrait) {
+      // 在移动设备竖屏模式下，形状应该占据画布的更大比例
       scale = Math.min(
         (width * 0.85) / shapeWidth, 
         (height * 0.85) / shapeHeight
       )
+    } else if (isMobile && !isPortrait) {
+      // 在移动设备横屏模式下，形状应该适当缩放以利用宽屏空间
+      scale = Math.min(
+        (width * 0.75) / shapeWidth, 
+        (height * 0.8) / shapeHeight
+      )
     } else {
-      // 桌面、iPad和横屏模式下的正常缩放
+      // 桌面和iPad模式下的正常缩放
       scale = Math.min(
         (width * 0.65) / shapeWidth, 
         (height * 0.65) / shapeHeight
@@ -1439,13 +1465,35 @@ export default function PuzzleCanvas() {
       
       // 设置新的定时器，确保DOM完全更新
       resizeTimer.current = setTimeout(() => {
+        // 检测设备和方向
+        const ua = navigator.userAgent;
+        const isIPhone = /iPhone/i.test(ua);
+        const isAndroid = /Android/i.test(ua);
+        const isMobile = isIPhone || isAndroid;
+        const isPortrait = window.innerHeight > window.innerWidth;
+        
+        console.log(`方向变化: 移动=${isMobile}, 竖屏=${isPortrait}, 宽度=${window.innerWidth}, 高度=${window.innerHeight}`);
+        
+        // 先调用常规的resize处理
         handleResize();
         
-        // 对于移动设备，添加额外检查
-        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        // 对于移动设备，添加额外检查和处理
+        if (isMobile) {
           setTimeout(() => {
             console.log('移动设备方向变化后额外检查');
-            setInitialCanvasSize(); // 完全重置画布大小
+            
+            // 如果是横屏模式，应用横屏特定的布局
+            if (!isPortrait) {
+              console.log('检测到横屏模式，应用横屏优化布局');
+              // 在横屏模式下，重新设置画布大小并更新位置
+              setInitialCanvasSize();
+              // 强制更新位置计算，确保正确利用宽屏空间
+              setTimeout(() => updatePositions(), 100);
+            } else {
+              // 竖屏模式
+              console.log('检测到竖屏模式，应用竖屏标准布局');
+              setInitialCanvasSize();
+            }
           }, 500);
         }
       }, 300) as any;
@@ -1636,11 +1684,11 @@ export default function PuzzleCanvas() {
       
       // 只有在有实际移动距离时才更新位置，避免微小抖动导致的无效更新
       if (Math.abs(constrainedDx) > 0.5 || Math.abs(constrainedDy) > 0.5) {
-        // 更新拼图位置
-        dispatch({
-          type: "UPDATE_PIECE_POSITION",
-          payload: { index: state.draggingPiece.index, dx: constrainedDx, dy: constrainedDy },
-        });
+      // 更新拼图位置
+      dispatch({
+        type: "UPDATE_PIECE_POSITION",
+        payload: { index: state.draggingPiece.index, dx: constrainedDx, dy: constrainedDy },
+      });
       
         // 更新拖动起始点，确保下一次移动计算正确
         const newStartX = state.draggingPiece.startX + constrainedDx;

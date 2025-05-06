@@ -22,6 +22,7 @@ export default function PuzzleControlsCutCount({ goToNextTab }: PuzzleControlsCu
   
   // 检测设备类型
   const [isPhone, setIsPhone] = useState(false);
+  const [isLandscape, setIsLandscape] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   
   // 设备检测
@@ -30,7 +31,8 @@ export default function PuzzleControlsCutCount({ goToNextTab }: PuzzleControlsCu
       const ua = navigator.userAgent;
       const isMobile = /iPhone|Android/i.test(ua);
       const isPortrait = window.innerHeight > window.innerWidth;
-      setIsPhone(isMobile && isPortrait);
+      setIsPhone(isMobile);
+      setIsLandscape(isMobile && !isPortrait);
       
       // 检测小屏幕设备
       setIsSmallScreen(window.innerWidth < 600);
@@ -40,7 +42,14 @@ export default function PuzzleControlsCutCount({ goToNextTab }: PuzzleControlsCu
     
     checkDevice();
     window.addEventListener('resize', checkDevice);
-    return () => window.removeEventListener('resize', checkDevice);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(checkDevice, 300);
+    });
+    
+    return () => {
+      window.removeEventListener('resize', checkDevice);
+      window.removeEventListener('orientationchange', checkDevice);
+    };
   }, []);
   
   // 检查是否已生成形状
@@ -76,7 +85,7 @@ export default function PuzzleControlsCutCount({ goToNextTab }: PuzzleControlsCu
   const getDifficultyButtonStyle = (num: number) => {
     return `
       flex-1 aspect-square rounded-lg flex items-center justify-center 
-      ${isPhone ? 'text-xs' : isSmallScreen ? 'text-sm' : 'text-base'} 
+      ${isLandscape ? 'text-[12px]' : isPhone ? 'text-[12px]' : isSmallScreen ? 'text-[12px]' : 'text-base'} 
       transition-all duration-200 border border-2 shadow-sm min-w-0
       ${localCutCount === num 
         ? "bg-[#F68E5F] text-white border-[#F26419] hover:bg-[#F47B42] hover:border-[#E15A0F] active:bg-[#E15A0F]" 
@@ -104,7 +113,7 @@ export default function PuzzleControlsCutCount({ goToNextTab }: PuzzleControlsCu
         </div>
         
         {/* 难度指示器 */}
-        <div className="flex justify-between text-xs text-[#F26419] px-1 mt-1">
+        <div className="flex justify-between text-[12px] text-[#F26419] px-1 mt-1">
           <span>简单</span>
           <span className="ml-auto">困难</span>
         </div>
@@ -114,9 +123,9 @@ export default function PuzzleControlsCutCount({ goToNextTab }: PuzzleControlsCu
       <Button 
         onClick={handleGeneratePuzzle} 
         disabled={!isShapeGenerated || state.isScattered || !hasSelectedCount} 
-        className={`w-full ${isPhone ? 'py-1.5 text-sm' : ''} bg-[#F68E5F] hover:bg-[#F47B42] text-white border-2 border-[#F26419] hover:border-[#E15A0F] active:bg-[#E15A0F] rounded-xl shadow-md ${(!isShapeGenerated || state.isScattered || !hasSelectedCount) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+        className={`w-full ${isLandscape ? 'py-1 text-[12px]' : isPhone ? 'py-1.5 text-[12px]' : ''} bg-[#F68E5F] hover:bg-[#F47B42] text-white border-2 border-[#F26419] hover:border-[#E15A0F] active:bg-[#E15A0F] rounded-xl shadow-md ${(!isShapeGenerated || state.isScattered || !hasSelectedCount) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
       >
-        <PuzzleIcon className="w-4 h-4 mr-2" />
+        <PuzzleIcon className={`${isLandscape ? 'w-3 h-3' : ''} w-4 h-4 mr-2`} />
         切割形状
       </Button>
     </div>

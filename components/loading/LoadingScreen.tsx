@@ -75,7 +75,7 @@ export default function LoadingScreen({ onLoadComplete }: LoadingScreenProps) {
           setTimeout(resolve, 1500, { timeout: true });
         });
         
-        const importPromise = import('@/curve-test-optimized');
+        const importPromise = import('@/components/GameInterface');
         
         // 更平滑地增加进度条，提高用户感知的速度
         const progressInterval = setInterval(() => {

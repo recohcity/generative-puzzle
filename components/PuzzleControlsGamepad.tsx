@@ -21,6 +21,7 @@ export default function PuzzleControlsGamepad({ goToFirstTab }: PuzzleControlsGa
   
   // 检测设备类型
   const [isPhone, setIsPhone] = useState(false);
+  const [isLandscape, setIsLandscape] = useState(false);
   
   // 设备检测
   useEffect(() => {
@@ -28,12 +29,20 @@ export default function PuzzleControlsGamepad({ goToFirstTab }: PuzzleControlsGa
       const ua = navigator.userAgent;
       const isMobile = /iPhone|Android/i.test(ua);
       const isPortrait = window.innerHeight > window.innerWidth;
-      setIsPhone(isMobile && isPortrait);
+      setIsPhone(isMobile);
+      setIsLandscape(isMobile && !isPortrait);
     };
     
     checkDevice();
     window.addEventListener('resize', checkDevice);
-    return () => window.removeEventListener('resize', checkDevice);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(checkDevice, 300);
+    });
+    
+    return () => {
+      window.removeEventListener('resize', checkDevice);
+      window.removeEventListener('orientationchange', checkDevice);
+    };
   }, []);
   
   // 所有按钮共用的禁用样式类
@@ -88,39 +97,39 @@ export default function PuzzleControlsGamepad({ goToFirstTab }: PuzzleControlsGa
               state.selectedPiece === null ||
               state.completedPieces.includes(state.selectedPiece || -1)
             }
-            className={`w-full ${isPhone ? 'h-9 py-0.5' : 'h-12'} px-0 bg-[#F68E5F] hover:bg-[#F47B42] text-white border-2 border-[#F26419] hover:border-[#E15A0F] active:bg-[#E15A0F] rounded-xl shadow-md 
+            className={`w-full ${isLandscape ? 'h-8 py-0.5' : isPhone ? 'h-9 py-0.5' : 'h-12'} px-0 bg-[#F68E5F] hover:bg-[#F47B42] text-white border-2 border-[#F26419] hover:border-[#E15A0F] active:bg-[#E15A0F] rounded-xl shadow-md 
               ${!state.isScattered || state.selectedPiece === null || 
                 state.completedPieces.includes(state.selectedPiece || -1) 
                 ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
             title="显示提示"
             variant="ghost"
           >
-            <Lightbulb className="w-4 h-4 text-white" />
-            <span className="ml-1 text-xs">提示</span>
+            <Lightbulb className={`${isLandscape ? 'w-3 h-3' : 'w-4 h-4'} text-white`} />
+            <span className={`ml-1 ${isLandscape ? 'text-[12px]' : 'text-[12px]'}`}>提示</span>
           </Button>
 
           <Button
             onClick={() => handleRotatePiece(false)}
             disabled={!state.isScattered || state.selectedPiece === null || state.isCompleted}
-            className={`w-full ${isPhone ? 'h-9 py-0.5' : 'h-12'} px-0 bg-[#F68E5F] hover:bg-[#F47B42] text-white border-2 border-[#F26419] hover:border-[#E15A0F] active:bg-[#E15A0F] rounded-xl shadow-md 
+            className={`w-full ${isLandscape ? 'h-8 py-0.5' : isPhone ? 'h-9 py-0.5' : 'h-12'} px-0 bg-[#F68E5F] hover:bg-[#F47B42] text-white border-2 border-[#F26419] hover:border-[#E15A0F] active:bg-[#E15A0F] rounded-xl shadow-md 
               ${!state.isScattered || state.selectedPiece === null || state.isCompleted ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
             title="逆时针旋转"
             variant="ghost"
           >
-            <RotateCcw className="w-4 h-4 text-white" />
-            <span className="ml-1 text-xs">左转</span>
+            <RotateCcw className={`${isLandscape ? 'w-3 h-3' : 'w-4 h-4'} text-white`} />
+            <span className={`ml-1 ${isLandscape ? 'text-[12px]' : 'text-[12px]'}`}>左转</span>
           </Button>
 
           <Button
             onClick={() => handleRotatePiece(true)}
             disabled={!state.isScattered || state.selectedPiece === null || state.isCompleted}
-            className={`w-full ${isPhone ? 'h-9 py-0.5' : 'h-12'} px-0 bg-[#F68E5F] hover:bg-[#F47B42] text-white border-2 border-[#F26419] hover:border-[#E15A0F] active:bg-[#E15A0F] rounded-xl shadow-md 
+            className={`w-full ${isLandscape ? 'h-8 py-0.5' : isPhone ? 'h-9 py-0.5' : 'h-12'} px-0 bg-[#F68E5F] hover:bg-[#F47B42] text-white border-2 border-[#F26419] hover:border-[#E15A0F] active:bg-[#E15A0F] rounded-xl shadow-md 
               ${!state.isScattered || state.selectedPiece === null || state.isCompleted ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
             title="顺时针旋转"
             variant="ghost"
           >
-            <RotateCw className="w-4 h-4 text-white" />
-            <span className="ml-1 text-xs">右转</span>
+            <RotateCw className={`${isLandscape ? 'w-3 h-3' : 'w-4 h-4'} text-white`} />
+            <span className={`ml-1 ${isLandscape ? 'text-[12px]' : 'text-[12px]'}`}>右转</span>
           </Button>
         </div>
       </div>
@@ -129,20 +138,22 @@ export default function PuzzleControlsGamepad({ goToFirstTab }: PuzzleControlsGa
       <div>
         <Button 
           onClick={handleResetGame} 
-          variant="outline" 
-          className={`w-full ${isPhone ? 'h-9 py-0.5 text-sm' : 'h-12'} bg-[#1E1A2A] hover:bg-[#141022] text-white border-2 border-[#504C67] hover:border-[#706B89] active:bg-[#0F0B19] rounded-xl shadow-md`}
+          className={`w-full ${isLandscape ? 'h-8 py-0.5 text-[12px]' : isPhone ? 'h-9 py-0.5 text-[12px]' : 'h-12 text-base'} 
+                    bg-[#1E1A2A] text-white border-2 border-[#504C67] rounded-xl shadow-md 
+                    hover:bg-[#141022] hover:text-white hover:border-[#706B89] 
+                    active:bg-[#2A283E] active:text-white active:border-[#463E50]`}
         >
-          <RefreshCw className="w-4 h-4 mr-2" />
+          <RefreshCw className={`${isLandscape ? 'w-3 h-3' : isPhone ? 'w-4 h-4' : 'w-4 h-4'} mr-2`} />
           重新开始
         </Button>
       </div>
       
       {state.selectedPiece !== null && state.puzzle && (
-        <div className={`text-center ${isPhone ? 'text-xs mt-1' : 'text-sm mt-2'}`}>
+        <div className={`text-center ${isLandscape ? 'text-[12px] mt-1' : isPhone ? 'text-[12px] mt-1' : 'text-sm mt-2'}`}>
           <div className="text-[#FFD5AB] font-medium">
             当前角度: {Math.round(state.puzzle[state.selectedPiece].rotation)}°
           </div>
-          <div className="text-xs text-[#F68E5F] mt-0.5 font-medium">
+          <div className={`${isLandscape ? 'text-[12px]' : 'text-[12px]'} text-[#F68E5F] mt-0.5 font-medium`}>
             {isPhone ? "可以使用2只手指旋转拼图" : "(旋转角度需与目标角度匹配才能放置)"}
           </div>
         </div>

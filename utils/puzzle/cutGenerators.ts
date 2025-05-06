@@ -93,29 +93,29 @@ export const generateCuts = (shape: Point[], count: number, type: "straight" | "
   // 为不同难度级别设置精确的切割线数量 - 确保拼图数量稳定
   let targetCutCount = count;
   if (difficulty === 8) {
-    // 难度8：固定生成14条切割线，产生15块拼图
-    targetCutCount = 14;
-    console.log(`最高难度：生成${targetCutCount}条切割线，产生${targetCutCount + 1}块拼图`);
+    // 难度8：尝试生成14条切割线 (实际稳定产生13条有效切割线 -> 14片拼图)
+    targetCutCount = 14; 
+    console.log(`最高难度：尝试生成${targetCutCount}条切割线`); // 更新日志信息
   } else if (difficulty === 7) {
-    // 难度7：固定生成11条切割线，产生12块拼图
+    // 难度7：尝试生成11条切割线 (实际稳定产生11条有效切割线 -> 12片拼图)
     targetCutCount = 11;
-    console.log(`高难度：生成${targetCutCount}条切割线，产生${targetCutCount + 1}块拼图`);
+    console.log(`高难度：尝试生成${targetCutCount}条切割线`); // 更新日志信息
   } else if (difficulty === 6) {
-    // 难度6：固定生成8条切割线，产生9块拼图
+    // 难度6：尝试生成8条切割线 (实际稳定产生8条有效切割线 -> 9片拼图)
     targetCutCount = 8;
-    console.log(`中高难度：生成${targetCutCount}条切割线，产生${targetCutCount + 1}块拼图`);
+    console.log(`中高难度：尝试生成${targetCutCount}条切割线`); // 更新日志信息
   } else if (difficulty === 5) {
-    // 难度5：固定生成6条切割线，产生7块拼图
+    // 难度5：尝试生成6条切割线 (实际稳定产生6条有效切割线 -> 7片拼图)
     targetCutCount = 6;
-    console.log(`中难度：生成${targetCutCount}条切割线，产生${targetCutCount + 1}块拼图`);
+    console.log(`中难度：尝试生成${targetCutCount}条切割线`); // 更新日志信息
   } else if (difficulty === 4) {
-    // 难度4：固定生成4条切割线，产生5块拼图
+    // 难度4：尝试生成4条切割线 (实际稳定产生4条有效切割线 -> 5片拼图)
     targetCutCount = 4;
-    console.log(`中低难度：生成${targetCutCount}条切割线，产生${targetCutCount + 1}块拼图`);
+    console.log(`中低难度：尝试生成${targetCutCount}条切割线`); // 更新日志信息
   } else {
     // 难度1-3：切割次数等于难度级别，产生难度+1块拼图
     targetCutCount = difficulty;
-    console.log(`低难度：生成${targetCutCount}条切割线，产生${targetCutCount + 1}块拼图`);
+    console.log(`低难度：尝试生成${targetCutCount}条切割线`); // 更新日志信息
   }
   
   // 根据难度调整切割生成策略

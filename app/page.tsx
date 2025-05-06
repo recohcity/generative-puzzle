@@ -12,7 +12,7 @@ const LoadingScreen = dynamic(() => import('@/components/loading/LoadingScreen')
 })
 
 // 预加载主游戏组件，设置为priority
-const CurveTestOptimized = dynamic(() => import('@/curve-test-optimized'), {
+const CurveTestOptimized = dynamic(() => import('@/components/GameInterface'), {
   ssr: false
 })
 
@@ -33,7 +33,7 @@ export default function PuzzleTestPage() {
       
       // 直接开始并行预加载，不使用requestIdleCallback
       // 这将加快资源加载速度，避免等待空闲时间
-      import('@/curve-test-optimized')
+      import('@/components/GameInterface')
         .then(() => console.log('游戏组件预加载完成'))
         .catch(err => console.error('游戏组件预加载失败:', err))
       

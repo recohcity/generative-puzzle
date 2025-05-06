@@ -222,8 +222,10 @@ export default function PuzzleControls({ goToNextTab, goToFirstTab }: PuzzleCont
 
         <Button 
           onClick={handleResetGame} 
-          variant="outline" 
-          className="w-full bg-[#1E1A2A] hover:bg-[#141022] text-white border-2 border-[#504C67] hover:border-[#706B89] active:bg-[#0F0B19] rounded-xl shadow-md"
+          className={`w-full h-12 text-base 
+                    bg-[#1E1A2A] text-white border-2 border-[#504C67] rounded-xl shadow-md 
+                    hover:bg-[#141022] hover:text-white hover:border-[#706B89] 
+                    active:bg-[#2A283E] active:text-white active:border-[#463E50]`}
         >
           <RefreshCw className="w-4 h-4 mr-2" />
           重新开始

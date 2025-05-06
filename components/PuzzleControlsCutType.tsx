@@ -17,6 +17,7 @@ export default function PuzzleControlsCutType({ goToNextTab }: PuzzleControlsCut
   
   // 检测设备类型
   const [isPhone, setIsPhone] = useState(false);
+  const [isLandscape, setIsLandscape] = useState(false);
   
   // 设备检测
   useEffect(() => {
@@ -24,12 +25,20 @@ export default function PuzzleControlsCutType({ goToNextTab }: PuzzleControlsCut
       const ua = navigator.userAgent;
       const isMobile = /iPhone|Android/i.test(ua);
       const isPortrait = window.innerHeight > window.innerWidth;
-      setIsPhone(isMobile && isPortrait);
+      setIsPhone(isMobile);
+      setIsLandscape(isMobile && !isPortrait);
     };
     
     checkDevice();
     window.addEventListener('resize', checkDevice);
-    return () => window.removeEventListener('resize', checkDevice);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(checkDevice, 300);
+    });
+    
+    return () => {
+      window.removeEventListener('resize', checkDevice);
+      window.removeEventListener('orientationchange', checkDevice);
+    };
   }, []);
   
   // 检查是否已生成形状
@@ -77,7 +86,7 @@ export default function PuzzleControlsCutType({ goToNextTab }: PuzzleControlsCut
             />
             <Label
               htmlFor="straight"
-              className={`flex items-center justify-center ${isPhone ? 'p-1.5 text-sm' : 'p-2'} border-2 rounded-lg transition-all shadow-sm 
+              className={`flex items-center justify-center ${isLandscape ? 'p-1 text-[12px]' : isPhone ? 'p-1.5 text-[12px]' : 'p-2'} border-2 rounded-lg transition-all shadow-sm 
                 ${localCutType === CutType.Straight 
                 ? "bg-[#F68E5F] text-white border-[#F26419] hover:bg-[#F47B42] hover:border-[#E15A0F] active:bg-[#E15A0F]" 
                 : "bg-[#3D3852] text-white border-transparent hover:border-[#504C67] hover:bg-[#4D4862] active:bg-[#302B45]"}
@@ -96,7 +105,7 @@ export default function PuzzleControlsCutType({ goToNextTab }: PuzzleControlsCut
             />
             <Label
               htmlFor="diagonal"
-              className={`flex items-center justify-center ${isPhone ? 'p-1.5 text-sm' : 'p-2'} border-2 rounded-lg transition-all shadow-sm 
+              className={`flex items-center justify-center ${isLandscape ? 'p-1 text-[12px]' : isPhone ? 'p-1.5 text-[12px]' : 'p-2'} border-2 rounded-lg transition-all shadow-sm 
                 ${localCutType === CutType.Diagonal 
                 ? "bg-[#F68E5F] text-white border-[#F26419] hover:bg-[#F47B42] hover:border-[#E15A0F] active:bg-[#E15A0F]" 
                 : "bg-[#3D3852] text-white border-transparent hover:border-[#504C67] hover:bg-[#4D4862] active:bg-[#302B45]"}
