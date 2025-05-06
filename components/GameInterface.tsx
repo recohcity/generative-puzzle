@@ -1,25 +1,46 @@
 "use client"
+// import { GameProvider, useGame } from "@/contexts/GameContext" // useGame is called in child components now
 import { GameProvider } from "@/contexts/GameContext"
 // Removed custom ThemeProvider/useTheme import
 // import { ThemeProvider, useTheme } from "@/contexts/ThemeContext"
 import PuzzleCanvas from "@/components/PuzzleCanvas"
-import PuzzleControls from "@/components/PuzzleControls"
+// import PuzzleControls from "@/components/PuzzleControls" // Not used directly for layout
 import ShapeControls from "@/components/ShapeControls"
 import PuzzleControlsCutType from "@/components/PuzzleControlsCutType"
 import PuzzleControlsCutCount from "@/components/PuzzleControlsCutCount"
 import PuzzleControlsScatter from "@/components/PuzzleControlsScatter"
 import PuzzleControlsGamepad from "@/components/PuzzleControlsGamepad"
+import ActionButtons from "@/components/ActionButtons" 
 import { Button } from "@/components/ui/button"
-import { Volume2, VolumeX, Maximize, Minimize } from "lucide-react"
+import { Volume2, VolumeX, Maximize, Minimize, RefreshCw } from "lucide-react" 
 import { useState, useEffect, useRef } from "react"
 import { 
   initBackgroundMusic, 
   toggleBackgroundMusic, 
   getBackgroundMusicStatus, 
-  playButtonClickSound 
+  playButtonClickSound // Still needed here for other buttons
 } from "@/utils/rendering/soundEffects"
+import DesktopPuzzleSettings from "./DesktopPuzzleSettings"; // <-- Import the new component
+
+// --- Create Inner Component for Desktop Puzzle Settings ---
+// import { useGame } from "@/contexts/GameContext"; // No longer needed here
+
+// interface DesktopPuzzleSettingsProps { ... } // Remove interface definition
+
+// const DesktopPuzzleSettings: React.FC<DesktopPuzzleSettingsProps> = ({ goToNextTab }) => { ... } // Remove component definition
+// --- End Inner Component ---
+
+// Import new layout components
+import DesktopLayout from "./layouts/DesktopLayout";
+import PhonePortraitLayout from "./layouts/PhonePortraitLayout";
+import PhoneLandscapeLayout from "./layouts/PhoneLandscapeLayout";
 
 export default function CurveTestOptimized() {
+  // --- Remove useGame hook call from top level --- 
+  // const gameContext = useGame(); 
+  // const resetGame = gameContext.resetGame; 
+  // --- End Remove useGame hook call ---
+
   // 添加背景音乐状态
   const [isMusicPlaying, setIsMusicPlaying] = useState(true);
   // 添加全屏状态
@@ -488,8 +509,33 @@ export default function CurveTestOptimized() {
     setActiveTab('shape');
   };
 
+  const commonLayoutProps = {
+    isMusicPlaying,
+    isFullscreen,
+    onToggleMusic: handleToggleMusic,
+    onToggleFullscreen: toggleFullscreen,
+    goToNextTab,
+    goToFirstTab,
+    activeTab,
+    onTabChange: handleTabChange,
+    // deviceType and phoneMode are used by GameInterface to pick the layout,
+    // but individual layouts might not need them if their structure is fixed.
+  };
+
+  let layoutToRender;
+  if (deviceType === 'desktop' || deviceType === 'tablet') {
+    layoutToRender = <DesktopLayout {...commonLayoutProps} goToNextTab={goToNextTab} />;
+  } else if (deviceType === 'phone') {
+    if (phoneMode === 'portrait') {
+      layoutToRender = <PhonePortraitLayout {...commonLayoutProps} />;
+    } else { // landscape
+      layoutToRender = <PhoneLandscapeLayout {...commonLayoutProps} />;
+    }
+  } else {
+    layoutToRender = <div>Loading layout...</div>; // Fallback or loading state
+  }
+
   return (
-    // Removed custom ThemeProvider wrapper
     <GameProvider>
       <div 
         ref={gameContainerRef}
@@ -500,248 +546,7 @@ export default function CurveTestOptimized() {
           backgroundPosition: "center"
         }}
       >
-        {/* 根据设备类型应用不同的布局类名 */}
-        <div className={`
-          max-w-[1400px] w-full h-[calc(100vh-32px)] mx-auto relative 
-          ${deviceType === 'phone' && phoneMode === 'portrait' ? 'flex flex-col gap-6' : 
-            deviceType === 'phone' && phoneMode === 'landscape' ? 'flex flex-row gap-2 justify-center items-center p-1' : 
-            'flex flex-row gap-6 justify-center items-center'}
-        `}>
-          {/* 手机竖屏布局时的标题和控制按钮 */}
-          {deviceType === 'phone' && phoneMode === 'portrait' && (
-            <div className="flex flex-col">
-              <div className="flex items-center justify-between">
-                <h1 className="text-xl font-bold text-[#FFB17A]">生成式拼图游戏</h1>
-                
-                <div className="flex items-center space-x-2">
-                  {/* 音乐控制按钮 */}
-                  <Button
-                    onClick={handleToggleMusic}
-                    variant="ghost"
-                    size="icon"
-                    className="rounded-full w-8 h-8 text-[#FFB17A] hover:text-[#F26419] hover:bg-[#463E50] transition-colors"
-                    aria-label={isMusicPlaying ? "关闭背景音乐" : "开启背景音乐"}
-                    title={isMusicPlaying ? "关闭背景音乐" : "开启背景音乐"}
-                  >
-                    {isMusicPlaying ? (
-                      <Volume2 className="h-5 w-5" />
-                    ) : (
-                      <VolumeX className="h-5 w-5" />
-                    )}
-                  </Button>
-                  
-                  {/* 全屏切换按钮 */}
-                  <Button
-                    onClick={toggleFullscreen}
-                    variant="ghost"
-                    size="icon"
-                    className="rounded-full w-8 h-8 text-[#FFB17A] hover:text-[#F26419] hover:bg-[#463E50] transition-colors"
-                    aria-label={isFullscreen ? "退出全屏" : "进入全屏"}
-                    title={isFullscreen ? "退出全屏" : "进入全屏"}
-                  >
-                    {isFullscreen ? (
-                      <Minimize className="h-5 w-5" />
-                    ) : (
-                      <Maximize className="h-5 w-5" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 左侧控制面板 */}
-          <div className={`
-            ${deviceType === 'phone' && phoneMode === 'portrait' ? 'w-full h-[50vh] order-2' : 
-              deviceType === 'phone' && phoneMode === 'landscape' ? 'w-[300px] min-w-[300px] h-full' : 
-              'w-[350px] min-w-[350px] h-full'} 
-            flex-shrink-0
-          `}>
-            {/* 面板背景和样式 */}
-            <div className={`bg-[#36323E] rounded-3xl border-2 border-[#463E50] h-full flex flex-col shadow-[0_10px_25px_rgba(0,0,0,0.3)] overflow-hidden
-              ${deviceType === 'phone' && phoneMode === 'landscape' ? 'p-2' : 'p-4 lg:p-6'}`}>
-              {/* 手机横屏或非手机设备显示的标题和控制按钮 */}
-              {(deviceType !== 'phone' || (deviceType === 'phone' && phoneMode === 'landscape')) && (
-                <div className="flex flex-col mb-1 flex-shrink-0">
-                  <div className="flex items-center justify-between">
-                    <h1 className={`${deviceType === 'phone' && phoneMode === 'landscape' ? 'text-sm' : 'text-xl'} font-bold text-[#FFB17A]`}>生成式拼图游戏</h1>
-                    
-                    <div className="flex items-center space-x-2">
-                      {/* 音乐控制按钮 */}
-                      <Button
-                        onClick={handleToggleMusic}
-                        variant="ghost"
-                        size="icon"
-                        className={`rounded-full ${deviceType === 'phone' && phoneMode === 'landscape' ? 'w-6 h-6' : 'w-8 h-8'} text-[#FFB17A] hover:text-[#F26419] hover:bg-[#463E50] transition-colors`}
-                        aria-label={isMusicPlaying ? "关闭背景音乐" : "开启背景音乐"}
-                        title={isMusicPlaying ? "关闭背景音乐" : "开启背景音乐"}
-                      >
-                        {isMusicPlaying ? (
-                          <Volume2 className={`${deviceType === 'phone' && phoneMode === 'landscape' ? 'h-4 w-4' : 'h-5 w-5'}`} />
-                        ) : (
-                          <VolumeX className={`${deviceType === 'phone' && phoneMode === 'landscape' ? 'h-4 w-4' : 'h-5 w-5'}`} />
-                        )}
-                      </Button>
-                      
-                      {/* 全屏切换按钮 */}
-                      <Button
-                        onClick={toggleFullscreen}
-                        variant="ghost"
-                        size="icon"
-                        className={`rounded-full ${deviceType === 'phone' && phoneMode === 'landscape' ? 'w-6 h-6' : 'w-8 h-8'} text-[#FFB17A] hover:text-[#F26419] hover:bg-[#463E50] transition-colors`}
-                        aria-label={isFullscreen ? "退出全屏" : "进入全屏"}
-                        title={isFullscreen ? "退出全屏" : "进入全屏"}
-                      >
-                        {isFullscreen ? (
-                          <Minimize className={`${deviceType === 'phone' && phoneMode === 'landscape' ? 'h-4 w-4' : 'h-5 w-5'}`} />
-                        ) : (
-                          <Maximize className={`${deviceType === 'phone' && phoneMode === 'landscape' ? 'h-4 w-4' : 'h-5 w-5'}`} />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {/* 手机设备显示的选项卡切换 */}
-              {deviceType === 'phone' && (
-                <div className={`flex ${phoneMode === 'landscape' ? 'flex-row justify-between' : 'justify-center'} bg-[#2A283E] rounded-xl mb-1 overflow-x-auto whitespace-nowrap scrollbar-hide`}>
-                  <button
-                    className={`${phoneMode === 'landscape' ? 'py-1 px-1.5 text-[12px] flex-1' : 'min-w-[65px] px-1 py-1 text-[12px]'} font-medium transition-colors
-                      ${activeTab === 'shape' 
-                        ? 'bg-[#F68E5F] text-white' 
-                        : 'text-[#FFD5AB] hover:bg-[#463E50]'}`}
-                    onClick={() => handleTabChange('shape')}
-                  >
-                    形状
-                  </button>
-                  <button
-                    className={`${phoneMode === 'landscape' ? 'py-1 px-1.5 text-[12px] flex-1' : 'min-w-[65px] px-1 py-1 text-[12px]'} font-medium transition-colors
-                      ${activeTab === 'puzzle' 
-                        ? 'bg-[#F68E5F] text-white' 
-                        : 'text-[#FFD5AB] hover:bg-[#463E50]'}`}
-                    onClick={() => handleTabChange('puzzle')}
-                  >
-                    切割类型
-                  </button>
-                  <button
-                    className={`${phoneMode === 'landscape' ? 'py-1 px-1.5 text-[12px] flex-1' : 'min-w-[65px] px-1 py-1 text-[12px]'} font-medium transition-colors
-                      ${activeTab === 'cut' 
-                        ? 'bg-[#F68E5F] text-white' 
-                        : 'text-[#FFD5AB] hover:bg-[#463E50]'}`}
-                    onClick={() => handleTabChange('cut')}
-                  >
-                    切割次数
-                  </button>
-                  <button
-                    className={`${phoneMode === 'landscape' ? 'py-1 px-1.5 text-[12px] flex-1' : 'min-w-[65px] px-1 py-1 text-[12px]'} font-medium transition-colors
-                      ${activeTab === 'scatter' 
-                        ? 'bg-[#F68E5F] text-white' 
-                        : 'text-[#FFD5AB] hover:bg-[#463E50]'}`}
-                    onClick={() => handleTabChange('scatter')}
-                  >
-                    散开
-                  </button>
-                  <button
-                    className={`${phoneMode === 'landscape' ? 'py-1 px-1.5 text-[12px] flex-1' : 'min-w-[65px] px-1 py-1 text-[12px]'} font-medium transition-colors
-                      ${activeTab === 'controls' 
-                        ? 'bg-[#F68E5F] text-white' 
-                        : 'text-[#FFD5AB] hover:bg-[#463E50]'}`}
-                    onClick={() => handleTabChange('controls')}
-                  >
-                    控制
-                  </button>
-                </div>
-              )}
-              
-              {/* 面板内容区域 */}
-              <div className={`space-y-1 flex-1 overflow-y-auto pr-1 -mr-1 ${deviceType === 'phone' && phoneMode === 'landscape' ? 'max-h-[calc(100vh-60px)]' : deviceType === 'phone' ? 'max-h-[calc(100vh-180px)]' : ''}`}> 
-                {/* 根据选项卡显示内容 */}
-                {deviceType !== 'phone' && (
-                  <>
-                    <div className="p-3 bg-[#463E50] rounded-2xl shadow-[0_4px_10px_rgba(0,0,0,0.2)]">
-                      <h3 className="text-sm font-medium mb-2 text-[#FFD5AB]">生成形状</h3>
-                      <ShapeControls goToNextTab={goToNextTab} />
-                    </div>
-                    <div className="p-3 bg-[#463E50] rounded-2xl shadow-[0_4px_10px_rgba(0,0,0,0.2)]">
-                      <h3 className="text-sm font-medium mb-2 text-[#FFD5AB]">拼图设置</h3>
-                      <PuzzleControls goToNextTab={goToNextTab} goToFirstTab={goToFirstTab} />
-                    </div>
-                  </>
-                )}
-                
-                {/* 手机模式下根据activeTab显示不同内容 */}
-                {deviceType === 'phone' && (
-                  <>
-                    {activeTab === 'shape' && (
-                      <div className={`p-1.5 bg-[#463E50] rounded-2xl shadow-[0_4px_10px_rgba(0,0,0,0.2)] ${phoneMode === 'landscape' ? 'p-2' : ''}`}>
-                        <h3 className="text-xs font-medium mb-1 text-[#FFD5AB]">生成形状</h3>
-                        <ShapeControls goToNextTab={goToNextTab} />
-                      </div>
-                    )}
-                    
-                    {activeTab === 'puzzle' && (
-                      <div className={`p-1.5 bg-[#463E50] rounded-2xl shadow-[0_4px_10px_rgba(0,0,0,0.2)] ${phoneMode === 'landscape' ? 'p-2' : ''}`}>
-                        <h3 className="text-xs font-medium mb-1 text-[#FFD5AB]">选择切割类型</h3>
-                        <PuzzleControlsCutType goToNextTab={goToNextTab} />
-                      </div>
-                    )}
-
-                    {activeTab === 'cut' && (
-                      <div className={`p-1.5 bg-[#463E50] rounded-2xl shadow-[0_4px_10px_rgba(0,0,0,0.2)] ${phoneMode === 'landscape' ? 'p-2' : ''}`}>
-                        <h3 className="text-xs font-medium mb-1 text-[#FFD5AB]">选择切割次数</h3>
-                        <PuzzleControlsCutCount goToNextTab={goToNextTab} />
-                      </div>
-                    )}
-
-                    {activeTab === 'scatter' && (
-                      <div className={`p-1.5 bg-[#463E50] rounded-2xl shadow-[0_4px_10px_rgba(0,0,0,0.2)] ${phoneMode === 'landscape' ? 'p-2' : ''}`}>
-                        <h3 className="text-xs font-medium mb-1 text-[#FFD5AB]">散开拼图</h3>
-                        <PuzzleControlsScatter goToNextTab={goToNextTab} />
-                      </div>
-                    )}
-
-                    {activeTab === 'controls' && (
-                      <div className={`p-1.5 bg-[#463E50] rounded-2xl shadow-[0_4px_10px_rgba(0,0,0,0.2)] ${phoneMode === 'landscape' ? 'p-2' : ''}`}>
-                        <h3 className="text-xs font-medium mb-1 text-[#FFD5AB]">游戏控制</h3>
-                        <PuzzleControlsGamepad goToFirstTab={goToFirstTab} />
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* 右侧游戏区域 */}
-          <div className={`
-            ${deviceType === 'phone' && phoneMode === 'portrait' ? 'w-full h-[50vh] order-1' : 
-              deviceType === 'phone' && phoneMode === 'landscape' ? 'flex-1 h-full' : 
-              'flex-1 h-full'} 
-            relative bg-white/20 backdrop-blur-sm rounded-3xl shadow-[0_10px_25px_rgba(0,0,0,0.2)] border-2 border-white/30 flex justify-center items-center overflow-hidden
-          `}>
-            {/* 游戏画布 */}
-            <PuzzleCanvas />
-          </div>
-        </div>
-
-        {/* 手机竖屏布局切换按钮 */}
-        {deviceType === 'phone' && (
-          <button
-            className="fixed bottom-4 right-4 z-50 bg-[#F26419] text-white rounded-full p-3 shadow-lg"
-            onClick={() => {
-              const container = document.querySelector('.flex-col');
-              if (container) {
-                container.classList.toggle('order-swap');
-              }
-            }}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
-              <line x1="4" y1="12" x2="20" y2="12"></line>
-            </svg>
-          </button>
-        )}
+        {layoutToRender}
       </div>
     </GameProvider>
   )

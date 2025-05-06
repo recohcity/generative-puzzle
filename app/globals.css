@@ -303,7 +303,7 @@ div[class*="rounded"] {
 .flex-col {
   /* 默认样式适用于所有设备 */
   display: flex;
-  gap: 1.5rem;
+  gap: 0.8rem;
 }
 
 /* 手机模式下的切换布局时的过渡动画 */

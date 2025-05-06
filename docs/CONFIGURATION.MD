@@ -10,8 +10,10 @@
 - **形状生成**: `utils/shape/ShapeGenerator.ts`
 - **拼图散开与分布**: `utils/puzzle/ScatterPuzzle.ts`
 - **核心状态管理**: `contexts/GameContext.tsx`
-- **渲染与交互**: `components/PuzzleCanvas.tsx`, `components/GameInterface.tsx`
-- **设备适配逻辑**: 分散在 `GameInterface.tsx`, `PuzzleCanvas.tsx`, `ShapeGenerator.ts`, `ScatterPuzzle.ts` 等
+- **渲染与交互**: `components/PuzzleCanvas.tsx`
+- **界面布局与路由**: `components/GameInterface.tsx` (作为布局路由), `components/layouts/DesktopLayout.tsx`, `components/layouts/PhonePortraitLayout.tsx`, `components/layouts/PhoneLandscapeLayout.tsx`
+- **控制组件**: `components/ShapeControls.tsx`, `components/PuzzleControlsCutType.tsx`, `components/PuzzleControlsCutCount.tsx`, `components/PuzzleControlsScatter.tsx`, `components/PuzzleControlsGamepad.tsx`, `components/ActionButtons.tsx`, `components/DesktopPuzzleSettings.tsx`, `components/GlobalUtilityButtons.tsx`
+- **设备适配逻辑**: 主要在 `GameInterface.tsx` (检测与分发) 和各个布局组件 (`components/layouts/`) 中实现特定布局。部分底层逻辑仍在 `ShapeGenerator.ts`, `ScatterPuzzle.ts`, `GameContext.tsx` 等。
 - **音效管理**: `utils/rendering/soundEffects.ts`
 - **构建配置**: `next.config.mjs`
 - **UI 与主题**: `tailwind.config.ts`, `components.json` (Shadcn UI)
@@ -80,15 +82,16 @@
 
 ## 设备适配配置 (分散在多个文件)
 
-- **检测**: 通过 `navigator.userAgent` 和 `window.innerWidth/innerHeight` 检测设备类型 (phone/tablet/desktop) 和方向 (portrait/landscape)。`hooks/use-mobile.tsx` 可提供基础检测，但多处组件内有更具体的检测逻辑。
+- **检测**: 通过 `navigator.userAgent` 和 `window.innerWidth/innerHeight` 检测设备类型 (phone/tablet/desktop) 和方向 (portrait/landscape)。主要检测逻辑位于 `GameInterface.tsx`。
 - **主要适配点**:
+    - **UI 布局**: 由 `GameInterface.tsx` 根据检测结果渲染不同的布局组件 (`DesktopLayout`, `PhonePortraitLayout`, `PhoneLandscapeLayout`)。手机竖屏使用选项卡式控制面板。
     - **画布尺寸**: 手机竖屏强制正方形并限制最大尺寸 (`PuzzleCanvas.tsx` -> `setInitialCanvasSize`, `handleResize`)。
-    - **UI 布局**: 手机竖屏使用选项卡式控制面板 (`GameInterface.tsx`)。
     - **形状参数**: 顶点数、半径、扰动幅度等 (`ShapeGenerator.ts`)。
     - **分布策略**: 螺旋 vs 网格 (`ScatterPuzzle.ts`)。
     - **初始旋转**: 90度 vs 15度倍数 (`ScatterPuzzle.ts`)。
     - **边界约束**: 安全边距和约束严格度 (`GameContext.tsx` -> `ensurePieceInBounds`)。
     - **字体大小**: 进度提示等 (`PuzzleCanvas.tsx`)。
+    - **按钮尺寸/间距**: `ShapeControls.tsx`, `GlobalUtilityButtons.tsx` 等组件内部处理。
     - **音量**: `soundEffects.ts` 中可能包含基于设备类型的音量调整。
 
 ## 媒体资源配置 (`public/`, `utils/rendering/soundEffects.ts`)

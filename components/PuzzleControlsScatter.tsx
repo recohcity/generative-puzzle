@@ -61,7 +61,7 @@ export default function PuzzleControlsScatter({ goToNextTab }: PuzzleControlsSca
 
   return (
     <div className="space-y-4">
-      <div className={`text-center mb-4 ${isLandscape ? 'text-[12px]' : isPhone ? 'text-[12px]' : 'text-sm'} text-[#FFD5AB]`}>
+      <div className={`text-center mb-0 ${isLandscape ? 'text-[12px]' : isPhone ? 'text-[12px]' : 'text-xs'} text-[#FFD5AB]`}>
         {isPuzzleGenerated 
           ? "拼图已完成切割，点击散开拼图开始游戏" 
           : "请先生成形状并切割形状"

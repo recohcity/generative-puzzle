@@ -12,7 +12,7 @@ const LoadingScreen = dynamic(() => import('@/components/loading/LoadingScreen')
 })
 
 // 预加载主游戏组件，设置为priority
-const CurveTestOptimized = dynamic(() => import('@/components/GameInterface'), {
+const GameInterfaceComponent = dynamic(() => import('@/components/GameInterface'), {
   ssr: false
 })
 
@@ -118,7 +118,7 @@ export default function PuzzleTestPage() {
       {isLoading ? (
         <LoadingScreen onLoadComplete={handleLoadComplete} />
       ) : (
-        <CurveTestOptimized />
+        <GameInterfaceComponent />
       )}
     </main>
   )

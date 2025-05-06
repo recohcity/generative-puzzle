@@ -79,7 +79,9 @@ export default function ShapeControls({ goToNextTab }: ShapeControlsProps) {
           <Button
             variant="ghost"
             className={`
-              flex flex-col items-center justify-center ${isLandscape ? 'py-1' : isPhone ? 'py-2' : 'py-3'} h-auto gap-1 rounded-lg border-2 shadow-sm transition-all duration-200
+              flex flex-col items-center justify-center 
+              ${isPhone ? 'py-px' : 'py-1'}
+              h-auto rounded-lg border-2 shadow-sm transition-all duration-200
               ${activeShapeType === ShapeType.Polygon 
                 ? "bg-[#F68E5F] text-white border-[#F26419] hover:bg-[#F47B42] hover:border-[#E15A0F] active:bg-[#E15A0F]" 
                 : "bg-[#3D3852] text-white border-transparent hover:border-[#504C67] hover:bg-[#4D4862] active:bg-[#302B45]"}
@@ -89,7 +91,7 @@ export default function ShapeControls({ goToNextTab }: ShapeControlsProps) {
             disabled={state.puzzle !== null}
           >
             <Hexagon
-              className={`${isLandscape ? 'w-4 h-4' : isPhone ? 'w-5 h-5' : 'w-6 h-6'} text-white`}
+              className={`${isLandscape ? 'w-4 h-4' : isPhone ? 'w-5 h-5' : 'w-6 h-6'} text-white mb-px`}
             />
             <span className={`${isLandscape ? 'text-[12px]' : isPhone ? 'text-[12px]' : 'text-xs'}`}>多边形</span>
           </Button>
@@ -97,7 +99,9 @@ export default function ShapeControls({ goToNextTab }: ShapeControlsProps) {
           <Button
             variant="ghost"
             className={`
-              flex flex-col items-center justify-center ${isLandscape ? 'py-1' : isPhone ? 'py-2' : 'py-3'} h-auto gap-1 rounded-lg border-2 shadow-sm transition-all duration-200
+              flex flex-col items-center justify-center 
+              ${isPhone ? 'py-px' : 'py-3'}
+              h-auto rounded-lg border-2 shadow-sm transition-all duration-200
               ${activeShapeType === ShapeType.Curve 
                 ? "bg-[#F68E5F] text-white border-[#F26419] hover:bg-[#F47B42] hover:border-[#E15A0F] active:bg-[#E15A0F]" 
                 : "bg-[#3D3852] text-white border-transparent hover:border-[#504C67] hover:bg-[#4D4862] active:bg-[#302B45]"}
@@ -107,7 +111,7 @@ export default function ShapeControls({ goToNextTab }: ShapeControlsProps) {
             disabled={state.puzzle !== null}
           >
             <Circle
-              className={`${isLandscape ? 'w-4 h-4' : isPhone ? 'w-5 h-5' : 'w-6 h-6'} text-white`}
+              className={`${isLandscape ? 'w-4 h-4' : isPhone ? 'w-5 h-5' : 'w-6 h-6'} text-white mb-px`}
             />
             <span className={`${isLandscape ? 'text-[12px]' : isPhone ? 'text-[12px]' : 'text-xs'}`}>{isLandscape ? '曲凸形状' : '曲凸形状'}</span>
           </Button>
@@ -115,7 +119,9 @@ export default function ShapeControls({ goToNextTab }: ShapeControlsProps) {
           <Button
             variant="ghost"
             className={`
-              flex flex-col items-center justify-center ${isLandscape ? 'py-1' : isPhone ? 'py-2' : 'py-3'} h-auto gap-1 rounded-lg border-2 shadow-sm transition-all duration-200
+              flex flex-col items-center justify-center 
+              ${isPhone ? 'py-px' : 'py-3'}
+              h-auto rounded-lg border-2 shadow-sm transition-all duration-200
               ${activeShapeType === ShapeType.Circle 
                 ? "bg-[#F68E5F] text-white border-[#F26419] hover:bg-[#F47B42] hover:border-[#E15A0F] active:bg-[#E15A0F]" 
                 : "bg-[#3D3852] text-white border-transparent hover:border-[#504C67] hover:bg-[#4D4862] active:bg-[#302B45]"}
@@ -125,7 +131,7 @@ export default function ShapeControls({ goToNextTab }: ShapeControlsProps) {
             disabled={state.puzzle !== null}
           >
             <BlobIcon
-              className={`${isLandscape ? 'w-4 h-4' : isPhone ? 'w-5 h-5' : 'w-6 h-6'} text-white`}
+              className={`${isLandscape ? 'w-4 h-4' : isPhone ? 'w-5 h-5' : 'w-6 h-6'} text-white mb-px`}
             />
             <span className={`${isLandscape ? 'text-[12px]' : isPhone ? 'text-[12px]' : 'text-xs'}`}>{isLandscape ? '云朵形状' : '云朵形状'}</span>
           </Button>
@@ -134,7 +140,9 @@ export default function ShapeControls({ goToNextTab }: ShapeControlsProps) {
 
       <Button 
         onClick={handleGenerateShape} 
-        className={`w-full ${isLandscape ? 'py-1 text-[12px]' : isPhone ? 'py-1.5 text-[12px]' : ''} bg-[#36B37E] hover:bg-[#00875A] text-white border-2 border-[#00875A] rounded-xl shadow-md font-medium disabled:opacity-30 disabled:hover:bg-[#36B37E] active:bg-[#00734D]`}
+        className={`w-full 
+                  ${isPhone ? 'py-px text-[12px]' : 'py-2'}
+                  bg-[#36B37E] hover:bg-[#00875A] text-white border-2 border-[#00875A] rounded-xl shadow-md font-medium disabled:opacity-30 disabled:hover:bg-[#36B37E] active:bg-[#00734D]`}
         disabled={state.puzzle !== null}
       >
         {state.originalShape.length > 0 ? "重新生成形状" : "生成形状"}

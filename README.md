@@ -107,7 +107,38 @@
 - 实现拼图碰撞检测和吸附效果
 - 支持触摸屏交互，包括拖拽和双指旋转
 
-### 3. 加载系统
+### 3. GameInterface
+
+游戏界面的**布局路由**和**核心状态管理**组件。
+
+**主要功能**: 
+- 检测设备类型和屏幕方向。
+- 管理全局 UI 状态（如音乐、全屏）和手机端 Tab 状态。
+- 根据设备检测结果，渲染对应的布局组件 (`DesktopLayout`, `PhonePortraitLayout`, `PhoneLandscapeLayout`)。
+- 将必要的状态和回调函数传递给布局组件。
+
+### 4. 布局组件 (components/layouts/)
+
+负责不同设备或屏幕方向下的界面结构。
+
+- **DesktopLayout**: 桌面和平板设备的布局。
+- **PhonePortraitLayout**: 手机竖屏布局，包含 Tab 切换逻辑。
+- **PhoneLandscapeLayout**: 手机横屏布局，包含 Tab 切换逻辑。
+
+### 5. 控制面板组件 (components/)
+
+构成控制面板的各个功能模块。
+
+- **ShapeControls**: 形状类型选择和生成按钮。
+- **PuzzleControlsCutType**: 切割类型选择按钮。
+- **PuzzleControlsCutCount**: 切割次数选择按钮。
+- **PuzzleControlsScatter**: 散开拼图按钮。
+- **ActionButtons**: 可复用的提示和旋转按钮。
+- **DesktopPuzzleSettings**: 聚合了桌面端"拼图设置"区域所需的控件。
+- **PuzzleControlsGamepad**: 手机端"控制"Tab 的内容，包含 `ActionButtons` 和重置按钮。
+- **GlobalUtilityButtons**: 可复用的全局音乐和全屏按钮。
+
+### 6. 加载系统 (components/loading/)
 
 由`LoadingScreen`和`LoadingScreenStatic`组件组成的加载体验优化系统。
 
@@ -118,7 +149,7 @@
 - 静态与动态加载页面无缝过渡
 - 超时保护机制
 
-### 4. 音效系统
+### 7. 音效系统 (utils/rendering/soundEffects.ts)
 
 提供游戏中各种交互的声音反馈。
 
@@ -131,7 +162,7 @@
 - 循环背景音乐 (可通过按钮控制)
 - 设备自适应音量调节
 
-### 5. 移动设备优化
+### 8. 移动设备优化
 
 专为触摸屏设备设计的交互优化。
 

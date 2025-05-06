@@ -2,6 +2,34 @@
 
 本文档记录项目的所有版本更新内容和变更历史。
 
+## [v1.3.0] - 2025-05-06
+
+### 重大重构
+- **组件化重构**: 
+    - 将原 `PuzzleControls` 组件拆分为单一职责组件 (`ShapeControls`, `PuzzleControlsCutType`, `PuzzleControlsCutCount`, `PuzzleControlsScatter`)。
+    - 创建可复用的 `ActionButtons` 组件（提示/旋转）和 `GlobalUtilityButtons` 组件（音乐/全屏）。
+    - 创建 `DesktopPuzzleSettings` 组件聚合桌面端拼图设置。
+    - 移除未使用的 `PuzzleControls` 组件。
+- **布局结构分离**: 
+    - 创建 `components/layouts` 目录，并实现 `DesktopLayout`, `PhonePortraitLayout`, `PhoneLandscapeLayout` 布局组件。
+    - 重构 `GameInterface` 组件，使其主要负责设备检测、状态管理和布局路由，移除具体布局 JSX。
+- **状态逻辑优化**: 
+    - 将画布清理逻辑移入 `GameContext` 的 `resetGame` 函数。
+
+### 优化
+- **手机端UI优化**: 调整 `ShapeControls` 内按钮的内边距和间距，使其在手机端更紧凑，释放垂直空间。
+- **代码整洁**: 重命名 `app/page.tsx` 中动态导入 `GameInterface` 的别名，提升可读性。
+
+### 修复问题
+- **渲染问题**: 
+    - 解决电脑端控制面板重复渲染的问题。
+    - 解决手机端"控制" Tab 中提示信息重复的问题。
+- **逻辑错误**: 修复 `useGame` hook 在 `GameProvider` 外部调用的错误。
+- **交互一致性**: 恢复并确认手机端 Tab 自动跳转功能按预期工作。
+
+### 文档更新
+- 同步更新 `README.md`, `CONFIGURATION.MD`, `PROJECT_STRUCTURE.MD` 以反映最新的组件结构和职责。
+
 ## [v1.2.0] - 2025-05-05
 
 ### 增强功能

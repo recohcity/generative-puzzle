@@ -466,41 +466,22 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // 添加重置游戏函数
   const resetGame = useCallback(() => {
-    console.log("重置游戏状态");
-    
-    // 确保保留当前画布尺寸和设备信息
-    const currentCanvasWidth = state.canvasWidth;
-    const currentCanvasHeight = state.canvasHeight;
-    
-    // 记录当前设备信息，用于日志
-    const isPortrait = window.innerHeight > window.innerWidth;
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    console.log(`重置时设备信息: 移动=${isMobile}, 竖屏=${isPortrait}, 画布=${currentCanvasWidth}x${currentCanvasHeight}`);
-    
-    // 清除状态
-    dispatch({ type: "RESET_GAME" });
-    
-    // 重要：确保画布尺寸已正确设置
+    // Clear the canvases first
     if (canvasRef.current) {
-      const hasCorrectSize = 
-        canvasRef.current.width === currentCanvasWidth && 
-        canvasRef.current.height === currentCanvasHeight;
-      
-      console.log(`重置后画布尺寸: ${canvasRef.current.width}x${canvasRef.current.height}, 是否正确: ${hasCorrectSize}`);
-      
-      // 如果尺寸不匹配，强制更新
-      if (!hasCorrectSize && currentCanvasWidth && currentCanvasHeight) {
-        console.log("重置后画布尺寸不正确，强制更新");
-        canvasRef.current.width = currentCanvasWidth;
-        canvasRef.current.height = currentCanvasHeight;
-        
-        if (backgroundCanvasRef.current) {
-          backgroundCanvasRef.current.width = currentCanvasWidth;
-          backgroundCanvasRef.current.height = currentCanvasHeight;
-        }
+      const ctx = canvasRef.current.getContext("2d")
+      if (ctx) {
+        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
       }
     }
-  }, [dispatch, state.canvasWidth, state.canvasHeight, canvasRef, backgroundCanvasRef]);
+        if (backgroundCanvasRef.current) {
+      const bgCtx = backgroundCanvasRef.current.getContext("2d")
+      if (bgCtx) {
+        bgCtx.clearRect(0, 0, backgroundCanvasRef.current.width, backgroundCanvasRef.current.height)
+        }
+      }
+    // Then dispatch the reset action
+    dispatch({ type: "RESET_GAME" })
+  }, []) // Keep dependencies empty if refs are stable
 
   // 简单的音效函数
   const playSnapSound = () => {

@@ -9,21 +9,27 @@ generative-puzzle/
 ├── app/                      # Next.js App Router 文件
 │   ├── globals.css           # 全局样式
 │   ├── layout.tsx            # 根布局组件
-│   └── page.tsx              # 主页面组件 (动态加载 GameInterface)
+│   └── page.tsx              # 主页面组件 (动态加载 GameInterfaceComponent)
 ├── components/               # UI组件
 │   ├── ui/                   # 基础UI组件 (Shadcn UI)
 │   ├── loading/              # 加载相关组件
 │   │   ├── LoadingScreen.tsx # 动态加载屏幕组件
 │   │   └── LoadingScreenStatic.tsx # 静态加载屏幕组件
-│   ├── GameInterface.tsx     # 主要游戏界面组件 (原 curve-test-optimized.tsx)
+│   ├── layouts/              # 特定于设备的布局组件
+│   │   ├── DesktopLayout.tsx
+│   │   ├── PhonePortraitLayout.tsx
+│   │   └── PhoneLandscapeLayout.tsx
+│   ├── GameInterface.tsx     # 游戏界面路由和状态管理器
 │   ├── PuzzleCanvas.tsx      # 画布渲染组件
-│   ├── PuzzleControls.tsx    # 拼图控制面板
-│   ├── PuzzleControlsCutCount.tsx  # 切割次数控制组件
-│   ├── PuzzleControlsCutType.tsx   # 切割类型控制组件
-│   ├── PuzzleControlsGamepad.tsx   # 游戏控制组件 (重置/提示等)
-│   ├── PuzzleControlsScatter.tsx   # 拼图散开控制组件n
 │   ├── ShapeControls.tsx     # 形状控制组件
-│   └── theme-provider.tsx    # 主题提供者组件
+│   ├── PuzzleControlsCutType.tsx   # 切割类型控制组件
+│   ├── PuzzleControlsCutCount.tsx  # 切割次数控制组件
+│   ├── PuzzleControlsScatter.tsx   # 拼图散开控制组件
+│   ├── PuzzleControlsGamepad.tsx   # 手机控制Tab组件 (含重置/控制按钮)
+│   ├── ActionButtons.tsx     # 可复用的提示/旋转按钮组件
+│   ├── DesktopPuzzleSettings.tsx # 桌面端拼图设置区域组件
+│   ├── GlobalUtilityButtons.tsx  # 可复用的全局控制按钮 (音乐/全屏)
+│   └── theme-provider.tsx    # 主题提供者组件 (可能未使用?)
 ├── contexts/                 # 状态管理
 │   └── GameContext.tsx       # 游戏状态管理
 ├── docs/                     # 项目文档
@@ -73,12 +79,18 @@ Next.js 15 应用路由系统的入口点。
 包含所有React组件，包括游戏界面和UI元素。
 
 - `loading/`: 包含 `LoadingScreen.tsx` 和 `LoadingScreenStatic.tsx` 负责加载体验。
-- `GameInterface.tsx`: **主要的游戏界面组件**，整合了控制面板和画布区域 (之前名为 `curve-test-optimized.tsx`)。
+- `layouts/`: 包含针对不同设备/方向的布局组件 (`DesktopLayout`, `PhonePortraitLayout`, `PhoneLandscapeLayout`)。
+- `GameInterface.tsx`: **主要的游戏界面路由和状态管理组件**，负责设备检测、状态管理，并根据设备渲染对应的布局组件。
 - `PuzzleCanvas.tsx`: 核心画布组件，处理渲染与交互。
-- `PuzzleControls.tsx`: 完整的拼图控制面板 (桌面端/平板端)。
-- `PuzzleControlsCutCount.tsx`, `PuzzleControlsCutType.tsx`, `PuzzleControlsGamepad.tsx`, `PuzzleControlsScatter.tsx`: 手机端选项卡式控制面板的各个部分。
 - `ShapeControls.tsx`: 形状生成控制面板。
-- `theme-provider.tsx`: 提供主题切换功能。
+- `PuzzleControlsCutType.tsx`: 切割类型控制面板。
+- `PuzzleControlsCutCount.tsx`: 切割次数控制面板。
+- `PuzzleControlsScatter.tsx`: 散开拼图控制面板。
+- `PuzzleControlsGamepad.tsx`: 手机"控制"选项卡的内容，包含 `ActionButtons` 和重置按钮。
+- `ActionButtons.tsx`: 可复用的提示和旋转按钮。
+- `DesktopPuzzleSettings.tsx`: 桌面端"拼图设置"区域的组件集合。
+- `GlobalUtilityButtons.tsx`: 可复用的音乐和全屏按钮。
+- `theme-provider.tsx`: 提供主题切换功能 (需确认是否实际使用)。
 - `ui/`: 基于Shadcn UI的基础组件库。
 
 ### contexts 目录
