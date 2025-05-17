@@ -15,6 +15,13 @@ type PuzzlePiece = {
   y: number
   originalX: number
   originalY: number
+  needsBounceAnimation?: boolean
+  bounceInfo?: {
+    correctionX: number
+    correctionY: number
+    bounceX: number
+    bounceY: number
+  }
 }
 
 // 声明一个接口描述游戏状态中的画布尺寸
@@ -94,9 +101,13 @@ export class ScatterPuzzle {
       console.log(`普通设备，使用边距: ${margin}px`);
     }
     
+    // 统一的边界安全距离，用于所有边界相关计算
+    const SAFE_BOUNDARY_MARGIN = Math.max(15, margin / 2); // 至少15像素的安全边距
+    console.log(`使用统一边界安全距离: ${SAFE_BOUNDARY_MARGIN}px`);
+    
     // 确保可用区域
-    const safeWidth = Math.max(canvasWidth - margin * 2, 200);
-    const safeHeight = Math.max(canvasHeight - margin * 2, 200);
+    const safeWidth = Math.max(canvasWidth - SAFE_BOUNDARY_MARGIN * 2, 200);
+    const safeHeight = Math.max(canvasHeight - SAFE_BOUNDARY_MARGIN * 2, 200);
 
     // 使用更合理的网格大小
     let gridCols = Math.ceil(Math.sqrt(pieces.length * 1.5)); // 增加列数，减少重叠
@@ -120,13 +131,13 @@ export class ScatterPuzzle {
     
     if (difficulty <= 3) {
       // 低难度(1-3片)使用更集中的分布
-      distributionFactor = 0.65;
+      distributionFactor = 0.6; // 减小分布因子，使拼图更集中
     } else if (difficulty <= 6) {
       // 中等难度(4-6片)
-      distributionFactor = 0.75;
+      distributionFactor = 0.7; // 减小分布因子，使拼图更集中
     } else {
       // 高难度(7+片)使用更分散的分布
-      distributionFactor = 0.85;
+      distributionFactor = 0.75; // 减小分布因子，使拼图更集中
     }
     
     console.log(`难度: ${difficulty}, 分布因子: ${distributionFactor}`);
@@ -225,8 +236,58 @@ export class ScatterPuzzle {
     // 随机打乱拼图顺序，避免总是相同的分布
     const shuffledIndices = [...Array(scatteredPieces.length).keys()].sort(() => Math.random() - 0.5);
     
-    // 计算每个拼图的边界框
+    // 计算每个拼图的边界框 - 注意：需要考虑旋转！
+    // 修改这部分，使用与GameContext中相同的calculatePieceBounds逻辑
     const pieceBounds = scatteredPieces.map(piece => {
+      // 如果拼图有旋转，需要计算旋转后的实际边界
+      if (piece.rotation !== 0) {
+        // 计算拼图中心点
+        const xs = piece.points.map(p => p.x);
+        const ys = piece.points.map(p => p.y);
+        const center = {
+          x: (Math.min(...xs) + Math.max(...xs)) / 2,
+          y: (Math.min(...ys) + Math.max(...ys)) / 2
+        };
+        
+        // 角度转为弧度
+        const radians = (piece.rotation * Math.PI) / 180;
+        
+        // 计算每个点旋转后的位置
+        const rotatedPoints = piece.points.map(p => {
+          // 将点平移到原点
+          const dx = p.x - center.x;
+          const dy = p.y - center.y;
+          
+          // 应用旋转
+          const rotatedDx = dx * Math.cos(radians) - dy * Math.sin(radians);
+          const rotatedDy = dx * Math.sin(radians) + dy * Math.cos(radians);
+          
+          // 将点平移回原来的位置
+          return {
+            x: center.x + rotatedDx,
+            y: center.y + rotatedDy
+          };
+        });
+        
+        // 使用旋转后的点计算边界框
+        const minX = Math.min(...rotatedPoints.map(p => p.x));
+        const maxX = Math.max(...rotatedPoints.map(p => p.x));
+        const minY = Math.min(...rotatedPoints.map(p => p.y));
+        const maxY = Math.max(...rotatedPoints.map(p => p.y));
+        
+        // 计算尺寸和中心点
+        const width = maxX - minX;
+        const height = maxY - minY;
+        
+        return { 
+          minX, maxX, minY, maxY, 
+          width, height, 
+          centerX: center.x, 
+          centerY: center.y 
+        };
+      }
+      
+      // 如果没有旋转，直接使用原始点计算边界框
       const xs = piece.points.map(p => p.x);
       const ys = piece.points.map(p => p.y);
       const minX = Math.min(...xs);
@@ -234,13 +295,12 @@ export class ScatterPuzzle {
       const minY = Math.min(...ys);
       const maxY = Math.max(...ys);
       
-      return {
-        minX, maxX, minY, maxY,
-        width: maxX - minX,
-        height: maxY - minY,
-        centerX: (minX + maxX) / 2,
-        centerY: (minY + maxY) / 2
-      };
+      const width = maxX - minX;
+      const height = maxY - minY;
+      const centerX = (minX + maxX) / 2;
+      const centerY = (minY + maxY) / 2;
+      
+      return { minX, maxX, minY, maxY, width, height, centerX, centerY };
     });
     
     // 跟踪已放置的拼图边界
@@ -255,11 +315,15 @@ export class ScatterPuzzle {
       const piece = scatteredPieces[pieceIndex];
       const bounds = pieceBounds[pieceIndex];
       
-      // 随机旋转
+      // 随机旋转拼图 - 先保存一下原始旋转，以便后面计算旋转后的实际边界
       const rotationSteps = Math.floor(Math.random() * 8); // 0-7，每步45度
       piece.rotation = rotationSteps * 45;
       
-      // 确定拼图的放置位置
+      // ===== 应用旋转后，重新计算拼图的实际边界 =====
+      // 因为旋转会改变拼图的实际边界尺寸
+      const rotatedBounds = this.calculateRotatedPieceBounds(piece);
+      
+      // 确定拼图的放置位置 - 使用旋转后的真实边界
       let bestX = 0, bestY = 0;
       let minOverlap = Infinity;
       let placementFound = false;
@@ -270,43 +334,46 @@ export class ScatterPuzzle {
         const areaIndex = Math.floor(Math.random() * placementAreas.length);
         const area = placementAreas[areaIndex];
         
-        // 在区域内随机选择一个位置
-        const gridX = Math.floor(Math.random() * gridCols);
-        const gridY = Math.floor(Math.random() * gridRows);
+        // 在区域内随机选择一个位置，减少边缘位置的概率
+        const gridX = Math.floor((0.2 + 0.6 * Math.random()) * gridCols); // 进一步减少边缘概率
+        const gridY = Math.floor((0.2 + 0.6 * Math.random()) * gridRows); // 进一步减少边缘概率
         
-        // 计算在网格中的位置
-        const gridCenterX = area.x + margin/2 + gridX * cellWidth + cellWidth / 2;
-        const gridCenterY = area.y + margin/2 + gridY * cellHeight + cellHeight / 2;
+        // 计算在网格中的位置，添加额外边距以避免边缘
+        const extraMargin = 20; // 额外边距
+        const gridCenterX = area.x + extraMargin + gridX * cellWidth + cellWidth / 2;
+        const gridCenterY = area.y + extraMargin + gridY * cellHeight + cellHeight / 2;
         
-        // 加入一些随机偏移
-        const offsetX = (Math.random() - 0.5) * cellWidth * 0.7; // 增加偏移范围
-        const offsetY = (Math.random() - 0.5) * cellHeight * 0.7; // 增加偏移范围
+        // 加入适度的随机偏移，但减小偏移范围
+        const offsetX = (Math.random() - 0.5) * cellWidth * 0.5; // 减小偏移范围
+        const offsetY = (Math.random() - 0.5) * cellHeight * 0.5; // 减小偏移范围
         
         const posX = gridCenterX + offsetX;
         const posY = gridCenterY + offsetY;
         
-        // 确保拼图边界离画布边缘有足够的距离，但使用更小的边距
-        const minMargin = 5; // 使用非常小的边距，只要能保证拼图全部可见
-        const adjustedX = Math.max(minMargin + bounds.width/2, Math.min(canvasWidth - minMargin - bounds.width/2, posX));
-        const adjustedY = Math.max(minMargin + bounds.height/2, Math.min(canvasHeight - minMargin - bounds.height/2, posY));
+        // 确保拼图边界离画布边缘有足够的距离
+        // 使用旋转后的真实边界进行约束！
+        const adjustedX = Math.max(SAFE_BOUNDARY_MARGIN + rotatedBounds.width/2, 
+                                 Math.min(canvasWidth - SAFE_BOUNDARY_MARGIN - rotatedBounds.width/2, posX));
+        const adjustedY = Math.max(SAFE_BOUNDARY_MARGIN + rotatedBounds.height/2, 
+                                 Math.min(canvasHeight - SAFE_BOUNDARY_MARGIN - rotatedBounds.height/2, posY));
         
         console.log(`拼图${pieceIndex}的放置位置计算:`, {
           grid: { x: gridX, y: gridY, cellWidth, cellHeight },
           gridCenter: { x: gridCenterX, y: gridCenterY },
           randomOffset: { x: offsetX, y: offsetY },
           initialPos: { x: posX, y: posY },
-          pieceBounds: { width: bounds.width, height: bounds.height },
+          pieceBounds: { width: rotatedBounds.width, height: rotatedBounds.height },
           adjustedPos: { x: adjustedX, y: adjustedY },
           canvas: { width: canvasWidth, height: canvasHeight },
-          margin: { normal: margin, min: minMargin }
+          safeMargin: SAFE_BOUNDARY_MARGIN
         });
         
-        // 计算拼图在新位置的边界框
+        // 计算拼图在新位置的边界框 - 使用旋转后的实际尺寸！
         const pieceRect = {
-          x: adjustedX - bounds.width/2,
-          y: adjustedY - bounds.height/2,
-          width: bounds.width,
-          height: bounds.height
+          x: adjustedX - rotatedBounds.width/2,
+          y: adjustedY - rotatedBounds.height/2,
+          width: rotatedBounds.width,
+          height: rotatedBounds.height
         };
         
         // 验证拼图是否在画布内
@@ -388,28 +455,30 @@ export class ScatterPuzzle {
       let correctionNeeded = false;
       let correctionDx = 0, correctionDy = 0;
       
+      // 使用统一的边界安全距离
+      
       // 检查左边界
-      if (updatedBounds.minX < 0) {
-        correctionDx = -updatedBounds.minX;
+      if (updatedBounds.minX < SAFE_BOUNDARY_MARGIN) {
+        correctionDx = SAFE_BOUNDARY_MARGIN - updatedBounds.minX;
         correctionNeeded = true;
         console.warn(`⚠️ 拼图${pieceIndex}超出左边界，需要修正${correctionDx}px`);
       }
       // 检查右边界
-      else if (updatedBounds.maxX > canvasWidth) {
-        correctionDx = canvasWidth - updatedBounds.maxX;
+      else if (updatedBounds.maxX > canvasWidth - SAFE_BOUNDARY_MARGIN) {
+        correctionDx = canvasWidth - SAFE_BOUNDARY_MARGIN - updatedBounds.maxX;
         correctionNeeded = true;
         console.warn(`⚠️ 拼图${pieceIndex}超出右边界，需要修正${correctionDx}px`);
       }
       
       // 检查上边界
-      if (updatedBounds.minY < 0) {
-        correctionDy = -updatedBounds.minY;
+      if (updatedBounds.minY < SAFE_BOUNDARY_MARGIN) {
+        correctionDy = SAFE_BOUNDARY_MARGIN - updatedBounds.minY;
         correctionNeeded = true;
         console.warn(`⚠️ 拼图${pieceIndex}超出上边界，需要修正${correctionDy}px`);
       }
       // 检查下边界
-      else if (updatedBounds.maxY > canvasHeight) {
-        correctionDy = canvasHeight - updatedBounds.maxY;
+      else if (updatedBounds.maxY > canvasHeight - SAFE_BOUNDARY_MARGIN) {
+        correctionDy = canvasHeight - SAFE_BOUNDARY_MARGIN - updatedBounds.maxY;
         correctionNeeded = true;
         console.warn(`⚠️ 拼图${pieceIndex}超出下边界，需要修正${correctionDy}px`);
       }
@@ -443,9 +512,91 @@ export class ScatterPuzzle {
       });
     }
     
-    console.log(`已完成拼图散布，共${scatteredPieces.length}块`);
+    // 对每个拼图进行布局后，作最终的边界验证
+    const finalScatteredPieces = [...scatteredPieces];
     
-    return scatteredPieces;
+    // 对所有拼图进行最终的边界检查，确保不超出画布
+    for (let i = 0; i < finalScatteredPieces.length; i++) {
+      const piece = finalScatteredPieces[i];
+      
+      // 计算拼图的边界 - 使用考虑旋转的边界计算方法！
+      const pieceBounds = this.calculateRotatedPieceBounds(piece);
+      
+      // 边界安全距离 - 使用已定义的统一值
+      let finalCorrectionNeeded = false;
+      let finalCorrectionDx = 0, finalCorrectionDy = 0;
+      
+      // 执行更严格的边界检查
+      if (pieceBounds.minX < SAFE_BOUNDARY_MARGIN) {
+        finalCorrectionDx = SAFE_BOUNDARY_MARGIN - pieceBounds.minX;
+        finalCorrectionNeeded = true;
+        console.warn(`🔴 最终检查: 拼图${i}仍超出左边界，修正${finalCorrectionDx}px`);
+      } else if (pieceBounds.maxX > canvasWidth - SAFE_BOUNDARY_MARGIN) {
+        finalCorrectionDx = canvasWidth - SAFE_BOUNDARY_MARGIN - pieceBounds.maxX;
+        finalCorrectionNeeded = true;
+        console.warn(`🔴 最终检查: 拼图${i}仍超出右边界，修正${finalCorrectionDx}px`);
+      }
+      
+      if (pieceBounds.minY < SAFE_BOUNDARY_MARGIN) {
+        finalCorrectionDy = SAFE_BOUNDARY_MARGIN - pieceBounds.minY;
+        finalCorrectionNeeded = true;
+        console.warn(`🔴 最终检查: 拼图${i}仍超出上边界，修正${finalCorrectionDy}px`);
+      } else if (pieceBounds.maxY > canvasHeight - SAFE_BOUNDARY_MARGIN) {
+        finalCorrectionDy = canvasHeight - SAFE_BOUNDARY_MARGIN - pieceBounds.maxY;
+        finalCorrectionNeeded = true;
+        console.warn(`🔴 最终检查: 拼图${i}仍超出下边界，修正${finalCorrectionDy}px`);
+      }
+      
+      // 如果需要最终修正，则应用修正
+      if (finalCorrectionNeeded) {
+        console.warn(`🛠️ 对拼图${i}应用最终强制修正: dx=${finalCorrectionDx}, dy=${finalCorrectionDy}, 旋转角度=${piece.rotation}°`);
+        
+        // 更新拼图位置
+        piece.x += finalCorrectionDx;
+        piece.y += finalCorrectionDy;
+        
+        // 更新所有点的位置
+        piece.points = piece.points.map(p => ({
+          ...p,
+          x: p.x + finalCorrectionDx,
+          y: p.y + finalCorrectionDy
+        }));
+        
+        // 再次验证修正后的边界，确认不会超出画布
+        const verifiedBounds = this.calculateRotatedPieceBounds(piece);
+        if (
+          verifiedBounds.minX < SAFE_BOUNDARY_MARGIN || 
+          verifiedBounds.maxX > canvasWidth - SAFE_BOUNDARY_MARGIN ||
+          verifiedBounds.minY < SAFE_BOUNDARY_MARGIN || 
+          verifiedBounds.maxY > canvasHeight - SAFE_BOUNDARY_MARGIN
+        ) {
+          // 如果仍然超出，采取强制措施：将拼图移到画布中心位置
+          console.error(`❌ 拼图${i}修正后仍超出边界，强制移至画布中心区域`);
+          const centerX = canvasWidth / 2;
+          const centerY = canvasHeight / 2;
+          const centerDx = centerX - piece.x;
+          const centerDy = centerY - piece.y;
+          
+          // 更新拼图位置到中心
+          piece.x = centerX;
+          piece.y = centerY;
+          
+          // 更新所有点的位置
+          piece.points = piece.points.map(p => ({
+            ...p,
+            x: p.x + centerDx,
+            y: p.y + centerDy
+          }));
+        }
+      }
+    }
+    
+    console.log(`已完成拼图散布，共${finalScatteredPieces.length}块，通过了最终边界检查`);
+    
+    // 添加边界超出检测与回弹机制
+    // 为超出边界的拼图提供回弹动画效果
+    // 返回包含需要回弹信息的拼图数组
+    return this.addBounceBackAnimation(finalScatteredPieces, canvasWidth, canvasHeight, SAFE_BOUNDARY_MARGIN);
   }
   
   // 辅助函数：计算螺旋位置
@@ -509,8 +660,8 @@ export class ScatterPuzzle {
     targetShape: { x: number, y: number, width: number, height: number, center: { x: number, y: number }, radius: number } | null,
     margin: number
   ): Array<{ x: number, y: number, width: number, height: number }> {
-    // 使用传入的边距，如未提供则使用较小的默认值
-    const safeMargin = margin || 5;
+    // 使用传入的边距，并确保最小值
+    const safeMargin = Math.max(15, margin);
     
     // 如果没有目标形状，使用整个画布作为放置区域
     if (!targetShape) {
@@ -596,6 +747,398 @@ export class ScatterPuzzle {
     console.log(`生成了${validAreas.length}个有效放置区域:`, validAreas);
     
     return validAreas;
+  }
+
+  // 帮助方法：考虑旋转计算拼图真实边界
+  static calculateRotatedPieceBounds(piece: PuzzlePiece) {
+    // 如果拼图有旋转，需要计算旋转后的实际边界
+    if (piece.rotation !== 0) {
+      // 计算拼图中心点
+      const xs = piece.points.map(p => p.x);
+      const ys = piece.points.map(p => p.y);
+      const center = {
+        x: (Math.min(...xs) + Math.max(...xs)) / 2,
+        y: (Math.min(...ys) + Math.max(...ys)) / 2
+      };
+      
+      // 角度转为弧度
+      const radians = (piece.rotation * Math.PI) / 180;
+      
+      // 计算每个点旋转后的位置
+      const rotatedPoints = piece.points.map(p => {
+        // 将点平移到原点
+        const dx = p.x - center.x;
+        const dy = p.y - center.y;
+        
+        // 应用旋转
+        const rotatedDx = dx * Math.cos(radians) - dy * Math.sin(radians);
+        const rotatedDy = dx * Math.sin(radians) + dy * Math.cos(radians);
+        
+        // 将点平移回原来的位置
+        return {
+          x: center.x + rotatedDx,
+          y: center.y + rotatedDy
+        };
+      });
+      
+      // 使用旋转后的点计算边界框
+      const minX = Math.min(...rotatedPoints.map(p => p.x));
+      const maxX = Math.max(...rotatedPoints.map(p => p.x));
+      const minY = Math.min(...rotatedPoints.map(p => p.y));
+      const maxY = Math.max(...rotatedPoints.map(p => p.y));
+      
+      // 计算尺寸和中心点
+      const width = maxX - minX;
+      const height = maxY - minY;
+      
+      return { 
+        minX, maxX, minY, maxY, 
+        width, height, 
+        centerX: center.x, 
+        centerY: center.y 
+      };
+    }
+    
+    // 如果没有旋转，直接使用原始点计算边界框
+    const xs = piece.points.map(p => p.x);
+    const ys = piece.points.map(p => p.y);
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+    
+    const width = maxX - minX;
+    const height = maxY - minY;
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    
+    return { minX, maxX, minY, maxY, width, height, centerX, centerY };
+  }
+
+  // 新增函数：检测边界超出并添加回弹动画信息
+  static addBounceBackAnimation(
+    pieces: PuzzlePiece[], 
+    canvasWidth: number, 
+    canvasHeight: number, 
+    safeMargin: number
+  ): PuzzlePiece[] {
+    // 为每个拼图检查是否需要回弹
+    // 并保存回弹信息供外部使用
+    const piecesWithBounceInfo = [...pieces];
+    
+    // 增加更严格的安全边距，确保检测更严格
+    const strictSafeMargin = Math.max(safeMargin, 15); // 至少15像素的安全边距
+    console.log(`使用更严格的边界检测安全边距: ${strictSafeMargin}px`);
+    
+    // 将需要回弹的拼图信息记录在这里
+    const bounceBackPieces: {
+      index: number;
+      piece: PuzzlePiece;
+      currentBounds: {
+        minX: number;
+        maxX: number;
+        minY: number;
+        maxY: number;
+        width: number;
+        height: number;
+      };
+      correctionX: number;
+      correctionY: number;
+      bounceX: number;
+      bounceY: number;
+    }[] = [];
+    
+    // 检查每个拼图
+    for (let i = 0; i < piecesWithBounceInfo.length; i++) {
+      const piece = piecesWithBounceInfo[i];
+      
+      // 增强精度：计算拼图当前的边界（考虑旋转）- 使用多种方法计算以提高准确性
+      const currentBounds = this.calculateRotatedPieceBounds(piece);
+      
+      // 额外的边界检查: 特别注意旋转拼图的边界，使用点集计算
+      // 这是为了提高旋转拼图边界检测的准确性
+      let extremePoints: {minX: number, maxX: number, minY: number, maxY: number} | null = null;
+      
+      if (piece.rotation !== 0) {
+        // 对于旋转的拼图，直接检查所有点的极值
+        const allPoints = piece.points.map(p => ({
+          x: p.x,
+          y: p.y
+        }));
+        
+        // 角度转为弧度
+        const radians = (piece.rotation * Math.PI) / 180;
+        const center = {
+          x: piece.x,
+          y: piece.y
+        };
+        
+        // 计算旋转后的点
+        const rotatedPoints = allPoints.map(p => {
+          // 将点平移到中心点
+          const dx = p.x - center.x;
+          const dy = p.y - center.y;
+          
+          // 应用旋转
+          const rotatedDx = dx * Math.cos(radians) - dy * Math.sin(radians);
+          const rotatedDy = dx * Math.sin(radians) + dy * Math.cos(radians);
+          
+          // 将点平移回原来的位置
+          return {
+            x: center.x + rotatedDx,
+            y: center.y + rotatedDy
+          };
+        });
+        
+        // 计算极点值
+        extremePoints = {
+          minX: Math.min(...rotatedPoints.map(p => p.x)),
+          maxX: Math.max(...rotatedPoints.map(p => p.x)),
+          minY: Math.min(...rotatedPoints.map(p => p.y)),
+          maxY: Math.max(...rotatedPoints.map(p => p.y))
+        };
+      }
+      
+      // 使用两种边界计算方法中更大的边界作为最终边界
+      const finalBounds = {
+        minX: extremePoints ? Math.min(currentBounds.minX, extremePoints.minX) : currentBounds.minX,
+        maxX: extremePoints ? Math.max(currentBounds.maxX, extremePoints.maxX) : currentBounds.maxX,
+        minY: extremePoints ? Math.min(currentBounds.minY, extremePoints.minY) : currentBounds.minY,
+        maxY: extremePoints ? Math.max(currentBounds.maxY, extremePoints.maxY) : currentBounds.maxY,
+        width: currentBounds.width,
+        height: currentBounds.height
+      };
+      
+      // 计算宽高
+      finalBounds.width = finalBounds.maxX - finalBounds.minX;
+      finalBounds.height = finalBounds.maxY - finalBounds.minY;
+      
+      // 检查是否超出画布边界 - 使用更严格的边距
+      let correctionX = 0;
+      let correctionY = 0;
+      let bounceNeeded = false;
+      
+      // 降低检测阈值，只要超出0.05像素就触发回弹
+      const detectionThreshold = 0.05;
+      
+      // 检查水平边界
+      if (finalBounds.minX < strictSafeMargin) {
+        // 精确检测是否确实超出边界 - 降低阈值
+        const boundaryViolation = strictSafeMargin - finalBounds.minX;
+        // 只有当确实超出边界时才标记为需要回弹 - 降低阈值
+        if (boundaryViolation > detectionThreshold) {
+          correctionX = boundaryViolation; // 需要向右修正
+          bounceNeeded = true;
+          console.log(`🔄 散开后边界检查: 拼图${i}触碰左边界，需要修正${correctionX}px`);
+        }
+      } else if (finalBounds.maxX > canvasWidth - strictSafeMargin) {
+        // 精确检测是否确实超出边界 - 降低阈值
+        const boundaryViolation = finalBounds.maxX - (canvasWidth - strictSafeMargin);
+        // 只有当确实超出边界时才标记为需要回弹 - 降低阈值
+        if (boundaryViolation > detectionThreshold) {
+          correctionX = -boundaryViolation; // 需要向左修正
+          bounceNeeded = true;
+          console.log(`🔄 散开后边界检查: 拼图${i}触碰右边界，需要修正${correctionX}px`);
+        }
+      }
+      
+      // 检查垂直边界
+      if (finalBounds.minY < strictSafeMargin) {
+        // 精确检测是否确实超出边界 - 降低阈值
+        const boundaryViolation = strictSafeMargin - finalBounds.minY;
+        // 只有当确实超出边界时才标记为需要回弹 - 降低阈值
+        if (boundaryViolation > detectionThreshold) {
+          correctionY = boundaryViolation; // 需要向下修正
+          bounceNeeded = true;
+          console.log(`🔄 散开后边界检查: 拼图${i}触碰上边界，需要修正${correctionY}px`);
+        }
+      } else if (finalBounds.maxY > canvasHeight - strictSafeMargin) {
+        // 精确检测是否确实超出边界 - 降低阈值
+        const boundaryViolation = finalBounds.maxY - (canvasHeight - strictSafeMargin);
+        // 只有当确实超出边界时才标记为需要回弹 - 降低阈值
+        if (boundaryViolation > detectionThreshold) {
+          correctionY = -boundaryViolation; // 需要向上修正
+          bounceNeeded = true;
+          console.log(`🔄 散开后边界检查: 拼图${i}触碰下边界，需要修正${correctionY}px`);
+        }
+      }
+      
+      // 对于旋转的拼图，增加额外的安全边距检测（更严格）
+      if (piece.rotation !== 0 && !bounceNeeded) {
+        // 增加额外的安全边距
+        const extraRotationMargin = 10; // 旋转拼图额外增加10像素安全边距
+        const totalMargin = strictSafeMargin + extraRotationMargin;
+        
+        // 再次检查是否超出边界，使用更大的安全边距
+        if (finalBounds.minX < totalMargin) {
+          correctionX = totalMargin - finalBounds.minX;
+          bounceNeeded = true;
+          console.log(`🔄 旋转拼图额外检查: 拼图${i}左边界过近，应用额外修正${correctionX}px`);
+        } else if (finalBounds.maxX > canvasWidth - totalMargin) {
+          correctionX = canvasWidth - totalMargin - finalBounds.maxX;
+          bounceNeeded = true;
+          console.log(`🔄 旋转拼图额外检查: 拼图${i}右边界过近，应用额外修正${correctionX}px`);
+        }
+        
+        if (finalBounds.minY < totalMargin) {
+          correctionY = totalMargin - finalBounds.minY;
+          bounceNeeded = true;
+          console.log(`🔄 旋转拼图额外检查: 拼图${i}上边界过近，应用额外修正${correctionY}px`);
+        } else if (finalBounds.maxY > canvasHeight - totalMargin) {
+          correctionY = canvasHeight - totalMargin - finalBounds.maxY;
+          bounceNeeded = true;
+          console.log(`🔄 旋转拼图额外检查: 拼图${i}下边界过近，应用额外修正${correctionY}px`);
+        }
+      }
+      
+      // 视觉检测：拼图的任何一部分是否看起来超出边界（判断视觉余量）
+      // 这是为了确保拼图看起来不会太靠近边缘，提供更好的视觉体验
+      if (!bounceNeeded) {
+        const visualMargin = 20; // 视觉上至少离边缘20像素
+        
+        // 如果拼图视觉上太靠近边缘，也应用修正
+        if (finalBounds.minX < visualMargin) {
+          correctionX = visualMargin - finalBounds.minX;
+          bounceNeeded = true;
+          console.log(`🔄 视觉边距检查: 拼图${i}视觉上太靠近左边界，应用修正${correctionX}px`);
+        } else if (finalBounds.maxX > canvasWidth - visualMargin) {
+          correctionX = canvasWidth - visualMargin - finalBounds.maxX;
+          bounceNeeded = true;
+          console.log(`🔄 视觉边距检查: 拼图${i}视觉上太靠近右边界，应用修正${correctionX}px`);
+        }
+        
+        if (finalBounds.minY < visualMargin) {
+          correctionY = visualMargin - finalBounds.minY;
+          bounceNeeded = true;
+          console.log(`🔄 视觉边距检查: 拼图${i}视觉上太靠近上边界，应用修正${correctionY}px`);
+        } else if (finalBounds.maxY > canvasHeight - visualMargin) {
+          correctionY = canvasHeight - visualMargin - finalBounds.maxY;
+          bounceNeeded = true;
+          console.log(`🔄 视觉边距检查: 拼图${i}视觉上太靠近下边界，应用修正${correctionY}px`);
+        }
+      }
+      
+      if (bounceNeeded) {
+        // 与GameContext中保持一致的回弹参数
+        const bounceBackFactor = 0.4;
+        
+        // 使用拼图尺寸的30%作为回弹距离基准
+        const pieceSizeBasedBounce = Math.max(finalBounds.width, finalBounds.height) * 0.3;
+        // 最大回弹距离限制(像素) - 确保回弹效果明显但不过度
+        const maxBounceDistance = Math.min(Math.max(pieceSizeBasedBounce, 30), 80);
+        
+        // 计算回弹距离，与修正方向相反
+        const bounceX = Math.abs(correctionX) > 0 ? 
+                      -Math.sign(correctionX) * Math.min(Math.abs(correctionX) * bounceBackFactor, maxBounceDistance) : 0;
+        const bounceY = Math.abs(correctionY) > 0 ? 
+                      -Math.sign(correctionY) * Math.min(Math.abs(correctionY) * bounceBackFactor, maxBounceDistance) : 0;
+        
+        console.log(`🔄 拼图${i}需要回弹动画: 修正(${correctionX}, ${correctionY}), 回弹(${bounceX}, ${bounceY})`);
+        
+        // 将该拼图添加到需要回弹的列表中
+        bounceBackPieces.push({
+          index: i,
+          piece: piece,
+          currentBounds: finalBounds,
+          correctionX,
+          correctionY,
+          bounceX,
+          bounceY
+        });
+        
+        // 直接应用修正（将拼图挪回安全区域）
+        // 动画回弹效果将由外部GameContext处理
+        piece.x += correctionX;
+        piece.y += correctionY;
+        
+        // 更新所有点的位置
+        piece.points = piece.points.map(p => ({
+          ...p,
+          x: p.x + correctionX,
+          y: p.y + correctionY
+        }));
+        
+        // 为每个拼图添加回弹信息，供外部动画系统使用
+        piece.needsBounceAnimation = true;
+        piece.bounceInfo = {
+          correctionX,
+          correctionY,
+          bounceX, 
+          bounceY
+        };
+      }
+    }
+    
+    // 记录需要回弹的拼图数量
+    if (bounceBackPieces.length > 0) {
+      console.log(`总计${bounceBackPieces.length}个拼图需要边界回弹处理`);
+    } else {
+      console.log(`所有拼图都在安全边界内，无需回弹处理`);
+    }
+    
+    // 强制最终检查：确保所有拼图都在画布内
+    // 即使前面的检测没有发现问题，这里也再次检查
+    for (let i = 0; i < piecesWithBounceInfo.length; i++) {
+      const piece = piecesWithBounceInfo[i];
+      
+      // 如果已经标记了回弹，则跳过
+      if (piece.needsBounceAnimation) continue;
+      
+      // 获取最终的拼图边界
+      const bounds = this.calculateRotatedPieceBounds(piece);
+      
+      // 检查是否有任何部分超出画布
+      const minPadding = 5; // 最小的安全边距
+      
+      if (bounds.minX < minPadding || 
+          bounds.maxX > canvasWidth - minPadding || 
+          bounds.minY < minPadding || 
+          bounds.maxY > canvasHeight - minPadding) {
+        
+        console.warn(`⚠️ 最终安全检查: 拼图${i}仍然可能超出画布边界，强制修正`);
+        
+        // 计算需要移动的距离，使拼图完全进入安全区域
+        let finalCorrectionX = 0;
+        let finalCorrectionY = 0;
+        
+        if (bounds.minX < minPadding) {
+          finalCorrectionX = minPadding - bounds.minX;
+        } else if (bounds.maxX > canvasWidth - minPadding) {
+          finalCorrectionX = canvasWidth - minPadding - bounds.maxX;
+        }
+        
+        if (bounds.minY < minPadding) {
+          finalCorrectionY = minPadding - bounds.minY;
+        } else if (bounds.maxY > canvasHeight - minPadding) {
+          finalCorrectionY = canvasHeight - minPadding - bounds.maxY;
+        }
+        
+        // 应用修正
+        if (finalCorrectionX !== 0 || finalCorrectionY !== 0) {
+          piece.x += finalCorrectionX;
+          piece.y += finalCorrectionY;
+          
+          piece.points = piece.points.map(p => ({
+            ...p,
+            x: p.x + finalCorrectionX,
+            y: p.y + finalCorrectionY
+          }));
+          
+          // 标记为需要回弹动画
+          piece.needsBounceAnimation = true;
+          piece.bounceInfo = {
+            correctionX: finalCorrectionX,
+            correctionY: finalCorrectionY,
+            bounceX: -Math.sign(finalCorrectionX) * 20, // 简单的回弹距离
+            bounceY: -Math.sign(finalCorrectionY) * 20
+          };
+          
+          console.log(`最终安全修正: 拼图${i}移动(${finalCorrectionX}, ${finalCorrectionY})`);
+        }
+      }
+    }
+    
+    return piecesWithBounceInfo;
   }
 }
 

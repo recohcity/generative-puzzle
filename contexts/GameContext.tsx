@@ -456,6 +456,93 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       originalShapeExists: state.originalShape && state.originalShape.length > 0,
       originalShapePoints: state.originalShape.length
     });
+    
+    // 检查是否有需要回弹动画的拼图
+    const piecesNeedingBounce = scatteredPuzzle.filter(piece => piece.needsBounceAnimation);
+    
+    if (piecesNeedingBounce.length > 0) {
+      console.log(`找到${piecesNeedingBounce.length}个拼图需要执行回弹动画`);
+      
+      // 为需要回弹的拼图执行震动动画
+      setTimeout(() => {
+        piecesNeedingBounce.forEach((piece, index) => {
+          const pieceIndex = scatteredPuzzle.indexOf(piece);
+          if (pieceIndex === -1 || !piece.bounceInfo) return;
+          
+          // 确定回弹方向
+          const shakeDirectionX = Math.sign(piece.bounceInfo.bounceX);
+          const shakeDirectionY = Math.sign(piece.bounceInfo.bounceY);
+          
+          // 震动动画序列 - 与碰撞回弹保持一致
+          let animationStep = 0;
+          const maxSteps = 6; // 震动次数
+          const shakeAmount = [8, -6, 5, -4, 3, -2]; // 震动幅度序列
+          
+          // 执行震动动画
+          const shakeAnimation = () => {
+            if (animationStep >= maxSteps) return;
+            
+            // 计算震动位移
+            const shakeX = shakeDirectionX * shakeAmount[animationStep];
+            const shakeY = shakeDirectionY * shakeAmount[animationStep];
+            
+            // 应用震动位移
+            dispatch({
+              type: "UPDATE_PIECE_POSITION",
+              payload: { index: pieceIndex, dx: shakeX, dy: shakeY },
+            });
+            
+            // 安排下一次震动
+            animationStep++;
+            setTimeout(shakeAnimation, 30); // 每次震动间隔30ms，实现快速震动效果
+          };
+          
+          // 错开不同拼图的震动动画开始时间，避免所有拼图同时震动
+          setTimeout(() => {
+            // 播放碰撞音效 - 同样使用边界碰撞的声音效果
+            try {
+              const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+              
+              // 创建主音频振荡器 - 低音碰撞声
+              const oscillator1 = audioContext.createOscillator();
+              const gainNode1 = audioContext.createGain();
+              
+              oscillator1.type = "sine";
+              oscillator1.frequency.setValueAtTime(120, audioContext.currentTime); // 更低的音调
+              gainNode1.gain.setValueAtTime(0.4, audioContext.currentTime);
+              gainNode1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15); // 更快衰减
+              
+              oscillator1.connect(gainNode1);
+              gainNode1.connect(audioContext.destination);
+              
+              // 创建次要振荡器 - 高音碰撞声
+              const oscillator2 = audioContext.createOscillator();
+              const gainNode2 = audioContext.createGain();
+              
+              oscillator2.type = "sine";
+              oscillator2.frequency.setValueAtTime(240, audioContext.currentTime); // 高一倍的音调
+              gainNode2.gain.setValueAtTime(0.2, audioContext.currentTime);
+              gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1); // 更快衰减
+              
+              oscillator2.connect(gainNode2);
+              gainNode2.connect(audioContext.destination);
+              
+              // 启动并停止振荡器
+              oscillator1.start();
+              oscillator2.start();
+              oscillator1.stop(audioContext.currentTime + 0.15);
+              oscillator2.stop(audioContext.currentTime + 0.1);
+            } catch (e) {
+              console.log("Audio not supported");
+            }
+            
+            // 开始震动动画
+            shakeAnimation(); 
+            
+          }, index * 100); // 每个拼图错开100ms开始震动
+        });
+      }, 300); // 散开完成后等待300ms再开始回弹动画，给用户一个视觉缓冲
+    }
   }, [state.puzzle, state.isScattered, state.canvasWidth, state.canvasHeight, state.originalShape, dispatch])
 
   const rotatePiece = useCallback(
