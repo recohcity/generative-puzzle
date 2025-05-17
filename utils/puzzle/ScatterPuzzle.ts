@@ -1,3 +1,5 @@
+import { checkRectOverlap } from "./puzzleUtils";
+
 type Point = {
   x: number
   y: number
@@ -22,7 +24,7 @@ interface GameContextState {
   targetShape?: {
     center: { x: number, y: number }
     radius: number
-  }
+  } | null
 }
 
 export class ScatterPuzzle {
@@ -79,69 +81,65 @@ export class ScatterPuzzle {
     // 根据设备类型调整安全边距
     let margin;
     if (isMobile && isPortrait) {
-      // 手机竖屏模式下使用极大的边距，确保拼图在正方形画布内可见
-      margin = Math.floor(canvasWidth * 0.25);
-      console.log(`手机竖屏模式，使用极大边距: ${margin}px`);
+      // 手机竖屏模式下使用小边距，确保拼图在正方形画布内可见
+      margin = Math.floor(canvasWidth * 0.05); // 减小到5%的边距
+      console.log(`手机竖屏模式，使用边距: ${margin}px`);
     } else if (isSmallScreen) {
       // 小屏幕设备
-      margin = Math.min(60, Math.floor(canvasWidth * 0.12));
-      console.log(`小屏幕设备，使用中等边距: ${margin}px`);
+      margin = Math.min(20, Math.floor(canvasWidth * 0.03)); // 减小到3%的边距
+      console.log(`小屏幕设备，使用边距: ${margin}px`);
     } else {
       // 普通设备
-      margin = Math.min(80, Math.floor(canvasWidth * 0.15));
-      console.log(`普通设备，使用标准边距: ${margin}px`);
+      margin = Math.min(30, Math.floor(canvasWidth * 0.03)); // 减小到3%的边距
+      console.log(`普通设备，使用边距: ${margin}px`);
     }
     
     // 确保可用区域
     const safeWidth = Math.max(canvasWidth - margin * 2, 200);
     const safeHeight = Math.max(canvasHeight - margin * 2, 200);
 
-    // 创建更紧凑的网格
-    let gridSize;
-    if (isMobile && isPortrait) {
-      // 手机竖屏模式下使用较小的网格size，确保拼图更加集中
-      gridSize = Math.ceil(Math.sqrt(pieces.length * 2));
-      console.log(`手机竖屏模式使用更大的网格尺寸: ${gridSize}x${gridSize}`);
-    } else {
-      gridSize = Math.ceil(Math.sqrt(pieces.length));
+    // 使用更合理的网格大小
+    let gridCols = Math.ceil(Math.sqrt(pieces.length * 1.5)); // 增加列数，减少重叠
+    let gridRows = Math.ceil(pieces.length / gridCols);
+    
+    // 针对不同屏幕比例调整网格
+    if (canvasWidth > canvasHeight * 1.5) { // 宽屏
+      gridCols = Math.ceil(Math.sqrt(pieces.length * 2));
+      gridRows = Math.ceil(pieces.length / gridCols);
+    } else if (canvasHeight > canvasWidth * 1.5) { // 高屏
+      gridRows = Math.ceil(Math.sqrt(pieces.length * 2));
+      gridCols = Math.ceil(pieces.length / gridRows);
     }
     
-    // 难度调整 - 根据拼图数量调整分布
-    const difficulty = pieces.length; // 拼图数量作为难度指标
+    console.log(`使用网格: ${gridCols}列 x ${gridRows}行，共${pieces.length}个拼图`);
     
     // 根据难度调整拼图分布范围
+    // 难度简化为拼图数量和形状复杂度
+    const difficulty = pieces.length; 
     let distributionFactor;
+    
     if (difficulty <= 3) {
-      // 低难度(1-3片)拼图更集中
-      distributionFactor = 0.7 - ((difficulty - 1) * 0.05); // 1级:0.7, 2级:0.65, 3级:0.6
+      // 低难度(1-3片)使用更集中的分布
+      distributionFactor = 0.65;
     } else if (difficulty <= 6) {
       // 中等难度(4-6片)
-      distributionFactor = 0.8 + ((difficulty - 4) * 0.05); // 4级:0.8, 5级:0.85, 6级:0.9
+      distributionFactor = 0.75;
     } else {
-      // 高难度(7-8片)使用全部空间或更大范围
-      distributionFactor = difficulty === 7 ? 1.0 : 1.1; // 7级:1.0(全部空间), 8级:1.1(扩大范围)
+      // 高难度(7+片)使用更分散的分布
+      distributionFactor = 0.85;
     }
     
-    console.log(`难度: ${difficulty}, 拼图数量: ${pieces.length}, 分布因子: ${distributionFactor}`);
+    console.log(`难度: ${difficulty}, 分布因子: ${distributionFactor}`);
     
-    // 应用分布因子调整网格大小
+    // 应用分布因子调整可用区域
     const adjustedSafeWidth = safeWidth * distributionFactor;
     const adjustedSafeHeight = safeHeight * distributionFactor;
     
-    let cellWidth, cellHeight;
+    // 计算网格单元格大小
+    const cellWidth = adjustedSafeWidth / gridCols;
+    const cellHeight = adjustedSafeHeight / gridRows;
     
-    if (isMobile && isPortrait) {
-      // 手机竖屏模式下使用更紧凑的网格
-      cellWidth = adjustedSafeWidth / (gridSize * 1.5); // 进一步减小单元格宽度
-      cellHeight = adjustedSafeHeight / (gridSize * 1.5); // 进一步减小单元格高度
-      console.log(`手机模式使用极小网格单元格: ${cellWidth.toFixed(2)}x${cellHeight.toFixed(2)}`);
-    } else {
-      // 普通设备使用标准网格
-      cellWidth = adjustedSafeWidth / gridSize;
-      cellHeight = adjustedSafeHeight / gridSize;
-    }
-
-    // 数据验证
+    // 验证数据
     if (!pieces.length) {
       console.warn("ScatterPuzzle: No pieces to scatter");
       return pieces;
@@ -156,10 +154,9 @@ export class ScatterPuzzle {
       return pieces;
     }
 
-    // 记录画布信息
-    console.log(`Canvas size: ${canvasWidth}x${canvasHeight}, Safe area: ${safeWidth}x${safeHeight}, Grid: ${gridSize}x${gridSize}`);
+    console.log(`Canvas size: ${canvasWidth}x${canvasHeight}, Safe area: ${safeWidth}x${safeHeight}, Grid: ${gridCols}x${gridRows}`);
     
-    // 计算目标形状区域
+    // 计算目标形状区域，用于避免
     let targetShapeRegion = null;
     if (targetShape) {
       targetShapeRegion = {
@@ -175,42 +172,31 @@ export class ScatterPuzzle {
     
     // 如果没有目标形状信息，尝试从已有拼图中推断
     if (!targetShapeRegion) {
-      // 计算所有拼图的原始中心点
-      const originalCenters = pieces.map(piece => {
-        // 使用原始点计算中心
-        if (piece.originalPoints && piece.originalPoints.length) {
-          const bounds = {
-            minX: Math.min(...piece.originalPoints.map(p => p.x)),
-            maxX: Math.max(...piece.originalPoints.map(p => p.x)),
-            minY: Math.min(...piece.originalPoints.map(p => p.y)),
-            maxY: Math.max(...piece.originalPoints.map(p => p.y))
+      // 尝试从拼图原始位置推断形状
+      const bounds = pieces.reduce(
+        (acc, piece) => {
+          const pieceBounds = {
+            minX: Math.min(...piece.points.map(p => p.x)),
+            maxX: Math.max(...piece.points.map(p => p.x)),
+            minY: Math.min(...piece.points.map(p => p.y)),
+            maxY: Math.max(...piece.points.map(p => p.y))
           };
           return {
-            x: (bounds.minX + bounds.maxX) / 2,
-            y: (bounds.minY + bounds.maxY) / 2
+            minX: Math.min(acc.minX, pieceBounds.minX),
+            maxX: Math.max(acc.maxX, pieceBounds.maxX),
+            minY: Math.min(acc.minY, pieceBounds.minY),
+            maxY: Math.max(acc.maxY, pieceBounds.maxY)
           };
-        }
-        // 如果没有原始点，则使用originalX和originalY
-        return {
-          x: piece.originalX || 0,
-          y: piece.originalY || 0
-        };
-      });
+        },
+        { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
+      );
       
-      // 如果有足够的拼图，计算它们的边界作为目标区域
-      if (originalCenters.length > 0) {
-        const centerBounds = {
-          minX: Math.min(...originalCenters.map(c => c.x)),
-          maxX: Math.max(...originalCenters.map(c => c.x)),
-          minY: Math.min(...originalCenters.map(c => c.y)),
-          maxY: Math.max(...originalCenters.map(c => c.y))
-        };
-        
-        const centerX = (centerBounds.minX + centerBounds.maxX) / 2;
-        const centerY = (centerBounds.minY + centerBounds.maxY) / 2;
+      // 计算形状的中心和半径
+      const centerX = (bounds.minX + bounds.maxX) / 2;
+      const centerY = (bounds.minY + bounds.maxY) / 2;
         const radius = Math.max(
-          (centerBounds.maxX - centerBounds.minX) / 2,
-          (centerBounds.maxY - centerBounds.minY) / 2
+        (bounds.maxX - bounds.minX) / 2,
+        (bounds.maxY - bounds.minY) / 2
         ) * 1.2; // 增加20%的边距
         
         targetShapeRegion = {
@@ -221,240 +207,245 @@ export class ScatterPuzzle {
           center: { x: centerX, y: centerY },
           radius: radius
         };
-        
-        console.log(`已推断目标形状区域: x=${targetShapeRegion.x.toFixed(2)}, y=${targetShapeRegion.y.toFixed(2)}, width=${targetShapeRegion.width.toFixed(2)}, height=${targetShapeRegion.height.toFixed(2)}`);
-      }
     }
     
-    // 根据目标形状区域，生成适合的放置区域
-    const placementAreas = ScatterPuzzle.generatePlacementAreas(canvasWidth, canvasHeight, targetShapeRegion, margin);
+    // 计算安全放置区域
+    const placementAreas = this.generatePlacementAreas(
+      canvasWidth, 
+      canvasHeight, 
+      targetShapeRegion,
+      margin
+    );
     
-    // 将拼图均匀分配到各个放置区域
-    let areaIndex = 0;
+    console.log(`生成了${placementAreas.length}个放置区域`);
     
-    return pieces.map((piece, index) => {
-      try {
-        // 计算拼图的边界框
-        const bounds = {
-          minX: Math.min(...piece.points.map(p => p.x)),
-          maxX: Math.max(...piece.points.map(p => p.x)),
-          minY: Math.min(...piece.points.map(p => p.y)),
-          maxY: Math.max(...piece.points.map(p => p.y))
+    // 克隆拼图数组，避免修改原始数据
+    const scatteredPieces = JSON.parse(JSON.stringify(pieces)) as PuzzlePiece[];
+    
+    // 随机打乱拼图顺序，避免总是相同的分布
+    const shuffledIndices = [...Array(scatteredPieces.length).keys()].sort(() => Math.random() - 0.5);
+    
+    // 计算每个拼图的边界框
+    const pieceBounds = scatteredPieces.map(piece => {
+      const xs = piece.points.map(p => p.x);
+      const ys = piece.points.map(p => p.y);
+      const minX = Math.min(...xs);
+      const maxX = Math.max(...xs);
+      const minY = Math.min(...ys);
+      const maxY = Math.max(...ys);
+      
+      return {
+        minX, maxX, minY, maxY,
+        width: maxX - minX,
+        height: maxY - minY,
+        centerX: (minX + maxX) / 2,
+        centerY: (minY + maxY) / 2
+      };
+    });
+    
+    // 跟踪已放置的拼图边界
+    const placedPieceBounds: Array<{x: number, y: number, width: number, height: number}> = [];
+    
+    // 重叠检测的最大尝试次数
+    const MAX_PLACEMENT_ATTEMPTS = 10;
+    
+    // 对每个拼图进行布局
+    for (let i = 0; i < scatteredPieces.length; i++) {
+      const pieceIndex = shuffledIndices[i];
+      const piece = scatteredPieces[pieceIndex];
+      const bounds = pieceBounds[pieceIndex];
+      
+      // 随机旋转
+      const rotationSteps = Math.floor(Math.random() * 8); // 0-7，每步45度
+      piece.rotation = rotationSteps * 45;
+      
+      // 确定拼图的放置位置
+      let bestX = 0, bestY = 0;
+      let minOverlap = Infinity;
+      let placementFound = false;
+      
+      // 最多尝试MAX_PLACEMENT_ATTEMPTS次找到最佳位置
+      for (let attempt = 0; attempt < MAX_PLACEMENT_ATTEMPTS; attempt++) {
+        // 为当前拼图选择放置区域
+        const areaIndex = Math.floor(Math.random() * placementAreas.length);
+        const area = placementAreas[areaIndex];
+        
+        // 在区域内随机选择一个位置
+        const gridX = Math.floor(Math.random() * gridCols);
+        const gridY = Math.floor(Math.random() * gridRows);
+        
+        // 计算在网格中的位置
+        const gridCenterX = area.x + margin/2 + gridX * cellWidth + cellWidth / 2;
+        const gridCenterY = area.y + margin/2 + gridY * cellHeight + cellHeight / 2;
+        
+        // 加入一些随机偏移
+        const offsetX = (Math.random() - 0.5) * cellWidth * 0.7; // 增加偏移范围
+        const offsetY = (Math.random() - 0.5) * cellHeight * 0.7; // 增加偏移范围
+        
+        const posX = gridCenterX + offsetX;
+        const posY = gridCenterY + offsetY;
+        
+        // 确保拼图边界离画布边缘有足够的距离，但使用更小的边距
+        const minMargin = 5; // 使用非常小的边距，只要能保证拼图全部可见
+        const adjustedX = Math.max(minMargin + bounds.width/2, Math.min(canvasWidth - minMargin - bounds.width/2, posX));
+        const adjustedY = Math.max(minMargin + bounds.height/2, Math.min(canvasHeight - minMargin - bounds.height/2, posY));
+        
+        console.log(`拼图${pieceIndex}的放置位置计算:`, {
+          grid: { x: gridX, y: gridY, cellWidth, cellHeight },
+          gridCenter: { x: gridCenterX, y: gridCenterY },
+          randomOffset: { x: offsetX, y: offsetY },
+          initialPos: { x: posX, y: posY },
+          pieceBounds: { width: bounds.width, height: bounds.height },
+          adjustedPos: { x: adjustedX, y: adjustedY },
+          canvas: { width: canvasWidth, height: canvasHeight },
+          margin: { normal: margin, min: minMargin }
+        });
+        
+        // 计算拼图在新位置的边界框
+        const pieceRect = {
+          x: adjustedX - bounds.width/2,
+          y: adjustedY - bounds.height/2,
+          width: bounds.width,
+          height: bounds.height
         };
         
-        // 计算拼图尺寸和中心点
-        const pieceWidth = bounds.maxX - bounds.minX;
-        const pieceHeight = bounds.maxY - bounds.minY;
-        const centerX = (bounds.minX + bounds.maxX) / 2;
-        const centerY = (bounds.minY + bounds.maxY) / 2;
+        // 验证拼图是否在画布内
+        const isWithinCanvas = 
+          pieceRect.x >= 0 && 
+          pieceRect.y >= 0 && 
+          pieceRect.x + pieceRect.width <= canvasWidth && 
+          pieceRect.y + pieceRect.height <= canvasHeight;
         
-        // 在手机模式下缩小拼图尺寸
-        let scaleFactor = 1.0;
-        let scaledPoints = [...piece.points];
-        
-        // 如果是手机模式且拼图相对画布较大，则缩小拼图
-        if (isMobile && isPortrait && (pieceWidth > canvasWidth * 0.4 || pieceHeight > canvasHeight * 0.4)) {
-          // 根据拼图尺寸和画布尺寸计算缩放系数
-          scaleFactor = Math.min(
-            (canvasWidth * 0.3) / pieceWidth,
-            (canvasHeight * 0.3) / pieceHeight,
-            0.8 // 最大缩放到80%
-          );
-          
-          console.log(`拼图${index}较大，应用缩放: ${scaleFactor.toFixed(2)}`);
-          
-          // 缩放所有点
-          scaledPoints = piece.points.map(p => ({
-            x: centerX + (p.x - centerX) * scaleFactor,
-            y: centerY + (p.y - centerY) * scaleFactor,
-            isOriginal: p.isOriginal
-          }));
+        if (!isWithinCanvas) {
+          console.warn(`⚠️ 拼图${pieceIndex}在调整后仍超出画布!`, {
+            pieceRect,
+            canvas: { width: canvasWidth, height: canvasHeight }
+          });
         }
         
-        // 为每个拼图调整安全边距
-        const pieceSafeMargin = isMobile && isPortrait 
-          ? Math.max(margin * 0.8, Math.ceil(pieceWidth * 0.15), Math.ceil(pieceHeight * 0.15))
-          : Math.max(margin / 2, Math.ceil(pieceWidth * 0.1), Math.ceil(pieceHeight * 0.1));
-
-        // 选择放置区域 - 循环使用可用区域
-        const currentArea = placementAreas[areaIndex % placementAreas.length];
-        areaIndex++;
-        
-        // 根据选定的放置区域计算位置
-        let gridX, gridY;
-        
-        // 计算该区域内的行列数
-        const areaGridSize = Math.ceil(Math.sqrt(pieces.length / placementAreas.length)) || 1;
-        const areaIndex2D = index % (areaGridSize * areaGridSize);
-        gridX = areaIndex2D % areaGridSize;
-        gridY = Math.floor(areaIndex2D / areaGridSize);
-        
-        // 计算在区域内的单元格大小
-        const areaCellWidth = currentArea.width / areaGridSize;
-        const areaCellHeight = currentArea.height / areaGridSize;
-        
-        // 计算目标位置 - 在当前区域内分布
-        const cellCenterX = currentArea.x + (gridX * areaCellWidth) + (areaCellWidth / 2);
-        const cellCenterY = currentArea.y + (gridY * areaCellHeight) + (areaCellHeight / 2);
-        
-        // 添加随机偏移，根据难度调整偏移量
-        let maxOffsetX, maxOffsetY;
-        
-        if (difficulty <= 3) {
-          // 低难度偏移很小，拼图位置更固定
-          maxOffsetX = Math.min(areaCellWidth / 20, 2); 
-          maxOffsetY = Math.min(areaCellHeight / 20, 2);
-        } else if (difficulty <= 6) {
-          // 中等难度有适度偏移
-          maxOffsetX = Math.min(areaCellWidth / 15, 4); 
-          maxOffsetY = Math.min(areaCellHeight / 15, 4);
-        } else {
-          // 高难度有更大偏移，位置更随机
-          maxOffsetX = Math.min(areaCellWidth / 8, 10); 
-          maxOffsetY = Math.min(areaCellHeight / 8, 10);
-        }
-        
-        // 使用拼图索引和难度生成伪随机种子
-        const seed = ((index + 1) * 37.5 + difficulty * 13) % 100;
-        const offsetX = Math.cos(seed) * maxOffsetX * (Math.random() * 0.5 + 0.75); // 增加随机性变化
-        const offsetY = Math.sin(seed) * maxOffsetY * (Math.random() * 0.5 + 0.75);
-        
-        // 计算目标坐标
-        const targetX = cellCenterX + offsetX;
-        const targetY = cellCenterY + offsetY;
-        
-        // 计算目标位置时拼图的边缘坐标
-        const targetMinX = targetX - (centerX - bounds.minX);
-        const targetMaxX = targetX + (bounds.maxX - centerX);
-        const targetMinY = targetY - (centerY - bounds.minY);
-        const targetMaxY = targetY + (bounds.maxY - centerY);
-        
-        // 初始位置调整
-        let adjustedX = targetX;
-        let adjustedY = targetY;
-        
-        // 边界约束 - 确保拼图完全保持在画布范围内
-        if (isMobile && isPortrait) {
-          // 移动设备上需要更严格的约束
-          adjustedX = Math.max(pieceSafeMargin + (centerX - bounds.minX), 
-                      Math.min(canvasWidth - pieceSafeMargin - (bounds.maxX - centerX), adjustedX));
-          adjustedY = Math.max(pieceSafeMargin + (centerY - bounds.minY), 
-                      Math.min(canvasHeight - pieceSafeMargin - (bounds.maxY - centerY), adjustedY));
-        } else {
-          // 左边缘约束
-          if (targetMinX < pieceSafeMargin) {
-              adjustedX = pieceSafeMargin + (centerX - bounds.minX);
-          }
-          // 右边缘约束
-          if (targetMaxX > canvasWidth - pieceSafeMargin) {
-              adjustedX = (canvasWidth - pieceSafeMargin) - (bounds.maxX - centerX);
-          }
-          // 上边缘约束
-          if (targetMinY < pieceSafeMargin) {
-              adjustedY = pieceSafeMargin + (centerY - bounds.minY);
-          }
-          // 下边缘约束
-          if (targetMaxY > canvasHeight - pieceSafeMargin) {
-              adjustedY = (canvasHeight - pieceSafeMargin) - (bounds.maxY - centerY);
+        // 计算与其他已放置拼图的重叠
+        let totalOverlap = 0;
+        for (const placed of placedPieceBounds) {
+          if (checkRectOverlap(pieceRect, placed)) {
+            // 计算重叠面积
+            const overlapWidth = Math.min(pieceRect.x + pieceRect.width, placed.x + placed.width) - 
+                                Math.max(pieceRect.x, placed.x);
+            const overlapHeight = Math.min(pieceRect.y + pieceRect.height, placed.y + placed.height) - 
+                                 Math.max(pieceRect.y, placed.y);
+            totalOverlap += overlapWidth * overlapHeight;
           }
         }
         
-        // 最终安全检查
-        const safeX = Math.max(
-          pieceSafeMargin + (centerX - bounds.minX), 
-          Math.min(canvasWidth - pieceSafeMargin - (bounds.maxX - centerX), adjustedX)
-        );
+        // 如果找到无重叠位置或者这是最小重叠的位置
+        if (totalOverlap === 0) {
+          bestX = adjustedX;
+          bestY = adjustedY;
+          placementFound = true;
+          break; // 找到无重叠位置，立即使用
+        } else if (totalOverlap < minOverlap) {
+          minOverlap = totalOverlap;
+          bestX = adjustedX;
+          bestY = adjustedY;
+        }
+      }
+      
+      if (!placementFound && minOverlap === Infinity) {
+        // 如果所有尝试都失败，使用备用策略
+        const randomX = margin + Math.random() * (canvasWidth - 2 * margin);
+        const randomY = margin + Math.random() * (canvasHeight - 2 * margin);
+        bestX = randomX;
+        bestY = randomY;
+      }
+      
+      // 应用最佳位置
+      const dx = bestX - bounds.centerX;
+      const dy = bestY - bounds.centerY;
+      
+      // 更新拼图位置
+      piece.x += dx;
+      piece.y += dy;
+      
+      // 更新所有点的位置
+      piece.points = piece.points.map(p => ({
+        ...p,
+        x: p.x + dx,
+        y: p.y + dy
+      }));
+      
+      // 再次计算拼图的实际边界，确保完全在画布内
+      const updatedBounds = {
+        minX: Math.min(...piece.points.map(p => p.x)),
+        maxX: Math.max(...piece.points.map(p => p.x)),
+        minY: Math.min(...piece.points.map(p => p.y)),
+        maxY: Math.max(...piece.points.map(p => p.y)),
+        width: 0,
+        height: 0
+      };
+      updatedBounds.width = updatedBounds.maxX - updatedBounds.minX;
+      updatedBounds.height = updatedBounds.maxY - updatedBounds.minY;
+      
+      // 检查并修正超出画布的情况
+      let correctionNeeded = false;
+      let correctionDx = 0, correctionDy = 0;
+      
+      // 检查左边界
+      if (updatedBounds.minX < 0) {
+        correctionDx = -updatedBounds.minX;
+        correctionNeeded = true;
+        console.warn(`⚠️ 拼图${pieceIndex}超出左边界，需要修正${correctionDx}px`);
+      }
+      // 检查右边界
+      else if (updatedBounds.maxX > canvasWidth) {
+        correctionDx = canvasWidth - updatedBounds.maxX;
+        correctionNeeded = true;
+        console.warn(`⚠️ 拼图${pieceIndex}超出右边界，需要修正${correctionDx}px`);
+      }
+      
+      // 检查上边界
+      if (updatedBounds.minY < 0) {
+        correctionDy = -updatedBounds.minY;
+        correctionNeeded = true;
+        console.warn(`⚠️ 拼图${pieceIndex}超出上边界，需要修正${correctionDy}px`);
+      }
+      // 检查下边界
+      else if (updatedBounds.maxY > canvasHeight) {
+        correctionDy = canvasHeight - updatedBounds.maxY;
+        correctionNeeded = true;
+        console.warn(`⚠️ 拼图${pieceIndex}超出下边界，需要修正${correctionDy}px`);
+      }
+      
+      // 应用修正（如果需要）
+      if (correctionNeeded) {
+        console.warn(`💡 拼图${pieceIndex}进行位置修正: dx=${correctionDx}, dy=${correctionDy}`);
         
-        const safeY = Math.max(
-          pieceSafeMargin + (centerY - bounds.minY), 
-          Math.min(canvasHeight - pieceSafeMargin - (bounds.maxY - centerY), adjustedY)
-        );
+        // 更新拼图位置
+        piece.x += correctionDx;
+        piece.y += correctionDy;
         
-        // 计算移动距离
-        const dx = safeX - centerX;
-        const dy = safeY - centerY;
-        
-        // 创建新的点集
-        const newPoints = scaledPoints.map((point) => ({
-          x: point.x + dx,
-          y: point.y + dy,
-          isOriginal: point.isOriginal,
+        // 更新所有点的位置
+        piece.points = piece.points.map(p => ({
+          ...p,
+          x: p.x + correctionDx,
+          y: p.y + correctionDy
         }));
         
-        // 旋转逻辑 - 根据切割次数调整旋转角度
-        let rotation;
-        // 获取拼图数量，作为难度的估计值
-        const puzzleCount = pieces.length;
-        
-        // 修改旋转逻辑，确保所有设备上都使用15度的倍数
-        if (isMobile && isPortrait) {
-          // 手机竖屏模式下使用较大的旋转增量，但保持15度倍数
-          if (puzzleCount <= 3) {
-            // 简单难度(1-3)：常用0度或90度
-            const rotationOptions = [0, 0, 90, 90];
-            rotation = rotationOptions[index % rotationOptions.length];
-          } else if (puzzleCount <= 6) {
-            // 中等难度(4-6)：使用0、90、180度
-            const rotationOptions = [0, 90, 90, 180];
-            rotation = rotationOptions[index % rotationOptions.length];
-          } else {
-            // 高难度(7+)：使用0、90、180、270度旋转
-            const rotationOptions = [0, 90, 180, 270];
-            rotation = rotationOptions[index % rotationOptions.length];
-          }
-        } else {
-          // 桌面端和手机横屏模式，只使用15度的倍数
-          if (puzzleCount <= 3) {
-            // 简单难度：0、15、30、45度
-            rotation = Math.floor(Math.random() * 4) * 15;
-          } else if (puzzleCount <= 6) {
-            // 中等难度：0-90度，15度的倍数
-            rotation = Math.floor(Math.random() * 7) * 15; // 0, 15, 30, 45, 60, 75, 90
-          } else if (puzzleCount <= 9) {
-            // 高难度：0-180度，15度的倍数
-            rotation = Math.floor(Math.random() * 13) * 15; // 0, 15, 30, ..., 180
-          } else {
-            // 极高难度：0-345度，15度的倍数
-            rotation = Math.floor(Math.random() * 24) * 15; // 0, 15, 30, ..., 345
-          }
-        }
-        
-        // 确保角度是15度的倍数
-        rotation = Math.round(rotation / 15) * 15;
-        
-        // 最终边界检查
-        const finalBounds = {
-          minX: Math.min(...newPoints.map(p => p.x)),
-          maxX: Math.max(...newPoints.map(p => p.x)),
-          minY: Math.min(...newPoints.map(p => p.y)),
-          maxY: Math.max(...newPoints.map(p => p.y))
-        };
-        
-        // 记录是否所有边界都在安全区域内
-        const isMinXSafe = finalBounds.minX >= pieceSafeMargin;
-        const isMaxXSafe = finalBounds.maxX <= canvasWidth - pieceSafeMargin;
-        const isMinYSafe = finalBounds.minY >= pieceSafeMargin;
-        const isMaxYSafe = finalBounds.maxY <= canvasHeight - pieceSafeMargin;
-        
-        // 如果有边界不安全，记录详细信息
-        if (!isMinXSafe || !isMaxXSafe || !isMinYSafe || !isMaxYSafe) {
-          console.warn(`Piece ${index} boundary check:`, 
-                       {minX: isMinXSafe, maxX: isMaxXSafe, minY: isMinYSafe, maxY: isMaxYSafe},
-                       {finalBounds, canvas: {w: canvasWidth, h: canvasHeight}, margin: pieceSafeMargin});
-        }
-
-        return {
-          ...piece,
-          points: newPoints,
-          rotation: rotation,
-          x: safeX,
-          y: safeY,
-        };
-      } catch (error) {
-        console.error("Error scattering puzzle piece:", error);
-        return piece; // 返回原始拼图，避免错误导致的中断
+        // 更新bestX和bestY用于记录已放置的拼图边界
+        bestX += correctionDx;
+        bestY += correctionDy;
       }
-    });
+      
+      // 记录已放置的拼图边界
+      placedPieceBounds.push({
+        x: bestX - bounds.width/2,
+        y: bestY - bounds.height/2,
+        width: bounds.width,
+        height: bounds.height
+      });
+    }
+    
+    console.log(`已完成拼图散布，共${scatteredPieces.length}块`);
+    
+    return scatteredPieces;
   }
   
   // 辅助函数：计算螺旋位置
@@ -518,8 +509,8 @@ export class ScatterPuzzle {
     targetShape: { x: number, y: number, width: number, height: number, center: { x: number, y: number }, radius: number } | null,
     margin: number
   ): Array<{ x: number, y: number, width: number, height: number }> {
-    // 安全边距
-    const safeMargin = margin || 20;
+    // 使用传入的边距，如未提供则使用较小的默认值
+    const safeMargin = margin || 5;
     
     // 如果没有目标形状，使用整个画布作为放置区域
     if (!targetShape) {

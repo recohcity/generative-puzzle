@@ -735,6 +735,7 @@ export default function PuzzleCanvas() {
     canvasRef, 
     backgroundCanvasRef, 
     ensurePieceInBounds, 
+    calculatePieceBounds,
     updateCanvasSize,
     rotatePiece 
   } = useGame()
@@ -742,6 +743,7 @@ export default function PuzzleCanvas() {
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const [touchStartAngle, setTouchStartAngle] = useState(0)
+  const [showDebugElements, setShowDebugElements] = useState(false) // 添加显示调试元素状态
   const containerRef = useRef<HTMLDivElement>(null)
   const animationFrameRef = useRef<number | null>(null)
   const resizeTimer = useRef<ReturnType<typeof setTimeout>>(null)
@@ -1052,8 +1054,82 @@ export default function PuzzleCanvas() {
     canvas.width = canvasSize.width;
     canvas.height = canvasSize.height;
 
+    // 计算真实的画布边界
+    const canvasBounds = {
+      left: 0,
+      top: 0,
+      right: canvas.width,
+      bottom: canvas.height
+    };
+
     // 在每次绘制前清除旧内容，确保不会覆盖
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // -----调试功能：绘制画布边缘警戒线-----
+    const drawCanvasBorderLine = () => {
+      if (!showDebugElements) return; // 只在调试模式下显示
+      
+      // 保存当前绘图状态
+      ctx.save();
+      
+      // 设置警戒线样式 - 红色虚线
+      ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([10, 5]);
+      
+      // 绘制内边框（警戒线）- 距离画布边缘1像素
+      ctx.beginPath();
+      ctx.rect(1, 1, canvas.width - 2, canvas.height - 2);
+      ctx.stroke();
+      
+      // 恢复绘图状态
+      ctx.restore();
+    };
+    
+    // -----调试功能：绘制可分布区域-----
+    const drawDistributionArea = () => {
+      if (!showDebugElements) return; // 只在调试模式下显示
+      
+      // 保存当前绘图状态
+      ctx.save();
+      
+      // 获取当前在ScatterPuzzle中使用的边距
+      // 模拟计算边距的逻辑
+      const ua = navigator.userAgent;
+      const isIPhone = /iPhone/i.test(ua);
+      const isAndroid = /Android/i.test(ua);
+      const isMobile = isIPhone || isAndroid;
+      const isPortrait = window.innerHeight > window.innerWidth;
+      const isSmallScreen = canvas.width < 400 || canvas.height < 400;
+      
+      let margin;
+      if (isMobile && isPortrait) {
+        margin = Math.floor(canvas.width * 0.05);
+      } else if (isSmallScreen) {
+        margin = Math.min(20, Math.floor(canvas.width * 0.03));
+      } else {
+        margin = Math.min(30, Math.floor(canvas.width * 0.03));
+      }
+      
+      // 小边距区域（用于拼图放置边界）
+      const minMargin = 5;
+      
+      // 绘制安全放置区域（淡绿色）
+      ctx.fillStyle = 'rgba(0, 255, 0, 0.1)';
+      ctx.fillRect(margin, margin, canvas.width - margin * 2, canvas.height - margin * 2);
+      
+      // 绘制较小放置边界区域（淡黄色）
+      ctx.fillStyle = 'rgba(255, 255, 0, 0.1)';
+      ctx.fillRect(minMargin, minMargin, canvas.width - minMargin * 2, canvas.height - minMargin * 2);
+      
+      // 恢复绘图状态
+      ctx.restore();
+    };
+    
+    // 只在调试模式下绘制分布区域
+    if (showDebugElements) {
+      drawDistributionArea();
+    }
 
     // 如果游戏完成，先绘制一个完整的无缝形状
     if (state.isCompleted && state.originalShape) {
@@ -1089,13 +1165,20 @@ export default function PuzzleCanvas() {
       // 绘制完成效果
       drawCompletionEffect(ctx, state.originalShape, state.shapeType);
     } else if (state.puzzle) {
+      // 确保在渲染前更新GameContext中的画布尺寸
+      // 这确保了边界检测使用正确的尺寸
+      if (state.canvasWidth !== canvas.width || state.canvasHeight !== canvas.height) {
+        updateCanvasSize(canvas.width, canvas.height);
+      }
+      
       // 如果存在拼图且游戏未完成
       // 添加调试信息，查看状态
       console.log("渲染状态:", {
         isScattered: state.isScattered,
         hasOriginalShape: state.originalShape && state.originalShape.length > 0,
         originalShapeLength: state.originalShape ? state.originalShape.length : 0,
-        pieceCount: state.puzzle.length
+        pieceCount: state.puzzle.length,
+        canvasBounds: canvasBounds
       });
       
       // 使用drawPuzzle函数绘制所有内容，包括必要时的原始形状轮廓
@@ -1114,9 +1197,59 @@ export default function PuzzleCanvas() {
       if (state.showHint && state.selectedPiece !== null && state.originalPositions.length > 0) {
         drawHintOutline(ctx, state.originalPositions[state.selectedPiece]);
       }
+      
+      // -----调试功能：绘制每个拼图的碰撞边界框-----
+      if (showDebugElements && state.puzzle && state.puzzle.length > 0) {
+        state.puzzle.forEach((piece, index) => {
+          // 计算拼图边界
+          const bounds = calculatePieceBounds(piece);
+          
+          // 保存绘图状态
+          ctx.save();
+          
+          // 为每个拼图使用不同的边界框颜色
+          const pieceColors = [
+            'rgba(0, 100, 255, 0.7)',   // 蓝色
+            'rgba(255, 100, 0, 0.7)',   // 橙色
+            'rgba(0, 200, 100, 0.7)',   // 绿色
+            'rgba(200, 0, 200, 0.7)',   // 紫色
+            'rgba(255, 200, 0, 0.7)',   // 黄色
+            'rgba(200, 100, 100, 0.7)', // 棕红色
+            'rgba(100, 200, 200, 0.7)'  // 青色
+          ];
+          
+          // 设置边界框样式
+          ctx.strokeStyle = pieceColors[index % pieceColors.length];
+          ctx.lineWidth = 2;
+          ctx.setLineDash([4, 4]);
+          
+          // 绘制边界框
+          ctx.beginPath();
+          ctx.rect(bounds.minX, bounds.minY, bounds.width, bounds.height);
+          ctx.stroke();
+          
+          // 添加拼图编号标记
+          ctx.fillStyle = 'white';
+          ctx.fillRect(bounds.centerX - 10, bounds.centerY - 10, 20, 20);
+          ctx.fillStyle = 'black';
+          ctx.font = 'bold 12px Arial';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText((index + 1).toString(), bounds.centerX, bounds.centerY);
+          
+          // 恢复绘图状态
+          ctx.restore();
+        });
+      }
+      
+      // 最后绘制画布边缘警戒线，确保它在最上层
+      drawCanvasBorderLine();
     } else if (state.originalShape && state.originalShape.length > 0) {
       // 如果只有原始形状但没有拼图，则绘制原始形状
       drawShape(ctx, state.originalShape, state.shapeType, isDarkMode);
+      
+      // 绘制画布边缘警戒线
+      drawCanvasBorderLine();
     }
     
     return () => {
@@ -1137,6 +1270,7 @@ export default function PuzzleCanvas() {
     isDarkMode,
     canvasSize.width,
     canvasSize.height,
+    showDebugElements,
   ]);
   
   // 鼠标按下事件
@@ -1231,29 +1365,130 @@ export default function PuzzleCanvas() {
     const piece = state.puzzle[state.draggingPiece.index];
     
     // 使用GameContext提供的统一边界处理函数，确保在所有地方使用一致的边界逻辑
-    const { constrainedDx, constrainedDy } = ensurePieceInBounds(piece, dx, dy, 15);
+    // 使用1像素的安全边距，所有拼图使用完全相同的边界设置
+    const { constrainedDx, constrainedDy, hitBoundary } = ensurePieceInBounds(piece, dx, dy, 1);
     
-    // 调试日志，帮助排查问题
-    // console.log("移动约束", { dx, dy, constrainedDx, constrainedDy });
-
     // 更新拼图位置
     dispatch({
       type: "UPDATE_PIECE_POSITION",
       payload: { index: state.draggingPiece.index, dx: constrainedDx, dy: constrainedDy },
     });
 
-    // 根据实际移动距离计算新的起点，确保下一次移动从正确位置开始
-    const realStartX = state.draggingPiece.startX + constrainedDx;
-    const realStartY = state.draggingPiece.startY + constrainedDy;
+    // 如果触碰到边界，立即停止拖拽并添加震动动画
+    if (hitBoundary) {
+      // 只有在碰到画布边缘时才停止拖拽，而不是目标轮廓
+      dispatch({ type: "SET_DRAGGING_PIECE", payload: null });
+      setIsDragging(false); // 更新本地状态，停止拖拽视觉反馈
+      
+      // 保存碰撞位置基准点
+      const hitPiece = { ...piece };
+      const pieceIndex = state.draggingPiece.index;
+      
+      // 震动动画序列 - 增大震动幅度以使回弹更明显
+      let animationStep = 0;
+      const maxSteps = 6; // 震动次数
+      // 增大震动幅度，使回弹效果更明显
+      const shakeAmount = [8, -6, 5, -4, 3, -2]; // 震动幅度序列
+      
+      // 确定震动方向 - 根据碰撞面决定
+      let shakeDirectionX = 0;
+      let shakeDirectionY = 0;
+      
+      // 根据碰撞边确定震动方向 - 使用1像素的边界值与ensurePieceInBounds保持一致
+      const bounds = calculatePieceBounds(piece);
+      const safeMargin = 1; // 使用与ensurePieceInBounds相同的边界值
+      if (bounds.minX <= safeMargin) shakeDirectionX = 1; // 碰左边，向右震动
+      else if (bounds.maxX >= canvas.width - safeMargin) shakeDirectionX = -1; // 碰右边，向左震动
+      
+      if (bounds.minY <= safeMargin) shakeDirectionY = 1; // 碰上边，向下震动
+      else if (bounds.maxY >= canvas.height - safeMargin) shakeDirectionY = -1; // 碰下边，向上震动
+      
+      // 如果没有确定方向，根据移动速度判断
+      if (shakeDirectionX === 0 && Math.abs(dx) > Math.abs(dy)) shakeDirectionX = -Math.sign(dx);
+      if (shakeDirectionY === 0 && Math.abs(dy) > Math.abs(dx)) shakeDirectionY = -Math.sign(dy);
+      
+      // 如果依然没有方向，至少有一个默认方向
+      if (shakeDirectionX === 0 && shakeDirectionY === 0) {
+        shakeDirectionX = dx < 0 ? 1 : -1;
+      }
+      
+      // 执行震动动画
+      const shakeAnimation = () => {
+        if (animationStep >= maxSteps || !canvasRef.current) return;
+        
+        // 计算震动位移
+        const shakeX = shakeDirectionX * shakeAmount[animationStep];
+        const shakeY = shakeDirectionY * shakeAmount[animationStep];
+        
+        // 应用震动位移
+        dispatch({
+          type: "UPDATE_PIECE_POSITION",
+          payload: { index: pieceIndex, dx: shakeX, dy: shakeY },
+        });
+        
+        // 安排下一次震动
+        animationStep++;
+        setTimeout(shakeAnimation, 30); // 每次震动间隔30ms，实现快速震动效果
+      };
+      
+      // 开始震动动画
+      setTimeout(shakeAnimation, 10); // 短暂延迟后开始震动
+    }
     
-    dispatch({
-      type: "SET_DRAGGING_PIECE",
-      payload: { 
+    // 设置新的拖拽起始点，这样下一次移动事件中的dx/dy会基于最新位置计算
+    if (!hitBoundary) {
+      dispatch({ type: "SET_DRAGGING_PIECE", payload: {
         index: state.draggingPiece.index,
-        startX: realStartX,
-        startY: realStartY
-      },
-    });
+        startX: x,
+        startY: y,
+      }});
+      
+      // 更新磁吸感应
+      if (state.selectedPiece !== null && state.originalPositions) {
+        const pieceIndex = state.selectedPiece;
+        const piece = state.puzzle[pieceIndex];
+        const originalPiece = state.originalPositions[pieceIndex];
+        
+        // 计算当前拼图中心点和目标位置中心点
+        const pieceCenter = calculateCenter(piece.points);
+        const originalCenter = calculateCenter(originalPiece.points);
+        
+        // 检查是否接近目标位置
+        if (pieceCenter && originalCenter) {
+          const magnetThreshold = 50; // 增大磁吸范围
+          const dx = pieceCenter.x - originalCenter.x;
+          const dy = pieceCenter.y - originalCenter.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          // 如果拼图接近正确位置，应用磁吸效果
+          if (distance < magnetThreshold) {
+            // 计算磁吸力 - 距离越近，吸力越大
+            const magnetStrength = 0.15; // 磁吸强度因子
+            const attractionFactor = 1 - (distance / magnetThreshold); // 0到1之间的值
+            const attractionX = -dx * attractionFactor * magnetStrength;
+            const attractionY = -dy * attractionFactor * magnetStrength;
+            
+            // 应用磁吸力
+            if (Math.abs(attractionX) > 0.1 || Math.abs(attractionY) > 0.1) {
+              dispatch({
+                type: "UPDATE_PIECE_POSITION",
+                payload: { index: pieceIndex, dx: attractionX, dy: attractionY },
+              });
+              
+              // 更新拖动起始点，确保下一次移动计算正确
+              dispatch({
+                type: "SET_DRAGGING_PIECE",
+                payload: { 
+                  index: pieceIndex,
+                  startX: x,
+                  startY: y
+                },
+              });
+            }
+          }
+        }
+      }
+    }
   }
 
   // 鼠标释放事件
@@ -1552,9 +1787,21 @@ export default function PuzzleCanvas() {
       }, 300) as any;
     };
     
+    // 添加键盘事件监听器，用于切换调试元素显示
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // F10键 (keyCode 121)
+      if (e.key === 'F10' || e.keyCode === 121) {
+        e.preventDefault(); // 防止浏览器默认行为
+        setShowDebugElements(prev => !prev); // 切换调试元素显示状态
+        console.log(`调试元素显示状态切换为: ${!showDebugElements}`);
+      }
+    };
+    
     window.addEventListener('resize', handleResize);
     // 特别监听方向变化
     window.addEventListener('orientationchange', handleOrientationChange);
+    // 添加键盘事件监听
+    window.addEventListener('keydown', handleKeyDown);
     
     // 添加一个延迟的强制重新计算，确保在所有DOM元素完全渲染后执行
     const timeoutId = setTimeout(() => {
@@ -1574,6 +1821,7 @@ export default function PuzzleCanvas() {
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleOrientationChange);
+      window.removeEventListener('keydown', handleKeyDown);
       clearTimeout(timeoutId);
       if (resizeTimer.current) {
         clearTimeout(resizeTimer.current as any);
@@ -1697,95 +1945,165 @@ export default function PuzzleCanvas() {
     }
   }
   
-  // 处理触摸移动事件
+  // 触摸移动事件处理
   const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    if (!state.puzzle) return;
-    if (!state.isScattered) return;
-    
-    e.preventDefault(); // 防止滚动
-    e.stopPropagation(); // 阻止事件冒泡，防止触发浏览器手势
-    
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    e.preventDefault() // 防止页面滚动
+    if (!state.draggingPiece || !state.puzzle) return
 
-    const rect = canvas.getBoundingClientRect();
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const rect = canvas.getBoundingClientRect()
     
-    if (e.touches.length === 1 && state.draggingPiece) {
-      // 单指拖拽
-      const touch = e.touches[0];
-      const x = touch.clientX - rect.left;
-      const y = touch.clientY - rect.top;
-      
-      // 计算移动距离
-      const lastX = lastTouchRef.current?.x || state.draggingPiece.startX;
-      const lastY = lastTouchRef.current?.y || state.draggingPiece.startY;
-      const dx = x - lastX;
-      const dy = y - lastY;
-      
-      // 更新最后触摸位置
-      lastTouchRef.current = { x, y };
-      
-      // 获取当前拖动的拼图
-      const piece = state.puzzle[state.draggingPiece.index];
-      if (!piece) {
-        console.error("无法获取拼图片段:", state.draggingPiece.index);
-        return;
+    // 处理多点触摸旋转
+    if (e.touches.length >= 2 && state.selectedPiece !== null) {
+      // 多点触摸 - 处理旋转
+      const touch1 = e.touches[0]
+      const touch2 = e.touches[1]
+      const touch1X = touch1.clientX - rect.left
+      const touch1Y = touch1.clientY - rect.top
+      const touch2X = touch2.clientX - rect.left
+      const touch2Y = touch2.clientY - rect.top
+
+      const currentAngle = calculateAngle(touch1X, touch1Y, touch2X, touch2Y)
+      if (touchStartAngle !== 0) {
+        const rotationChange = currentAngle - touchStartAngle
+
+        // 只有当旋转变化超过阈值时才应用旋转
+        if (Math.abs(rotationChange) > 5) {
+          const isClockwise = rotationChange > 0
+          rotatePiece(isClockwise)
+          
+          // 播放旋转音效
+          playRotateSound()
+          
+          // 更新开始角度
+          setTouchStartAngle(currentAngle)
+        }
       }
-      
-      // 使用边界检查确保拼图在画布内
-      const { constrainedDx, constrainedDy } = ensurePieceInBounds(piece, dx, dy, 20);
-      
-      // 只有在有实际移动距离时才更新位置，避免微小抖动导致的无效更新
-      if (Math.abs(constrainedDx) > 0.5 || Math.abs(constrainedDy) > 0.5) {
-      // 更新拼图位置
-      dispatch({
-        type: "UPDATE_PIECE_POSITION",
-        payload: { index: state.draggingPiece.index, dx: constrainedDx, dy: constrainedDy },
-      });
-      
-        // 更新拖动起始点，确保下一次移动计算正确
-        const newStartX = state.draggingPiece.startX + constrainedDx;
-        const newStartY = state.draggingPiece.startY + constrainedDy;
+    } else if (e.touches.length === 1) {
+      // 单点触摸 - 处理拖动
+      const touch = e.touches[0]
+      const touchX = touch.clientX - rect.left
+      const touchY = touch.clientY - rect.top
+
+      // 使用上一次触摸位置计算移动距离
+      if (lastTouchRef.current) {
+        const dx = touchX - lastTouchRef.current.x
+        const dy = touchY - lastTouchRef.current.y
+
+        // 获取当前拖动的拼图
+        const piece = state.puzzle[state.draggingPiece.index];
         
+        // 使用GameContext提供的统一边界处理函数，确保所有拼图使用完全相同的边界设置
+        const { constrainedDx, constrainedDy, hitBoundary } = ensurePieceInBounds(piece, dx, dy, 1);
+        
+        // 更新拼图位置
         dispatch({
-          type: "SET_DRAGGING_PIECE",
-          payload: { 
-            index: state.draggingPiece.index,
-            startX: newStartX,
-            startY: newStartY
-          },
+          type: "UPDATE_PIECE_POSITION",
+          payload: { index: state.draggingPiece.index, dx: constrainedDx, dy: constrainedDy },
         });
-      }
-    } 
-    else if (e.touches.length === 2 && state.selectedPiece !== null) {
-      // 双指旋转
-      const touch1 = e.touches[0];
-      const touch2 = e.touches[1];
-      
-      // 计算当前角度
-      const currentAngle = calculateAngle(
-        touch1.clientX - rect.left, 
-        touch1.clientY - rect.top,
-        touch2.clientX - rect.left, 
-        touch2.clientY - rect.top
-      );
-      
-      // 计算角度差
-      let angleDiff = currentAngle - touchStartAngle;
-      
-      // 标准化角度到-180到180之间
-      if (angleDiff > 180) angleDiff -= 360;
-      if (angleDiff < -180) angleDiff += 360;
-      
-      // 分段旋转 - 每累积15度旋转一次，使用旋转量的符号决定方向
-      if (Math.abs(angleDiff) >= 15) {
-        const clockwise = angleDiff > 0;
-        // 添加旋转音效
-        playRotateSound();
-        rotatePiece(clockwise); // 旋转1次，总计15度
-        
-        // 重置起始角度
-        setTouchStartAngle(currentAngle);
+
+        // 如果触碰到边界，立即停止拖拽并添加震动动画
+        if (hitBoundary) {
+          // 只有在碰到画布边缘时才停止拖拽
+          dispatch({ type: "SET_DRAGGING_PIECE", payload: null });
+          setIsDragging(false);
+          
+          // 保存碰撞位置基准点
+          const hitPiece = { ...piece };
+          const pieceIndex = state.draggingPiece.index;
+          
+          // 震动动画序列 - 增大震动幅度以使回弹更明显
+          let animationStep = 0;
+          const maxSteps = 6; // 震动次数
+          // 增大震动幅度，使回弹效果更明显
+          const shakeAmount = [8, -6, 5, -4, 3, -2]; // 震动幅度序列
+          
+          // 确定震动方向 - 根据碰撞面决定
+          let shakeDirectionX = 0;
+          let shakeDirectionY = 0;
+          
+          // 根据碰撞边确定震动方向 - 使用1像素的边界值
+          const bounds = calculatePieceBounds(piece);
+          const safeMargin = 1; // 使用统一的边界值
+          if (bounds.minX <= safeMargin) shakeDirectionX = 1; // 碰左边，向右震动
+          else if (bounds.maxX >= canvas.width - safeMargin) shakeDirectionX = -1; // 碰右边，向左震动
+          
+          if (bounds.minY <= safeMargin) shakeDirectionY = 1; // 碰上边，向下震动
+          else if (bounds.maxY >= canvas.height - safeMargin) shakeDirectionY = -1; // 碰下边，向上震动
+          
+          // 如果没有确定方向，根据移动速度判断
+          if (shakeDirectionX === 0 && Math.abs(dx) > Math.abs(dy)) shakeDirectionX = -Math.sign(dx);
+          if (shakeDirectionY === 0 && Math.abs(dy) > Math.abs(dx)) shakeDirectionY = -Math.sign(dy);
+          
+          // 如果依然没有方向，至少有一个默认方向
+          if (shakeDirectionX === 0 && shakeDirectionY === 0) {
+            shakeDirectionX = dx < 0 ? 1 : -1;
+          }
+          
+          // 执行震动动画
+          const shakeAnimation = () => {
+            if (animationStep >= maxSteps || !canvasRef.current) return;
+            
+            // 计算震动位移
+            const shakeX = shakeDirectionX * shakeAmount[animationStep];
+            const shakeY = shakeDirectionY * shakeAmount[animationStep];
+            
+            // 应用震动位移
+            dispatch({
+              type: "UPDATE_PIECE_POSITION",
+              payload: { index: pieceIndex, dx: shakeX, dy: shakeY },
+            });
+            
+            // 安排下一次震动
+            animationStep++;
+            setTimeout(shakeAnimation, 30); // 每次震动间隔30ms，实现快速震动效果
+          };
+          
+          // 开始震动动画
+          setTimeout(shakeAnimation, 10); // 短暂延迟后开始震动
+        } else {
+          // 更新最后触摸位置
+          lastTouchRef.current = { x: touchX, y: touchY };
+          
+          // 更新磁吸感应
+          if (state.selectedPiece !== null && state.originalPositions) {
+            const pieceIndex = state.selectedPiece;
+            const piece = state.puzzle[pieceIndex];
+            const originalPiece = state.originalPositions[pieceIndex];
+            
+            // 计算当前拼图中心点和目标位置中心点
+            const pieceCenter = calculateCenter(piece.points);
+            const originalCenter = calculateCenter(originalPiece.points);
+            
+            // 检查是否接近目标位置
+            if (pieceCenter && originalCenter) {
+              const magnetThreshold = 50; // 磁吸范围
+              const dx = pieceCenter.x - originalCenter.x;
+              const dy = pieceCenter.y - originalCenter.y;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              
+              // 应用磁吸效果
+              if (distance < magnetThreshold) {
+                const magnetStrength = 0.15;
+                const attractionFactor = 1 - (distance / magnetThreshold);
+                const attractionX = -dx * attractionFactor * magnetStrength;
+                const attractionY = -dy * attractionFactor * magnetStrength;
+                
+                if (Math.abs(attractionX) > 0.1 || Math.abs(attractionY) > 0.1) {
+                  dispatch({
+                    type: "UPDATE_PIECE_POSITION",
+                    payload: { index: pieceIndex, dx: attractionX, dy: attractionY },
+                  });
+                }
+              }
+            }
+          }
+        }
+      } else {
+        // 首次触摸，记录位置
+        lastTouchRef.current = { x: touchX, y: touchY };
       }
     }
   }

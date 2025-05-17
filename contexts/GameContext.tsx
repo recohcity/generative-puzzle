@@ -553,7 +553,53 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       };
     }
     
-    // 计算拼图的边界框
+    // 计算拼图当前的中心点（用于旋转参考）
+    const center = {
+      x: piece.points.reduce((sum, p) => sum + p.x, 0) / piece.points.length,
+      y: piece.points.reduce((sum, p) => sum + p.y, 0) / piece.points.length
+    };
+    
+    // 如果拼图有旋转，则需要考虑旋转后的实际边界
+    if (piece.rotation !== 0) {
+      // 计算每个点旋转后的坐标
+      const rotatedPoints = piece.points.map(point => {
+        // 计算点到中心的向量
+        const dx = point.x - center.x;
+        const dy = point.y - center.y;
+        
+        // 计算旋转角度（弧度）
+        const angleRadians = piece.rotation * Math.PI / 180;
+        
+        // 旋转向量
+        const rotatedDx = dx * Math.cos(angleRadians) - dy * Math.sin(angleRadians);
+        const rotatedDy = dx * Math.sin(angleRadians) + dy * Math.cos(angleRadians);
+        
+        // 返回旋转后的坐标
+        return {
+          x: center.x + rotatedDx,
+          y: center.y + rotatedDy
+        };
+      });
+      
+      // 使用旋转后的点计算边界框
+      const minX = Math.min(...rotatedPoints.map(p => p.x));
+      const maxX = Math.max(...rotatedPoints.map(p => p.x));
+      const minY = Math.min(...rotatedPoints.map(p => p.y));
+      const maxY = Math.max(...rotatedPoints.map(p => p.y));
+      
+      // 计算尺寸和中心点
+      const width = maxX - minX;
+      const height = maxY - minY;
+      
+      return { 
+        minX, maxX, minY, maxY, 
+        width, height, 
+        centerX: center.x, 
+        centerY: center.y 
+      };
+    }
+    
+    // 如果没有旋转，直接使用原始点计算边界框
     const minX = Math.min(...piece.points.map(p => p.x));
     const maxX = Math.max(...piece.points.map(p => p.x));
     const minY = Math.min(...piece.points.map(p => p.y));
@@ -569,113 +615,189 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
   
   // 添加边界约束函数
-  const ensurePieceInBounds = useCallback((piece: PuzzlePiece, dx: number, dy: number, safeMargin: number = 10): { constrainedDx: number, constrainedDy: number } => {
-    const bounds = calculatePieceBounds(piece);
-    
-    // 如果未设置画布尺寸，则不应用约束
-    if (!state.canvasWidth || !state.canvasHeight) {
-      console.warn("Canvas size not set, cannot constrain piece");
-      return { constrainedDx: dx, constrainedDy: dy };
+  const ensurePieceInBounds = useCallback((piece: PuzzlePiece, dx: number, dy: number, safeMargin: number = 1) => {
+    const { canvasWidth, canvasHeight } = state;
+    if (canvasWidth === undefined || canvasHeight === undefined) {
+      console.warn("Canvas size not available for boundary check.");
+      return { constrainedDx: dx, constrainedDy: dy, hitBoundary: false };
     }
-    
-    // 检测设备类型和屏幕方向
-    const isPortrait = window.innerHeight > window.innerWidth;
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    
-    // 为移动设备设置额外大的安全边距
-    let actualSafeMargin = safeMargin;
-    if (isMobile && isPortrait) {
-      // 手机竖屏模式使用非常严格的边距
-      actualSafeMargin = Math.max(safeMargin, Math.floor(state.canvasWidth * 0.08));
-    } else if (isMobile) {
-      // 手机横屏模式
-      actualSafeMargin = Math.max(safeMargin, Math.floor(state.canvasWidth * 0.05)); 
-    }
-    
-    // 为小拼图特别处理 - 通过拼图尺寸判断是否为小拼图
-    const isSmallPiece = bounds.width < state.canvasWidth * 0.15 || bounds.height < state.canvasHeight * 0.15;
-    
-    // 如果是小拼图，减小边界约束的严格度，让用户可以更容易地操作
-    if (isSmallPiece && isMobile) {
-      // 减小边界约束，允许更多操作空间
-      actualSafeMargin = Math.max(5, Math.floor(actualSafeMargin * 0.7));
-    }
-    
-    // 计算预期的新位置
-    const newMinX = bounds.minX + dx;
-    const newMaxX = bounds.maxX + dx;
-    const newMinY = bounds.minY + dy;
-    const newMaxY = bounds.maxY + dy;
-    
-    // 添加安全边距，确保拼图不会完全移出视图
-    const canvasBounds = {
-      minX: actualSafeMargin,
-      maxX: state.canvasWidth - actualSafeMargin,
-      minY: actualSafeMargin,
-      maxY: state.canvasHeight - actualSafeMargin
-    };
-    
-    // 计算约束后的移动距离
+
+    // 获取拼图当前的精确边界（考虑旋转后的实际坐标）
+    const currentBounds = calculatePieceBounds(piece);
+
+    // 计算应用dx, dy后的潜在新边界
+    const potentialMinX = currentBounds.minX + dx;
+    const potentialMaxX = currentBounds.maxX + dx;
+    const potentialMinY = currentBounds.minY + dy;
+    const potentialMaxY = currentBounds.maxY + dy;
+
+    // 调试信息：记录边界检测细节
+    console.log(`碰撞检测详情 [拼图ID: ${state.puzzle?.indexOf(piece) ?? -1}]:`, {
+      pieceBounds: {
+        current: { minX: currentBounds.minX, maxX: currentBounds.maxX, minY: currentBounds.minY, maxY: currentBounds.maxY },
+        potential: { minX: potentialMinX, maxX: potentialMaxX, minY: potentialMinY, maxY: potentialMaxY }
+      },
+      canvas: { width: canvasWidth, height: canvasHeight },
+      safeMargin: safeMargin,
+      movement: { dx, dy }
+    });
+
     let constrainedDx = dx;
     let constrainedDy = dy;
+    let hitBoundary = false; // 标记是否触碰边界
     
-    // 如果是移动设备，使用更严格的约束
-    if (isMobile) {
-      // 更严格的水平约束 - 确保整个拼图都在画布范围内
-      if (newMinX < canvasBounds.minX) {
-        constrainedDx = canvasBounds.minX - bounds.minX;
-      } else if (newMaxX > canvasBounds.maxX) {
-        constrainedDx = canvasBounds.maxX - bounds.maxX;
-      }
-      
-      // 更严格的垂直约束 - 确保整个拼图都在画布范围内
-      if (newMinY < canvasBounds.minY) {
-        constrainedDy = canvasBounds.minY - bounds.minY;
-      } else if (newMaxY > canvasBounds.maxY) {
-        constrainedDy = canvasBounds.maxY - bounds.maxY;
-      }
-      
-      // 额外的安全检查 - 确保在约束后拼图真的在画布内
-      const constrainedMinX = bounds.minX + constrainedDx;
-      const constrainedMaxX = bounds.maxX + constrainedDx;
-      const constrainedMinY = bounds.minY + constrainedDy;
-      const constrainedMaxY = bounds.maxY + constrainedDy;
-      
-      if (constrainedMinX < canvasBounds.minX) {
-        constrainedDx = canvasBounds.minX - bounds.minX;
-      }
-      if (constrainedMaxX > canvasBounds.maxX) {
-        constrainedDx = canvasBounds.maxX - bounds.maxX;
-      }
-      if (constrainedMinY < canvasBounds.minY) {
-        constrainedDy = canvasBounds.minY - bounds.minY;
-      }
-      if (constrainedMaxY > canvasBounds.maxY) {
-        constrainedDy = canvasBounds.maxY - bounds.maxY;
+    // 增加回弹因子，使拼图回弹更明显
+    const bounceBackFactor = 0.4; 
+    
+    // 使用拼图尺寸的30%作为回弹距离基准
+    const pieceSizeBasedBounce = Math.max(currentBounds.width, currentBounds.height) * 0.3;
+    // 最大回弹距离限制(像素) - 确保回弹效果明显但不过度
+    const maxBounceDistance = Math.min(Math.max(pieceSizeBasedBounce, 30), 80);
+
+    // 计算需要修正的移动距离，使用真实画布边缘
+    let correctionX = 0;
+    let correctionY = 0;
+
+    // 检查水平边界 - 使用画布真实边缘，仅保留1像素的缓冲防止渲染问题
+    if (potentialMinX < safeMargin) {
+        // 精确检测是否确实超出边界
+        const boundaryViolation = safeMargin - potentialMinX;
+        // 只有当确实超出边界时才标记为碰撞
+        if (boundaryViolation > 0.1) {
+            correctionX = boundaryViolation; // 需要向右修正
+            hitBoundary = true;
+            console.log(`  ⚠️ 触碰左边界: 当前${potentialMinX}px < 安全边距${safeMargin}px, 修正${correctionX}px`);
+        }
+    } else if (potentialMaxX > canvasWidth - safeMargin) {
+        // 精确检测是否确实超出边界
+        const boundaryViolation = potentialMaxX - (canvasWidth - safeMargin);
+        // 只有当确实超出边界时才标记为碰撞
+        if (boundaryViolation > 0.1) {
+            correctionX = -(boundaryViolation); // 需要向左修正
+            hitBoundary = true;
+            console.log(`  ⚠️ 触碰右边界: 当前${potentialMaxX}px > 画布宽度${canvasWidth - safeMargin}px, 修正${correctionX}px`);
+        }
+    }
+
+    // 检查垂直边界 - 使用画布真实边缘，仅保留1像素的缓冲防止渲染问题
+    if (potentialMinY < safeMargin) {
+        // 精确检测是否确实超出边界
+        const boundaryViolation = safeMargin - potentialMinY;
+        // 只有当确实超出边界时才标记为碰撞
+        if (boundaryViolation > 0.1) {
+            correctionY = boundaryViolation; // 需要向下修正
+            hitBoundary = true;
+            console.log(`  ⚠️ 触碰上边界: 当前${potentialMinY}px < 安全边距${safeMargin}px, 修正${correctionY}px`);
+        }
+    } else if (potentialMaxY > canvasHeight - safeMargin) {
+        // 精确检测是否确实超出边界
+        const boundaryViolation = potentialMaxY - (canvasHeight - safeMargin);
+        // 只有当确实超出边界时才标记为碰撞
+        if (boundaryViolation > 0.1) {
+            correctionY = -(boundaryViolation); // 需要向上修正
+            hitBoundary = true;
+            console.log(`  ⚠️ 触碰下边界: 当前${potentialMaxY}px > 画布高度${canvasHeight - safeMargin}px, 修正${correctionY}px`);
+        }
+    }
+
+    // 应用修正和回弹
+    if (hitBoundary) {
+        // 应用修正量，将拼图带回画布边缘
+        constrainedDx = dx + correctionX;
+        constrainedDy = dy + correctionY;
+        
+        console.log(`  🔄 应用修正: dx从${dx}修正为${constrainedDx}, dy从${dy}修正为${constrainedDy}`);
+
+        // 计算回弹距离，与修正方向相反，但距离有限制
+        // 使用Math.sign确保回弹方向正确，Math.min限制最大回弹距离
+        const bounceX = Math.abs(correctionX) > 0 ? 
+                       -Math.sign(correctionX) * Math.min(Math.abs(correctionX) * bounceBackFactor, maxBounceDistance) : 0;
+        const bounceY = Math.abs(correctionY) > 0 ? 
+                       -Math.sign(correctionY) * Math.min(Math.abs(correctionY) * bounceBackFactor, maxBounceDistance) : 0;
+
+        // 应用回弹偏移
+        constrainedDx += bounceX;
+        constrainedDy += bounceY;
+        
+        console.log(`  🔄 应用回弹: 回弹X=${bounceX}, 回弹Y=${bounceY}, 最终dx=${constrainedDx}, dy=${constrainedDy}`);
+
+        // 再次进行边界检查，确保回弹没有导致再次超出边界
+        const finalMinX = currentBounds.minX + constrainedDx;
+        const finalMaxX = currentBounds.maxX + constrainedDx;
+        const finalMinY = currentBounds.minY + constrainedDy;
+        const finalMaxY = currentBounds.maxY + constrainedDy;
+        
+        let secondCorrection = false;
+
+        if (finalMinX < safeMargin) {
+          constrainedDx = safeMargin - currentBounds.minX;
+          secondCorrection = true;
+          console.log(`  ⚠️ 回弹后仍触碰左边界, 最终修正dx=${constrainedDx}`);
+        }
+        if (finalMaxX > canvasWidth - safeMargin) {
+          constrainedDx = (canvasWidth - safeMargin) - currentBounds.maxX;
+          secondCorrection = true;
+          console.log(`  ⚠️ 回弹后仍触碰右边界, 最终修正dx=${constrainedDx}`);
+        }
+        if (finalMinY < safeMargin) {
+          constrainedDy = safeMargin - currentBounds.minY;
+          secondCorrection = true;
+          console.log(`  ⚠️ 回弹后仍触碰上边界, 最终修正dy=${constrainedDy}`);
+        }
+        if (finalMaxY > canvasHeight - safeMargin) {
+          constrainedDy = (canvasHeight - safeMargin) - currentBounds.maxY;
+          secondCorrection = true;
+          console.log(`  ⚠️ 回弹后仍触碰下边界, 最终修正dy=${constrainedDy}`);
+        }
+        
+        if (secondCorrection) {
+          console.log(`  🔄 第二次边界修正: 最终dx=${constrainedDx}, dy=${constrainedDy}`);
+        }
+
+        // 播放碰撞音效 - 仅在触碰边界时
+        try {
+          const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+          
+          // 创建主音频振荡器 - 低音碰撞声
+          const oscillator1 = audioContext.createOscillator();
+          const gainNode1 = audioContext.createGain();
+          
+          oscillator1.type = "sine";
+          oscillator1.frequency.setValueAtTime(120, audioContext.currentTime); // 更低的音调
+          gainNode1.gain.setValueAtTime(0.4, audioContext.currentTime);
+          gainNode1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15); // 更快衰减
+          
+          oscillator1.connect(gainNode1);
+          gainNode1.connect(audioContext.destination);
+          
+          // 创建次要振荡器 - 高音碰撞声
+          const oscillator2 = audioContext.createOscillator();
+          const gainNode2 = audioContext.createGain();
+          
+          oscillator2.type = "sine";
+          oscillator2.frequency.setValueAtTime(240, audioContext.currentTime); // 高一倍的音调
+          gainNode2.gain.setValueAtTime(0.2, audioContext.currentTime);
+          gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1); // 更快衰减
+          
+          oscillator2.connect(gainNode2);
+          gainNode2.connect(audioContext.destination);
+          
+          // 启动并停止振荡器
+          oscillator1.start();
+          oscillator2.start();
+          oscillator1.stop(audioContext.currentTime + 0.15);
+          oscillator2.stop(audioContext.currentTime + 0.1);
+        } catch (e) {
+          console.log("Audio not supported");
       }
     } else {
-      // 标准设备的宽松约束，确保至少有一部分拼图仍然可见
-      // 水平约束
-      if (newMaxX < canvasBounds.minX) {
-        // 如果整个拼图都超出了左边界，则约束到左边界
-        constrainedDx = canvasBounds.minX - bounds.maxX;
-      } else if (newMinX > canvasBounds.maxX) {
-        // 如果整个拼图都超出了右边界，则约束到右边界
-        constrainedDx = canvasBounds.maxX - bounds.minX;
-      }
-      
-      // 垂直约束
-      if (newMaxY < canvasBounds.minY) {
-        // 如果整个拼图都超出了上边界，则约束到上边界
-        constrainedDy = canvasBounds.minY - bounds.maxY;
-      } else if (newMinY > canvasBounds.maxY) {
-        // 如果整个拼图都超出了下边界，则约束到下边界
-        constrainedDy = canvasBounds.maxY - bounds.minY;
-      }
+        // 如果没有触碰边界，移动距离不受约束
+        constrainedDx = dx;
+        constrainedDy = dy;
     }
-    
-    return { constrainedDx, constrainedDy };
-  }, [calculatePieceBounds, state.canvasWidth, state.canvasHeight]);
+
+    return { constrainedDx, constrainedDy, hitBoundary };
+  }, [state.canvasWidth, state.canvasHeight, calculatePieceBounds, state.puzzle]);
   
   // 添加updateCanvasSize函数用于更新画布尺寸
   const updateCanvasSize = useCallback((width: number, height: number) => {
