@@ -79,7 +79,7 @@ interface GameContextProps {
   resetGame: () => void
   // 添加边界检查函数
   calculatePieceBounds: (piece: PuzzlePiece) => PieceBounds
-  ensurePieceInBounds: (piece: PuzzlePiece, dx: number, dy: number, safeMargin?: number) => { constrainedDx: number, constrainedDy: number }
+  ensurePieceInBounds: (piece: PuzzlePiece, dx: number, dy: number, safeMargin?: number) => { constrainedDx: number, constrainedDy: number, hitBoundary: boolean }
   updateCanvasSize: (width: number, height: number) => void
 }
 

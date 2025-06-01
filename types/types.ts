@@ -8,6 +8,7 @@ export interface PuzzlePiece {
   points: Point[]
   rotation: number
   path?: Path2D
+  color?: string
 }
 
 export enum ShapeType {

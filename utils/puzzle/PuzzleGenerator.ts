@@ -12,6 +12,7 @@ type PuzzlePiece = {
   y: number
   originalX: number
   originalY: number
+  color?: string
 }
 
 export class PuzzleGenerator {
@@ -148,10 +149,37 @@ export class PuzzleGenerator {
       console.warn(`⚠️ 警告：最终拼图数量(${splitPieces.length})远少于预期(${expectedPieceCount})！`);
     }
 
+    // Define the warm color palette (14 colors)
+    const colors = [
+      "#FF9F40", // 橙色
+      "#FF6B6B", // 红色
+      "#FFD166", // 黄色
+      "#F68E5F", // 珊瑚色
+      "#FFB17A", // 浅珊瑚色
+      "#FFE3C1", // 浅橙色
+      "#FFBB7C", // 杏色
+      "#FF8A5B", // 胡萝卜色
+      "#FF785A", // 番茄色
+      "#F26419", // 深橙色
+      "#E57373", // 淡红色
+      "#FFCC80", // 浅黄色
+      "#F08080", // 淡珊瑚色 (优化颜色)
+      "#FFB74D", // 中橙色
+    ];
+
+    // Shuffle the colors array (Fisher-Yates algorithm)
+    for (let i = colors.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [colors[i], colors[j]] = [colors[j], colors[i]]; // Swap elements
+    }
+
     // 创建拼图片段
-    const pieces: PuzzlePiece[] = splitPieces.map((points) => {
+    const pieces: PuzzlePiece[] = splitPieces.map((points, index) => {
       // 计算中心点
       const center = this.calculateCenter(points)
+
+      // Assign a color from the shuffled palette based on piece index, cycling if necessary
+      const assignedColor = colors[index % colors.length];
 
       return {
         points: [...points],
@@ -162,6 +190,7 @@ export class PuzzleGenerator {
         y: center.y,
         originalX: center.x,
         originalY: center.y,
+        color: assignedColor, // Assign the color from shuffled palette
       }
     })
 
