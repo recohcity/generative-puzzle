@@ -2,6 +2,16 @@
 
 本文档记录项目的所有版本更新内容和变更历史。
 
+## [v1.3.3] - 2025-06-01
+
+### 更新
+- 修复 `PuzzleCanvas.tsx` 中 `ensurePieceInBounds` 函数的 `hitBoundary` 返回类型缺失问题。
+- 优化 `PuzzleCanvas.tsx`，将 `Canvas` 绘制逻辑分离，提高模块化和可测试性。
+- 实现 `PuzzleCanvas.tsx` 游戏状态持久化，支持屏幕尺寸和方向变化后保持游戏状态。
+- 在 `PuzzleCanvas.tsx` 中添加了详细的中文注释。
+- 禁用游戏主题切换功能，将 `PuzzleCanvas.tsx` 的 `isDarkMode` 硬编码为 `true`，以实现全应用深色模式。
+- 移除了 `PuzzleCanvas.tsx` 中冗余的 `isDarkMode ? :` 条件语句，简化了代码。
+
 ## [v1.3.2] - 2025-05-17
 
 ### 交互体验优化
