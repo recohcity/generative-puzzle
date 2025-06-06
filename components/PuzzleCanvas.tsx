@@ -5,14 +5,9 @@ import { useEffect, useRef, useState } from "react"
 import { useGame } from "@/contexts/GameContext"
 import { playPieceSelectSound, playPieceSnapSound, playPuzzleCompletedSound, playRotateSound } from "@/utils/rendering/soundEffects"
 import { appendAlpha } from "@/utils/rendering/colorUtils"
+import { Point, calculateCenter, isPointInPolygon, rotatePoint, calculateAngle } from "@/utils/geometry/puzzleGeometry"
 
 // 定义类型
-interface Point {
-  x: number
-  y: number
-  isOriginal?: boolean
-}
-
 interface PuzzlePiece {
   points: Point[]
   originalPoints: Point[]
@@ -23,57 +18,6 @@ interface PuzzlePiece {
   originalX: number
   originalY: number
   color?: string
-}
-
-// 在组件顶部添加calculateCenter函数
-const calculateCenter = (points: Point[]) => {
-  return points.reduce(
-    (acc, point) => ({
-      x: acc.x + point.x / points.length,
-      y: acc.y + point.y / points.length,
-    }),
-    { x: 0, y: 0 },
-  )
-}
-
-// 判断点是否在多边形内的辅助函数
-function isPointInPolygon(x: number, y: number, polygon: Point[]): boolean {
-  let inside = false;
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const xi = polygon[i].x, yi = polygon[i].y;
-    const xj = polygon[j].x, yj = polygon[j].y;
-    
-    const intersect = ((yi > y) !== (yj > y))
-        && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-    if (intersect) inside = !inside;
-  }
-  return inside;
-}
-
-// 计算点相对于中心点的旋转
-function rotatePoint(x: number, y: number, cx: number, cy: number, angle: number): {x: number, y: number} {
-  const radians = (angle * Math.PI) / 180;
-  const cos = Math.cos(radians);
-  const sin = Math.sin(radians);
-  
-  // 将点相对于中心点平移
-  const nx = x - cx;
-  const ny = y - cy;
-  
-  // 应用旋转
-  const rotatedX = nx * cos - ny * sin;
-  const rotatedY = nx * sin + ny * cos;
-  
-  // 平移回原始坐标系
-  return {
-    x: rotatedX + cx,
-    y: rotatedY + cy
-  };
-}
-
-// 计算两点之间角度的函数（用于多点触摸旋转）
-function calculateAngle(x1: number, y1: number, x2: number, y2: number): number {
-  return Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
 }
 
 // 内联renderUtils函数
@@ -644,30 +588,56 @@ const drawCompletionEffect = (
 }
 
 export default function PuzzleCanvas() {
+  // Access game context
+  const { state, dispatch } = useGame();
+  
+  // Expose game state to window in test environment for Playwright access
+  useEffect(() => {
+    // Check if running in a test environment (e.g., if the test signal function exists)
+    if (typeof (window as any).soundPlayedForTest === 'function') {
+      // Expose the current game state
+      (window as any).__gameStateForTests__ = state;
+      console.log('Game state exposed to window.__gameStateForTests__ for testing.');
+    }
+    // Dependency array includes state so the exposed state is always current
+  }, [state]);
+  
+  // Refs for canvas elements
+  const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const backgroundCanvasRef = useRef<HTMLCanvasElement>(null);
+  
+  // Local state for dragging and canvas dimensions
+  // const [isDragging, setIsDragging] = useState(false); // Moved to GameContext
+  // const [selectedPiece, setSelectedPiece] = useState<number | null>(null); // Moved to GameContext
+  // const [canvasSize, setCanvasSize] = useState<{ width: number; height: number } | null>(null); // Moved to GameContext
+  const [showDebugElements, setShowDebugElements] = useState(false); // Keep local for now
+  
+  // State for shake animation
+  const [isShaking, setIsShaking] = useState(false);
+  
+  // Access game context (re-added necessary destructuring)
   const { 
-    state, 
-    dispatch, 
-    canvasRef, 
-    backgroundCanvasRef, 
+    // state and dispatch are already accessed above
+    // state,
+    // dispatch,
     ensurePieceInBounds, 
     calculatePieceBounds,
     updateCanvasSize,
     rotatePiece 
-  } = useGame()
-  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 })
-  const [isDragging, setIsDragging] = useState(false)
-  const [touchStartAngle, setTouchStartAngle] = useState(0)
-  const [showDebugElements, setShowDebugElements] = useState(false) // 添加显示调试元素状态
-  const containerRef = useRef<HTMLDivElement>(null)
-  const animationFrameRef = useRef<number | null>(null)
-  const resizeTimer = useRef<ReturnType<typeof setTimeout>>(null)
-  const lastTouchRef = useRef<{x: number, y: number} | null>(null)
-  const isDarkMode = true
+  } = useGame();
   
-  // 设备检测
-  const [isAndroid, setIsAndroid] = useState(false)
+  // Local state and refs (re-added necessary declarations)
+  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [touchStartAngle, setTouchStartAngle] = useState(0);
+  const animationFrameRef = useRef<number | null>(null);
+  const resizeTimer = useRef<ReturnType<typeof setTimeout>>(null);
+  const lastTouchRef = useRef<{x: number, y: number} | null>(null);
+  const [isAndroid, setIsAndroid] = useState(false); // Re-added isAndroid state
+  // const isDarkMode = true; // Assuming this was local state or prop, keeping it here for now if needed
   
-  // 组件挂载时进行设备检测
+  // Device detection - keeping existing logic for now
   useEffect(() => {
     const userAgent = navigator.userAgent.toLowerCase()
     const isAndroidDevice = /android/.test(userAgent)

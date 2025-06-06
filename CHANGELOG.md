@@ -2,6 +2,18 @@
 
 本文档记录项目的所有版本更新内容和变更历史。
 
+
+## [v1.3.4] - 2025-06-06
+### 重构
+ - **步骤 2: 提取几何计算辅助函数**
+ - 已成功将 calculateCenter、isPointInPolygon、rotatePoint 和 calculateAngle 这四个几何计算辅助函数以及 Point 接口从 components/PuzzleCanvas.tsx 迁移到 utils/geometry/puzzleGeometry.ts 文件，并更新了相关引用。这部分代码重构工作已完成。
+ - 单元测试 (utils/geometry/__tests__/puzzleGeometry.test.ts)： 我已为迁移后的几何计算函数编写了单元测试，并且这些测试已 全部通过。这验证了这些函数的计算逻辑是准确的。
+
+### 回归测试 (e2e/puzzle_canvas.spec.ts)
+- PuzzleCanvas.tsx 核心功能的回归测试，Playwright 测试套件中的 5 个测试用例，有 4 个通过。
+- 音效测试 (should play sound effects (if applicable)) 标记为跳过 (skipped)，我们将在后续阶段再解决这个问题。
+
+
 ## [v1.3.3] - 2025-06-01
 
 ### 更新

@@ -59,7 +59,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
             </div>
             <h3 className="text-sm font-medium mt-4 mb-1 text-[#FFD5AB]">拼图设置</h3>
           </div>
-          <div className="space-y-4 flex-1 overflow-y-auto pr-1 -mr-1">
+          <div className="space-y-4 flex-1 pr-1 -mr-1">
             <div className="p-3 bg-[#463E50] rounded-2xl shadow-[0_4px_10px_rgba(0,0,0,0.2)] space-y-3">
               <ShapeControls goToNextTab={goToNextTab} /> 
               <PuzzleControlsCutType goToNextTab={goToNextTab} />

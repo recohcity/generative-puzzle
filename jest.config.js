@@ -11,5 +11,8 @@ module.exports = {
     '^.+\.(ts|tsx)$': 'ts-jest',
   },
   // Jest应该搜索测试文件的目录
-  testMatch: ['<rootDir>/utils/rendering/__tests__/**/*.test.ts'],
+  testMatch: [
+    '<rootDir>/utils/rendering/__tests__/**/*.test.ts',
+    '<rootDir>/utils/geometry/__tests__/**/*.test.ts'
+  ],
 }; 

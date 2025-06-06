@@ -209,6 +209,12 @@ export const playPieceSelectSound = async (): Promise<void> => {
     // Play sound
     oscillator.start();
     oscillator.stop(audioContext.currentTime + 0.15);
+    
+    // Check if running in a test environment and signal sound played
+    if (typeof (window as any).soundPlayedForTest === 'function') {
+      (window as any).soundPlayedForTest();
+    }
+
   } catch (e) {
     console.error('播放拼图选择音效失败:', e);
   }
