@@ -92,7 +92,7 @@ test.describe('PuzzleCanvas Initial Tests', () => {
     }
   });
 
-  test.skip('should play sound effects (if applicable)', async ({ page }) => {
+  test('should play sound effects (if applicable)', async ({ page }) => {
     // Expose a function to the page context to signal when the sound is played
     let soundPlayed = false;
     await page.exposeFunction('soundPlayedForTest', () => {
@@ -103,59 +103,21 @@ test.describe('PuzzleCanvas Initial Tests', () => {
     await page.goto('http://localhost:3000');
     await page.waitForSelector('canvas.relative.cursor-pointer');
 
-    // Wait for the game state to be exposed to the window
-    await page.waitForFunction(() => {
-      // Check if the game state object and the puzzle array exist
-      return (window as any).__gameStateForTests__?.puzzle?.length > 0;
-    }, { timeout: 10000 }); // Wait up to 10 seconds for state to be available
+    const canvas = page.locator('canvas.relative.cursor-pointer');
+    const canvasBox = await canvas.boundingBox();
 
-    // Use evaluate to get the position of an interactive puzzle piece
-    const piecePosition = await page.evaluate(() => {
-      // Access the game state from the window object
-      const gameState = (window as any).__gameStateForTests__;
-      const puzzlePieces = gameState.puzzle;
-      const completedPieces = gameState.completedPieces || [];
-
-      if (!puzzlePieces || puzzlePieces.length === 0) {
-        // This should ideally not be reached if waitForFunction passed,
-        // but included as a safeguard.
-        console.error('Puzzle pieces data not available after waiting.');
-        return null;
-      }
-
-      // Find the first non-completed piece's center position
-      for (let i = 0; i < puzzlePieces.length; i++) {
-        if (!completedPieces.includes(i)) {
-          const piece = puzzlePieces[i];
-          // Assuming each piece object has a `points` array with absolute coordinates
-          if (piece.points && piece.points.length > 0) {
-             // Calculate center of the piece
-            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-            piece.points.forEach((p: {x: number, y: number}) => {
-                minX = Math.min(minX, p.x);
-                minY = Math.min(minY, p.y);
-                maxX = Math.max(maxX, p.x);
-                maxY = Math.max(maxY, p.y);
-            });
-            const centerX = (minX + maxX) / 2;
-            const centerY = (minY + maxY) / 2;
-
-            console.log(`Found interactive piece at ${centerX.toFixed(2)}, ${centerY.toFixed(2)}`);
-            return { x: centerX, y: centerY };
-          }
-        }
-      }
-
-      console.error('No interactive puzzle piece found.');
-      return null; // No interactive piece found
-    });
-
-    if (!piecePosition) {
-      throw new Error('Could not get the position of an interactive puzzle piece.');
+    if (!canvasBox) {
+      throw new Error('Canvas element not found for sound effect test.');
     }
 
-    // Simulate a precise click on the found piece position
-    await page.mouse.click(piecePosition.x, piecePosition.y);
+    // Calculate the center of the canvas
+    const centerX = canvasBox.x + canvasBox.width / 2;
+    const centerY = canvasBox.y + canvasBox.height / 2;
+
+    console.log(`Attempting to click canvas center at ${centerX.toFixed(2)}, ${centerY.toFixed(2)} to trigger sound.`);
+
+    // Simulate a click at the canvas center
+    await page.mouse.click(centerX, centerY);
 
     // Wait for the soundPlayed flag to become true, with a timeout
     await expect(async () => {
