@@ -22,10 +22,16 @@ import {
 // 导入从 types/puzzleTypes.ts 迁移的类型
 import { Point, PuzzlePiece } from "@/types/puzzleTypes";
 
+// 导入新的设备检测 Hook
+import { useDeviceDetection } from "@/hooks/useDeviceDetection";
+
 export default function PuzzleCanvas() {
   // Access game context
   const { state, dispatch } = useGame();
   
+  // Use the new device detection hook
+  const { isMobile, isPortrait, isAndroid, screenWidth, screenHeight } = useDeviceDetection();
+
   // Expose game state to window in test environment for Playwright access
   useEffect(() => {
     // Check if running in a test environment (e.g., if the test signal function exists)
@@ -68,17 +74,10 @@ export default function PuzzleCanvas() {
   const animationFrameRef = useRef<number | null>(null);
   const resizeTimer = useRef<ReturnType<typeof setTimeout>>(null);
   const lastTouchRef = useRef<Point | null>(null);
-  const [isAndroid, setIsAndroid] = useState(false); // Re-added isAndroid state
+  // const [isAndroid, setIsAndroid] = useState(false); // Removed - using useDeviceDetection
   // const isDarkMode = true; // Assuming this was local state or prop, keeping it here for now if needed
   
-  // Device detection - keeping existing logic for now
-  useEffect(() => {
-    const userAgent = navigator.userAgent.toLowerCase()
-    const isAndroidDevice = /android/.test(userAgent)
-    setIsAndroid(isAndroidDevice)
-  }, [])
-  
-  // 更新设置初始画布大小的函数
+  // 更新设置初始画布大小的函数 - 使用 useDeviceDetection 结果
   const setInitialCanvasSize = () => {
     if (!canvasRef.current) {
       console.error("画布引用不可用");
@@ -99,41 +98,43 @@ export default function PuzzleCanvas() {
     // 确定最佳画布尺寸 - 根据容器和设备方向调整
     let canvasWidth, canvasHeight;
 
-    // 检测设备和方向
-    const ua = navigator.userAgent;
-    const isIPhone = /iPhone/i.test(ua);
-    const isIPad = /iPad/i.test(ua) || (/Macintosh/i.test(ua) && 'ontouchend' in document);
-    const isAndroid = /Android/i.test(ua);
-    const isMobile = isIPhone || isAndroid;
-    const isPortrait = window.innerHeight > window.innerWidth;
-    const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
+    // 使用 useDeviceDetection 结果
+    // const ua = navigator.userAgent;
+    // const isIPhone = /iPhone/i.test(ua);
+    // const isIPad = /iPad/i.test(ua) || (/Macintosh/i.test(ua) && 'ontouchend' in document);
+    // const isAndroid = /Android/i.test(ua); // Using hook result
+    // const isMobile = isIPhone || isAndroid; // Using hook result
+    // const isPortrait = window.innerHeight > window.innerWidth; // Using hook result
+    // const screenWidth = window.innerWidth; // Using hook result
+    // const screenHeight = window.innerHeight; // Using hook result
 
-    console.log(`设备信息: iPhone=${isIPhone}, iPad=${isIPad}, Android=${isAndroid}, 竖屏=${isPortrait}, 屏幕=${screenWidth}x${screenHeight}`);
+    console.log(`设备信息 (from hook): 移动=${isMobile}, 竖屏=${isPortrait}, 屏幕=${screenWidth}x${screenHeight}`);
 
+    // Update logic to use hook results
     if (isMobile && isPortrait) {
       // 移动设备竖屏模式 - 使用严格的正方形画布，保持较小尺寸以确保拼图完全可见
       // 获取容器的较小边作为画布的宽高，确保是正方形
       const minDimension = Math.min(containerWidth, containerHeight);
       // 进一步限制最大尺寸，确保不会过大导致拼图超出屏幕
       const maxSize = Math.min(minDimension, 
-                             isIPhone ? 320 : 360, // iPhone设备上使用更保守的尺寸
-                             Math.min(screenWidth, screenHeight) * 0.9); // 确保不超过屏幕较小边的90%
+                             // isIPhone ? 320 : 360, // Removed specific iPhone check, relying on general mobile portrait adjustments
+                             isAndroid ? 360 : 320, // Keep distinction if needed, using isAndroid from hook
+                             Math.min(screenWidth, screenHeight) * 0.9); // Use screenWidth/Height from hook
                              
       canvasWidth = maxSize;
       canvasHeight = maxSize;
       console.log("移动设备竖屏模式，强制使用严格限制的1:1正方形画布:", canvasWidth, "x", canvasHeight);
     } else if (isMobile && !isPortrait) {
       // 移动设备横屏模式 - 利用宽屏空间，使用更宽的矩形画布
-      const availableHeight = Math.min(containerHeight, screenHeight * 0.8); // 高度占屏幕80%
+      const availableHeight = Math.min(containerHeight, screenHeight * 0.8); // Use screenHeight from hook
       // 宽高比设为 16:9 或者其他适合横屏的比例
       const aspectRatio = 16/9;
       // 限制宽度不超过容器宽度
       canvasWidth = Math.min(availableHeight * aspectRatio, containerWidth * 0.9);
       canvasHeight = availableHeight;
       console.log("移动设备横屏模式，使用宽屏比例画布:", canvasWidth, "x", canvasHeight);
-    } else if (isIPad || (screenWidth < 1024 && screenHeight < 1024)) {
-      // iPad或平板设备
+    } else if (isAndroid || (screenWidth < 1024 && screenHeight < 1024)) { // Using isAndroid from hook
+      // iPad或平板设备 (Generalizing to non-mobile touch devices or smaller screens)
       const aspectRatio = containerWidth / containerHeight;
       
       // 保持宽高比但避免过度拉伸
@@ -188,7 +189,7 @@ export default function PuzzleCanvas() {
     console.log(`设置画布尺寸: ${canvasWidth}x${canvasHeight}`);
   }
 
-  // 更新handleResize函数，添加设备检测逻辑
+  // 更新handleResize函数，添加设备检测逻辑 - 使用 useDeviceDetection 结果
   const handleResize = () => {
     if (!canvasRef.current) return
 
@@ -199,22 +200,22 @@ export default function PuzzleCanvas() {
       const container = canvasRef.current?.parentElement
       if (!container) return
 
-      // 检测设备和方向
-      const ua = navigator.userAgent;
-      const isIPhone = /iPhone/i.test(ua);
-      const isIPad = /iPad/i.test(ua) || (/Macintosh/i.test(ua) && 'ontouchend' in document);
-      const isAndroid = /Android/i.test(ua);
-      const isMobile = isIPhone || isAndroid;
-      const isPortrait = window.innerHeight > window.innerWidth;
-      const screenWidth = window.innerWidth;
-      const screenHeight = window.innerHeight;
+      // 检测设备和方向 - 使用 useDeviceDetection 结果
+      // const ua = navigator.userAgent;
+      // const isIPhone = /iPhone/i.test(ua);
+      // const isIPad = /iPad/i.test(ua) || (/Macintosh/i.test(ua) && 'ontouchend' in document);
+      // const isAndroid = /Android/i.test(ua); // Using hook result
+      // const isMobile = isIPhone || isAndroid; // Using hook result
+      // const isPortrait = window.innerHeight > window.innerWidth; // Using hook result
+      // const screenWidth = window.innerWidth; // Using hook result
+      // const screenHeight = window.innerHeight; // Using hook result
       
-      console.log(`窗口调整: 移动=${isMobile}, 竖屏=${isPortrait}, 屏幕=${screenWidth}x${screenHeight}`);
+      console.log(`窗口调整 (from hook): 移动=${isMobile}, 竖屏=${isPortrait}, 屏幕=${screenWidth}x${screenHeight}`);
 
       const containerWidth = container.clientWidth
       const containerHeight = container.clientHeight
 
-      // 根据设备类型和方向设置画布尺寸
+      // 根据设备类型和方向设置画布尺寸 - 使用 useDeviceDetection 结果
       let newWidth, newHeight
       
       if (isMobile && isPortrait) {
@@ -223,23 +224,24 @@ export default function PuzzleCanvas() {
         const minDimension = Math.min(containerWidth, containerHeight);
         // 进一步限制最大尺寸
         const maxSize = Math.min(minDimension, 
-                               isIPhone ? 320 : 360, // iPhone设备上使用更保守的尺寸
-                               Math.min(screenWidth, screenHeight) * 0.9); // 确保不超过屏幕较小边的90%
+                               // isIPhone ? 320 : 360, // Removed specific iPhone check
+                               isAndroid ? 360 : 320, // Keep distinction if needed, using isAndroid from hook
+                               Math.min(screenWidth, screenHeight) * 0.9); // Use screenWidth/Height from hook
                                
         newWidth = maxSize;
         newHeight = maxSize;
         console.log("移动设备竖屏模式，强制使用严格限制的1:1正方形画布:", newWidth, "x", newHeight);
       } else if (isMobile && !isPortrait) {
         // 移动设备横屏模式 - 利用宽屏空间，使用更宽的矩形画布
-        const availableHeight = Math.min(containerHeight, screenHeight * 0.8); // 高度占屏幕80%
+        const availableHeight = Math.min(containerHeight, screenHeight * 0.8); // Use screenHeight from hook
         // 宽高比设为 16:9 或者其他适合横屏的比例
         const aspectRatio = 16/9;
         // 限制宽度不超过容器宽度
         newWidth = Math.min(availableHeight * aspectRatio, containerWidth * 0.9);
         newHeight = availableHeight;
         console.log("移动设备横屏模式，使用宽屏比例画布:", newWidth, "x", newHeight);
-      } else if (isIPad || (screenWidth < 1024 && screenHeight < 1024)) {
-        // iPad或平板设备
+      } else if (isAndroid || (screenWidth < 1024 && screenHeight < 1024)) { // Using isAndroid from hook
+        // iPad或平板设备 (Generalizing)
         const aspectRatio = containerWidth / containerHeight;
         
         // 保持宽高比但避免过度拉伸
@@ -800,50 +802,6 @@ export default function PuzzleCanvas() {
     dispatch({ type: "SET_DRAGGING_PIECE", payload: null })
   }
 
-  // 添加窗口大小变化的监听器
-  const handleOrientationChange = () => {
-    console.log('方向变化检测到，强制重新计算画布尺寸');
-    // 清除之前的定时器
-    if (resizeTimer.current) {
-      clearTimeout(resizeTimer.current as any);
-    }
-
-    // 设置新的定时器，确保DOM完全更新
-    resizeTimer.current = setTimeout(() => {
-      // 检测设备和方向
-      const ua = navigator.userAgent;
-      const isIPhone = /iPhone/i.test(ua);
-      const isAndroid = /Android/i.test(ua);
-      const isMobile = isIPhone || isAndroid;
-      const isPortrait = window.innerHeight > window.innerWidth;
-
-      console.log(`方向变化: 移动=${isMobile}, 竖屏=${isPortrait}, 宽度=${window.innerWidth}, 高度=${window.innerHeight}`);
-
-      // 先调用常规的resize处理
-      handleResize();
-
-      // 对于移动设备，添加额外检查和处理
-      if (isMobile) {
-        setTimeout(() => {
-          console.log('移动设备方向变化后额外检查');
-
-          // 如果是横屏模式，应用横屏特定的布局
-          if (!isPortrait) {
-            console.log('检测到横屏模式，应用横屏优化布局');
-            // 在横屏模式下，重新设置画布大小并更新位置
-            setInitialCanvasSize();
-            // 强制更新位置计算，确保正确利用宽屏空间
-            setTimeout(() => updatePositions(), 100);
-          } else {
-            // 竖屏模式
-            console.log('检测到竖屏模式，应用竖屏标准布局');
-            setInitialCanvasSize();
-          }
-        }, 500);
-      }
-    }, 300) as any;
-  };
-
   // 添加键盘事件监听器，用于切换调试元素显示
   const handleKeyDown = (e: KeyboardEvent) => {
     // F10键 (keyCode 121)
@@ -854,37 +812,40 @@ export default function PuzzleCanvas() {
     }
   };
 
-  // 添加Canvas初始化的useEffect
+  // 添加Canvas初始化的useEffect - 移除 orientationchange 监听
   useEffect(() => {
     console.log('初始化画布');
 
-    // 初始设置画布大小
+    // Initial setup of canvas size
     setInitialCanvasSize();
 
-    // 添加窗口大小变化的监听器
+    // Add window resize listener
     window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleOrientationChange);
-    // 添加键盘事件监听
+    // Remove orientationchange listener, handled by useDeviceDetection hook
+    // window.addEventListener('orientationchange', handleOrientationChange);
+    // Add keyboard event listener
     window.addEventListener('keydown', handleKeyDown);
 
-    // 添加一个延迟的强制重新计算，确保在所有DOM元素完全渲染后执行
+    // Add a delayed forced recalculation to ensure execution after all DOM elements are fully rendered
     const timeoutId = setTimeout(() => {
       console.log('强制重新计算画布尺寸...');
       handleResize();
 
-      // 对于手机设备，添加额外的计算延迟，确保获取到正确的尺寸
-      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      // For mobile devices, add an extra calculation delay to ensure correct dimensions are obtained
+      // Use isMobile from the hook
+      if (isMobile) { 
         setTimeout(() => {
           console.log('移动设备额外尺寸检查...');
-          setInitialCanvasSize(); // 使用初始化函数而不是handleResize
+          setInitialCanvasSize(); // Use initialization function instead of handleResize
         }, 500);
       }
     }, 300);
 
-    // 清理函数
+    // Cleanup function
     return () => {
       window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleOrientationChange);
+      // Remove orientationchange listener
+      // window.removeEventListener('orientationchange', handleOrientationChange);
       window.removeEventListener('keydown', handleKeyDown);
       clearTimeout(timeoutId);
       if (resizeTimer.current) {
@@ -894,24 +855,24 @@ export default function PuzzleCanvas() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, []);
-  
-  // 监听游戏状态变化，确保在重置游戏时重新计算画布尺寸
-  useEffect(() => {
-    // 检查游戏状态重置，并在游戏未完成时才初始化画布尺寸
-    if (!state.isScattered && !state.isCompleted && state.completedPieces.length === 0 && !state.isCompleted) {
-      console.log('检测到游戏重置状态，确保画布尺寸正确');
+  }, [isMobile]); // Added isMobile to dependency array as it's used inside the effect
 
-      // 延迟执行以确保其他状态都已更新
+  // Listen for game state changes to ensure canvas size is recalculated on game reset
+  useEffect(() => {
+    // Check for game state reset and initialize canvas size only when game is not completed
+    if (!state.isScattered && !state.isCompleted && state.completedPieces.length === 0 && !state.isCompleted) {
+      console.log('Detected game reset state, ensuring canvas size is correct');
+
+      // Delay execution to ensure other states are updated
       const timeoutId = setTimeout(() => {
         setInitialCanvasSize();
       }, 100);
 
       return () => clearTimeout(timeoutId);
     }
-  }, [state.isScattered, state.isCompleted, state.completedPieces.length]);
+  }, [state.isScattered, state.isCompleted, state.completedPieces.length]); // Dependencies include state changes relevant to reset check
 
-  // 优化触摸事件处理
+  // Optimize touch event handling
   const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
     e.preventDefault() // 防止触摸事件触发鼠标事件
 
