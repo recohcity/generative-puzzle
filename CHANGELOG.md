@@ -3,6 +3,40 @@
 本文档记录项目的所有版本更新内容和变更历史。
 
 
+## [v1.3.7] - 2025-06-06
+### 重构
+- **步骤 5: 更新游戏状态管理中心**
+- 已成功修改 `contexts/GameContext.tsx` 文件，在 `GameState` 中增加了 `previousCanvasSize` 状态，并更新了 reducer 逻辑以支持记录上一次画布尺寸和处理适配后的拼图状态。
+- 增加了 `UPDATE_ADAPTED_PUZZLE_STATE` action 类型及其 reducer 逻辑，为后续的响应式适配计算提供支持。
+- 运行 Playwright 回归测试 (`e2e/puzzle_canvas.spec.ts`) 
+  ✓  1 …_canvas.spec.ts:9:7 › PuzzleCanvas Initial Tests › should load the page and render the canvas (3.3s)
+  ✓  2 …pec.ts:17:7 › PuzzleCanvas Initial Tests › should allow dragging a puzzle piece on the canvas (2.9s)
+  ✓  3 …zzle_canvas.spec.ts:44:7 › PuzzleCanvas Initial Tests › should toggle debug mode with F10 key (2.8s)
+  ✓  4 …nvas.spec.ts:63:7 › PuzzleCanvas Initial Tests › should handle puzzle snapping and completion (2.9s)
+  ✓  5 …_canvas.spec.ts:95:7 › PuzzleCanvas Initial Tests › should play sound effects (if applicable) (2.8s)
+  Attempting to click canvas center at 1147.00, 548.00 to trigger sound.
+  soundPlayedForTest called
+  Detected sound effect played via exposed function.
+
+  5 passed (17.4s)
+
+## [v1.3.6] - 2025-06-06
+### 重构
+- **步骤 4: 定义核心类型**
+- 已成功将与拼图相关的核心类型（Point, PuzzlePiece, GameState 等）从 `contexts/GameContext.tsx` 迁移到 `types/puzzleTypes.ts` 文件，并更新了相关引用。
+- 在 `PuzzlePiece` 类型中添加了 `normalizedX` 和 `normalizedY` 字段，为后续的响应式适配和状态恢复做准备。
+- 修复了因类型迁移导致的 `ShapeType` 和 `CutType` 导入问题，确保应用正常运行。
+- 运行 Playwright 回归测试 (`e2e/puzzle_canvas.spec.ts`) 并且所有测试都已通过，验证了类型迁移和修复没有引入新的问题。
+  ✓  1 …_canvas.spec.ts:9:7 › PuzzleCanvas Initial Tests › should load the page and render the canvas (4.6s)
+  ✓  2 …pec.ts:17:7 › PuzzleCanvas Initial Tests › should allow dragging a puzzle piece on the canvas (3.3s)
+  ✓  3 …zzle_canvas.spec.ts:44:7 › PuzzleCanvas Initial Tests › should toggle debug mode with F10 key (2.7s)
+  ✓  4 …nvas.spec.ts:63:7 › PuzzleCanvas Initial Tests › should handle puzzle snapping and completion (3.0s)
+  ✓  5 …_canvas.spec.ts:95:7 › PuzzleCanvas Initial Tests › should play sound effects (if applicable) (2.6s)
+    Attempting to click canvas center at 1147.00, 548.00 to trigger sound.
+    soundPlayedForTest called
+    Detected sound effect played via exposed function.
+    5 passed (18.9s)
+
 ## [v1.3.5] - 2025-06-06
 ### 重构
 - **步骤 3: 提取拼图绘制工具**

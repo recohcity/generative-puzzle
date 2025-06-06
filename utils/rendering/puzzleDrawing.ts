@@ -1,7 +1,7 @@
 // Path: utils/rendering/puzzleDrawing.ts
 // Functions for drawing puzzle elements on a Canvas. 
 
-import { Point, calculateCenter, calculatePieceBounds } from "@/utils/geometry/puzzleGeometry"; // Import geometry helpers
+import { calculateCenter } from "@/utils/geometry/puzzleGeometry"; // Import geometry helpers
 import { appendAlpha } from "@/utils/rendering/colorUtils"; // Assuming appendAlpha is needed
 
 // 定义类型 (从 PuzzleCanvas.tsx 迁移)
@@ -15,6 +15,13 @@ export interface PuzzlePiece { // Export the interface
   originalX: number;
   originalY: number;
   color?: string;
+}
+
+// 定义 Point 接口 (从 PuzzleCanvas.tsx 迁移)
+export interface Point {
+  x: number;
+  y: number;
+  isOriginal?: boolean; // Add isOriginal property
 }
 
 // 绘制形状
@@ -641,29 +648,29 @@ export const drawPuzzle = (
     }
 
     // 绘制所有未完成的拼图，被选中的拼图最后绘制以确保在最上层
-    const uncompletedPieces = pieces.filter(
-      (_, index) => !completedPieces.includes(index)
+    // 优化：在过滤时保留原始索引，避免 indexOf 的 O(N^2) 问题
+    const piecesWithOriginalIndex = pieces.map((piece, index) => ({ piece, originalIndex: index }));
+
+    const uncompletedPiecesWithIndex = piecesWithOriginalIndex.filter(
+      ({ originalIndex }) => !completedPieces.includes(originalIndex)
     );
 
     // 先绘制未选中的未完成拼图
-    uncompletedPieces
-      .filter((_, index) => selectedPiece === null || index !== selectedPiece)
-      .forEach((piece, index) => {
-        // 需要找到这个piece在原始pieces数组中的实际索引，以便检查是否selected
-        const originalIndex = pieces.indexOf(piece);
+    uncompletedPiecesWithIndex
+      .filter(({ originalIndex }) => selectedPiece === null || originalIndex !== selectedPiece) // Use originalIndex for selection check
+      .forEach(({ piece, originalIndex }) => { // Destructure to get piece and originalIndex
         drawPiece(ctx, piece, originalIndex, false, false, shapeType, isScattered);
       });
 
     // 再绘制已完成的拼图
-    pieces
-      .filter((_, index) => completedPieces.includes(index))
-      .forEach((piece, index) => {
-        // 需要找到这个piece在原始pieces数组中的实际索引
-        const originalIndex = pieces.indexOf(piece);
+    piecesWithOriginalIndex
+      .filter(({ originalIndex }) => completedPieces.includes(originalIndex)) // Use originalIndex for completion check
+      .forEach(({ piece, originalIndex }) => { // Destructure to get piece and originalIndex
         drawPiece(ctx, piece, originalIndex, true, false, shapeType, isScattered);
       });
 
     // 最后绘制被选中的拼图（如果在未完成列表中）
+    // 这一部分逻辑保持不变，因为它直接通过索引访问，没有性能问题
     if (selectedPiece !== null && !completedPieces.includes(selectedPiece)) {
       const piece = pieces[selectedPiece];
       drawPiece(ctx, piece, selectedPiece, false, true, shapeType, isScattered);

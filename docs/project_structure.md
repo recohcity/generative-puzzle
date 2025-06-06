@@ -55,12 +55,15 @@ generative-puzzle/
     ├── shape/                # 形状相关工具
     │   ├── ShapeGenerator.ts # 形状生成器
     │   └── geometryUtils.ts  # 几何计算工具
+    ├── geometry/             # 几何计算工具
+    │   └── puzzleGeometry.ts # 拼图相关的几何计算辅助函数
     ├── puzzle/               # 拼图相关工具
     │   ├── PuzzleGenerator.ts# 拼图生成器
     │   ├── ScatterPuzzle.ts  # 拼图打散工具
     │   ├── cutGenerators.ts  # 切割线生成器
     │   └── puzzleUtils.ts    # 拼图操作工具
     └── rendering/            # 渲染相关工具
+        ├── puzzleDrawing.ts  # Canvas 绘制拼图相关的函数
         └── soundEffects.ts   # 音效处理
 ```
 
@@ -131,11 +134,19 @@ React Context API实现的状态管理。
 
 游戏核心逻辑和辅助功能实现。
 
-- `shape/`: 形状生成和几何运算。
-- `puzzle/`: 拼图生成和操作。
-- `rendering/`: 渲染和视觉效果（目前主要是音效处理）。
 - `constants.ts`: 游戏常量定义。
 - `helper.ts`: 通用辅助函数。
+- `geometry/`: 包含拼图相关的几何计算工具。
+    - `puzzleGeometry.ts`: 提供如计算中心、点在多边形内判断、旋转点等函数。
+- `shape/`: 形状生成和处理相关工具。
+    - `ShapeGenerator.ts`: 负责生成不同类型的形状。
+- `puzzle/`: 拼图生成、打散、切割和操作相关工具。
+    - `PuzzleGenerator.ts`: 负责将形状切割成拼图。
+    - `ScatterPuzzle.ts`: 负责将拼图打散到画布上。
+    - `cutGenerators.ts`: 提供不同的切割线生成算法。
+- `rendering/`: 包含绘制和音效相关的辅助功能。
+    - `puzzleDrawing.ts`: 提供如绘制拼图、绘制拼图块、绘制提示轮廓等 Canvas 绘制函数。
+    - `soundEffects.ts`: 包含音效播放函数。
 
 ## 开发配置说明
 

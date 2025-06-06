@@ -66,5 +66,22 @@ export function calculateAngle(x1: number, y1: number, x2: number, y2: number): 
 }
 
 export function calculatePieceBounds(piece: { points: Point[] }): { minX: number; maxX: number; minY: number; maxY: number; width: number; height: number; centerX: number; centerY: number } {
-  // Implementation of calculatePieceBounds function
-} 
+  const xs = piece.points.map(p => p.x)
+  const ys = piece.points.map(p => p.y)
+  const minX = Math.min(...xs)
+  const maxX = Math.max(...xs)
+  const minY = Math.min(...ys)
+  const maxY = Math.max(...ys)
+  const width  = maxX - minX
+  const height = maxY - minY
+  return {
+    minX,
+    maxX,
+    minY,
+    maxY,
+    width,
+    height,
+    centerX: minX + width / 2,
+    centerY: minY + height / 2,
+  }
+ }

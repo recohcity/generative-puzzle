@@ -3,85 +3,19 @@
 import { useCallback, useReducer, useRef, createContext, useContext } from "react"
 
 import type { ReactNode } from "react"
-import { ShapeType, CutType } from "@/types/types"
+// import { ShapeType, CutType } from "@/types/types"
 import { ShapeGenerator } from "@/utils/shape/ShapeGenerator"
 import { PuzzleGenerator } from "@/utils/puzzle/PuzzleGenerator"
 import { ScatterPuzzle } from "@/utils/puzzle/ScatterPuzzle"
 
+// 导入从 puzzleTypes.ts 迁移的类型
+import { Point, PuzzlePiece, DraggingPiece, PieceBounds, GameState, GameAction, GameContextProps, ShapeType, CutType } from "@/types/puzzleTypes";
+
 // Define types
-interface Point {
-  x: number
-  y: number
-  isOriginal?: boolean
-}
-
-interface PuzzlePiece {
-  points: Point[]
-  originalPoints: Point[]
-  rotation: number
-  originalRotation: number
-  x: number
-  y: number
-  originalX: number
-  originalY: number
-}
-
-interface DraggingPiece {
-  index: number
-  startX: number
-  startY: number
-}
-
-// 添加一个接口描述边界信息
-interface PieceBounds {
-  minX: number
-  maxX: number
-  minY: number
-  maxY: number
-  width: number
-  height: number
-  centerX: number
-  centerY: number
-}
-
-interface GameState {
-  originalShape: Point[]
-  puzzle: PuzzlePiece[] | null
-  draggingPiece: DraggingPiece | null
-  selectedPiece: number | null
-  completedPieces: number[]
-  isCompleted: boolean
-  isScattered: boolean
-  showHint: boolean
-  shapeType: ShapeType
-  pendingShapeType: ShapeType | null // 待生成的形状类型
-  cutType: CutType
-  cutCount: number
-  originalPositions: PuzzlePiece[]
-  lastShapeOffsetX?: number
-  lastShapeOffsetY?: number
-  // 添加画布尺寸信息，用于边界检查
-  canvasWidth?: number
-  canvasHeight?: number
-}
+// ... existing code ...
 
 // 更新GameContextProps接口
-interface GameContextProps {
-  state: GameState
-  dispatch: React.Dispatch<GameAction>
-  canvasRef: React.RefObject<HTMLCanvasElement | null>
-  backgroundCanvasRef: React.RefObject<HTMLCanvasElement | null>
-  generateShape: () => void
-  generatePuzzle: () => void
-  scatterPuzzle: () => void
-  rotatePiece: (clockwise: boolean) => void
-  showHintOutline: () => void
-  resetGame: () => void
-  // 添加边界检查函数
-  calculatePieceBounds: (piece: PuzzlePiece) => PieceBounds
-  ensurePieceInBounds: (piece: PuzzlePiece, dx: number, dy: number, safeMargin?: number) => { constrainedDx: number, constrainedDy: number, hitBoundary: boolean }
-  updateCanvasSize: (width: number, height: number) => void
-}
+// ... existing code ...
 
 const initialState: GameState = {
   originalShape: [],
@@ -99,6 +33,7 @@ const initialState: GameState = {
   originalPositions: [],
   canvasWidth: 800,  // 默认画布宽度
   canvasHeight: 600, // 默认画布高度
+  previousCanvasSize: null, // 初始化为 null
 }
 
 type GameAction =
@@ -129,6 +64,7 @@ type GameAction =
   | { type: "BATCH_UPDATE"; payload: { puzzle: PuzzlePiece[]; originalPositions: PuzzlePiece[] } }
   | { type: "SYNC_ALL_POSITIONS"; payload: { originalShape: Point[]; puzzle: PuzzlePiece[]; originalPositions: PuzzlePiece[]; shapeOffset: { offsetX: number; offsetY: number } } }
   | { type: "UPDATE_CANVAS_SIZE"; payload: { width: number; height: number } }
+  | { type: "UPDATE_ADAPTED_PUZZLE_STATE"; payload: { newPuzzleData: PuzzlePiece[], newPreviousCanvasSize: { width: number; height: number } } }
   | { type: "NO_CHANGE" }
 
 // 在gameReducer中添加RESET_GAME动作处理
@@ -258,11 +194,22 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         lastShapeOffsetY: action.payload.shapeOffset.offsetY
       }
     case "UPDATE_CANVAS_SIZE":
+      // 同时更新当前画布尺寸和上一次画布尺寸
+      return { 
+        ...state, 
+        previousCanvasSize: { width: state.canvasWidth || action.payload.width, height: state.canvasHeight || action.payload.height }, // 记录更新前的尺寸作为 previous
+        canvasWidth: action.payload.width, 
+        canvasHeight: action.payload.height 
+      }
+    case "UPDATE_ADAPTED_PUZZLE_STATE":
+      // 更新适配后的拼图数据和上一次画布尺寸
       return {
         ...state,
-        canvasWidth: action.payload.width,
-        canvasHeight: action.payload.height
-      }
+        puzzle: action.payload.newPuzzleData,
+        previousCanvasSize: action.payload.newPreviousCanvasSize,
+        // Note: canvasWidth and canvasHeight should already be the new size
+        // when this action is dispatched after a resize.
+      };
     case "NO_CHANGE":
       // 不做任何改变
       return state

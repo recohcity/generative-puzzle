@@ -5,12 +5,11 @@ import { useEffect, useRef, useState } from "react"
 import { useGame } from "@/contexts/GameContext"
 import { playPieceSelectSound, playPieceSnapSound, playPuzzleCompletedSound, playRotateSound } from "@/utils/rendering/soundEffects"
 // Retaining necessary imports for interaction logic still in PuzzleCanvas
-import { Point, calculateCenter, calculatePieceBounds, isPointInPolygon, rotatePoint, calculateAngle } from "@/utils/geometry/puzzleGeometry";
+import { calculateCenter, calculatePieceBounds, isPointInPolygon, rotatePoint, calculateAngle } from "@/utils/geometry/puzzleGeometry";
 import { appendAlpha } from "@/utils/rendering/colorUtils";
 
 // 导入迁移到 utils/rendering/puzzleDrawing 的绘制函数和类型
 import { 
-  PuzzlePiece, // 导入类型
   drawShape, 
   drawPuzzle, 
   drawPiece, 
@@ -19,6 +18,9 @@ import {
   drawCanvasBorderLine, 
   drawDistributionArea 
 } from "@/utils/rendering/puzzleDrawing";
+
+// 导入从 types/puzzleTypes.ts 迁移的类型
+import { Point, PuzzlePiece } from "@/types/puzzleTypes";
 
 export default function PuzzleCanvas() {
   // Access game context
@@ -65,7 +67,7 @@ export default function PuzzleCanvas() {
   const [touchStartAngle, setTouchStartAngle] = useState(0);
   const animationFrameRef = useRef<number | null>(null);
   const resizeTimer = useRef<ReturnType<typeof setTimeout>>(null);
-  const lastTouchRef = useRef<{x: number, y: number} | null>(null);
+  const lastTouchRef = useRef<Point | null>(null);
   const [isAndroid, setIsAndroid] = useState(false); // Re-added isAndroid state
   // const isDarkMode = true; // Assuming this was local state or prop, keeping it here for now if needed
   
