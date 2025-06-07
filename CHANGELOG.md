@@ -3,6 +3,31 @@
 本文档记录项目的所有版本更新内容和变更历史。
 
 
+## [v1.3.9] - 2025-06-07
+
+### 步骤7主要任务
+- 将 `PuzzleCanvas.tsx` 中负责管理画布响应式尺寸的所有逻辑（包括 `canvasSize` 状态、`setInitialCanvasSize`、`handleResize` 以及相关的 `useEffect` 监听器）成功提取到一个新的自定义 Hook `hooks/useResponsiveCanvasSizing.ts` 中。
+- 新的 Hook 接收画布和容器的引用，处理窗口大小变化和方向变化，计算出合适的画布尺寸，并返回 `canvasSize` 状态供 `PuzzleCanvas.tsx` 使用，同时在内部调用 `GameContext` 的 `updateCanvasSize` 函数。
+
+### 分拆内容
+- **步骤 7: 提取响应式画布尺寸管理钩子**
+- 已成功创建 `hooks/useResponsiveCanvasSizing.ts` 并将 `PuzzleCanvas.tsx` 中所有与画布尺寸计算和响应式调整相关的逻辑迁移至此。
+- 更新了 `PuzzleCanvas.tsx`，使其使用 `useResponsiveCanvasSizing` Hook 来管理画布尺寸，移除了冗余的尺寸计算和事件监听逻辑。
+
+### 测试结果
+- 运行 Playwright 回归测试 (`e2e/puzzle_canvas.spec.ts`) 并且所有测试都已通过，验证了响应式画布尺寸管理钩子的提取没有引入新的问题。
+  ✓  1 e2e/puzzle_canvas.spec.ts:9:7 › PuzzleCanvas Initial Tests › should load the page and render the canvas (3.3s)
+  ✓  2 e2e/puzzle_canvas.spec.ts:17:7 › PuzzleCanvas Initial Tests › should allow dragging a puzzle piece on the canvas (2.7s)
+  ✓  3 e2e/puzzle_canvas.spec.ts:44:7 › PuzzleCanvas Initial Tests › should toggle debug mode with F10 key (2.7s)
+  ✓  4 e2e/puzzle_canvas.spec.ts:63:7 › PuzzleCanvas Initial Tests › should handle puzzle snapping and completion (3.0s)
+  ✓  5 e2e/puzzle_canvas.spec.ts:95:7 › PuzzleCanvas Initial Tests › should play sound effects (if applicable) (2.7s)
+Attempting to click canvas center at 1147.00, 548.00 to trigger sound.
+soundPlayedForTest called
+Detected sound effect played via exposed function.
+
+  5 passed (16.7s)
+
+
 ## [v1.3.8] - 2025-06-07
 
 ### 步骤6主要任务
