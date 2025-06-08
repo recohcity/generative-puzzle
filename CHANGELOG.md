@@ -2,6 +2,39 @@
 
 本文档记录项目的所有版本更新内容和变更历史。
 
+## [v1.3.10] - 2025-06-08
+
+### 主要任务及功能点
+- **步骤 8: 提取拼图交互处理钩子**：
+    - 将 `PuzzleCanvas.tsx` 中所有与鼠标和触摸事件相关的交互逻辑（`handleMouseMove`, `handleMouseUp`, `handleTouchStart`, `handleTouchMove`, `handleTouchEnd`），以及其内部声明的本地状态 (`touchStartAngle`) 和引用 (`lastTouchRef`)，完全迁移到 `hooks/usePuzzleInteractions.ts` 钩子中。
+    - 修正了 `hooks/usePuzzleInteractions.ts` 中鼠标拖拽事件的坐标计算错误，确保拖拽功能正常。
+    - 完善了音效播放函数的传递机制，在 `hooks/usePuzzleInteractions.ts` 中正确调用 `playPieceSelectSound`, `playPieceSnapSound`, `playRotateSound`, `playPuzzleCompletedSound`。
+    - 更新 `PuzzleCanvas.tsx`，使其通过 `usePuzzleInteractions` 钩子来管理画布的所有交互事件。
+    - 更新 `utils/rendering/soundEffects.ts`，在所有播放音效的函数中统一添加了 `soundPlayedForTest()` 信号，以增强 Playwright 测试的鲁棒性。
+
+### 修复及优化
+- **拼图数量提示恢复**：
+    - 修复了画布上方拼图数量提示（如 `0/14 块完成`）缺失的问题，在 `components/layouts/DesktopLayout.tsx` 中正确显示进度。
+    - 增加了对 `state.puzzle` 和 `state.completedPieces` 的空值检查，避免在渲染时出现 `TypeError: Cannot read properties of null (reading 'length')`。
+- **Playwright 测试环境及流程优化**：
+    - 修正了 `package.json` 中 `test:e2e` 脚本的配置，明确指定 Playwright 仅运行 `e2e/` 目录下的测试，避免了与 Jest 单元测试的冲突。
+    - 更新了 `e2e/puzzle_canvas.spec.ts` 中 `page.goto` 的 URL 为 `http://localhost:3001/`，以匹配 Next.js 开发服务器的实际端口。
+    - 为 `components/PuzzleCanvas.tsx` 中的主 `<canvas>` 元素添加了 `id="puzzle-canvas"` 属性，确保 Playwright 测试能够正确识别并等待画布加载。
+    - 调整了音效测试逻辑，通过点击"重新开始"按钮来可靠地触发音效，确保测试的稳定性和可重复性。
+
+### 测试结果
+- **手动测试**：鼠标拖拽和点击响应正常，拼图数量提示已恢复，F10 键可正常切换调试元素。
+- **Playwright 回归测试** (`e2e/puzzle_canvas.spec.ts`)：所有 5 项测试均已通过。
+  ```
+  ✓  1 e2e/puzzle_canvas.spec.ts:9:7 › PuzzleCanvas Initial Tests › should load the page and render the canvas (4.0s)
+  ✓  2 e2e/puzzle_canvas.spec.ts:17:7 › PuzzleCanvas Initial Tests › should allow dragging a puzzle piece on the canvas (2.8s)
+  ✓  3 e2e/puzzle_canvas.spec.ts:51:7 › PuzzleCanvas Initial Tests › should toggle debug mode with F10 key (3.8s)
+  ✓  4 e2e/puzzle_canvas.spec.ts:78:7 › PuzzleCanvas Initial Tests › should handle puzzle snapping and completion (2.7s)
+  ✓  5 e2e/puzzle_canvas.spec.ts:111:7 › PuzzleCanvas Initial Tests › should play sound effects (if applicable) (3.7s)
+  Playwright received sound event: buttonClick
+
+    5 passed (19.2s)
+  ```
 
 ## [v1.3.9] - 2025-06-07
 

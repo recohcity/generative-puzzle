@@ -33,8 +33,13 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   // const titleSizeClass = deviceType === 'tablet' ? 'text-lg' : 'text-xl'; // Example if tablet uses this with variation
   const titleSizeClass = 'text-xl'; // Assuming desktop for now
   
-  // 从GameContext获取resetGame函数
-  const { resetGame } = useGame();
+  // 从GameContext获取state和resetGame函数
+  const { state, resetGame } = useGame();
+  
+  // 计算拼图完成进度
+  const totalPieces = (state.puzzle ?? []).length;
+  const completedPiecesCount = (state.completedPieces ?? []).length;
+  const puzzleProgressText = totalPieces > 0 ? `${completedPiecesCount} / ${totalPieces} 块拼图已完成` : '';
   
   // 处理重新开始按钮点击
   const handleDesktopResetGame = () => {
@@ -87,7 +92,13 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
       </div>
 
       {/* Right Game Area */}
-      <div className="flex-1 h-full relative bg-white/20 backdrop-blur-sm rounded-3xl shadow-[0_10px_25px_rgba(0,0,0,0.2)] border-2 border-white/30 flex justify-center items-center overflow-hidden">
+      <div className="flex-1 h-full relative bg-white/20 backdrop-blur-sm rounded-3xl shadow-[0_10px_25px_rgba(0,0,0,0.2)] border-2 border-white/30 flex flex-col justify-center items-center overflow-hidden">
+        {/* Puzzle Count Display */}
+        {totalPieces > 0 && (
+          <div className="absolute top-4 text-white text-lg font-bold bg-black/30 px-4 py-2 rounded-full z-10">
+            {puzzleProgressText}
+          </div>
+        )}
         <PuzzleCanvas />
       </div>
     </div>

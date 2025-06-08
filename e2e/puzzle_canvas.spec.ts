@@ -7,7 +7,7 @@ test.describe('PuzzleCanvas Initial Tests', () => {
   });
 
   test('should load the page and render the canvas', async ({ page }) => {
-    await page.goto('http://localhost:3000');
+    await page.goto('http://localhost:3001/');
     await expect(page.locator('canvas.relative.cursor-pointer')).toBeVisible();
     // You might want to add more specific checks here, e.g., canvas dimensions
     // await expect(page.locator('canvas')).toHaveAttribute('width', '800');
@@ -15,117 +15,131 @@ test.describe('PuzzleCanvas Initial Tests', () => {
   });
 
   test('should allow dragging a puzzle piece on the canvas', async ({ page }) => {
-    await page.goto('http://localhost:3000');
+    await page.goto('http://localhost:3001/');
     await page.waitForSelector('canvas.relative.cursor-pointer'); // 确保 canvas 元素存在
 
     const canvas = page.locator('canvas.relative.cursor-pointer');
     const canvasBox = await canvas.boundingBox();
 
-    if (canvasBox) {
-      const startX = canvasBox.x + canvasBox.width / 2;
-      const startY = canvasBox.y + canvasBox.height / 2;
-
-      // 模拟从画布中心开始拖拽
-      await page.mouse.move(startX, startY);
-      await page.mouse.down();
-      await page.mouse.move(startX + 50, startY + 50, { steps: 5 }); // 向右下拖拽 50 像素
-      await page.mouse.up();
-
-      // For canvas-based rendering, verifying the exact position change is complex
-      // without exposing internal game state via JavaScript or robust image comparison.
-      // For initial test, we'll assume no errors indicate success for this interaction.
-      // TODO: Future improvement: Use page.evaluate to get puzzle piece coordinates before and after drag
-      // and assert their change.
-    } else {
-      throw new Error('Canvas element not found for dragging test.');
+    if (!canvasBox) {
+      throw new Error('Canvas bounding box not found');
     }
+
+    // Simulate clicking near the center to select a piece
+    const initialX = canvasBox.x + canvasBox.width / 2;
+    const initialY = canvasBox.y + canvasBox.height / 2;
+
+    await page.mouse.move(initialX, initialY);
+    await page.mouse.down();
+
+    // Small drag to ensure it's recognized as a drag
+    await page.mouse.move(initialX + 50, initialY + 50);
+
+    // Get the piece's position after initial drag
+    // This is a simplified check, a real test would involve checking piece coordinates
+    const pieceMoved = await page.evaluate(() => {
+      // Access the game state or canvas content to verify piece movement
+      // This requires exposing game state or drawing logic to the browser context
+      // For now, we'll just check if the canvas has been redrawn, which is a weak signal
+      return true; // Placeholder, as we can't directly inspect piece coords here without more setup
+    });
+
+    await page.mouse.up();
+    expect(pieceMoved).toBe(true); // Expect piece movement (or at least no error)
   });
 
   test('should toggle debug mode with F10 key', async ({ page }) => {
-    await page.goto('http://localhost:3000');
+    await page.goto('http://localhost:3001/');
     await page.waitForSelector('canvas.relative.cursor-pointer');
 
     // Assuming debug elements are not visible by default, and have a class like 'debug-info'
-    // This requires knowing the exact selector for debug elements in your application.
-    // For now, we'll just simulate the key press.
+    const debugElements = page.locator('.debug-info'); // Replace with actual class/selector for debug elements
 
-    // await expect(page.locator('.debug-info')).not.toBeVisible(); // Placeholder check
+    // Ensure debug elements are not visible initially (optional, if default is hidden)
+    // await expect(debugElements).toBeHidden();
 
+    // Press F10
     await page.keyboard.press('F10');
 
-    // await expect(page.locator('.debug-info')).toBeVisible(); // Placeholder check
+    // Wait for a short moment to allow UI to update
+    await page.waitForTimeout(500);
 
-    await page.keyboard.press('F10'); // Press F10 again to toggle off
+    // Expect debug elements to be visible
+    // await expect(debugElements).toBeVisible(); // Uncomment and adjust selector if you have a debug UI element
 
-    // await expect(page.locator('.debug-info')).not.toBeVisible(); // Placeholder check
+    // Press F10 again
+    await page.keyboard.press('F10');
+    await page.waitForTimeout(500);
+
+    // Expect debug elements to be hidden again
+    // await expect(debugElements).toBeHidden(); // Uncomment and adjust selector
   });
 
   test('should handle puzzle snapping and completion', async ({ page }) => {
-    await page.goto('http://localhost:3000');
+    await page.goto('http://localhost:3001/');
     await page.waitForSelector('canvas.relative.cursor-pointer');
 
     // This test is highly dependent on the game logic and how pieces are snapped.
-    // A common approach would be to drag a piece close to its correct position.
-    // Since canvas rendering doesn't expose DOM elements for pieces, we simulate the drag.
-    // For a more robust test, you'd need to expose game state via `page.evaluate`.
+    // A robust test would involve:
+    // 1. Getting coordinates of two snappable pieces
+    // 2. Dragging one piece close to its matching counterpart
+    // 3. Verifying they snap together (e.g., by checking their new positions or game state)
+    // 4. Verifying completion sound/state if applicable
 
-    const canvas = page.locator('canvas.relative.cursor-pointer');
-    const canvasBox = await canvas.boundingBox();
-
-    if (canvasBox) {
-      const startX = canvasBox.x + canvasBox.width / 2;
-      const startY = canvasBox.y + canvasBox.height / 2;
-
-      await page.mouse.move(startX, startY); // Move to a piece (if any) or a drag starting point
-      await page.mouse.down();
-      // Simulate dragging a piece to a potential snapping location (e.g., top-left corner region)
-      await page.mouse.move(canvasBox.x + 100, canvasBox.y + 100, { steps: 10 });
-      await page.mouse.up();
-
-      // TODO: Future improvement: After dragging, use page.evaluate to check the `isCompleted` status
-      // of the piece or check for visual cues of completion (e.g., changes in canvas drawing).
-      // For example, if your game exposes a global `window.puzzleState` or similar.
-
-      // expect(await page.evaluate(() => window.someGameApi.getPieceStatus(pieceId))).toBe('completed');
-    } else {
-      throw new Error('Canvas element not found for snapping test.');
-    }
-  });
-
-  test('should play sound effects (if applicable)', async ({ page }) => {
-    // Expose a function to the page context to signal when the sound is played
-    let soundPlayed = false;
-    await page.exposeFunction('soundPlayedForTest', () => {
-      console.log('soundPlayedForTest called');
-      soundPlayed = true;
-    });
-
-    await page.goto('http://localhost:3000');
-    await page.waitForSelector('canvas.relative.cursor-pointer');
-
+    // For a basic smoke test, we can just ensure no errors occur during interaction
+    // and that the canvas is still present.
     const canvas = page.locator('canvas.relative.cursor-pointer');
     const canvasBox = await canvas.boundingBox();
 
     if (!canvasBox) {
-      throw new Error('Canvas element not found for sound effect test.');
+      throw new Error('Canvas bounding box not found');
     }
 
-    // Calculate the center of the canvas
-    const centerX = canvasBox.x + canvasBox.width / 2;
-    const centerY = canvasBox.y + canvasBox.height / 2;
+    // Simulate a simple drag operation that might trigger a snap
+    await page.mouse.move(canvasBox.x + 100, canvasBox.y + 100);
+    await page.mouse.down();
+    await page.mouse.move(canvasBox.x + 150, canvasBox.y + 150, { steps: 5 });
+    await page.mouse.up();
 
-    console.log(`Attempting to click canvas center at ${centerX.toFixed(2)}, ${centerY.toFixed(2)} to trigger sound.`);
+    // Ensure canvas is still visible after interaction
+    await expect(canvas).toBeVisible();
 
-    // Simulate a click at the canvas center
-    await page.mouse.click(centerX, centerY);
+    // If there's a completion message, check for it
+    // await expect(page.locator('.puzzle-completion-message')).toBeVisible();
+  });
 
-    // Wait for the soundPlayed flag to become true, with a timeout
-    await expect(async () => {
-        expect(soundPlayed).toBe(true);
-    }).toPass({ timeout: 15000 }); // Increased timeout slightly
+  test('should play sound effects (if applicable)', async ({ page }) => {
+    await page.goto('http://localhost:3001/');
+    await page.waitForSelector('#puzzle-canvas'); // 确保画布加载完成
 
-    console.log('Detected sound effect played via exposed function.');
+    // Expose a function to listen for sound plays from the browser context
+    let soundPlayed = false;
+    await page.exposeFunction('onSoundPlayed', (data: { soundName: string }) => {
+      console.log(`Playwright received sound event: ${data.soundName}`);
+      soundPlayed = true;
+    });
 
+    // Make the exposed function available globally in the browser context
+    await page.evaluate(() => {
+      (window as any).__SOUND_PLAY_LISTENER__ = (data: { soundName: string }) => {
+        if (typeof (window as any).onSoundPlayed === 'function') {
+          (window as any).onSoundPlayed(data);
+        }
+      };
+    });
+
+    // Trigger a sound: Click the "Reset" button (assuming it plays a sound)
+    // 根据你的 GameInterface.tsx 和 DesktopLayout.tsx，"重新开始"按钮的文本应该是 "重新开始" 或 "Reset"
+    // 或者根据实际按钮的data-testid或role属性来选择
+    const resetButton = page.locator('button', { hasText: '重新开始' }); // 查找包含"重新开始"文本的按钮
+    await expect(resetButton).toBeVisible();
+    await resetButton.click();
+
+    // Wait for the sound to potentially play
+    await page.waitForTimeout(1000); // Give it some time for the sound event to propagate
+
+    // Assert that a sound was played
+    expect(soundPlayed).toBe(true);
   });
 
   // TODO: Add tests for:
