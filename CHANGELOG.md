@@ -22,18 +22,35 @@
     - 为 `components/PuzzleCanvas.tsx` 中的主 `<canvas>` 元素添加了 `id="puzzle-canvas"` 属性，确保 Playwright 测试能够正确识别并等待画布加载。
     - 调整了音效测试逻辑，通过点击"重新开始"按钮来可靠地触发音效，确保测试的稳定性和可重复性。
 
+### 类型系统及Linter错误修正 (新完善内容)
+- **拼图数量提示重复问题修复**: 移除了 `components/PuzzleCanvas.tsx` 中重复的拼图数量提示，现在仅在 `components/layouts/DesktopLayout.tsx` 中显示。
+- **类型定义整合与统一**:
+    - 将 `ShapeType`, `CutType`, `Point`, `PuzzlePiece`, `Bounds`, `CutLine`, `PieceBounds`, `GameState`, `GameContextProps`, `GameAction` 等所有相关类型定义统一整合至 `types/puzzleTypes.ts`。
+    - 删除了冗余的 `types/types.ts` 文件。
+    - 更新了所有引用旧 `types/types.ts` 的文件（包括 `components/PuzzleControlsCutType.tsx`, `components/ShapeControls.tsx`, `utils/puzzle/PuzzleGenerator.ts`, `utils/puzzle/cutGenerators.ts`）的导入路径。
+- **`PuzzlePiece` 接口完善**: 在 `types/puzzleTypes.ts` 的 `PuzzlePiece` 接口中补充了 `id` 和 `isCompleted` 属性，并在 `utils/puzzle/PuzzleGenerator.ts` 中确保了这些属性的正确初始化。
+- **`components/PuzzleCanvas.tsx` 错误修正**: 
+    - 移除了未使用的 `useDebugToggle` 导入。
+    - 修正了 `usePuzzleInteractions` Hook 参数传递的类型兼容性问题。
+    - 解决了 `canvasWidth` 和 `canvasHeight` 可能为 `undefined` 导致的类型错误。
+- **`hooks/useResponsiveCanvasSizing.ts` 错误修正**: 
+    - 修正了 `RefObject` 的 `null` 兼容性问题。
+    - 调整了 `dispatch` 的获取和传递方式。
+- **`hooks/usePuzzleAdaptation.ts` 错误修正**: 为 `map` 和 `find` 回调函数中的隐式 `any` 类型显式添加了类型定义。
+- **`hooks/usePuzzleInteractions.ts` 错误修正**: 
+    - 修正了 `setIsShaking` 的类型。
+    - 确保了所有从 `types/puzzleTypes.ts` 导入的类型（`GameState`, `GameAction`, `PuzzlePiece`, `PieceBounds`）都被正确导出和使用。
+
 ### 测试结果
-- **手动测试**：鼠标拖拽和点击响应正常，拼图数量提示已恢复，F10 键可正常切换调试元素。
+- **手动测试**：画布上方不再显示重复的拼图数量提示，应用程序能正常运行，基本功能（生成形状、切割、散开、拖拽、吸附）正常工作。
 - **Playwright 回归测试** (`e2e/puzzle_canvas.spec.ts`)：所有 5 项测试均已通过。
   ```
-  ✓  1 e2e/puzzle_canvas.spec.ts:9:7 › PuzzleCanvas Initial Tests › should load the page and render the canvas (4.0s)
-  ✓  2 e2e/puzzle_canvas.spec.ts:17:7 › PuzzleCanvas Initial Tests › should allow dragging a puzzle piece on the canvas (2.8s)
-  ✓  3 e2e/puzzle_canvas.spec.ts:51:7 › PuzzleCanvas Initial Tests › should toggle debug mode with F10 key (3.8s)
-  ✓  4 e2e/puzzle_canvas.spec.ts:78:7 › PuzzleCanvas Initial Tests › should handle puzzle snapping and completion (2.7s)
-  ✓  5 e2e/puzzle_canvas.spec.ts:111:7 › PuzzleCanvas Initial Tests › should play sound effects (if applicable) (3.7s)
+  ✓  1 e2e/puzzle_canvas.spec.ts:9:7 › PuzzleCanvas Initial Tests › should load the page and render the canvas (4.2s)
+  ✓  2 e2e/puzzle_canvas.spec.ts:17:7 › PuzzleCanvas Initial Tests › should allow dragging a puzzle piece on the canvas (2.7s)
+  ✓  3 e2e/puzzle_canvas.spec.ts:51:7 › PuzzleCanvas Initial Tests › should toggle debug mode with F10 key (3.6s)
+  ✓  4 e2e/puzzle_canvas.spec.ts:78:7 › PuzzleCanvas Initial Tests › should handle puzzle snapping and completion (2.8s)
+  ✓  5 e2e/puzzle_canvas.spec.ts:111:7 › PuzzleCanvas Initial Tests › should play sound effects (if applicable) (3.8s)
   Playwright received sound event: buttonClick
-
-    5 passed (19.2s)
   ```
 
 ## [v1.3.9] - 2025-06-07
