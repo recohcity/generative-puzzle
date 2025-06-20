@@ -1,16 +1,6 @@
 import type { ReactNode } from "react"
-
-// Define enums
-export enum ShapeType {
-  Polygon = "polygon",
-  Curve = "curve",
-  Circle = "irregular",
-}
-
-export enum CutType {
-  Straight = "straight",
-  Diagonal = "diagonal",
-}
+// Re-export ShapeType and CutType from ./types
+// export { ShapeType, CutType } from "./types"
 
 // Define types
 export interface Point {
@@ -32,14 +22,14 @@ export interface PuzzlePiece {
   normalizedY?: number; // Added for adaptation
 }
 
-export interface DraggingPiece {
+interface DraggingPiece {
   index: number
   startX: number
   startY: number
 }
 
 // 添加一个接口描述边界信息
-export interface PieceBounds {
+interface PieceBounds {
   minX: number
   maxX: number
   minY: number
@@ -70,11 +60,10 @@ export interface GameState {
   canvasWidth?: number
   canvasHeight?: number
   previousCanvasSize?: { width: number; height: number } | null; // Added for adaptation
-  isShaking: boolean // 新增属性，表示是否处于抖动动画
 }
 
 // 更新GameContextProps接口
-export interface GameContextProps {
+interface GameContextProps {
   state: GameState
   dispatch: React.Dispatch<GameAction>
   canvasRef: React.RefObject<HTMLCanvasElement | null>
@@ -91,7 +80,7 @@ export interface GameContextProps {
   updateCanvasSize: (width: number, height: number) => void
 }
 
-export type GameAction =
+type GameAction =
   | { type: "SET_ORIGINAL_SHAPE"; payload: Point[] }
   | { type: "SET_PUZZLE"; payload: PuzzlePiece[] }
   | { type: "SET_DRAGGING_PIECE"; payload: DraggingPiece | null }
@@ -119,5 +108,16 @@ export type GameAction =
   | { type: "BATCH_UPDATE"; payload: { puzzle: PuzzlePiece[]; originalPositions: PuzzlePiece[] } }
   | { type: "SYNC_ALL_POSITIONS"; payload: { originalShape: Point[]; puzzle: PuzzlePiece[]; originalPositions: PuzzlePiece[]; shapeOffset: { offsetX: number; offsetY: number } } }
   | { type: "UPDATE_CANVAS_SIZE"; payload: { width: number; height: number } }
-  | { type: "SET_IS_SHAKING"; payload: boolean }
-  | { type: "NO_CHANGE" } 
+  | { type: "NO_CHANGE" }
+
+// 直接在本文件内定义并导出 ShapeType 和 CutType
+export enum ShapeType {
+  Polygon = "polygon",
+  Curve = "curve",
+  Circle = "irregular",
+}
+
+export enum CutType {
+  Straight = "straight",
+  Diagonal = "diagonal",
+} 

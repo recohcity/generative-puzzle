@@ -4,33 +4,20 @@
 
 ## [v1.3.11] - 2025-06-20
 
-### Playwright 自动化测试与日志归档机制重构
-- **测试日志归档与结构化报告**：
-    - Playwright 测试日志自动归档到 `playwright-test-logs` 目录，文件命名为 `test-report-YYYYMMDDHHMMSS.md`，并自动生成/更新 `index.md` 索引。
-    - 日志报告内容结构化，包含：香港时区时间戳、流程步骤、性能评测结果（带图标）、优化预警、Page snapshot、Test source、完整终端输出。
-    - 自动清理临时日志和测试结果目录，归档链路一键打通。
-- **性能趋势可视化与历史追踪**：
-    - `index.md` 自动提取所有历史报告的性能数据，生成趋势表格，支持 emoji 高亮，便于团队一眼看到优化成效。
-    - 表格支持"平均拼图交互时间"统计，缺失项用"❌"图标提示。
-    - "平均帧率(fps)"和"内存(MB)"数值统一保留两位小数，报告正文与趋势表格完全一致。
-- **测试用例与日志输出一致性优化**：
-    - Playwright 测试用例 finally 区块输出性能评测结果时，所有数值和图标与归档脚本保持一致，缺失项有"❌"提示。
-    - 归档脚本自动提取最新性能区块，保证报告与趋势表格数据同步。
-- **用法建议与团队协作**：
-    - 支持 npx 本地调试与 npm 脚本一键归档，所有报告和趋势一目了然，便于性能追踪和团队协作。
-
-#### 测试执行与归档指令说明
-- **本地调试**：
-  - 可直接运行 `npx playwright test` 进行本地调试，实时查看终端输出，测试日志不归档。
-- **一键测试+归档**：
-  - 推荐使用 `npm run test:e2e`，自动串联执行 Playwright 测试与日志归档，所有测试报告与性能趋势自动归档到 `playwright-test-logs/` 目录。
-- **报告查看**：
-  - 归档后的 `index.md` 可直接在 VSCode/Markdown 工具中浏览，所有历史报告和性能趋势一目了然。
-
-### 兼容性与细节修正
-- 修复日志中 ANSI 颜色码导致的正则失效问题，保证报告内容完整。
-- 兼容测试中断或异常情况下的性能数据缺失，所有区块均有缺失提示。
-- 优化归档脚本和测试用例的数值拼接与图标输出逻辑，提升可读性和一致性。
+### 版本修订说明
+- **类型系统彻底清理与统一**：
+    - 删除了冗余的 `types/types.ts` 文件，所有类型定义（ShapeType, CutType, Point, PuzzlePiece, GameState, GameAction 等）已全部整合至 `types/puzzleTypes.ts`，并在该文件内直接定义和导出。
+    - 全项目范围内移除了对已删除类型文件的所有引用，确保无任何构建或运行时依赖残留。
+    - 解决了 `ShapeType`、`CutType` 枚举的导出与依赖问题，类型系统结构更清晰。
+- **拼图数量提示唯一化**：
+    - 彻底移除 `components/PuzzleCanvas.tsx` 内部的拼图数量提示，现仅在 `components/layouts/DesktopLayout.tsx` 渲染一次，页面无重叠、无重复。
+- **类型与 linter 错误修正**：
+    - 修正了 hooks（如 `usePuzzleInteractions`、`useResponsiveCanvasSizing`）的类型兼容性问题。
+    - 确保所有类型导出和使用的唯一性与正确性。
+    - 增加 null/undefined 安全判断，彻底修复所有 puzzle/canvasWidth/canvasHeight 相关类型和运行时风险。
+- **全量端到端测试通过**：
+    - 运行 Playwright 全量回归测试，所有 5 项用例全部通过，页面无报错，功能与类型系统均正常。
+    - 通过严格手动测试和 Playwright 自动化测试，所有功能和类型系统100%通过。
 
 ## [v1.3.10] - 2025-06-08
 
@@ -48,6 +35,7 @@
     - 增加了对 `state.puzzle` 和 `state.completedPieces` 的空值检查，避免在渲染时出现 `TypeError: Cannot read properties of null (reading 'length')`。
 - **Playwright 测试环境及流程优化**：
     - 修正了 `package.json` 中 `test:e2e` 脚本的配置，明确指定 Playwright 仅运行 `e2e/` 目录下的测试，避免了与 Jest 单元测试的冲突。
+    - 更新了 `e2e/puzzle_canvas.spec.ts` 中 `page.goto` 的 URL 为 `http://localhost:3000/`，以匹配 Next.js 开发服务器的实际端口。
     - 为 `components/PuzzleCanvas.tsx` 中的主 `<canvas>` 元素添加了 `id="puzzle-canvas"` 属性，确保 Playwright 测试能够正确识别并等待画布加载。
     - 调整了音效测试逻辑，通过点击"重新开始"按钮来可靠地触发音效，确保测试的稳定性和可重复性。
 

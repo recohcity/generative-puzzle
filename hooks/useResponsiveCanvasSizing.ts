@@ -5,8 +5,8 @@ import { useDeviceDetection } from "@/hooks/useDeviceDetection"; // 导入设备
 // 定义 Hook 的 props 接口
 interface UseResponsiveCanvasSizingProps {
   containerRef: RefObject<HTMLDivElement | null>;
-  canvasRef: RefObject<HTMLCanvasElement | null>;
-  backgroundCanvasRef: RefObject<HTMLCanvasElement | null>;
+  canvasRef: RefObject<HTMLCanvasElement>;
+  backgroundCanvasRef: RefObject<HTMLCanvasElement>;
 }
 
 // 定义返回的画布尺寸类型

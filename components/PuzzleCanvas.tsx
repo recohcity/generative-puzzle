@@ -39,8 +39,8 @@ export default function PuzzleCanvas() {
 
   // Expose game state to window in test environment for Playwright access
   useEffect(() => {
-    // Always expose game state in test environment
-    if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
+    // Check if running in a test environment (e.g., if the test signal function exists)
+    if (typeof (window as any).soundPlayedForTest === 'function') {
       // Expose the current game state
       (window as any).__gameStateForTests__ = state;
       console.log('Game state exposed to window.__gameStateForTests__ for testing.');
@@ -50,7 +50,7 @@ export default function PuzzleCanvas() {
   
   // Refs for canvas elements
   // containerRef 现在在 PuzzleCanvas 内部声明，并传递给 useResponsiveCanvasSizing
-  const containerRef = useRef<HTMLDivElement | null>(null); 
+  const containerRef = useRef<HTMLDivElement | null>(null);
   
   // Local state for dragging and canvas dimensions
   // const [isDragging, setIsDragging] = useState(false); // Moved to GameContext
@@ -80,13 +80,11 @@ export default function PuzzleCanvas() {
   // --- 使用新的 useResponsiveCanvasSizing Hook ---
   // 将所有必要的 ref 和 dispatch 作为单个对象传递，以匹配"应有 1 个参数"的错误
   // 此 Hook 负责将画布尺寸更新到 GameContext，不返回 canvasSize 或 containerRef
-  useResponsiveCanvasSizing({ 
-    canvasRef,
-    backgroundCanvasRef,
-    containerRef
-  });
+  useResponsiveCanvasSizing({ canvasRef, backgroundCanvasRef, containerRef });
 
   // --- 使用新的 usePuzzleInteractions Hook ---
+  // 获取 canvasSize 以传递给 usePuzzleInteractions
+  const canvasSize = { width: state.canvasWidth, height: state.canvasHeight };
   const {
     handleMouseDown,
     handleMouseMove,
@@ -97,14 +95,14 @@ export default function PuzzleCanvas() {
   } = usePuzzleInteractions({
     canvasRef,
     containerRef,
-    canvasSize: { width: state.canvasWidth ?? 0, height: state.canvasHeight ?? 0 },
+    canvasSize,
     state,
     dispatch,
     ensurePieceInBounds,
     calculatePieceBounds,
     rotatePiece,
     isShaking: state.isShaking,
-    setIsShaking: (isShaking: boolean) => dispatch({ type: 'SET_IS_SHAKING', payload: isShaking }),
+    setIsShaking,
     playPieceSelectSound,
     playPieceSnapSound,
     playPuzzleCompletedSound,
@@ -123,8 +121,8 @@ export default function PuzzleCanvas() {
     if (!canvasRef.current || !state.puzzle) return;
 
     // 从 state 中获取画布尺寸，因为 canvasSize 已迁移到 GameContext
-    const width = state.canvasWidth ?? 0;
-    const height = state.canvasHeight ?? 0;
+    const width = state.canvasWidth;
+    const height = state.canvasHeight;
     const ctx = canvasRef.current.getContext("2d");
     if (!ctx) return;
 
@@ -198,15 +196,15 @@ export default function PuzzleCanvas() {
     }
 
     // Get the current canvas dimensions from state
-    const canvasWidth = state.canvasWidth ?? 0;
-    const canvasHeight = state.canvasHeight ?? 0;
+    const canvasWidth = state.canvasWidth;
+    const canvasHeight = state.canvasHeight;
 
     // Clear old content before each draw to ensure no overwriting
-    ctx.clearRect(0, 0, canvasWidth ?? 0, canvasHeight ?? 0);
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
     // Only draw distribution area in debug mode
-    if (showDebugElements) {
-      drawDistributionArea(ctx, canvasWidth ?? 0, canvasHeight ?? 0, showDebugElements);
+    if (showDebugElements) { // 启用时检查 showDebugElements
+      drawDistributionArea(ctx, canvasWidth, canvasHeight, showDebugElements);
     }
 
     // If the game is completed, first draw a complete seamless shape
@@ -306,13 +304,13 @@ export default function PuzzleCanvas() {
       }
 
       // Finally draw the canvas border warning line, make sure it's on top
-      drawCanvasBorderLine(ctx, canvasWidth ?? 0, canvasHeight ?? 0, false);
+      drawCanvasBorderLine(ctx, canvasWidth, canvasHeight, false);
     } else if (state.originalShape && state.originalShape.length > 0) {
       // If there is only the original shape but no puzzle, then draw the original shape
       drawShape(ctx, state.originalShape, state.shapeType);
 
       // Draw canvas border warning line
-      drawCanvasBorderLine(ctx, canvasWidth ?? 0, canvasHeight ?? 0, false);
+      drawCanvasBorderLine(ctx, canvasWidth, canvasHeight, false);
     }
 
     return () => {
@@ -357,7 +355,7 @@ export default function PuzzleCanvas() {
     // 根据 state.canvasWidth/Height 的变化触发 updatePositions，实现适配逻辑
     // useResponsiveCanvasSizing 已经负责了尺寸的计算和更新 GameContext
     // 这里的 useEffect 监听 state.canvasWidth/Height 变化，然后触发拼图位置的更新
-    if ((state.canvasWidth ?? 0) > 0 && (state.canvasHeight ?? 0) > 0) {
+    if (state.canvasWidth > 0 && state.canvasHeight > 0) {
       console.log(`[PuzzleCanvas] 检测到画布尺寸变化: ${state.canvasWidth}x${state.canvasHeight}, 触发拼图位置更新。`);
       updatePositions();
     }
