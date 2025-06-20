@@ -1,5 +1,5 @@
-import { CutType } from "@/types/types"
-import type { Point } from "@/types/types"
+import { CutType } from "@/types/puzzleTypes"
+import type { Point } from "@/types/puzzleTypes"
 import { generateCuts } from "@/utils/puzzle/cutGenerators"
 import { splitPolygon } from "@/utils/puzzle/puzzleUtils"
 

@@ -44,9 +44,9 @@ generative-puzzle/
 │   └── utils.ts              # 工具函数 (主要为 cn)
 ├── public/                   # 静态资源
 │   ├── bg.jpg                # 游戏背景图
-│   ├── puzzle-pieces.mp3     # 循环背景音乐
-│   ├── p1.png                # 预览图片1
-│   └── p2.png                # 预览图片2
+│   └── puzzle-pieces.mp3     # 循环背景音乐
+├── screenshot/               # 截图输出目录
+├── test-results/             # 测试结果输出目录
 ├── types/                    # 类型定义
 │   └── types.ts              # 共享类型
 └── utils/                    # 游戏逻辑工具
@@ -55,12 +55,20 @@ generative-puzzle/
     ├── shape/                # 形状相关工具
     │   ├── ShapeGenerator.ts # 形状生成器
     │   └── geometryUtils.ts  # 几何计算工具
+    ├── geometry/             # 几何计算工具
+    │   ├── __tests__/        # 几何计算工具的单元测试
+    │   │   └── puzzleGeometry.test.ts
+    │   └── puzzleGeometry.ts # 拼图相关的几何计算辅助函数
     ├── puzzle/               # 拼图相关工具
     │   ├── PuzzleGenerator.ts# 拼图生成器
     │   ├── ScatterPuzzle.ts  # 拼图打散工具
     │   ├── cutGenerators.ts  # 切割线生成器
     │   └── puzzleUtils.ts    # 拼图操作工具
     └── rendering/            # 渲染相关工具
+        ├── __tests__/        # 渲染工具的单元测试
+        │   ├── colorUtils.test.ts
+        │   └── puzzleDrawing.test.ts
+        ├── puzzleDrawing.ts  # Canvas 绘制拼图相关的函数
         └── soundEffects.ts   # 音效处理
 ```
 
@@ -81,16 +89,16 @@ Next.js 15 应用路由系统的入口点。
 - `loading/`: 包含 `LoadingScreen.tsx` 和 `LoadingScreenStatic.tsx` 负责加载体验。
 - `layouts/`: 包含针对不同设备/方向的布局组件 (`DesktopLayout`, `PhonePortraitLayout`, `PhoneLandscapeLayout`)。
 - `GameInterface.tsx`: **主要的游戏界面路由和状态管理组件**，负责设备检测、状态管理，并根据设备渲染对应的布局组件。
-- `PuzzleCanvas.tsx`: 核心画布组件，处理渲染与交互。
+- `PuzzleCanvas.tsx`: 核心画布组件，**重构后主要负责引入并编排各种自定义钩子，处理渲染并绑定交互事件。**
 - `ShapeControls.tsx`: 形状生成控制面板。
 - `PuzzleControlsCutType.tsx`: 切割类型控制面板。
 - `PuzzleControlsCutCount.tsx`: 切割次数控制面板。
-- `PuzzleControlsScatter.tsx`: 散开拼图控制面板。
+- `PuzzleControlsScatter.tsx`: 拼图散开控制面板。
 - `PuzzleControlsGamepad.tsx`: 手机"控制"选项卡的内容，包含 `ActionButtons` 和重置按钮。
 - `ActionButtons.tsx`: 可复用的提示和旋转按钮。
-- `DesktopPuzzleSettings.tsx`: 桌面端"拼图设置"区域的组件集合。
+- `DesktopPuzzleSettings.tsx`: 桌面端拼图设置区域的组件集合。
 - `GlobalUtilityButtons.tsx`: 可复用的音乐和全屏按钮。
-- `theme-provider.tsx`: 提供主题切换功能 (需确认是否实际使用)。
+- `theme-provider.tsx`: 提供主题切换功能 (可能未使用?)。
 - `ui/`: 基于Shadcn UI的基础组件库。
 
 ### contexts 目录
@@ -112,8 +120,9 @@ React Context API实现的状态管理。
 
 自定义React钩子函数。
 
-- `use-mobile.tsx`: 检测移动设备。
-- `use-toast.ts`: 提供轻量级通知功能。
+- `use-mobile.tsx`: 移动设备检测。
+- `use-toast.ts`: Toast通知。
+- `useDeviceDetection.ts`: **设备类型和屏幕方向检测钩子。**
 
 ### lib 目录
 
@@ -121,21 +130,34 @@ React Context API实现的状态管理。
 
 ### public 目录
 
-存放静态资源文件，如背景图、背景音乐和预览图。
+存放静态资源文件，如背景图、背景音乐。
 
 ### types 目录
 
 - `types.ts`: 定义项目中共享的 TypeScript 类型。
+- `puzzleTypes.ts`: **定义拼图相关的核心类型（如 `Point`, `PuzzlePiece`, `GameState`）。**
 
 ### utils 目录
 
 游戏核心逻辑和辅助功能实现。
 
-- `shape/`: 形状生成和几何运算。
-- `puzzle/`: 拼图生成和操作。
-- `rendering/`: 渲染和视觉效果（目前主要是音效处理）。
 - `constants.ts`: 游戏常量定义。
 - `helper.ts`: 通用辅助函数。
+- `geometry/`: 包含拼图相关的几何计算工具。
+    - `__tests__/`: **几何计算工具的单元测试。**
+    - `puzzleGeometry.ts`: 提供如计算中心、点在多边形内判断、旋转点等函数。
+- `shape/`: 形状生成和处理相关工具。
+    - `ShapeGenerator.ts`: 负责生成不同类型的形状。
+    - `geometryUtils.ts`: **几何计算工具。**
+- `puzzle/`: 拼图生成、打散、切割和操作相关工具。
+    - `PuzzleGenerator.ts`: 负责将形状切割成拼图。
+    - `ScatterPuzzle.ts`: 负责将拼图打散到画布上。
+    - `cutGenerators.ts`: 提供不同的切割线生成算法。
+    - `puzzleUtils.ts`: 拼图操作工具。
+- `rendering/`: 包含绘制和音效相关的辅助功能。
+    - `__tests__/`: **渲染工具的单元测试。**
+    - `puzzleDrawing.ts`: 提供如绘制拼图、绘制拼图块、绘制提示轮廓等 Canvas 绘制函数。
+    - `soundEffects.ts`: 音效处理。
 
 ## 开发配置说明
 

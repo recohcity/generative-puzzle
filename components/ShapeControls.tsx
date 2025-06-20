@@ -2,7 +2,7 @@
 import { useGame } from "@/contexts/GameContext"
 import { Button } from "@/components/ui/button"
 import { Check, Hexagon, Circle, CloudyIcon as BlobIcon } from "lucide-react"
-import { ShapeType } from "@/types/types"
+import { ShapeType } from "@/types/puzzleTypes"
 import { playButtonClickSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
 

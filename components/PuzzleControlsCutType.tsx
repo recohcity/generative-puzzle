@@ -2,7 +2,7 @@
 import { useGame } from "@/contexts/GameContext"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
-import { CutType } from "@/types/types"
+import { CutType } from "@/types/puzzleTypes"
 import { playButtonClickSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
 
