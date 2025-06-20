@@ -34,8 +34,38 @@ const initialState: GameState = {
   canvasWidth: 800,  // 默认画布宽度
   canvasHeight: 600, // 默认画布高度
   previousCanvasSize: null, // 初始化为 null
-  isShaking: false, // 新增，默认不抖动
 }
+
+type GameAction =
+  | { type: "SET_ORIGINAL_SHAPE"; payload: Point[] }
+  | { type: "SET_PUZZLE"; payload: PuzzlePiece[] }
+  | { type: "SET_DRAGGING_PIECE"; payload: DraggingPiece | null }
+  | { type: "SET_SELECTED_PIECE"; payload: number | null }
+  | { type: "SET_COMPLETED_PIECES"; payload: number[] }
+  | { type: "ADD_COMPLETED_PIECE"; payload: number }
+  | { type: "SET_IS_COMPLETED"; payload: boolean }
+  | { type: "SET_IS_SCATTERED"; payload: boolean }
+  | { type: "SET_SHOW_HINT"; payload: boolean }
+  | { type: "SET_SHAPE_TYPE"; payload: ShapeType }
+  | { type: "SET_SHAPE_TYPE_WITHOUT_REGENERATE"; payload: ShapeType }
+  | { type: "SET_CUT_TYPE"; payload: CutType }
+  | { type: "SET_CUT_COUNT"; payload: number }
+  | { type: "GENERATE_SHAPE" }
+  | { type: "GENERATE_PUZZLE" }
+  | { type: "SCATTER_PUZZLE" }
+  | { type: "ROTATE_PIECE"; payload: { clockwise: boolean } }
+  | { type: "UPDATE_PIECE_POSITION"; payload: { index: number; dx: number; dy: number } }
+  | { type: "RESET_PIECE_TO_ORIGINAL"; payload: number }
+  | { type: "SHOW_HINT" }
+  | { type: "HIDE_HINT" }
+  | { type: "RESET_GAME" }
+  | { type: "SET_ORIGINAL_POSITIONS"; payload: PuzzlePiece[] }
+  | { type: "SET_SHAPE_OFFSET"; payload: { offsetX: number; offsetY: number } }
+  | { type: "BATCH_UPDATE"; payload: { puzzle: PuzzlePiece[]; originalPositions: PuzzlePiece[] } }
+  | { type: "SYNC_ALL_POSITIONS"; payload: { originalShape: Point[]; puzzle: PuzzlePiece[]; originalPositions: PuzzlePiece[]; shapeOffset: { offsetX: number; offsetY: number } } }
+  | { type: "UPDATE_CANVAS_SIZE"; payload: { width: number; height: number } }
+  | { type: "UPDATE_ADAPTED_PUZZLE_STATE"; payload: { newPuzzleData: PuzzlePiece[], newPreviousCanvasSize: { width: number; height: number } } }
+  | { type: "NO_CHANGE" }
 
 // 在gameReducer中添加RESET_GAME动作处理
 function gameReducer(state: GameState, action: GameAction): GameState {
@@ -57,22 +87,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       }
     case "SET_COMPLETED_PIECES":
       return { ...state, completedPieces: action.payload }
-    case "ADD_COMPLETED_PIECE": {
-      const newCompletedPieces = [...state.completedPieces, action.payload];
-      const isAllCompleted = state.puzzle && newCompletedPieces.length === state.puzzle.length;
-      console.log('[Reducer] ADD_COMPLETED_PIECE', {
-        newCompletedPieces,
-        puzzle: state.puzzle,
-        puzzleLength: state.puzzle ? state.puzzle.length : null,
-        isAllCompleted,
-        prevIsCompleted: state.isCompleted,
-      });
-      return {
-        ...state,
-        completedPieces: newCompletedPieces,
-        isCompleted: isAllCompleted ? true : state.isCompleted,
-      };
-    }
+    case "ADD_COMPLETED_PIECE":
+      return { ...state, completedPieces: [...state.completedPieces, action.payload] }
     case "SET_IS_COMPLETED":
       return { ...state, isCompleted: action.payload }
     case "SET_IS_SCATTERED":
@@ -185,11 +201,18 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         canvasWidth: action.payload.width, 
         canvasHeight: action.payload.height 
       }
+    case "UPDATE_ADAPTED_PUZZLE_STATE":
+      // 更新适配后的拼图数据和上一次画布尺寸
+      return {
+        ...state,
+        puzzle: action.payload.newPuzzleData,
+        previousCanvasSize: action.payload.newPreviousCanvasSize,
+        // Note: canvasWidth and canvasHeight should already be the new size
+        // when this action is dispatched after a resize.
+      };
     case "NO_CHANGE":
       // 不做任何改变
       return state
-    case "SET_IS_SHAKING":
-      return { ...state, isShaking: action.payload }
     default:
       return state
   }
