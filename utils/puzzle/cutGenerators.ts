@@ -1,4 +1,4 @@
-import { Point } from "@/types/types"
+import { Point } from "@/types/puzzleTypes"
 
 /**
  * 拼图切割难度级别配置 (已优化):

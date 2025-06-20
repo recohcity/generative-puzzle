@@ -7,7 +7,7 @@ test.describe('PuzzleCanvas Initial Tests', () => {
   });
 
   test('should load the page and render the canvas', async ({ page }) => {
-    await page.goto('http://localhost:3001/');
+    await page.goto('http://localhost:3000/');
     await expect(page.locator('canvas.relative.cursor-pointer')).toBeVisible();
     // You might want to add more specific checks here, e.g., canvas dimensions
     // await expect(page.locator('canvas')).toHaveAttribute('width', '800');
@@ -15,7 +15,7 @@ test.describe('PuzzleCanvas Initial Tests', () => {
   });
 
   test('should allow dragging a puzzle piece on the canvas', async ({ page }) => {
-    await page.goto('http://localhost:3001/');
+    await page.goto('http://localhost:3000/');
     await page.waitForSelector('canvas.relative.cursor-pointer'); // 确保 canvas 元素存在
 
     const canvas = page.locator('canvas.relative.cursor-pointer');
@@ -49,7 +49,7 @@ test.describe('PuzzleCanvas Initial Tests', () => {
   });
 
   test('should toggle debug mode with F10 key', async ({ page }) => {
-    await page.goto('http://localhost:3001/');
+    await page.goto('http://localhost:3000/');
     await page.waitForSelector('canvas.relative.cursor-pointer');
 
     // Assuming debug elements are not visible by default, and have a class like 'debug-info'
@@ -76,7 +76,7 @@ test.describe('PuzzleCanvas Initial Tests', () => {
   });
 
   test('should handle puzzle snapping and completion', async ({ page }) => {
-    await page.goto('http://localhost:3001/');
+    await page.goto('http://localhost:3000/');
     await page.waitForSelector('canvas.relative.cursor-pointer');
 
     // This test is highly dependent on the game logic and how pieces are snapped.
@@ -109,7 +109,7 @@ test.describe('PuzzleCanvas Initial Tests', () => {
   });
 
   test('should play sound effects (if applicable)', async ({ page }) => {
-    await page.goto('http://localhost:3001/');
+    await page.goto('http://localhost:3000/');
     await page.waitForSelector('#puzzle-canvas'); // 确保画布加载完成
 
     // Expose a function to listen for sound plays from the browser context

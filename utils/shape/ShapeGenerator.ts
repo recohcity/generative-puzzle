@@ -1,4 +1,4 @@
-import type { ShapeType } from "@/types/types"
+import type { ShapeType } from "@/types/puzzleTypes"
 
 type Point = {
   x: number

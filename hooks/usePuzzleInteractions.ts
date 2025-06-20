@@ -7,7 +7,7 @@ import { drawPuzzle } from "@/utils/rendering/puzzleDrawing";
 
 interface UsePuzzleInteractionsProps {
   canvasRef: RefObject<HTMLCanvasElement>;
-  containerRef: RefObject<HTMLDivElement>;
+  containerRef: RefObject<HTMLDivElement | null>;
   canvasSize: { width: number; height: number };
   state: GameState; // 直接从 GameContext 获取的状态
   dispatch: React.Dispatch<any>; // GameContext 的 dispatch 函数
@@ -44,6 +44,9 @@ export function usePuzzleInteractions({
   const lastTouchRef = useRef<Point | null>(null);
   const animationFrameRef = useRef<number | null>(null); // 动画帧引用
 
+  const canvasWidth = state.canvasWidth ?? 0;
+  const canvasHeight = state.canvasHeight ?? 0;
+
   // 定义闪光动画函数
   const animateFlash = useCallback(
     (
@@ -66,7 +69,9 @@ export function usePuzzleInteractions({
         ctx.clearRect(0, 0, canvas.width, canvas.height); // 清除整个画布
 
         // 绘制所有拼图块 (除了闪光的)
-        drawPuzzle(ctx, state.puzzle, state.completedPieces, null, shapeType, originalShape, state.isScattered);
+        if (state.puzzle) {
+          drawPuzzle(ctx, state.puzzle, state.completedPieces, null, shapeType, originalShape, state.isScattered);
+        }
 
         // 绘制闪光效果
         if (progress < 1) {
@@ -111,41 +116,45 @@ export function usePuzzleInteractions({
     let clickedPieceIndex = -1
 
     // 倒序遍历，因为后绘制的在上面
-    for (let i = state.puzzle.length - 1; i >= 0; i--) {
-      // 跳过已完成的拼图，不允许拖拽
-      if (state.completedPieces.includes(i)) continue
-
-      const piece = state.puzzle[i]
-      const center = calculateCenter(piece.points)
-      
-      // 将点击点逆向旋转，以匹配未旋转的形状
-      const rotationAngle = -piece.rotation // 逆向旋转
-      const rotatedPoint = rotatePoint(x, y, center.x, center.y, rotationAngle)
-      
-      // 检查旋转后的点是否在形状内
-      if (isPointInPolygon(rotatedPoint.x, rotatedPoint.y, piece.points)) {
-        clickedPieceIndex = i
-        break
-      }
-    }
-
-    // 如果没有找到，使用更宽松的距离检测
-    if (clickedPieceIndex === -1) {
-      const hitDistance = 20 // 增加点击容差
+    if (state.puzzle) {
       for (let i = state.puzzle.length - 1; i >= 0; i--) {
         // 跳过已完成的拼图，不允许拖拽
         if (state.completedPieces.includes(i)) continue
 
         const piece = state.puzzle[i]
         const center = calculateCenter(piece.points)
-        const dx = center.x - x
-        const dy = center.y - y
-        const distance = Math.sqrt(dx * dx + dy * dy)
-
-        // 如果鼠标位置在拼图中心附近，也算作点击
-        if (distance < hitDistance * 2) {
+        
+        // 将点击点逆向旋转，以匹配未旋转的形状
+        const rotationAngle = -piece.rotation // 逆向旋转
+        const rotatedPoint = rotatePoint(x, y, center.x, center.y, rotationAngle)
+        
+        // 检查旋转后的点是否在形状内
+        if (isPointInPolygon(rotatedPoint.x, rotatedPoint.y, piece.points)) {
           clickedPieceIndex = i
           break
+        }
+      }
+    }
+
+    // 如果没有找到，使用更宽松的距离检测
+    if (clickedPieceIndex === -1) {
+      const hitDistance = 20 // 增加点击容差
+      if (state.puzzle) {
+        for (let i = state.puzzle.length - 1; i >= 0; i--) {
+          // 跳过已完成的拼图，不允许拖拽
+          if (state.completedPieces.includes(i)) continue
+
+          const piece = state.puzzle[i]
+          const center = calculateCenter(piece.points)
+          const dx = center.x - x
+          const dy = center.y - y
+          const distance = Math.sqrt(dx * dx + dy * dy)
+
+          // 如果鼠标位置在拼图中心附近，也算作点击
+          if (distance < hitDistance * 2) {
+            clickedPieceIndex = i
+            break
+          }
         }
       }
     }
@@ -223,10 +232,10 @@ export function usePuzzleInteractions({
       const bounds = calculatePieceBounds(piece);
       const safeMargin = 1; // 使用与ensurePieceInBounds相同的边界值
       if (bounds.minX <= safeMargin) shakeDirectionX = 1; // 碰左边，向右震动
-      else if (bounds.maxX >= state.canvasWidth - safeMargin) shakeDirectionX = -1; // 碰右边，向左震动
+      else if (bounds.maxX >= canvasWidth - safeMargin) shakeDirectionX = -1; // 碰右边，向左震动
       
       if (bounds.minY <= safeMargin) shakeDirectionY = 1; // 碰上边，向下震动
-      else if (bounds.maxY >= state.canvasHeight - safeMargin) shakeDirectionY = -1; // 碰下边，向上震动
+      else if (bounds.maxY >= canvasHeight - safeMargin) shakeDirectionY = -1; // 碰下边，向上震动
       
       // 如果没有确定方向，根据移动速度判断
       if (shakeDirectionX === 0 && Math.abs(dx) > Math.abs(dy)) shakeDirectionX = -Math.sign(dx);
@@ -391,41 +400,45 @@ export function usePuzzleInteractions({
       let clickedPieceIndex = -1
 
       // 使用多边形点包含检测
-      for (let i = state.puzzle.length - 1; i >= 0; i--) {
-        // 跳过已完成的拼图，不允许拖拽
-        if (state.completedPieces.includes(i)) continue
-
-        const piece = state.puzzle[i]
-        const center = calculateCenter(piece.points)
-        
-        // 将触摸点逆向旋转，以匹配未旋转的形状
-        const rotationAngle = -piece.rotation // 逆向旋转
-        const rotatedPoint = rotatePoint(touchX, touchY, center.x, center.y, rotationAngle)
-        
-        // 检查旋转后的点是否在形状内
-        if (isPointInPolygon(rotatedPoint.x, rotatedPoint.y, piece.points)) {
-          clickedPieceIndex = i
-          break
-        }
-      }
-
-      // 如果没有找到，使用更宽松的距离检测
-      if (clickedPieceIndex === -1) {
-        const hitDistance = 30 // 增加触摸容差，比鼠标点击的容差更大
+      if (state.puzzle) {
         for (let i = state.puzzle.length - 1; i >= 0; i--) {
           // 跳过已完成的拼图，不允许拖拽
           if (state.completedPieces.includes(i)) continue
 
           const piece = state.puzzle[i]
           const center = calculateCenter(piece.points)
-          const dx = center.x - touchX
-          const dy = center.y - touchY
-          const distance = Math.sqrt(dx * dx + dy * dy)
-
-          // 如果触摸位置在拼图中心附近，也算作点击
-          if (distance < hitDistance * 2) {
+          
+          // 将触摸点逆向旋转，以匹配未旋转的形状
+          const rotationAngle = -piece.rotation // 逆向旋转
+          const rotatedPoint = rotatePoint(touchX, touchY, center.x, center.y, rotationAngle)
+          
+          // 检查旋转后的点是否在形状内
+          if (isPointInPolygon(rotatedPoint.x, rotatedPoint.y, piece.points)) {
             clickedPieceIndex = i
             break
+          }
+        }
+      }
+
+      // 如果没有找到，使用更宽松的距离检测
+      if (clickedPieceIndex === -1) {
+        const hitDistance = 30 // 增加触摸容差，比鼠标点击的容差更大
+        if (state.puzzle) {
+          for (let i = state.puzzle.length - 1; i >= 0; i--) {
+            // 跳过已完成的拼图，不允许拖拽
+            if (state.completedPieces.includes(i)) continue
+
+            const piece = state.puzzle[i]
+            const center = calculateCenter(piece.points)
+            const dx = center.x - touchX
+            const dy = center.y - touchY
+            const distance = Math.sqrt(dx * dx + dy * dy)
+
+            // 如果触摸位置在拼图中心附近，也算作点击
+            if (distance < hitDistance * 2) {
+              clickedPieceIndex = i
+              break
+            }
           }
         }
       }
@@ -547,10 +560,10 @@ export function usePuzzleInteractions({
           const bounds = calculatePieceBounds(piece);
           const safeMargin = 1; // 使用统一的边界值
           if (bounds.minX <= safeMargin) shakeDirectionX = 1; // 碰左边，向右震动
-          else if (bounds.maxX >= state.canvasWidth - safeMargin) shakeDirectionX = -1; // 碰右边，向左震动
+          else if (bounds.maxX >= canvasWidth - safeMargin) shakeDirectionX = -1; // 碰右边，向左震动
           
           if (bounds.minY <= safeMargin) shakeDirectionY = 1; // 碰上边，向下震动
-          else if (bounds.maxY >= state.canvasHeight - safeMargin) shakeDirectionY = -1; // 碰下边，向上震动
+          else if (bounds.maxY >= canvasHeight - safeMargin) shakeDirectionY = -1; // 碰下边，向上震动
           
           // 如果没有确定方向，根据移动速度判断
           if (shakeDirectionX === 0 && Math.abs(dx) > Math.abs(dy)) shakeDirectionX = -Math.sign(dx);

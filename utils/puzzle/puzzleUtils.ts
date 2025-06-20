@@ -1,4 +1,4 @@
-import { Point } from "@/types/types"
+import { Point } from "@/types/puzzleTypes"
 
 type CutLine = {
   x1: number

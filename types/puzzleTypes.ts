@@ -1,15 +1,15 @@
 import type { ReactNode } from "react"
 // Re-export ShapeType and CutType from ./types
-export { ShapeType, CutType } from "./types"
+// export { ShapeType, CutType } from "./types"
 
 // Define types
-interface Point {
+export interface Point {
   x: number
   y: number
   isOriginal?: boolean
 }
 
-interface PuzzlePiece {
+export interface PuzzlePiece {
   points: Point[]
   originalPoints: Point[]
   rotation: number
@@ -40,7 +40,7 @@ interface PieceBounds {
   centerY: number
 }
 
-interface GameState {
+export interface GameState {
   originalShape: Point[]
   puzzle: PuzzlePiece[] | null
   draggingPiece: DraggingPiece | null
@@ -108,4 +108,16 @@ type GameAction =
   | { type: "BATCH_UPDATE"; payload: { puzzle: PuzzlePiece[]; originalPositions: PuzzlePiece[] } }
   | { type: "SYNC_ALL_POSITIONS"; payload: { originalShape: Point[]; puzzle: PuzzlePiece[]; originalPositions: PuzzlePiece[]; shapeOffset: { offsetX: number; offsetY: number } } }
   | { type: "UPDATE_CANVAS_SIZE"; payload: { width: number; height: number } }
-  | { type: "NO_CHANGE" } 
+  | { type: "NO_CHANGE" }
+
+// 直接在本文件内定义并导出 ShapeType 和 CutType
+export enum ShapeType {
+  Polygon = "polygon",
+  Curve = "curve",
+  Circle = "irregular",
+}
+
+export enum CutType {
+  Straight = "straight",
+  Diagonal = "diagonal",
+} 

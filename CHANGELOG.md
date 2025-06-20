@@ -2,6 +2,23 @@
 
 本文档记录项目的所有版本更新内容和变更历史。
 
+## [v1.3.11] - 2025-06-20
+
+### 版本修订说明
+- **类型系统彻底清理与统一**：
+    - 删除了冗余的 `types/types.ts` 文件，所有类型定义（ShapeType, CutType, Point, PuzzlePiece, GameState, GameAction 等）已全部整合至 `types/puzzleTypes.ts`，并在该文件内直接定义和导出。
+    - 全项目范围内移除了对已删除类型文件的所有引用，确保无任何构建或运行时依赖残留。
+    - 解决了 `ShapeType`、`CutType` 枚举的导出与依赖问题，类型系统结构更清晰。
+- **拼图数量提示唯一化**：
+    - 彻底移除 `components/PuzzleCanvas.tsx` 内部的拼图数量提示，现仅在 `components/layouts/DesktopLayout.tsx` 渲染一次，页面无重叠、无重复。
+- **类型与 linter 错误修正**：
+    - 修正了 hooks（如 `usePuzzleInteractions`、`useResponsiveCanvasSizing`）的类型兼容性问题。
+    - 确保所有类型导出和使用的唯一性与正确性。
+    - 增加 null/undefined 安全判断，彻底修复所有 puzzle/canvasWidth/canvasHeight 相关类型和运行时风险。
+- **全量端到端测试通过**：
+    - 运行 Playwright 全量回归测试，所有 5 项用例全部通过，页面无报错，功能与类型系统均正常。
+    - 通过严格手动测试和 Playwright 自动化测试，所有功能和类型系统100%通过。
+
 ## [v1.3.10] - 2025-06-08
 
 ### 主要任务及功能点
@@ -18,7 +35,7 @@
     - 增加了对 `state.puzzle` 和 `state.completedPieces` 的空值检查，避免在渲染时出现 `TypeError: Cannot read properties of null (reading 'length')`。
 - **Playwright 测试环境及流程优化**：
     - 修正了 `package.json` 中 `test:e2e` 脚本的配置，明确指定 Playwright 仅运行 `e2e/` 目录下的测试，避免了与 Jest 单元测试的冲突。
-    - 更新了 `e2e/puzzle_canvas.spec.ts` 中 `page.goto` 的 URL 为 `http://localhost:3001/`，以匹配 Next.js 开发服务器的实际端口。
+    - 更新了 `e2e/puzzle_canvas.spec.ts` 中 `page.goto` 的 URL 为 `http://localhost:3000/`，以匹配 Next.js 开发服务器的实际端口。
     - 为 `components/PuzzleCanvas.tsx` 中的主 `<canvas>` 元素添加了 `id="puzzle-canvas"` 属性，确保 Playwright 测试能够正确识别并等待画布加载。
     - 调整了音效测试逻辑，通过点击"重新开始"按钮来可靠地触发音效，确保测试的稳定性和可重复性。
 

@@ -28,7 +28,6 @@ import { useDeviceDetection } from "@/hooks/useDeviceDetection";
 import { useResponsiveCanvasSizing } from "@/hooks/useResponsiveCanvasSizing";
 // 导入新的拼图交互处理 Hook
 import { usePuzzleInteractions } from "@/hooks/usePuzzleInteractions";
-import { useDebugToggle } from "@/hooks/useDebugToggle";
 import { cn } from "@/lib/utils";
 
 export default function PuzzleCanvas() {
@@ -51,7 +50,7 @@ export default function PuzzleCanvas() {
   
   // Refs for canvas elements
   // containerRef 现在在 PuzzleCanvas 内部声明，并传递给 useResponsiveCanvasSizing
-  const containerRef = useRef<HTMLDivElement>(null); 
+  const containerRef = useRef<HTMLDivElement | null>(null);
   
   // Local state for dragging and canvas dimensions
   // const [isDragging, setIsDragging] = useState(false); // Moved to GameContext
@@ -81,25 +80,29 @@ export default function PuzzleCanvas() {
   // --- 使用新的 useResponsiveCanvasSizing Hook ---
   // 将所有必要的 ref 和 dispatch 作为单个对象传递，以匹配"应有 1 个参数"的错误
   // 此 Hook 负责将画布尺寸更新到 GameContext，不返回 canvasSize 或 containerRef
-  useResponsiveCanvasSizing({ canvasRef, backgroundCanvasRef, containerRef, dispatch });
+  useResponsiveCanvasSizing({ canvasRef, backgroundCanvasRef, containerRef });
 
   // --- 使用新的 usePuzzleInteractions Hook ---
+  // 获取 canvasSize 以传递给 usePuzzleInteractions
+  const canvasSize = { width: state.canvasWidth, height: state.canvasHeight };
   const {
     handleMouseDown,
-    handleMouseMove, // 从 Hook 返回
-    handleMouseUp,   // 从 Hook 返回
-    handleTouchStart, // 从 Hook 返回
-    handleTouchMove,  // 从 Hook 返回
-    handleTouchEnd,   // 从 Hook 返回
+    handleMouseMove,
+    handleMouseUp,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
   } = usePuzzleInteractions({
     canvasRef,
+    containerRef,
+    canvasSize,
     state,
     dispatch,
     ensurePieceInBounds,
     calculatePieceBounds,
     rotatePiece,
     isShaking: state.isShaking,
-    setIsShaking: (isShaking: boolean) => dispatch({ type: 'SET_IS_SHAKING', payload: isShaking }),
+    setIsShaking,
     playPieceSelectSound,
     playPieceSnapSound,
     playPuzzleCompletedSound,
@@ -422,18 +425,6 @@ export default function PuzzleCanvas() {
         onTouchEnd={handleTouchEnd}
         onTouchCancel={handleTouchEnd}
       />
-
-      {/* 拼图数量提示 */}
-      {state.puzzle && state.puzzle.length > 0 && (
-        <div
-          className={cn(
-            "absolute top-4 z-10 font-bold text-white text-3xl transition-all duration-300 pointer-events-none",
-            isMobile ? "text-xl px-4" : "" // 为 Android 设备调整字体大小和内边距
-          )}
-        >
-          {state.completedPieces.length} / {state.puzzle.length} 块完成
-        </div>
-      )}
 
       {/* 调试元素 (如果 showDebugElements 为 true) */}
       {showDebugElements && (
