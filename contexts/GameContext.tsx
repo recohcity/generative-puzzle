@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useReducer, useRef, createContext, useContext } from "react"
+import { useCallback, useReducer, useRef, createContext, useContext, useEffect } from "react"
 
 import type { ReactNode } from "react"
 // import { ShapeType, CutType } from "@/types/types"
@@ -9,7 +9,7 @@ import { PuzzleGenerator } from "@/utils/puzzle/PuzzleGenerator"
 import { ScatterPuzzle } from "@/utils/puzzle/ScatterPuzzle"
 
 // 导入从 puzzleTypes.ts 迁移的类型
-import { Point, PuzzlePiece, DraggingPiece, PieceBounds, GameState, GameAction, GameContextProps, ShapeType, CutType } from "@/types/puzzleTypes";
+import { Point, PuzzlePiece, DraggingPiece, PieceBounds, GameState, GameAction as GameActionType, GameContextProps, ShapeType, CutType } from "@/types/puzzleTypes";
 
 // Define types
 // ... existing code ...
@@ -36,39 +36,7 @@ const initialState: GameState = {
   previousCanvasSize: null, // 初始化为 null
 }
 
-type GameAction =
-  | { type: "SET_ORIGINAL_SHAPE"; payload: Point[] }
-  | { type: "SET_PUZZLE"; payload: PuzzlePiece[] }
-  | { type: "SET_DRAGGING_PIECE"; payload: DraggingPiece | null }
-  | { type: "SET_SELECTED_PIECE"; payload: number | null }
-  | { type: "SET_COMPLETED_PIECES"; payload: number[] }
-  | { type: "ADD_COMPLETED_PIECE"; payload: number }
-  | { type: "SET_IS_COMPLETED"; payload: boolean }
-  | { type: "SET_IS_SCATTERED"; payload: boolean }
-  | { type: "SET_SHOW_HINT"; payload: boolean }
-  | { type: "SET_SHAPE_TYPE"; payload: ShapeType }
-  | { type: "SET_SHAPE_TYPE_WITHOUT_REGENERATE"; payload: ShapeType }
-  | { type: "SET_CUT_TYPE"; payload: CutType }
-  | { type: "SET_CUT_COUNT"; payload: number }
-  | { type: "GENERATE_SHAPE" }
-  | { type: "GENERATE_PUZZLE" }
-  | { type: "SCATTER_PUZZLE" }
-  | { type: "ROTATE_PIECE"; payload: { clockwise: boolean } }
-  | { type: "UPDATE_PIECE_POSITION"; payload: { index: number; dx: number; dy: number } }
-  | { type: "RESET_PIECE_TO_ORIGINAL"; payload: number }
-  | { type: "SHOW_HINT" }
-  | { type: "HIDE_HINT" }
-  | { type: "RESET_GAME" }
-  | { type: "SET_ORIGINAL_POSITIONS"; payload: PuzzlePiece[] }
-  | { type: "SET_SHAPE_OFFSET"; payload: { offsetX: number; offsetY: number } }
-  | { type: "BATCH_UPDATE"; payload: { puzzle: PuzzlePiece[]; originalPositions: PuzzlePiece[] } }
-  | { type: "SYNC_ALL_POSITIONS"; payload: { originalShape: Point[]; puzzle: PuzzlePiece[]; originalPositions: PuzzlePiece[]; shapeOffset: { offsetX: number; offsetY: number } } }
-  | { type: "UPDATE_CANVAS_SIZE"; payload: { width: number; height: number } }
-  | { type: "UPDATE_ADAPTED_PUZZLE_STATE"; payload: { newPuzzleData: PuzzlePiece[], newPreviousCanvasSize: { width: number; height: number } } }
-  | { type: "NO_CHANGE" }
-
-// 在gameReducer中添加RESET_GAME动作处理
-function gameReducer(state: GameState, action: GameAction): GameState {
+function gameReducer(state: GameState, action: GameActionType): GameState {
   switch (action.type) {
     case "SET_ORIGINAL_SHAPE":
       return { ...state, originalShape: action.payload }
@@ -225,6 +193,18 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [state, dispatch] = useReducer(gameReducer, initialState)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const backgroundCanvasRef = useRef<HTMLCanvasElement>(null)
+
+  // 自动完成判定副作用：全部拼图完成时自动设置 isCompleted
+  useEffect(() => {
+    if (
+      state.puzzle &&
+      state.completedPieces.length === state.puzzle.length &&
+      state.puzzle.length > 0 &&
+      !state.isCompleted
+    ) {
+      dispatch({ type: "SET_IS_COMPLETED", payload: true });
+    }
+  }, [state.completedPieces, state.puzzle, state.isCompleted]);
 
   const generateShape = useCallback(() => {
     // 如果有待生成的形状类型，则使用它

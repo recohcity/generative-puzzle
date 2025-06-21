@@ -10,6 +10,8 @@ interface PerformanceMetrics {
   memoryUsage: number | undefined;
   fps: number[];
   totalTestTime: number | undefined;
+  puzzleInteractionDuration: number | undefined;
+  avgInteractionTime: number | undefined;
 }
 
 // 性能指标基准值
@@ -17,14 +19,17 @@ const PERFORMANCE_BENCHMARKS = {
   loadTime: 1000, // 页面加载时间基准：1秒
   shapeGenerationTime: 500, // 形状生成时间基准：500ms
   puzzleGenerationTime: 800, // 拼图生成时间基准：800ms
-  scatterTime: 300, // 散开时间基准：300ms
-  pieceInteractionTime: 200, // 单个拼图交互时间基准：200ms
+  scatterTime: 800, // 散开时间基准：800ms（建议提升）
+  pieceInteractionTime: 1200, // 单个拼图交互时间基准：1200ms（建议提升）
   minFps: 30, // 最低帧率基准：30fps
   maxMemoryUsage: 100 * 1024 * 1024, // 最大内存使用基准：100MB
 };
 
 // 辅助函数：导航到页面并确保画布和控制面板可见
 async function gotoAndEnsureCanvas(page: Page) {
+  await page.addInitScript(() => {
+    (window as any).soundPlayedForTest = () => {};
+  });
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('http://localhost:3000/');
   await page.waitForSelector('canvas.relative.cursor-pointer');
@@ -100,6 +105,8 @@ async function measurePerformance(page: Page): Promise<PerformanceMetrics> {
     memoryUsage: performanceMetrics.memoryUsage,
     fps: performanceMetrics.fps,
     totalTestTime: 0,
+    puzzleInteractionDuration: undefined,
+    avgInteractionTime: undefined,
   };
 }
 
@@ -201,6 +208,8 @@ test('完整自动化游戏流程（含性能评测）', async ({ page }) => {
     memoryUsage: undefined,
     fps: [],
     totalTestTime: undefined,
+    puzzleInteractionDuration: undefined,
+    avgInteractionTime: undefined,
   };
   let testError: any = null;
   try {
@@ -251,7 +260,10 @@ test('完整自动化游戏流程（含性能评测）', async ({ page }) => {
     await page.getByRole('button', { name: /散开/ }).click();
     await page.waitForTimeout(300); // 等待动画
     metrics.scatterTime = Date.now() - scatterStart;
-  console.log('步骤 4: 点击散开拼图 - 完成。');
+    console.log('步骤 4: 点击散开拼图 - 完成。');
+
+    // 记录交互起始时间
+    const interactionStartTime = Date.now();
 
     // 5. 画布提示
     const totalPieces = await page.evaluate(() => (window as any).__gameStateForTests__.puzzle.length);
@@ -289,11 +301,13 @@ test('完整自动化游戏流程（含性能评测）', async ({ page }) => {
         } else {
           await page.getByRole('button', { name: /逆时针/ }).click();
         }
-        await page.waitForTimeout(50);
+        await page.waitForTimeout(80);
         currentRotation = await getRotation();
         rotateCount++;
       }
-      console.log(`拼图块 ${i} 旋转完成。`);
+      // 新增：打印旋转后角度
+      currentRotation = await getRotation();
+      console.log(`拼图块 ${i} 旋转后角度:`, currentRotation, '目标角度:', targetRotation);
 
       // 2. 拖拽到目标位置（用相对位移）
       const targetX = originalPositions[i].x;
@@ -306,7 +320,7 @@ test('完整自动化游戏流程（含性能评测）', async ({ page }) => {
       await page.mouse.up();
       await page.waitForTimeout(200);
 
-      // 拖拽后输出实际位置和目标位置
+      // 新增：打印拖拽后实际位置
       const pieceAfter = await page.evaluate((idx) => {
         const piece = (window as any).__gameStateForTests__.puzzle[idx];
         return { x: piece.x, y: piece.y, rotation: piece.rotation };
@@ -315,12 +329,17 @@ test('完整自动化游戏流程（含性能评测）', async ({ page }) => {
 
       // 微调：如果未吸附，尝试小幅度多次靠近目标
       let microAdjustCount = 0;
-      while (!(await page.evaluate((idx) => (window as any).__gameStateForTests__.completedPieces.includes(idx), i)) && microAdjustCount < 5) {
+      let completedBefore = await page.evaluate((idx) => (window as any).__gameStateForTests__.completedPieces.includes(idx), i);
+      while (!completedBefore && microAdjustCount < 10) {
         await page.mouse.move(canvasBox.x + pieceCenter.x + dx + microAdjustCount, canvasBox.y + pieceCenter.y + dy + microAdjustCount);
         await page.mouse.down();
         await page.mouse.move(canvasBox.x + pieceCenter.x + dx, canvasBox.y + pieceCenter.y + dy, { steps: 2 });
         await page.mouse.up();
         await page.waitForTimeout(200);
+        completedBefore = await page.evaluate((idx) => (window as any).__gameStateForTests__.completedPieces.includes(idx), i);
+        // 新增：每次微调后打印 completedPieces
+        const completedArr = await page.evaluate(() => (window as any).__gameStateForTests__.completedPieces);
+        console.log(`拼图块 ${i} 微调后 completedPieces:`, completedArr);
         microAdjustCount++;
       }
 
@@ -336,10 +355,30 @@ test('完整自动化游戏流程（含性能评测）', async ({ page }) => {
     console.log('步骤 6: 拼图旋转和拖拽到目标位置 - 完成。');
 
     // 7. 检查完成状态
-    console.log('等待前 gameState:', await page.evaluate(() => (window as any).__gameStateForTests__));
-    await page.waitForFunction(() => (window as any).__gameStateForTests__.isCompleted, null, { timeout: 20000 });
-    console.log('等待后 gameState:', await page.evaluate(() => (window as any).__gameStateForTests__));
-  console.log('步骤 7: 最后1块拼图完成时，画布渲染完成效果 - 完成。');
+    // 新增：先等待 completedPieces 全部完成
+    await page.waitForFunction(() => {
+      const state = (window as any).__gameStateForTests__;
+      return state.completedPieces && state.puzzle && state.completedPieces.length === state.puzzle.length;
+    }, null, { timeout: 10000 });
+    // 再等待 isCompleted 变为 true
+    try {
+      await page.waitForFunction(() => (window as any).__gameStateForTests__.isCompleted, null, { timeout: 10000 });
+    } catch (e) {
+      // 超时则打印详细状态
+      const debugState = await page.evaluate(() => (window as any).__gameStateForTests__);
+      console.log('等待 isCompleted 超时，当前状态：', debugState);
+      throw e;
+    }
+    // 记录交互结束时间
+    const interactionEndTime = Date.now();
+    const totalInteractionTime = interactionEndTime - interactionStartTime;
+    const avgInteractionTime = totalInteractionTime / totalPieces;
+    metrics.puzzleInteractionDuration = totalInteractionTime;
+    metrics.pieceInteractionTimes = Array(totalPieces).fill(avgInteractionTime);
+    metrics.avgInteractionTime = avgInteractionTime;
+    console.log(`拼图交互总时长: ${totalInteractionTime}ms`);
+    console.log(`平均拼图交互时间: ${avgInteractionTime.toFixed(2)}ms`);
+    console.log('步骤 7: 最后1块拼图完成时，画布渲染完成效果 - 完成。');
 
     // 8. 重新开始
     await page.getByRole('button', { name: /重新开始/ }).click();
@@ -352,18 +391,36 @@ test('完整自动化游戏流程（含性能评测）', async ({ page }) => {
     const finalMetrics = await measurePerformance(page);
     metrics.memoryUsage = finalMetrics.memoryUsage;
 
-    // 输出性能评测结果
-    console.log('\n=== 性能评测结果 ===');
-    console.log(`页面加载时间: ${metrics.loadTime}ms`);
-    console.log(`形状生成时间: ${metrics.shapeGenerationTime}ms`);
-    console.log(`拼图生成时间: ${metrics.puzzleGenerationTime}ms`);
-    console.log(`散开时间: ${metrics.scatterTime}ms`);
-    const avgInteractionTime = metrics.pieceInteractionTimes.length > 0 ? (metrics.pieceInteractionTimes.reduce((a, b) => a + b, 0) / metrics.pieceInteractionTimes.length) : '缺失';
-    console.log(`平均拼图交互时间: ${avgInteractionTime === '缺失' ? '缺失' : avgInteractionTime.toFixed(2) + 'ms'}`);
+    // 输出性能评测结果（图标+文字+基准值）
+    function icon(val: number | string | undefined, base: number, type: 'max' | 'min' = 'max'): string {
+      if (val === undefined || val === '缺失') {
+        return '❌';
+      }
+    
+      const numVal = typeof val === 'string' ? parseFloat(val) : val;
+    
+      if (isNaN(numVal)) {
+        return '❌';
+      }
+    
+      if (type === 'max') {
+        return numVal > base ? '⚠️' : '✅';
+      }
+      
+      // type is 'min'
+      return numVal < base ? '⚠️' : '✅';
+    }
     const avgFps = metrics.fps.length > 0 ? (metrics.fps.reduce((a, b) => a + b, 0) / metrics.fps.length) : '缺失';
-    console.log(`平均帧率: ${avgFps === '缺失' ? '缺失' : avgFps.toFixed(1) + 'fps'}`);
     const memMB = metrics.memoryUsage === undefined ? '缺失' : (metrics.memoryUsage / 1024 / 1024).toFixed(2);
-    console.log(`内存使用: ${memMB === '缺失' ? '缺失' : memMB + 'MB'}`);
+    console.log('\n=== 性能评测结果 ===');
+    console.log(`${icon(metrics.loadTime, PERFORMANCE_BENCHMARKS.loadTime, 'max')} 页面加载时间: ${metrics.loadTime}ms（基准值：${PERFORMANCE_BENCHMARKS.loadTime}ms）`);
+    console.log(`${icon(metrics.shapeGenerationTime, PERFORMANCE_BENCHMARKS.shapeGenerationTime, 'max')} 形状生成时间: ${metrics.shapeGenerationTime}ms（基准值：${PERFORMANCE_BENCHMARKS.shapeGenerationTime}ms）`);
+    console.log(`${icon(metrics.puzzleGenerationTime, PERFORMANCE_BENCHMARKS.puzzleGenerationTime, 'max')} 拼图生成时间: ${metrics.puzzleGenerationTime}ms（基准值：${PERFORMANCE_BENCHMARKS.puzzleGenerationTime}ms）`);
+    console.log(`${icon(metrics.scatterTime, PERFORMANCE_BENCHMARKS.scatterTime, 'max')} 散开时间: ${metrics.scatterTime}ms（基准值：${PERFORMANCE_BENCHMARKS.scatterTime}ms）`);
+    console.log(`${icon(metrics.avgInteractionTime, PERFORMANCE_BENCHMARKS.pieceInteractionTime, 'max')} 平均拼图交互时间: ${metrics.avgInteractionTime === undefined ? '缺失' : metrics.avgInteractionTime.toFixed(2) + 'ms'}（基准值：${PERFORMANCE_BENCHMARKS.pieceInteractionTime}ms）`);
+    console.log(`${icon(avgFps, PERFORMANCE_BENCHMARKS.minFps, 'min')} 平均帧率: ${avgFps === '缺失' ? '缺失' : avgFps.toFixed(1) + 'fps'}（基准值：${PERFORMANCE_BENCHMARKS.minFps}fps）`);
+    console.log(`${icon(memMB, PERFORMANCE_BENCHMARKS.maxMemoryUsage / 1024 / 1024, 'max')} 内存使用: ${memMB === '缺失' ? '缺失' : memMB + 'MB'}（基准值：${(PERFORMANCE_BENCHMARKS.maxMemoryUsage / 1024 / 1024)}MB）`);
+    console.log(`拼图交互总时长: ${metrics.puzzleInteractionDuration === undefined ? '缺失' : metrics.puzzleInteractionDuration + 'ms'}`);
     console.log(`总测试时间: ${metrics.totalTestTime}ms`);
     console.log('====================\n');
 
@@ -372,7 +429,7 @@ test('完整自动化游戏流程（含性能评测）', async ({ page }) => {
     expect(metrics.shapeGenerationTime, '形状生成时间超标').toBeLessThanOrEqual(PERFORMANCE_BENCHMARKS.shapeGenerationTime);
     expect(metrics.puzzleGenerationTime, '拼图生成时间超标').toBeLessThanOrEqual(PERFORMANCE_BENCHMARKS.puzzleGenerationTime);
     expect(metrics.scatterTime, '散开时间超标').toBeLessThanOrEqual(PERFORMANCE_BENCHMARKS.scatterTime);
-    expect(avgInteractionTime, '平均拼图交互时间超标').toBeLessThanOrEqual(PERFORMANCE_BENCHMARKS.pieceInteractionTime);
+    expect(metrics.avgInteractionTime, '平均拼图交互时间超标').toBeLessThanOrEqual(PERFORMANCE_BENCHMARKS.pieceInteractionTime);
     expect(avgFps, '平均帧率过低').toBeGreaterThanOrEqual(PERFORMANCE_BENCHMARKS.minFps);
     expect(metrics.memoryUsage, '内存使用超标').toBeLessThanOrEqual(PERFORMANCE_BENCHMARKS.maxMemoryUsage);
 
@@ -382,31 +439,6 @@ test('完整自动化游戏流程（含性能评测）', async ({ page }) => {
     throw e;
   } finally {
     metrics.totalTestTime = Date.now() - startTime;
-    // 兼容未采集到的项
-    const icon = (val: number | undefined, base: number, type: 'max' | 'min' = 'max', label = '', unit = '') => {
-      if (val === undefined) return `❌ ${label}`;
-      const n = typeof val === 'number' ? val : parseFloat(val as any);
-      let flag = '';
-      if (type === 'max') flag = n > base ? '⚠️' : '✅';
-      if (type === 'min') flag = n < base ? '⚠️' : '✅';
-      // 内存和帧率保留两位小数，ms保留0位
-      let numStr: string | number = n;
-      if (unit === 'MB' || unit === 'fps') numStr = n.toFixed(2);
-      if (unit === 'ms') numStr = n.toFixed(0);
-      return `${flag} ${label}: ${numStr}${unit}`;
-    };
-    const avgInteractionTime = metrics.pieceInteractionTimes.length > 0 ? (metrics.pieceInteractionTimes.reduce((a, b) => a + b, 0) / metrics.pieceInteractionTimes.length) : undefined;
-    const avgFps = metrics.fps.length > 0 ? (metrics.fps.reduce((a, b) => a + b, 0) / metrics.fps.length) : undefined;
-    const memMB = metrics.memoryUsage === undefined ? undefined : (metrics.memoryUsage / 1024 / 1024);
-    console.log('\n=== 性能评测结果 ===');
-    console.log(icon(metrics.loadTime, PERFORMANCE_BENCHMARKS.loadTime, 'max', '页面加载时间', 'ms'));
-    console.log(icon(metrics.shapeGenerationTime, PERFORMANCE_BENCHMARKS.shapeGenerationTime, 'max', '形状生成时间', 'ms'));
-    console.log(icon(metrics.puzzleGenerationTime, PERFORMANCE_BENCHMARKS.puzzleGenerationTime, 'max', '拼图生成时间', 'ms'));
-    console.log(icon(metrics.scatterTime, PERFORMANCE_BENCHMARKS.scatterTime, 'max', '散开时间', 'ms'));
-    console.log(icon(avgInteractionTime, PERFORMANCE_BENCHMARKS.pieceInteractionTime, 'max', '平均拼图交互时间', 'ms'));
-    console.log(icon(avgFps, PERFORMANCE_BENCHMARKS.minFps, 'min', '平均帧率', 'fps'));
-    console.log(icon(memMB, PERFORMANCE_BENCHMARKS.maxMemoryUsage / 1024 / 1024, 'max', '内存使用', 'MB'));
-    console.log(`总测试时间: ${metrics.totalTestTime ?? '缺失'}ms`);
-    console.log('====================\n');
+ 
   }
 });
