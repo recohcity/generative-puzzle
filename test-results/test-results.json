@@ -1,0 +1,218 @@
+{
+  "config": {
+    "configFile": "/Users/recoh/Documents/myWork/Project/generative-puzzle/playwright.config.ts",
+    "rootDir": "/Users/recoh/Documents/myWork/Project/generative-puzzle/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        {
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/test-results.json"
+        }
+      ],
+      [
+        "list",
+        null
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/Users/recoh/Documents/myWork/Project/generative-puzzle/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/recoh/Documents/myWork/Project/generative-puzzle/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.53.1",
+    "workers": 4,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "full_game_flow.spec.ts",
+      "file": "full_game_flow.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "完整自动化游戏流程",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9073,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "步骤 1: 页面加载后渲染控制面板和画布 - 完成。\n"
+                    },
+                    {
+                      "text": "步骤 2: 选择云朵形状并生成 - 完成。\n"
+                    },
+                    {
+                      "text": "步骤 3: 选择斜线切割并渲染拼图 - 完成。\n"
+                    },
+                    {
+                      "text": "步骤 4: 点击散开拼图 - 完成。\n"
+                    },
+                    {
+                      "text": "步骤 5: 画布提示 (2 块) - 完成。\n"
+                    },
+                    {
+                      "text": "选中拼图块 0\n"
+                    },
+                    {
+                      "text": "拼图块 0 旋转后角度: \u001b[33m0\u001b[39m 目标角度: \u001b[33m0\u001b[39m\n"
+                    },
+                    {
+                      "text": "拼图块 0 拖拽后位置: { x: \u001b[33m651.3589064731075\u001b[39m, y: \u001b[33m543.4686993601988\u001b[39m, rotation: \u001b[33m0\u001b[39m } 目标: { x: \u001b[33m651.3589064731075\u001b[39m, y: \u001b[33m543.4686993601988\u001b[39m, rotation: \u001b[33m0\u001b[39m }\n"
+                    },
+                    {
+                      "text": "拼图块 0 拖拽完成，已完成数量更新为 1/2。\n"
+                    },
+                    {
+                      "text": "选中拼图块 1\n"
+                    },
+                    {
+                      "text": "拼图块 1 旋转后角度: \u001b[33m0\u001b[39m 目标角度: \u001b[33m0\u001b[39m\n"
+                    },
+                    {
+                      "text": "拼图块 1 拖拽后位置: { x: \u001b[33m354.3851357446395\u001b[39m, y: \u001b[33m492.98921267437146\u001b[39m, rotation: \u001b[33m0\u001b[39m } 目标: { x: \u001b[33m354.3851357446395\u001b[39m, y: \u001b[33m492.98921267437146\u001b[39m, rotation: \u001b[33m0\u001b[39m }\n"
+                    },
+                    {
+                      "text": "拼图块 1 拖拽完成，已完成数量更新为 2/2。\n"
+                    },
+                    {
+                      "text": "步骤 6: 拼图旋转和拖拽到目标位置 - 完成。\n"
+                    },
+                    {
+                      "text": "拼图交互总时长: 3807ms\n"
+                    },
+                    {
+                      "text": "平均拼图交互时间: 1903.50ms\n"
+                    },
+                    {
+                      "text": "步骤 7: 最后1块拼图完成时，画布渲染完成效果 - 完成。\n"
+                    },
+                    {
+                      "text": "步骤 8: 点击重新开始按钮，清空画布，恢复初始游戏状态 - 完成。\n"
+                    },
+                    {
+                      "text": "\n=== 性能评测结果 ===\n"
+                    },
+                    {
+                      "text": "✅ 页面加载时间: 892ms（基准值：1000ms）\n"
+                    },
+                    {
+                      "text": "⚠️ 形状生成时间: 870ms（基准值：500ms）\n"
+                    },
+                    {
+                      "text": "✅ 拼图生成时间: 473ms（基准值：800ms）\n"
+                    },
+                    {
+                      "text": "✅ 散开时间: 401ms（基准值：800ms）\n"
+                    },
+                    {
+                      "text": "⚠️ 平均拼图交互时间: 1903.50ms（基准值：1200ms）\n"
+                    },
+                    {
+                      "text": "✅ 平均帧率: 49.6fps（基准值：30fps）\n"
+                    },
+                    {
+                      "text": "✅ 内存使用: 51.02MB（基准值：100MB）\n"
+                    },
+                    {
+                      "text": "拼图交互总时长: 3807ms\n"
+                    },
+                    {
+                      "text": "总测试时间: 5940ms\n"
+                    },
+                    {
+                      "text": "====================\n\n"
+                    },
+                    {
+                      "text": "---PERF_METRICS_START---\n"
+                    },
+                    {
+                      "text": "{\n  \"loadTime\": 892,\n  \"shapeGenerationTime\": 870,\n  \"puzzleGenerationTime\": 473,\n  \"scatterTime\": 401,\n  \"pieceInteractionTimes\": [\n    1903.5,\n    1903.5\n  ],\n  \"memoryUsage\": 53500000,\n  \"fps\": [\n    10,\n    58,\n    60,\n    59,\n    61\n  ],\n  \"totalTestTime\": 5940,\n  \"puzzleInteractionDuration\": 3807,\n  \"avgInteractionTime\": 1903.5,\n  \"shapeType\": \"云朵\",\n  \"cutType\": \"斜线\",\n  \"cutCount\": 1,\n  \"pieceCount\": 2\n}\n"
+                    },
+                    {
+                      "text": "---PERF_METRICS_END---\n"
+                    },
+                    {
+                      "text": "测试通过: 完整自动化游戏流程测试成功。\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-06-21T17:58:35.114Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fc13526413f196628f71-469468ebbd16971d40a6",
+          "file": "full_game_flow.spec.ts",
+          "line": 208,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-06-21T17:58:33.992Z",
+    "duration": 10689.764,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

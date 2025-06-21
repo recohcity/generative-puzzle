@@ -75,8 +75,13 @@
   }
 }
 
-/* 阻止移动端拖拽时页面滚动 */
-html, body {
+/* 
+  全局的 "html, body" 样式已移除，以解决 /test 页面的滚动问题。
+  这些样式（如 overflow: hidden, position: fixed）阻止了所有页面的滚动。
+  如果你的主游戏页面需要禁止滚动，请在其主容器上应用一个特定的类，
+  例如 .no-scroll-container，并把相关样式移到该类中。
+*/
+.no-scroll-container {
   overscroll-behavior: none; /* 阻止页面滚动传播到外部容器 */
   overflow: hidden; /* 阻止页面滚动 */
   position: fixed; /* 固定位置防止滚动 */

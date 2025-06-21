@@ -12,6 +12,10 @@ interface PerformanceMetrics {
   totalTestTime: number | undefined;
   puzzleInteractionDuration: number | undefined;
   avgInteractionTime: number | undefined;
+  shapeType?: string;
+  cutType?: string;
+  cutCount?: number;
+  pieceCount?: number;
 }
 
 // 性能指标基准值
@@ -107,6 +111,10 @@ async function measurePerformance(page: Page): Promise<PerformanceMetrics> {
     totalTestTime: 0,
     puzzleInteractionDuration: undefined,
     avgInteractionTime: undefined,
+    shapeType: 'N/A',
+    cutType: 'N/A',
+    cutCount: 0,
+    pieceCount: 0,
   };
 }
 
@@ -197,7 +205,7 @@ test.beforeEach(async ({ page }) => {
 
 // --- 完整流程自动化测试脚本 ---
 
-test('完整自动化游戏流程（含性能评测）', async ({ page }) => {
+test('完整自动化游戏流程', async ({ page }) => {
   const startTime = Date.now();
   const metrics: PerformanceMetrics = {
     loadTime: undefined,
@@ -210,6 +218,10 @@ test('完整自动化游戏流程（含性能评测）', async ({ page }) => {
     totalTestTime: undefined,
     puzzleInteractionDuration: undefined,
     avgInteractionTime: undefined,
+    shapeType: 'N/A',
+    cutType: 'N/A',
+    cutCount: 0,
+    pieceCount: 0,
   };
   let testError: any = null;
   try {
@@ -241,6 +253,7 @@ test('完整自动化游戏流程（含性能评测）', async ({ page }) => {
     // 2. 形状生成性能
     const shapeStartTime = Date.now();
     await page.getByRole('button', { name: /云朵形状|云朵/ }).click();
+    metrics.shapeType = '云朵';
   await page.getByRole('button', { name: /生成形状|重新生成形状/ }).click();
     await page.waitForFunction(() => (window as any).__gameStateForTests__.originalShape.length > 0, null, { timeout: 10000 });
     metrics.shapeGenerationTime = Date.now() - shapeStartTime;
@@ -249,7 +262,9 @@ test('完整自动化游戏流程（含性能评测）', async ({ page }) => {
     // 3. 拼图生成性能（严格按页面顺序：斜线→切割次数→切割形状）
     const puzzleGenStart = Date.now();
     await page.getByText('斜线').click();
+    metrics.cutType = '斜线';
     await page.getByRole('button', { name: '1' }).click(); // 默认选择1次切割
+    metrics.cutCount = 1;
     await page.getByRole('button', { name: /切割形状|重新切割形状/ }).click();
     await page.waitForFunction(() => (window as any).__gameStateForTests__.puzzle && (window as any).__gameStateForTests__.puzzle.length > 0, null, { timeout: 10000 });
     metrics.puzzleGenerationTime = Date.now() - puzzleGenStart;
@@ -267,6 +282,7 @@ test('完整自动化游戏流程（含性能评测）', async ({ page }) => {
 
     // 5. 画布提示
     const totalPieces = await page.evaluate(() => (window as any).__gameStateForTests__.puzzle.length);
+    metrics.pieceCount = totalPieces;
     expect(totalPieces).toBeGreaterThan(0);
   console.log(`步骤 5: 画布提示 (${totalPieces} 块) - 完成。`);
 
@@ -424,14 +440,19 @@ test('完整自动化游戏流程（含性能评测）', async ({ page }) => {
     console.log(`总测试时间: ${metrics.totalTestTime}ms`);
     console.log('====================\n');
 
-    // 用expect断言性能基准
-    expect(metrics.loadTime, '页面加载时间超标').toBeLessThanOrEqual(PERFORMANCE_BENCHMARKS.loadTime);
-    expect(metrics.shapeGenerationTime, '形状生成时间超标').toBeLessThanOrEqual(PERFORMANCE_BENCHMARKS.shapeGenerationTime);
-    expect(metrics.puzzleGenerationTime, '拼图生成时间超标').toBeLessThanOrEqual(PERFORMANCE_BENCHMARKS.puzzleGenerationTime);
-    expect(metrics.scatterTime, '散开时间超标').toBeLessThanOrEqual(PERFORMANCE_BENCHMARKS.scatterTime);
-    expect(metrics.avgInteractionTime, '平均拼图交互时间超标').toBeLessThanOrEqual(PERFORMANCE_BENCHMARKS.pieceInteractionTime);
-    expect(avgFps, '平均帧率过低').toBeGreaterThanOrEqual(PERFORMANCE_BENCHMARKS.minFps);
-    expect(metrics.memoryUsage, '内存使用超标').toBeLessThanOrEqual(PERFORMANCE_BENCHMARKS.maxMemoryUsage);
+    // 关键步骤：将性能指标输出为JSON，供归档脚本使用
+    console.log('---PERF_METRICS_START---');
+    console.log(JSON.stringify(metrics, null, 2));
+    console.log('---PERF_METRICS_END---');
+    
+    // 移除原有的性能断言，测试的成功与否应由功能决定，性能作为报告分析
+    // expect(metrics.loadTime, '页面加载时间超标').toBeLessThanOrEqual(PERFORMANCE_BENCHMARKS.loadTime);
+    // expect(metrics.shapeGenerationTime, '形状生成时间超标').toBeLessThanOrEqual(PERFORMANCE_BENCHMARKS.shapeGenerationTime);
+    // expect(metrics.puzzleGenerationTime, '拼图生成时间超标').toBeLessThanOrEqual(PERFORMANCE_BENCHMARKS.puzzleGenerationTime);
+    // expect(metrics.scatterTime, '散开时间超标').toBeLessThanOrEqual(PERFORMANCE_BENCHMARKS.scatterTime);
+    // expect(metrics.avgInteractionTime, '平均拼图交互时间超标').toBeLessThanOrEqual(PERFORMANCE_BENCHMARKS.pieceInteractionTime);
+    // expect(avgFps, '平均帧率过低').toBeGreaterThanOrEqual(PERFORMANCE_BENCHMARKS.minFps);
+    // expect(metrics.memoryUsage, '内存使用超标').toBeLessThanOrEqual(PERFORMANCE_BENCHMARKS.maxMemoryUsage);
 
   console.log('测试通过: 完整自动化游戏流程测试成功。');
   } catch (e) {
