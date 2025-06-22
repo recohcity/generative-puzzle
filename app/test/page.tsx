@@ -34,7 +34,7 @@ const BENCHMARKS = {
 };
 
 const METRIC_LABELS: Record<string, string> = {
-  loadTime: '加载(ms)', 
+  loadTime: '加载(ms)',
   shapeGenerationTime: '形状(ms)',
   puzzleGenerationTime: '切割(ms)',
   scatterTime: '散开(ms)',
@@ -136,29 +136,50 @@ const CustomTooltip: React.FC<TooltipProps> = ({ active, payload, label, data })
 
 const calculateComplianceStats = (data: TrendData[]) => {
   if (!data || data.length === 0) {
-    return { total: 0, compliant: 0, warning: 0, exceeded: 0 };
+    return { 
+      totalRuns: 0, successfulRuns: 0, failedRuns: 0, successRate: '0.0%',
+      totalMetrics: 0, compliantMetrics: 0, warningMetrics: 0, exceededMetrics: 0,
+      compliantRate: '0.0%', warningRate: '0.0%', exceededRate: '0.0%', failedRate: '0.0%'
+    };
   }
+
   const stats = {
-    total: data.length,
-    compliant: 0,
-    warning: 0,
-    exceeded: 0
+    totalRuns: data.length,
+    successfulRuns: data.filter(d => d.status === '✅').length,
+    failedRuns: data.filter(d => d.status !== '✅').length,
+    totalMetrics: 0,
+    compliantMetrics: 0,
+    warningMetrics: 0,
+    exceededMetrics: 0,
   };
+
   data.forEach(item => {
-    let hasExceeded = false;
-    let hasWarning = false;
-    if (item.loadTime > BENCHMARKS.loadTime) hasExceeded = true;
-    else if (item.loadTime > BENCHMARKS.loadTime * 1.2) hasWarning = true;
-    if (item.shapeGenerationTime > BENCHMARKS.shapeGenerationTime) hasExceeded = true;
-    else if (item.shapeGenerationTime > BENCHMARKS.shapeGenerationTime * 1.2) hasWarning = true;
-    if (item.avgInteractionTime > BENCHMARKS.pieceInteractionTime) hasExceeded = true;
-    else if (item.avgInteractionTime > BENCHMARKS.pieceInteractionTime * 1.2) hasWarning = true;
-    if (item.fps < BENCHMARKS.minFps) hasExceeded = true;
-    if (hasExceeded) stats.exceeded++;
-    else if (hasWarning) stats.warning++;
-    else stats.compliant++;
+    METRIC_KEYS.forEach(key => {
+      stats.totalMetrics++;
+      const grade = getPerformanceGrade(key, item[key as keyof TrendData] as number);
+      if (grade.grade === '优秀' || grade.grade === '良好') {
+        stats.compliantMetrics++;
+      } else if (grade.grade === '警告' || grade.grade === '合格') {
+        stats.warningMetrics++;
+      } else if (grade.grade === '超标' || grade.grade === '不达标') {
+        stats.exceededMetrics++;
+      }
+    });
   });
-  return stats;
+
+  const formatPercentage = (numerator: number, denominator: number) => {
+    if (denominator === 0) return '0.0%';
+    return `${((numerator / denominator) * 100).toFixed(1)}%`;
+  };
+
+  return {
+    ...stats,
+    successRate: formatPercentage(stats.successfulRuns, stats.totalRuns),
+    failedRate: formatPercentage(stats.failedRuns, stats.totalRuns),
+    compliantRate: formatPercentage(stats.compliantMetrics, stats.totalMetrics),
+    warningRate: formatPercentage(stats.warningMetrics, stats.totalMetrics),
+    exceededRate: formatPercentage(stats.exceededMetrics, stats.totalMetrics),
+  };
 };
 
 
@@ -206,21 +227,64 @@ const PerformanceTrendPage: React.FC = () => {
   if (error) return <div className="flex justify-center items-center h-screen text-red-500">加载数据失败: {error}</div>;
 
   const complianceStats = calculateComplianceStats(trendData);
-  const formatPercentage = (numerator: number, denominator: number) => {
-    if (denominator === 0) return '0.0%';
-    return `${((numerator / denominator) * 100).toFixed(1)}%`;
-  };
 
   return (
     <main className="w-full min-h-screen bg-gray-50 p-4 sm:p-6 md:p-8" style={{ userSelect: 'text' }}>
       <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-lg p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Playwright 游戏性能测试报告</h1>
-          <p className="text-sm text-gray-600 mt-1 sm:mt-0">基于项目基准值的性能评估</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Generative Puzzle - 游戏性能测试平台</h1>
+          <p className="text-sm text-gray-600 mt-1 sm:mt-0">基于 Playwright 的自动化测试与性能分析</p>
         </div>
         
+        <section className="mb-6">
+          <h2 className="font-semibold text-gray-800 mb-3 text-lg">📈 测试执行统计</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-gray-100 p-4 rounded-lg border-l-4 border-gray-500">
+              <h3 className="font-semibold text-gray-800">📋 总运行次数</h3>
+              <p className="text-2xl font-bold text-gray-600">{complianceStats.totalRuns}</p>
+              <p className="text-sm text-gray-700">完成的测试流程</p>
+            </div>
+            <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+              <h3 className="font-semibold text-green-800">✅ 成功次数</h3>
+              <p className="text-2xl font-bold text-green-600">{complianceStats.successfulRuns}</p>
+              <p className="text-sm text-green-700">{complianceStats.successRate}</p>
+            </div>
+            <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-500">
+              <h3 className="font-semibold text-red-800">❌ 失败次数</h3>
+              <p className="text-2xl font-bold text-red-600">{complianceStats.failedRuns}</p>
+              <p className="text-sm text-red-700">{complianceStats.failedRate}</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="mb-6">
+          <h2 className="font-semibold text-gray-800 mb-3 text-lg">📊 性能指标合规分析</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-gray-100 p-4 rounded-lg border-l-4 border-gray-500">
+              <h3 className="font-semibold text-gray-800"> M 指标检测总数</h3>
+              <p className="text-2xl font-bold text-gray-600">{complianceStats.totalMetrics}</p>
+              <p className="text-sm text-gray-700">跨所有测试</p>
+            </div>
+            <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+              <h3 className="font-semibold text-green-800">✅ 达标指标</h3>
+              <p className="text-2xl font-bold text-green-600">{complianceStats.compliantMetrics}</p>
+              <p className="text-sm text-green-700">{complianceStats.compliantRate}</p>
+            </div>
+            <div className="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500">
+              <h3 className="font-semibold text-yellow-800">⚠️ 预警指标</h3>
+              <p className="text-2xl font-bold text-yellow-600">{complianceStats.warningMetrics}</p>
+              <p className="text-sm text-yellow-700">{complianceStats.warningRate}</p>
+            </div>
+            <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-500">
+              <h3 className="font-semibold text-red-800">🚨 超标指标</h3>
+              <p className="text-2xl font-bold text-red-600">{complianceStats.exceededMetrics}</p>
+              <p className="text-sm text-red-700">{complianceStats.exceededRate}</p>
+            </div>
+          </div>
+        </section>
+        
         <section className="mb-6 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-          <h2 className="font-semibold text-blue-800 mb-3 text-lg">📊 项目性能基准值</h2>
+          <h2 className="font-semibold text-blue-800 mb-3 text-lg">🎯 项目性能基准值</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm">
             {[
               { label: '加载时间', value: `≤${BENCHMARKS.loadTime}ms` },
@@ -233,29 +297,6 @@ const PerformanceTrendPage: React.FC = () => {
             ].map(item => (
               <div key={item.label} className="text-blue-700"><strong>{item.label}:</strong> {item.value}</div>
             ))}
-          </div>
-        </section>
-        
-        <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
-            <h3 className="font-semibold text-green-800">✅ 达标测试</h3>
-            <p className="text-2xl font-bold text-green-600">{complianceStats.compliant}</p>
-            <p className="text-sm text-green-700">{formatPercentage(complianceStats.compliant, complianceStats.total)}</p>
-          </div>
-          <div className="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500">
-            <h3 className="font-semibold text-yellow-800">⚠️ 预警测试</h3>
-            <p className="text-2xl font-bold text-yellow-600">{complianceStats.warning}</p>
-            <p className="text-sm text-yellow-700">{formatPercentage(complianceStats.warning, complianceStats.total)}</p>
-          </div>
-          <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-500">
-            <h3 className="font-semibold text-red-800">🚨 超标测试</h3>
-            <p className="text-2xl font-bold text-red-600">{complianceStats.exceeded}</p>
-            <p className="text-sm text-red-700">{formatPercentage(complianceStats.exceeded, complianceStats.total)}</p>
-          </div>
-          <div className="bg-gray-100 p-4 rounded-lg border-l-4 border-gray-500">
-            <h3 className="font-semibold text-gray-800">📋 总测试数</h3>
-            <p className="text-2xl font-bold text-gray-600">{complianceStats.total}</p>
-            <p className="text-sm text-gray-700">完成测试</p>
           </div>
         </section>
         
@@ -302,17 +343,17 @@ const PerformanceTrendPage: React.FC = () => {
             <h2 className="text-lg font-semibold mb-4 text-gray-800">系统指标趋势 (含基准线)</h2>
             <ResponsiveContainer width="100%" height={400}>
               <LineChart data={trendData} margin={{ top: 5, right: 30, left: 10, bottom: 50 }}>
-                <CartesianGrid strokeDasharray="3 3" />
+          <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="time" angle={-45} textAnchor="end" height={60} interval="preserveStartEnd" />
                 <YAxis yAxisId="fps" label={{ value: 'FPS', angle: -90, position: 'insideLeft' }} />
                 <YAxis yAxisId="memory" orientation="right" label={{ value: '内存 (MB)', angle: 90, position: 'insideRight' }} />
                 <Tooltip content={<CustomTooltip data={trendData} />} />
-                <Legend />
+          <Legend />
                 <ReferenceLine yAxisId="fps" y={BENCHMARKS.minFps} label="FPS基准" stroke="#06b6d4" strokeDasharray="3 3" />
                 <Line yAxisId="fps" type="monotone" dataKey="fps" name={METRIC_LABELS.fps} stroke="#06b6d4" strokeWidth={2} />
                 <Line yAxisId="memory" type="monotone" dataKey="memoryUsage" name={METRIC_LABELS.memoryUsage} stroke="#84cc16" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
+        </LineChart>
+      </ResponsiveContainer>
           </section>
         )}
 
@@ -329,20 +370,22 @@ const PerformanceTrendPage: React.FC = () => {
                   ))}
                   <th className="border-r border-gray-300 px-3 py-2 text-center font-bold text-gray-700">形状类型</th>
                   <th className="border-r border-gray-300 px-3 py-2 text-center font-bold text-gray-700">切割类型</th>
-                  <th className="px-3 py-2 text-center font-bold text-gray-700">切割次数</th>
-                </tr>
-              </thead>
-              <tbody>
+                  <th className="border-r border-gray-300 px-3 py-2 text-center font-bold text-gray-700">切割次数</th>
+                  <th className="px-3 py-2 text-center font-bold text-gray-700">拼图数量</th>
+              </tr>
+            </thead>
+            <tbody>
                 {pagedData.map((item, index) => (
                   <tr key={index} className="hover:bg-gray-50">
                     <td className="sticky left-0 bg-white border-r border-b border-gray-300 px-3 py-2 font-mono text-sm text-gray-800">{item.fullTime}</td>
                     <td className="border-r border-b border-gray-300 px-3 py-2 text-center text-lg">{item.status}</td>
                     {METRIC_KEYS.map(key => {
                       const grade = getPerformanceGrade(key, item[key as keyof TrendData] as number);
+                      const value = item[key as keyof TrendData] as number;
                       return (
                         <td key={key} className="border-r border-b border-gray-300 px-3 py-2 text-center">
                           <div className={`px-2 py-1 rounded text-xs font-medium ${grade.bg} ${grade.color}`}>
-                            {item[key as keyof TrendData]}
+                            {key === 'avgInteractionTime' && value ? value.toFixed(2) : value}
                           </div>
                           <div className={`text-xs mt-1 ${grade.color}`}>{grade.grade}</div>
                         </td>
@@ -350,36 +393,42 @@ const PerformanceTrendPage: React.FC = () => {
                     })}
                     <td className="border-r border-b border-gray-300 px-3 py-2 text-center text-gray-800">{item.shapeType}</td>
                     <td className="border-r border-b border-gray-300 px-3 py-2 text-center text-gray-800">{item.cutType}</td>
-                    <td className="border-b border-gray-300 px-3 py-2 text-center text-gray-800">{item.cutCount}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {/* 分页控件 */}
-          <div className="flex items-center justify-between mt-4">
-            <span className="text-sm text-gray-600">
-              第 {currentPage}/{totalPages} 页，共 {trendData.length} 条
-            </span>
-            <div className="flex space-x-1">
-              <button
-                className="px-2 py-1 rounded border text-sm text-gray-800 disabled:opacity-50"
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              >上一页</button>
-              {Array.from({ length: totalPages }, (_, i) => (
-                <button
-                  key={i}
-                  className={`px-2 py-1 rounded border text-sm ${currentPage === i + 1 ? 'bg-blue-500 text-white' : ''}`}
-                  onClick={() => setCurrentPage(i + 1)}
-                >{i + 1}</button>
+                    <td className="border-r border-b border-gray-300 px-3 py-2 text-center text-gray-800">{item.cutCount}</td>
+                    <td className="border-b border-gray-300 px-3 py-2 text-center text-gray-800">{item.count}</td>
+                </tr>
               ))}
+            </tbody>
+          </table>
+        </div>
+          {/* 分页控件 */}
+          <div className="flex justify-center items-center space-x-2 mt-4">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+            >
+              上一页
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNumber => (
               <button
-                className="px-2 py-1 rounded border text-sm text-gray-800 disabled:opacity-50"
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              >下一页</button>
-            </div>
+                key={pageNumber}
+                onClick={() => setCurrentPage(pageNumber)}
+                className={`px-4 py-2 text-sm font-medium border rounded-md ${
+                  currentPage === pageNumber
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'text-gray-600 bg-white border-gray-300 hover:bg-gray-100'
+                }`}
+              >
+                {pageNumber}
+              </button>
+            ))}
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+            >
+              下一页
+            </button>
           </div>
         </section>
 

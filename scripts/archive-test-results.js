@@ -43,17 +43,6 @@ function getStatusIcon(value, base, type = 'max') {
   return value < base ? '⚠️' : '✅';
 }
 
-function parseMetricsFromStdout(stdout) {
-  const match = stdout.match(/---PERF_METRICS_START---([\s\S]*)---PERF_METRICS_END---/);
-  if (!match || !match[1]) return null;
-  try {
-    return JSON.parse(match[1]);
-  } catch (e) {
-    console.error('Failed to parse performance metrics from stdout:', e);
-    return null;
-  }
-}
-
 function parseTestStepsFromStdout(stdout) {
     const stepRegex = /步骤\s\d+:.*/g;
     const matches = stdout.match(stepRegex);
@@ -83,12 +72,32 @@ async function generateReport(suite) {
         return;
     }
 
-    const stdout = stripAnsiCodes(result.stdout.map(s => s.text || '').join(''));
-    const metrics = parseMetricsFromStdout(stdout);
-    if (!metrics) {
-        console.log('Could not find performance metrics in test output. Skipping report generation.');
-        return;
+    // 从测试附件中查找性能指标
+    const performanceAttachment = result.attachments.find(
+      (att) => att.name === 'performance-metrics'
+    );
+
+    if (!performanceAttachment || !performanceAttachment.body) {
+      console.log('Could not find performance metrics in test attachments. Skipping report generation.');
+      return;
     }
+    
+    let metrics;
+    try {
+      // Playwright的JSON报告会将附件body进行base64编码，所以需要先解码
+      const decodedBody = Buffer.from(performanceAttachment.body, 'base64').toString('utf8');
+      metrics = JSON.parse(decodedBody);
+    } catch (e) {
+      console.error('Failed to parse performance metrics from attachment:', e);
+      return;
+    }
+    
+    // 计算平均交互时间
+    if (metrics.pieceInteractionTimes && metrics.pieceInteractionTimes.length > 0) {
+      metrics.avgInteractionTime = metrics.pieceInteractionTimes.reduce((a, b) => a + b, 0) / metrics.pieceInteractionTimes.length;
+    }
+
+    const stdout = stripAnsiCodes(result.stdout.map(s => s.text || '').join(''));
     
     const timestamp = dayjs().tz('Asia/Hong_Kong').format('YYYY-MM-DD HH:mm:ss');
     const fileTimestamp = dayjs().tz('Asia/Hong_Kong').format('YYYYMMDDHHmmss');
@@ -99,7 +108,7 @@ async function generateReport(suite) {
     const testStatus = result.status === 'passed' ? '通过' : '失败';
 
     const avgFps = metrics.fps && metrics.fps.length > 0 ? (metrics.fps.reduce((a, b) => a + b, 0) / metrics.fps.length) : NaN;
-    const memMB = metrics.memoryUsage / 1024 / 1024;
+    const memMB = metrics.memoryUsage;
     
     const summaryData = {
         fileName: reportFileName,
@@ -112,6 +121,8 @@ async function generateReport(suite) {
             puzzleGenerationTime: metrics.puzzleGenerationTime,
             scatterTime: metrics.scatterTime,
             avgInteractionTime: metrics.avgInteractionTime,
+            puzzleInteractionDuration: metrics.puzzleInteractionDuration,
+            totalTestTime: metrics.totalTestTime,
             avgFps: isNaN(avgFps) ? undefined : parseFloat(avgFps.toFixed(1)),
             memoryUsage: isNaN(memMB) ? undefined : parseFloat(memMB.toFixed(2)),
         },
@@ -232,32 +243,6 @@ async function updateIndex() {
 
     reportsData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-    const recentReports = reportsData.slice(0, 10).reverse();
-
-    const formatForChart = (value) => {
-        if (value === undefined || value === null || isNaN(value)) return 0;
-        return value;
-    };
-    
-    // Mermaid line chart for performance trends
-    const xLabels = recentReports.map(d => `"${dayjs(d.timestamp).tz('Asia/Hong_Kong').format('MM-DD HH:mm')}"`).join(',');
-    const loadTimes = recentReports.map(d => formatForChart(d.metrics.loadTime)).join(',');
-    const shapeTimes = recentReports.map(d => formatForChart(d.metrics.shapeGenerationTime)).join(',');
-    const interactionTimes = recentReports.map(d => formatForChart(d.metrics.avgInteractionTime?.toFixed(0))).join(',');
-
-    const mermaidChart = recentReports.length > 0 ? `
-### 关键指标趋势图 (越低越好)
-\`\`\`mermaid
-line
-    title 关键性能趋势
-    x-axis ${xLabels}
-    y-axis ms
-    "加载(ms)" ${loadTimes}
-    "形状(ms)" ${shapeTimes}
-    "交互(ms)" ${interactionTimes}
-\`\`\`
-` : '';
-
     let trendTable = `
 ### 详细历史数据
 | 测试报告 | 状态 | 块数 | 加载 (ms) | 形状 (ms) | 切割 (ms) | 散开 (ms) | 交互 (ms) | FPS | 内存 (MB) |
@@ -272,8 +257,6 @@ line
 
     const indexContent = `
 # Playwright 测试报告索引
-
-${mermaidChart}
 
 ${trendTable}
 
@@ -329,8 +312,4 @@ async function main() {
 main().catch(err => {
     console.error("Error during report archival:", err);
     process.exit(1);
-}); 
-const { execSync } = require('child_process');
-execSync('node scripts/generate-performance-trend-data.js', { stdio: 'inherit' });
-// 如需同步到 public 目录：
-// execSync('cp playwright-test-logs/performance_trend_data.json public/performance_trend_data.json');
+});

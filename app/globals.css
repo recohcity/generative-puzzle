@@ -95,6 +95,7 @@
   touch-action: pan-x pan-y; /* 允许基本的平移触摸操作，但阻止其他手势 */
   -webkit-overflow-scrolling: touch; /* 使用更标准的设置 */
   -webkit-user-select: none; /* 禁止用户选择文本以避免相关手势 */
+  user-select: none;
   -webkit-touch-callout: none; /* 禁止长按链接弹出菜单 */
 }
 
@@ -474,9 +475,9 @@ svg {
   @supports (-webkit-appearance:none) {
     svg {
       /* 在Safari中使用驼峰命名的属性 */
-      strokeWidth: inherit;
-      strokeLinecap: inherit;
-      strokeLinejoin: inherit;
+      stroke-width: inherit;
+      stroke-linecap: inherit;
+      stroke-linejoin: inherit;
     }
     
     /* 解决Safari中的固定定位问题 */

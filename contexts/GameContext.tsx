@@ -54,9 +54,27 @@ function gameReducer(state: GameState, action: GameActionType): GameState {
         showHint: false
       }
     case "SET_COMPLETED_PIECES":
-      return { ...state, completedPieces: action.payload }
+      // 检查拼图是否完成
+      const isNowCompleted = action.payload.length > 0 && action.payload.length === state.puzzle?.length;
+      return { 
+        ...state, 
+        completedPieces: action.payload,
+        isCompleted: isNowCompleted
+      };
     case "ADD_COMPLETED_PIECE":
-      return { ...state, completedPieces: [...state.completedPieces, action.payload] }
+      // 如果已经包含，直接返回，避免重复添加
+      if (state.completedPieces.includes(action.payload)) {
+        return state;
+      }
+      const newCompletedPieces = [...state.completedPieces, action.payload];
+      // 添加后，立刻检查是否所有拼图都已完成
+      const isGameFinished = state.puzzle ? newCompletedPieces.length === state.puzzle.length : false;
+      
+      return { 
+        ...state, 
+        completedPieces: newCompletedPieces,
+        isCompleted: isGameFinished // 直接在这里更新完成状态
+      };
     case "SET_IS_COMPLETED":
       return { ...state, isCompleted: action.payload }
     case "SET_IS_SCATTERED":
@@ -193,6 +211,50 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [state, dispatch] = useReducer(gameReducer, initialState)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const backgroundCanvasRef = useRef<HTMLCanvasElement>(null)
+
+  const rotatePiece = useCallback(
+    (clockwise: boolean) => {
+      console.log(`[GameContext] rotatePiece called, clockwise: ${clockwise}`);
+      dispatch({ type: "ROTATE_PIECE", payload: { clockwise } })
+      console.log('[GameContext] ROTATE_PIECE dispatched');
+    },
+    [dispatch],
+  )
+
+  // 专用于测试的接口，直接修改游戏状态
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      (window as any).__gameStateForTests__ = state;
+      (window as any).selectPieceForTest = (pieceIndex: number) => {
+        // 只设置选中状态，保持职责单一
+        dispatch({ type: 'SET_SELECTED_PIECE', payload: pieceIndex });
+        console.log(`[Test] 强制选中拼图块: ${pieceIndex}`);
+      };
+      (window as any).markPieceAsCompletedForTest = (pieceIndex: number) => {
+        dispatch({ type: 'ADD_COMPLETED_PIECE', payload: pieceIndex });
+        console.log(`[Test] 强制标记拼图块为完成: ${pieceIndex}`);
+      };
+      // 暴露旋转函数，用于测试
+      (window as any).rotatePieceForTest = (clockwise: boolean) => {
+        // 直接调用内部的 rotatePiece 函数
+        rotatePiece(clockwise);
+      };
+      (window as any).resetPiecePositionForTest = (pieceIndex: number) => {
+        dispatch({ type: 'RESET_PIECE_TO_ORIGINAL', payload: pieceIndex });
+        console.log(`[Test] 强制重置拼图块位置: ${pieceIndex}`);
+      };
+    }
+    // 组件卸载时清理
+    return () => {
+      if (process.env.NODE_ENV === 'development') {
+        delete (window as any).__gameStateForTests__;
+        delete (window as any).selectPieceForTest;
+        delete (window as any).markPieceAsCompletedForTest;
+        delete (window as any).rotatePieceForTest;
+        delete (window as any).resetPiecePositionForTest;
+      }
+    }
+  }, [state, rotatePiece]); // 添加 rotatePiece 到依赖项
 
   // 自动完成判定副作用：全部拼图完成时自动设置 isCompleted
   useEffect(() => {
@@ -471,15 +533,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }, 300); // 散开完成后等待300ms再开始回弹动画，给用户一个视觉缓冲
     }
   }, [state.puzzle, state.isScattered, state.canvasWidth, state.canvasHeight, state.originalShape, dispatch])
-
-  const rotatePiece = useCallback(
-    (clockwise: boolean) => {
-      console.log(`[GameContext] rotatePiece called, clockwise: ${clockwise}`);
-      dispatch({ type: "ROTATE_PIECE", payload: { clockwise } })
-      console.log('[GameContext] ROTATE_PIECE dispatched');
-    },
-    [dispatch],
-  )
 
   const showHintOutline = useCallback(() => {
     dispatch({ type: "SHOW_HINT" })
