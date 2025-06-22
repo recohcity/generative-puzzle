@@ -85,7 +85,7 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 8387,
+                  "duration": 29601,
                   "errors": [],
                   "stdout": [
                     {
@@ -110,7 +110,7 @@
                       "text": "拼图块 0 旋转后角度: 0 目标角度: 0\n"
                     },
                     {
-                      "text": "拼图块 0 重置后位置: {\"x\":636.1615240847913,\"y\":693.916268717118,\"rotation\":0} 目标: {\"x\":636.1615240847913,\"y\":693.916268717118,\"rotation\":0}\n"
+                      "text": "拼图块 0 重置后位置: {\"x\":364.50635023454055,\"y\":481.9733478830007,\"rotation\":0} 目标: {\"x\":364.50635023454055,\"y\":481.9733478830007,\"rotation\":0}\n"
                     },
                     {
                       "text": "选中拼图块 1\n"
@@ -119,7 +119,7 @@
                       "text": "拼图块 1 旋转后角度: 0 目标角度: 0\n"
                     },
                     {
-                      "text": "拼图块 1 重置后位置: {\"x\":568.8741578463586,\"y\":704.2638536294329,\"rotation\":0} 目标: {\"x\":568.8741578463586,\"y\":704.2638536294329,\"rotation\":0}\n"
+                      "text": "拼图块 1 重置后位置: {\"x\":451.5094478954377,\"y\":405.75192495609855,\"rotation\":0} 目标: {\"x\":451.5094478954377,\"y\":405.75192495609855,\"rotation\":0}\n"
                     },
                     {
                       "text": "选中拼图块 2\n"
@@ -128,7 +128,7 @@
                       "text": "拼图块 2 旋转后角度: 0 目标角度: 0\n"
                     },
                     {
-                      "text": "拼图块 2 重置后位置: {\"x\":473.9241846012705,\"y\":457.14782622287146,\"rotation\":0} 目标: {\"x\":473.9241846012705,\"y\":457.14782622287146,\"rotation\":0}\n"
+                      "text": "拼图块 2 重置后位置: {\"x\":493.2203127919273,\"y\":734.7450801461424,\"rotation\":0} 目标: {\"x\":493.2203127919273,\"y\":734.7450801461424,\"rotation\":0}\n"
                     },
                     {
                       "text": "选中拼图块 3\n"
@@ -137,7 +137,7 @@
                       "text": "拼图块 3 旋转后角度: 0 目标角度: 0\n"
                     },
                     {
-                      "text": "拼图块 3 重置后位置: {\"x\":529.431310039304,\"y\":308.0918565220005,\"rotation\":0} 目标: {\"x\":529.431310039304,\"y\":308.0918565220005,\"rotation\":0}\n"
+                      "text": "拼图块 3 重置后位置: {\"x\":362.05205989991305,\"y\":346.47565622922394,\"rotation\":0} 目标: {\"x\":362.05205989991305,\"y\":346.47565622922394,\"rotation\":0}\n"
                     },
                     {
                       "text": "选中拼图块 4\n"
@@ -146,7 +146,7 @@
                       "text": "拼图块 4 旋转后角度: 0 目标角度: 0\n"
                     },
                     {
-                      "text": "拼图块 4 重置后位置: {\"x\":481.7613361985353,\"y\":555.2321795991877,\"rotation\":0} 目标: {\"x\":481.7613361985353,\"y\":555.2321795991877,\"rotation\":0}\n"
+                      "text": "拼图块 4 重置后位置: {\"x\":668.2723323864057,\"y\":687.0895890541491,\"rotation\":0} 目标: {\"x\":668.2723323864057,\"y\":687.0895890541491,\"rotation\":0}\n"
                     },
                     {
                       "text": "选中拼图块 5\n"
@@ -155,7 +155,7 @@
                       "text": "拼图块 5 旋转后角度: 0 目标角度: 0\n"
                     },
                     {
-                      "text": "拼图块 5 重置后位置: {\"x\":750.4838298916209,\"y\":566.1532974185071,\"rotation\":0} 目标: {\"x\":750.4838298916209,\"y\":566.1532974185071,\"rotation\":0}\n"
+                      "text": "拼图块 5 重置后位置: {\"x\":704.6769224959979,\"y\":414.0054530300595,\"rotation\":0} 目标: {\"x\":704.6769224959979,\"y\":414.0054530300595,\"rotation\":0}\n"
                     },
                     {
                       "text": "选中拼图块 6\n"
@@ -164,7 +164,7 @@
                       "text": "拼图块 6 旋转后角度: 0 目标角度: 0\n"
                     },
                     {
-                      "text": "拼图块 6 重置后位置: {\"x\":344.58873136728704,\"y\":648.6822497175169,\"rotation\":0} 目标: {\"x\":344.58873136728704,\"y\":648.6822497175169,\"rotation\":0}\n"
+                      "text": "拼图块 6 重置后位置: {\"x\":566.9756675868101,\"y\":689.4629849668191,\"rotation\":0} 目标: {\"x\":566.9756675868101,\"y\":689.4629849668191,\"rotation\":0}\n"
                     },
                     {
                       "text": "选中拼图块 7\n"
@@ -173,7 +173,7 @@
                       "text": "拼图块 7 旋转后角度: 0 目标角度: 0\n"
                     },
                     {
-                      "text": "拼图块 7 重置后位置: {\"x\":368.2436740454643,\"y\":323.33300638826466,\"rotation\":0} 目标: {\"x\":368.2436740454643,\"y\":323.33300638826466,\"rotation\":0}\n"
+                      "text": "拼图块 7 重置后位置: {\"x\":722.2972268364117,\"y\":508.4240780434903,\"rotation\":0} 目标: {\"x\":722.2972268364117,\"y\":508.4240780434903,\"rotation\":0}\n"
                     },
                     {
                       "text": "选中拼图块 8\n"
@@ -182,7 +182,7 @@
                       "text": "拼图块 8 旋转后角度: 0 目标角度: 0\n"
                     },
                     {
-                      "text": "拼图块 8 重置后位置: {\"x\":269.73849150974235,\"y\":432.2943035140754,\"rotation\":0} 目标: {\"x\":269.73849150974235,\"y\":432.2943035140754,\"rotation\":0}\n"
+                      "text": "拼图块 8 重置后位置: {\"x\":280.7178534948042,\"y\":657.4687904400053,\"rotation\":0} 目标: {\"x\":280.7178534948042,\"y\":657.4687904400053,\"rotation\":0}\n"
                     },
                     {
                       "text": "选中拼图块 9\n"
@@ -191,7 +191,7 @@
                       "text": "拼图块 9 旋转后角度: 0 目标角度: 0\n"
                     },
                     {
-                      "text": "拼图块 9 重置后位置: {\"x\":629.7083138520009,\"y\":327.92663355887277,\"rotation\":0} 目标: {\"x\":629.7083138520009,\"y\":327.92663355887277,\"rotation\":0}\n"
+                      "text": "拼图块 9 重置后位置: {\"x\":380.4429514769163,\"y\":735.7375535200702,\"rotation\":0} 目标: {\"x\":380.4429514769163,\"y\":735.7375535200702,\"rotation\":0}\n"
                     },
                     {
                       "text": "选中拼图块 10\n"
@@ -200,7 +200,7 @@
                       "text": "拼图块 10 旋转后角度: 0 目标角度: 0\n"
                     },
                     {
-                      "text": "拼图块 10 重置后位置: {\"x\":730.5959805177073,\"y\":386.03990117059385,\"rotation\":0} 目标: {\"x\":730.5959805177073,\"y\":386.03990117059385,\"rotation\":0}\n"
+                      "text": "拼图块 10 重置后位置: {\"x\":607.2357749479386,\"y\":347.2079158996042,\"rotation\":0} 目标: {\"x\":607.2357749479386,\"y\":347.2079158996042,\"rotation\":0}\n"
                     },
                     {
                       "text": "选中拼图块 11\n"
@@ -209,7 +209,7 @@
                       "text": "拼图块 11 旋转后角度: 0 目标角度: 0\n"
                     },
                     {
-                      "text": "拼图块 11 重置后位置: {\"x\":512.2912999446595,\"y\":744.6133359082509,\"rotation\":0} 目标: {\"x\":512.2912999446595,\"y\":744.6133359082509,\"rotation\":0}\n"
+                      "text": "拼图块 11 重置后位置: {\"x\":289.0641094696595,\"y\":536.012529522849,\"rotation\":0} 目标: {\"x\":289.0641094696595,\"y\":536.012529522849,\"rotation\":0}\n"
                     },
                     {
                       "text": "选中拼图块 12\n"
@@ -218,7 +218,7 @@
                       "text": "拼图块 12 旋转后角度: 0 目标角度: 0\n"
                     },
                     {
-                      "text": "拼图块 12 重置后位置: {\"x\":704.647364180483,\"y\":663.3451793834807,\"rotation\":0} 目标: {\"x\":704.647364180483,\"y\":663.3451793834807,\"rotation\":0}\n"
+                      "text": "拼图块 12 重置后位置: {\"x\":532.4243324856436,\"y\":363.29866414415136,\"rotation\":0} 目标: {\"x\":532.4243324856436,\"y\":363.29866414415136,\"rotation\":0}\n"
                     },
                     {
                       "text": "选中拼图块 13\n"
@@ -227,7 +227,7 @@
                       "text": "拼图块 13 旋转后角度: 0 目标角度: 0\n"
                     },
                     {
-                      "text": "拼图块 13 重置后位置: {\"x\":271.17426908138884,\"y\":520.0244234419465,\"rotation\":0} 目标: {\"x\":271.17426908138884,\"y\":520.0244234419465,\"rotation\":0}\n"
+                      "text": "拼图块 13 重置后位置: {\"x\":721.1413859530545,\"y\":573.3597215303841,\"rotation\":0} 目标: {\"x\":721.1413859530545,\"y\":573.3597215303841,\"rotation\":0}\n"
                     },
                     {
                       "text": "步骤 7: 等待所有拼图块在状态中被标记为完成...\n"
@@ -250,13 +250,18 @@
                   ],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2025-06-22T04:48:35.065Z",
+                  "startTime": "2025-06-22T07:29:36.339Z",
                   "annotations": [],
                   "attachments": [
                     {
                       "name": "performance-metrics",
                       "contentType": "application/json",
-                      "body": "ewogICJsb2FkVGltZSI6IDY3MCwKICAic2hhcGVHZW5lcmF0aW9uVGltZSI6IDU5NiwKICAicHV6emxlR2VuZXJhdGlvblRpbWUiOiAzODIsCiAgInNjYXR0ZXJUaW1lIjogMTMwLAogICJwaWVjZUludGVyYWN0aW9uVGltZXMiOiBbCiAgICAzOTAsCiAgICA4NTcsCiAgICA1NywKICAgIDMzNSwKICAgIDE4MiwKICAgIDMyOSwKICAgIDEyMywKICAgIDI0NSwKICAgIDU0LAogICAgMzg1LAogICAgMjcwLAogICAgMjY2LAogICAgMjQwLAogICAgMzM3CiAgXSwKICAibWVtb3J5VXNhZ2UiOiA1MS4wMjE1NzU5Mjc3MzQzNzUsCiAgImZwcyI6IFsKICAgIDI3LAogICAgMzQsCiAgICAzNywKICAgIDQ5LAogICAgNTkKICBdLAogICJ0b3RhbFRlc3RUaW1lIjogNTMwNywKICAicHV6emxlSW50ZXJhY3Rpb25EdXJhdGlvbiI6IDQwNzAsCiAgInNoYXBlVHlwZSI6ICLkupHmnLUiLAogICJjdXRUeXBlIjogIuaWnOe6vyIsCiAgImN1dENvdW50IjogOCwKICAicGllY2VDb3VudCI6IDE0Cn0="
+                      "body": "ewogICJsb2FkVGltZSI6IDMwMTAsCiAgInNoYXBlR2VuZXJhdGlvblRpbWUiOiAzMjUsCiAgInB1enpsZUdlbmVyYXRpb25UaW1lIjogODE2LAogICJzY2F0dGVyVGltZSI6IDI4MCwKICAicGllY2VJbnRlcmFjdGlvblRpbWVzIjogWwogICAgMTY2NCwKICAgIDg0NywKICAgIDEzMzEsCiAgICA4NTcsCiAgICAzODMsCiAgICA1MDMsCiAgICA1NDYsCiAgICAxMDc2LAogICAgMTAzMywKICAgIDE2ODksCiAgICAxMTcxLAogICAgNDYyLAogICAgMTM2OSwKICAgIDEyNzQKICBdLAogICJtZW1vcnlVc2FnZSI6IDU3LjUwNjU2MTI3OTI5Njg3NSwKICAiZnBzIjogWwogICAgMjUsCiAgICAyOCwKICAgIDQyLAogICAgNTcsCiAgICA1OSwKICAgIDMxLAogICAgNTYsCiAgICA1OSwKICAgIDU3LAogICAgNDgsCiAgICAzOSwKICAgIDU2LAogICAgNDgsCiAgICA1MywKICAgIDQzCiAgXSwKICAidG90YWxUZXN0VGltZSI6IDE1OTUzLAogICJwdXp6bGVJbnRlcmFjdGlvbkR1cmF0aW9uIjogMTQyMDUsCiAgInNoYXBlVHlwZSI6ICLkupHmnLUiLAogICJjdXRUeXBlIjogIuaWnOe6vyIsCiAgImN1dENvdW50IjogOCwKICAicGllY2VDb3VudCI6IDE0Cn0="
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/recoh/Documents/myWork/Project/generative-puzzle/test-results/full_game_flow-完整自动化游戏流程/trace.zip"
                     }
                   ]
                 }
@@ -274,8 +279,8 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2025-06-22T04:48:33.766Z",
-    "duration": 10326.144,
+    "startTime": "2025-06-22T07:29:34.566Z",
+    "duration": 38370.151000000005,
     "expected": 1,
     "skipped": 0,
     "unexpected": 0,

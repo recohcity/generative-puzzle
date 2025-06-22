@@ -1,166 +1,137 @@
 # 项目结构
 
-本文档描述了生成式拼图项目的文件结构和组织。
+本文档详细描述了"生成式拼图"项目的文件结构和组织，旨在提供一个清晰、完整的模块指南，方便团队成员快速理解项目全貌，并追踪文件变更。
 
-## 目录结构
+## 生成式拼图游戏-项目模块说明
 
-```
-generative-puzzle/
-├── app/                      # Next.js App Router 文件
-│   ├── globals.css           # 全局样式
-│   ├── layout.tsx            # 根布局组件
-│   └── page.tsx              # 主页面组件 (动态加载 GameInterfaceComponent)
-├── components/               # UI组件
-│   ├── ui/                   # 基础UI组件 (Shadcn UI)
-│   ├── loading/              # 加载相关组件
-│   │   ├── LoadingScreen.tsx # 动态加载屏幕组件
-│   │   └── LoadingScreenStatic.tsx # 静态加载屏幕组件
-│   ├── layouts/              # 特定于设备的布局组件
-│   │   ├── DesktopLayout.tsx
-│   │   ├── PhonePortraitLayout.tsx
-│   │   └── PhoneLandscapeLayout.tsx
-│   ├── GameInterface.tsx     # 游戏界面路由和状态管理器
-│   ├── PuzzleCanvas.tsx      # 画布渲染组件
-│   ├── ShapeControls.tsx     # 形状控制组件
-│   ├── PuzzleControlsCutType.tsx   # 切割类型控制组件
-│   ├── PuzzleControlsCutCount.tsx  # 切割次数控制组件
-│   ├── PuzzleControlsScatter.tsx   # 拼图散开控制组件
-│   ├── PuzzleControlsGamepad.tsx   # 手机控制Tab组件 (含重置/控制按钮)
-│   ├── ActionButtons.tsx     # 可复用的提示/旋转按钮组件
-│   ├── DesktopPuzzleSettings.tsx # 桌面端拼图设置区域组件
-│   ├── GlobalUtilityButtons.tsx  # 可复用的全局控制按钮 (音乐/全屏)
-│   └── theme-provider.tsx    # 主题提供者组件 (可能未使用?)
-├── contexts/                 # 状态管理
-│   └── GameContext.tsx       # 游戏状态管理
-├── docs/                     # 项目文档
-│   ├── CONFIGURATION.MD      # 游戏配置说明文档
-│   ├── DIFFICULTY-DESIGN.MD  # 难度设计详细文档
-│   ├── PROJECT_STRUCTURE.MD  # 项目结构文档 (本文档)
-│   └── PROMOTION.MD          # 商业推广文档
-├── hooks/                    # 自定义React钩子
-│   ├── use-mobile.tsx        # 移动设备检测
-│   └── use-toast.ts          # Toast通知
-├── lib/                      # 通用工具函数
-│   └── utils.ts              # 工具函数 (主要为 cn)
-├── public/                   # 静态资源
-│   ├── bg.jpg                # 游戏背景图
-│   └── puzzle-pieces.mp3     # 循环背景音乐
-├── screenshot/               # 截图输出目录
-├── test-results/             # 测试结果输出目录
-├── types/                    # 类型定义
-│   └── types.ts              # 共享类型
-└── utils/                    # 游戏逻辑工具
-    ├── constants.ts          # 常量定义
-    ├── helper.ts             # 通用辅助函数
-    ├── shape/                # 形状相关工具
-    │   ├── ShapeGenerator.ts # 形状生成器
-    │   └── geometryUtils.ts  # 几何计算工具
-    ├── geometry/             # 几何计算工具
-    │   ├── __tests__/        # 几何计算工具的单元测试
-    │   │   └── puzzleGeometry.test.ts
-    │   └── puzzleGeometry.ts # 拼图相关的几何计算辅助函数
-    ├── puzzle/               # 拼图相关工具
-    │   ├── PuzzleGenerator.ts# 拼图生成器
-    │   ├── ScatterPuzzle.ts  # 拼图打散工具
-    │   ├── cutGenerators.ts  # 切割线生成器
-    │   └── puzzleUtils.ts    # 拼图操作工具
-    └── rendering/            # 渲染相关工具
-        ├── __tests__/        # 渲染工具的单元测试
-        │   ├── colorUtils.test.ts
-        │   └── puzzleDrawing.test.ts
-        ├── puzzleDrawing.ts  # Canvas 绘制拼图相关的函数
-        └── soundEffects.ts   # 音效处理
-```
+### 根目录文件
 
-## 核心模块说明
+-   `README.md`: 项目的入口文档，包含项目简介、安装、启动和开发指南。
+-   `package.json`: 定义项目依赖、脚本（`scripts`）和元数据。
+-   `package-lock.json`: 锁定项目依赖的具体版本，确保环境一致性。
+-   `next.config.mjs`: Next.js 框架的配置文件。
+-   `tailwind.config.ts`: Tailwind CSS 的配置文件，用于定义主题、插件和 JIT 编译器选项。
+-   `postcss.config.mjs`: PostCSS 的配置文件，与 Tailwind CSS 配合使用。
+-   `tsconfig.json`: TypeScript 编译器的配置文件。
+-   `components.json`: `shadcn/ui` 的配置文件，记录了已安装的UI组件信息。
+-   `playwright.config.ts`: Playwright E2E 测试框架的配置文件。
+-   `jest.config.js`: Jest 单元测试框架的配置文件。
+-   `CHANGELOG.md`: 项目的版本历史和变更记录。
 
-### app 目录
+### `app/` - Next.js 应用目录
 
-Next.js 15 应用路由系统的入口点。
+Next.js 15 App Router 的核心目录，负责应用的路由、页面和 API。
 
-- `page.tsx`: 应用的主页面，负责加载逻辑和动态导入主游戏界面(`GameInterface.tsx`)
-- `layout.tsx`: 应用的布局组件，提供全局上下文和主题
-- `globals.css`: 全局样式定义
+-   **`app/page.tsx`**: 应用的主页（'/'），是用户访问的第一个页面。它负责处理初始加载逻辑，并动态导入核心游戏界面 `GameInterface`。
+-   **`app/layout.tsx`**: 应用的根布局，包裹所有页面，通常包含 `<html>` 和 `<body>` 标签，并集成全局 Context Providers（如 `ThemeProvider`）。
+-   **`app/globals.css`**: 全局 CSS 样式文件，用于定义基础样式和 Tailwind CSS 指令。
+-   **`app/test/page.tsx`**: (**新增**) 性能测试仪表盘页面 (`'/test'`)。此页面通过请求 `/api/performance-trend` API，动态地、可视化地展示历史性能测试数据和趋势。
+-   **`app/api/performance-trend/route.ts`**: (**新增**) 一个实时的 API 端点。它负责在每次被请求时，动态地扫描 `playwright-test-logs/` 目录，实时解析所有 Markdown 格式的测试报告，并将聚合后的数据以 JSON 格式返回给前端。
 
-### components 目录
+### `components/` - React 组件库
 
-包含所有React组件，包括游戏界面和UI元素。
+存放项目中所有可复用的 React 组件。
 
-- `loading/`: 包含 `LoadingScreen.tsx` 和 `LoadingScreenStatic.tsx` 负责加载体验。
-- `layouts/`: 包含针对不同设备/方向的布局组件 (`DesktopLayout`, `PhonePortraitLayout`, `PhoneLandscapeLayout`)。
-- `GameInterface.tsx`: **主要的游戏界面路由和状态管理组件**，负责设备检测、状态管理，并根据设备渲染对应的布局组件。
-- `PuzzleCanvas.tsx`: 核心画布组件，**重构后主要负责引入并编排各种自定义钩子，处理渲染并绑定交互事件。**
-- `ShapeControls.tsx`: 形状生成控制面板。
-- `PuzzleControlsCutType.tsx`: 切割类型控制面板。
-- `PuzzleControlsCutCount.tsx`: 切割次数控制面板。
-- `PuzzleControlsScatter.tsx`: 拼图散开控制面板。
-- `PuzzleControlsGamepad.tsx`: 手机"控制"选项卡的内容，包含 `ActionButtons` 和重置按钮。
-- `ActionButtons.tsx`: 可复用的提示和旋转按钮。
-- `DesktopPuzzleSettings.tsx`: 桌面端拼图设置区域的组件集合。
-- `GlobalUtilityButtons.tsx`: 可复用的音乐和全屏按钮。
-- `theme-provider.tsx`: 提供主题切换功能 (可能未使用?)。
-- `ui/`: 基于Shadcn UI的基础组件库。
+-   **`components/GameInterface.tsx`**: 核心游戏界面，作为设备检测的路由，根据屏幕尺寸和方向动态渲染 `DesktopLayout`、`PhonePortraitLayout` 或 `PhoneLandscapeLayout`。
+-   **`components/PuzzleCanvas.tsx`**: 核心游戏画布。重构后，此组件主要负责编排各种自定义钩子（如 `usePuzzleInteractions`），处理 Canvas 的渲染逻辑，并绑定所有用户交互事件。
+-   **`components/ActionButtons.tsx`**: 包含游戏操作按钮（如旋转、提示、重置）的组件。
+-   **`components/DesktopPuzzleSettings.tsx`**: 桌面端专用的游戏设置面板组件。
+-   **`components/GlobalUtilityButtons.tsx`**: 全局工具按钮，如全屏、切换主题等。
+-   **`components/PuzzleControls*.tsx`**: 一系列控制拼图生成参数的组件，例如 `PuzzleControlsCutCount` (切片数量), `PuzzleControlsCutType` (切片类型), `PuzzleControlsScatter` (散布范围)。
+-   `components/ShapeControls.tsx`: 控制基础形状选择的组件。
+-   `components/theme-provider.tsx`: 主题切换的 Context Provider。
+-   **`components/layouts/`**: 包含针对不同设备和屏幕方向的特定布局组件。
+    -   `DesktopLayout.tsx`: 桌面端布局。
+    -   `PhoneLandscapeLayout.tsx`: 手机横屏布局。
+    -   `PhonePortraitLayout.tsx`: 手机竖屏布局。
+-   **`components/loading/`**: 加载状态相关的组件。
+    -   `LoadingScreen.tsx`: 动态加载过程中的加载动画。
+    -   `LoadingScreenStatic.tsx`: 静态资源加载时的加载界面。
+-   **`components/ui/`**: 基于 `shadcn/ui` 自动生成的基础 UI 组件库，如 `Button`, `Dialog`, `Slider` 等。
 
-### contexts 目录
+### `contexts/` - 状态管理
 
-React Context API实现的状态管理。
+使用 React Context API 实现全局状态管理。
 
-- `GameContext.tsx`: 核心游戏状态管理。
+-   **`contexts/GameContext.tsx`**: 整个游戏的核心状态管理中心。它使用 `useReducer` 来管理复杂的游戏状态（如拼图块、游戏进程、得分等）。**重构后，它还包含了一套专用于 E2E 测试的 API (`window.testAPI`)**，通过在 `window` 对象上暴露测试辅助函数，来支持稳定、高效的自动化测试流程。
 
-### docs 目录
+### `docs/` - 项目文档
 
-包含项目相关文档。
+存放所有项目相关的设计、规划和说明文档。
 
-- `CONFIGURATION.MD`: 游戏配置相关说明。
-- `DIFFICULTY-DESIGN.MD`: 详细描述游戏难度系统的设计与实现。
-- `PROJECT_STRUCTURE.MD`: 本文档，描述项目文件结构。
-- `PROMOTION.MD`: 项目推广相关的材料。
+-   **`docs/project_structure.md`**: (本文) 对项目结构进行详细说明的文档。
+-   **`docs/automated_testing_workflow.md`**: (**新增**) 详细介绍了本项目从 E2E 测试执行、性能数据收集、报告归档到前端动态展示的"测试-分析-洞察"全自动闭环工作流。
+-   **`docs/CONFIGURATION.MD`**: 游戏内各项配置参数（如难度、形状等）的详细说明文档。
+-   **`docs/difficulty-design.md`**: 详细阐述了游戏难度系统的设计理念、算法和实现细节。
+-   **`docs/PuzzleCanvas_*.md`**: 记录了对核心组件 `PuzzleCanvas` 进行重构时的分析和规划。
 
-### hooks 目录
+### `e2e/` - 端到端测试
 
-自定义React钩子函数。
+存放使用 Playwright 编写的端到端（E2E）测试脚本。
 
-- `use-mobile.tsx`: 移动设备检测。
-- `use-toast.ts`: Toast通知。
-- `useDeviceDetection.ts`: **设备类型和屏幕方向检测钩子。**
+-   **`e2e/full_game_flow.spec.ts`**: **核心测试脚本**。它通过调用 `GameContext` 暴露的测试专用 API (`window.testAPI`)，以程序化方式覆盖完整的游戏流程（开始、选择、旋转、完成），并精确收集性能指标（如内存占用、交互耗时），最后将数据附加到测试结果中。
 
-### lib 目录
+### `hooks/` - 自定义 React 钩子
 
-- `utils.ts`: 主要包含 `cn` 函数，用于合并 Tailwind 类名。
+封装和复用组件逻辑的自定义 React Hooks。
 
-### public 目录
+-   **`hooks/usePuzzleInteractions.ts`**: **(重构提取)** 聚合了所有与画布交互相关的复杂逻辑，包括拖拽、旋转、吸附、缩放等。
+-   **`hooks/useResponsiveCanvasSizing.ts`**: **(重构提取)** 负责动态计算并管理画布的响应式尺寸，确保在不同设备上都能正确显示。
+-   **`hooks/useDeviceDetection.ts`**: **(重构提取)** 封装了设备类型（桌面/移动）和屏幕方向（横屏/竖屏）的检测逻辑。
+-   **`hooks/use-mobile.tsx`**: 一个简单的钩子，用于判断当前是否为移动设备。
+-   **`hooks/use-toast.ts`**: `sonner` 弹窗提示的钩子。
 
-存放静态资源文件，如背景图、背景音乐。
+### `lib/` - 基础库与工具函数
 
-### types 目录
+-   **`lib/utils.ts`**: 包含 `cn` 函数，一个用于合并和优化 Tailwind CSS 类名的小工具。
 
-- `types.ts`: 定义项目中共享的 TypeScript 类型。
-- `puzzleTypes.ts`: **定义拼图相关的核心类型（如 `Point`, `PuzzlePiece`, `GameState`）。**
+### `playwright-report/` - Playwright HTML 测试报告
 
-### utils 目录
+-   此目录由 Playwright 在运行测试时自动生成（通过 `playwright.config.ts` 中的 `reporter: 'html'` 配置）。它包含一个可交互的 HTML 报告 (`index.html`)，详细展示了最近一次测试的运行结果、每个测试步骤的耗时、日志、截图和追踪信息，是进行失败诊断和细节分析的重要工具。
 
-游戏核心逻辑和辅助功能实现。
+### `playwright-test-logs/` - Playwright 测试报告
 
-- `constants.ts`: 游戏常量定义。
-- `helper.ts`: 通用辅助函数。
-- `geometry/`: 包含拼图相关的几何计算工具。
-    - `__tests__/`: **几何计算工具的单元测试。**
-    - `puzzleGeometry.ts`: 提供如计算中心、点在多边形内判断、旋转点等函数。
-- `shape/`: 形状生成和处理相关工具。
-    - `ShapeGenerator.ts`: 负责生成不同类型的形状。
-    - `geometryUtils.ts`: **几何计算工具。**
-- `puzzle/`: 拼图生成、打散、切割和操作相关工具。
-    - `PuzzleGenerator.ts`: 负责将形状切割成拼图。
-    - `ScatterPuzzle.ts`: 负责将拼图打散到画布上。
-    - `cutGenerators.ts`: 提供不同的切割线生成算法。
-    - `puzzleUtils.ts`: 拼图操作工具。
-- `rendering/`: 包含绘制和音效相关的辅助功能。
-    - `__tests__/`: **渲染工具的单元测试。**
-    - `puzzleDrawing.ts`: 提供如绘制拼图、绘制拼图块、绘制提示轮廓等 Canvas 绘制函数。
-    - `soundEffects.ts`: 音效处理。
+-   (**新增目录**) 此目录用于存储由 `scripts/archive-test-results.js` 脚本在每次 E2E 测试执行后生成的、格式化后的 Markdown 性能报告。这些报告是 `/api/performance-trend` API 的数据源。
 
-## 开发配置说明
+### `public/` - 静态资源
 
-### React StrictMode
+存放所有静态文件，这些文件会被直接部署到网站根目录。
 
-本项目在`next.config.mjs`中禁用了React的StrictMode，主要为了解决开发模式下旋转功能重复执行的问题。生产构建不受影响。详情请查看文件内注释。
+-   `bg.jpg`: 游戏背景图片。
+-   `puzzle-pieces.mp3`: 游戏音效文件。
+
+### `scripts/` - 自动化脚本
+
+存放用于开发、构建和持续集成流程的 Node.js 脚本。
+
+-   **`scripts/archive-test-results.js`**: (**新增**) 一个关键的自动化脚本，在 Playwright 测试流程结束后（`globalTeardown`）自动执行。它负责：
+    1.  从 Playwright 的测试结果（附件）中读取原始性能数据。
+    2.  对 Base64 编码的数据进行解码和解析。
+    3.  计算派生指标（如平均交互时间）。
+    4.  生成一份包含时间戳、核心指标和环境信息的 Markdown 格式报告。
+    5.  将报告文件存储到 `playwright-test-logs/` 目录中。
+
+### `types/` - TypeScript 类型定义
+
+-   **`types/puzzleTypes.ts`**: **(重构整合)** 定义了项目中所有共享的业务核心类型，如 `GameState`, `PuzzlePiece`, `CutType` 等，是整个应用类型的唯一真实来源（Single Source of Truth）。
+
+### `utils/` - 核心业务逻辑
+
+实现游戏核心功能和算法的工具函数，已按业务领域清晰划分。
+
+-   **`utils/puzzle/`**: 与拼图生成和操作相关的逻辑。
+    -   `PuzzleGenerator.ts`: 负责将基础形状切割成拼图块。
+    -   `cutGenerators.ts`: 定义不同切割算法（直线、曲线）。
+    -   `puzzleUtils.ts`: 拼图相关的通用辅助函数。
+    -   `ScatterPuzzle.ts`: 负责将生成的拼图块散布到画布上。
+-   **`utils/shape/`**: 与基础图形生成相关的逻辑。
+    -   `ShapeGenerator.ts`: 负责生成不同类型的几何形状（如矩形、心形）。
+    -   `geometryUtils.ts`: 形状相关的几何计算函数。
+-   **`utils/geometry/`**: 底层几何计算。
+    -   `puzzleGeometry.ts`: 提供拼图块吸附、对齐等相关的几何计算函数。
+-   **`utils/rendering/`**: 与 Canvas 渲染相关的逻辑。
+    -   `puzzleDrawing.ts`: 提供在 Canvas 上绘制拼图块的函数。
+    -   `colorUtils.ts`: 颜色处理工具。
+    -   `soundEffects.ts`: 播放音效的函数。
+-   **`utils/helper.ts`**: 其他通用辅助函数。
+-   **`utils/constants.ts`**: 存放项目中的全局常量。 

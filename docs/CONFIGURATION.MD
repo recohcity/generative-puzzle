@@ -135,6 +135,18 @@
 - **React StrictMode**: 在 `next.config.mjs` 中设置为 `false`，以解决开发模式下旋转功能重复执行的问题。
 - **Lazy Loading**: 主游戏组件 (`GameInterface.tsx`) 在 `app/page.tsx` 中使用 `next/dynamic` 进行懒加载和预加载。
 
+## 性能测试与报告配置 (`app/test/page.tsx`)
+
+- **数据来源**: 性能报告页面的所有数据均来自对 `/api/performance-trend` 的实时API调用。该API会动态扫描并解析 `playwright-test-logs/` 目录下的所有Markdown报告。
+- **性能基准值 (Benchmarks)**: 报告页面内置了一套性能基准值，用于评估各项指标并给出"优秀"、"良好"、"警告"等评级。这些基准值硬编码在 `app/test/page.tsx` 文件的 `BENCHMARKS`常量中。
+  - `loadTime`: 1000ms (页面加载时间)
+  - `shapeGenerationTime`: 500ms (形状生成时间)
+  - `puzzleGenerationTime`: 800ms (拼图生成时间)
+  - `scatterTime`: 800ms (散开时间)
+  - `pieceInteractionTime`: 1200ms (平均拼图交互时间)
+  - `minFps`: 30fps (最低帧率)
+  - `maxMemoryUsage`: 100MB (最大内存使用)
+
 ## UI 组件配置 (`components.json`)
 
 - 该文件由 Shadcn UI CLI 生成和使用，用于跟踪已安装的基础 UI 组件。
