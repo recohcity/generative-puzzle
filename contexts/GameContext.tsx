@@ -7,6 +7,7 @@ import type { ReactNode } from "react"
 import { ShapeGenerator } from "@/utils/shape/ShapeGenerator"
 import { PuzzleGenerator } from "@/utils/puzzle/PuzzleGenerator"
 import { ScatterPuzzle } from "@/utils/puzzle/ScatterPuzzle"
+import { calculateCenter } from "@/utils/geometry/puzzleGeometry"
 
 // 导入从 puzzleTypes.ts 迁移的类型
 import { Point, PuzzlePiece, DraggingPiece, PieceBounds, GameState, GameAction as GameActionType, GameContextProps, ShapeType, CutType } from "@/types/puzzleTypes";
@@ -199,6 +200,23 @@ function gameReducer(state: GameState, action: GameActionType): GameState {
     case "NO_CHANGE":
       // 不做任何改变
       return state
+    case "MOVE_PIECE": {
+      if (!state.puzzle) return state;
+      const { pieceIndex, x, y } = action.payload;
+      const puzzle = [...state.puzzle];
+      const piece = puzzle[pieceIndex];
+      if (!piece) return state;
+
+      const oldCenter = calculateCenter(piece.points);
+      const dx = x - oldCenter.x;
+      const dy = y - oldCenter.y;
+
+      piece.points = piece.points.map((p) => ({ ...p, x: p.x + dx, y: p.y + dy }));
+      piece.x += dx;
+      piece.y += dy;
+
+      return { ...state, puzzle };
+    }
     default:
       return state
   }
@@ -220,41 +238,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     },
     [dispatch],
   )
-
-  // 专用于测试的接口，直接修改游戏状态
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      (window as any).__gameStateForTests__ = state;
-      (window as any).selectPieceForTest = (pieceIndex: number) => {
-        // 只设置选中状态，保持职责单一
-        dispatch({ type: 'SET_SELECTED_PIECE', payload: pieceIndex });
-        console.log(`[Test] 强制选中拼图块: ${pieceIndex}`);
-      };
-      (window as any).markPieceAsCompletedForTest = (pieceIndex: number) => {
-        dispatch({ type: 'ADD_COMPLETED_PIECE', payload: pieceIndex });
-        console.log(`[Test] 强制标记拼图块为完成: ${pieceIndex}`);
-      };
-      // 暴露旋转函数，用于测试
-      (window as any).rotatePieceForTest = (clockwise: boolean) => {
-        // 直接调用内部的 rotatePiece 函数
-        rotatePiece(clockwise);
-      };
-      (window as any).resetPiecePositionForTest = (pieceIndex: number) => {
-        dispatch({ type: 'RESET_PIECE_TO_ORIGINAL', payload: pieceIndex });
-        console.log(`[Test] 强制重置拼图块位置: ${pieceIndex}`);
-      };
-    }
-    // 组件卸载时清理
-    return () => {
-      if (process.env.NODE_ENV === 'development') {
-        delete (window as any).__gameStateForTests__;
-        delete (window as any).selectPieceForTest;
-        delete (window as any).markPieceAsCompletedForTest;
-        delete (window as any).rotatePieceForTest;
-        delete (window as any).resetPiecePositionForTest;
-      }
-    }
-  }, [state, rotatePiece]); // 添加 rotatePiece 到依赖项
 
   // 自动完成判定副作用：全部拼图完成时自动设置 isCompleted
   useEffect(() => {
@@ -375,7 +358,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     )
     dispatch({ type: "SET_PUZZLE", payload: pieces })
     dispatch({ type: "SET_ORIGINAL_POSITIONS", payload: originalPositions })
-  }, [state.originalShape, state.cutType, state.cutCount])
+  }, [state.originalShape, state.cutType, state.cutCount, dispatch])
 
   const scatterPuzzle = useCallback(() => {
     if (!state.puzzle) {
@@ -383,24 +366,13 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return
     }
 
-    // 检查是否已经散开
     if (state.isScattered) {
       console.warn("Puzzle already scattered")
       return
     }
 
-    // 调试输出 - 检查散开前的原始形状状态
-    console.log("散开前状态:", {
-      originalShapeExists: state.originalShape && state.originalShape.length > 0,
-      originalShapePoints: state.originalShape.length,
-      puzzlePieces: state.puzzle.length,
-      canvasSize: { width: state.canvasWidth, height: state.canvasHeight }
-    });
-
-    // 计算原始形状的边界和中心点
     let targetShape = null;
     if (state.originalShape && state.originalShape.length > 0) {
-      // 计算原始形状的边界
       const bounds = state.originalShape.reduce(
         (acc, point) => ({
           minX: Math.min(acc.minX, point.x),
@@ -410,24 +382,15 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }),
         { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
       );
-      
-      // 计算原始形状的中心点和半径
       const centerX = (bounds.minX + bounds.maxX) / 2;
       const centerY = (bounds.minY + bounds.maxY) / 2;
-      const radius = Math.max(
-        (bounds.maxX - bounds.minX) / 2,
-        (bounds.maxY - bounds.minY) / 2
-      ) * 1.2; // 增加20%的边距
-      
+      const radius = Math.max((bounds.maxX - bounds.minX) / 2, (bounds.maxY - bounds.minY) / 2) * 1.2;
       targetShape = {
         center: { x: centerX, y: centerY },
         radius: radius
       };
-      
-      console.log("目标形状信息:", targetShape);
     }
 
-    // 传递当前的画布尺寸信息给ScatterPuzzle
     const scatteredPuzzle = ScatterPuzzle.scatterPuzzle(state.puzzle, {
       canvasWidth: state.canvasWidth,
       canvasHeight: state.canvasHeight,
@@ -437,86 +400,58 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     dispatch({ type: "SET_PUZZLE", payload: scatteredPuzzle })
     dispatch({ type: "SET_IS_SCATTERED", payload: true })
     
-    // 记录散开后的拼图位置
-    console.log("Scattered puzzle pieces:", scatteredPuzzle.length);
-    
-    // 调试输出 - 确认散开后原始形状仍然存在
-    console.log("散开后状态:", {
-      originalShapeExists: state.originalShape && state.originalShape.length > 0,
-      originalShapePoints: state.originalShape.length
-    });
-    
-    // 检查是否有需要回弹动画的拼图
-    const piecesNeedingBounce = scatteredPuzzle.filter(piece => piece.needsBounceAnimation);
+    const piecesNeedingBounce = scatteredPuzzle.filter(piece => (piece as any).needsBounceAnimation);
     
     if (piecesNeedingBounce.length > 0) {
-      console.log(`找到${piecesNeedingBounce.length}个拼图需要执行回弹动画`);
-      
-      // 为需要回弹的拼图执行震动动画
       setTimeout(() => {
-        piecesNeedingBounce.forEach((piece, index) => {
+        piecesNeedingBounce.forEach((p, index) => {
+          const piece = p as any;
           const pieceIndex = scatteredPuzzle.indexOf(piece);
           if (pieceIndex === -1 || !piece.bounceInfo) return;
           
-          // 确定回弹方向
           const shakeDirectionX = Math.sign(piece.bounceInfo.bounceX);
           const shakeDirectionY = Math.sign(piece.bounceInfo.bounceY);
           
-          // 震动动画序列 - 与碰撞回弹保持一致
           let animationStep = 0;
-          const maxSteps = 6; // 震动次数
-          const shakeAmount = [8, -6, 5, -4, 3, -2]; // 震动幅度序列
+          const maxSteps = 6;
+          const shakeAmount = [8, -6, 5, -4, 3, -2];
           
-          // 执行震动动画
           const shakeAnimation = () => {
             if (animationStep >= maxSteps) return;
             
-            // 计算震动位移
             const shakeX = shakeDirectionX * shakeAmount[animationStep];
             const shakeY = shakeDirectionY * shakeAmount[animationStep];
             
-            // 应用震动位移
             dispatch({
               type: "UPDATE_PIECE_POSITION",
               payload: { index: pieceIndex, dx: shakeX, dy: shakeY },
             });
             
-            // 安排下一次震动
             animationStep++;
-            setTimeout(shakeAnimation, 30); // 每次震动间隔30ms，实现快速震动效果
+            setTimeout(shakeAnimation, 30);
           };
           
-          // 错开不同拼图的震动动画开始时间，避免所有拼图同时震动
           setTimeout(() => {
-            // 播放碰撞音效 - 同样使用边界碰撞的声音效果
             try {
               const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-              
-              // 创建主音频振荡器 - 低音碰撞声
               const oscillator1 = audioContext.createOscillator();
               const gainNode1 = audioContext.createGain();
-              
               oscillator1.type = "sine";
-              oscillator1.frequency.setValueAtTime(120, audioContext.currentTime); // 更低的音调
+              oscillator1.frequency.setValueAtTime(120, audioContext.currentTime);
               gainNode1.gain.setValueAtTime(0.4, audioContext.currentTime);
-              gainNode1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15); // 更快衰减
-              
+              gainNode1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
               oscillator1.connect(gainNode1);
               gainNode1.connect(audioContext.destination);
               
-              // 创建次要振荡器 - 高音碰撞声
               const oscillator2 = audioContext.createOscillator();
               const gainNode2 = audioContext.createGain();
-              
               oscillator2.type = "sine";
-              oscillator2.frequency.setValueAtTime(240, audioContext.currentTime); // 高一倍的音调
+              oscillator2.frequency.setValueAtTime(240, audioContext.currentTime);
               gainNode2.gain.setValueAtTime(0.2, audioContext.currentTime);
-              gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1); // 更快衰减
-              
+              gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
               oscillator2.connect(gainNode2);
               gainNode2.connect(audioContext.destination);
               
-              // 启动并停止振荡器
               oscillator1.start();
               oscillator2.start();
               oscillator1.stop(audioContext.currentTime + 0.15);
@@ -524,15 +459,50 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             } catch (e) {
               console.log("Audio not supported");
             }
-            
-            // 开始震动动画
             shakeAnimation(); 
-            
-          }, index * 100); // 每个拼图错开100ms开始震动
+          }, index * 100);
         });
-      }, 300); // 散开完成后等待300ms再开始回弹动画，给用户一个视觉缓冲
+      }, 300);
     }
   }, [state.puzzle, state.isScattered, state.canvasWidth, state.canvasHeight, state.originalShape, dispatch])
+
+  // Test API setup must be after all dependent functions are defined.
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
+      // For full_game_flow.spec.ts
+      (window as any).__gameStateForTests__ = state;
+      (window as any).selectPieceForTest = (pieceIndex: number) => dispatch({ type: 'SET_SELECTED_PIECE', payload: pieceIndex });
+      (window as any).markPieceAsCompletedForTest = (pieceIndex: number) => dispatch({ type: 'ADD_COMPLETED_PIECE', payload: pieceIndex });
+      (window as any).rotatePieceForTest = (clockwise: boolean) => rotatePiece(clockwise);
+      (window as any).resetPiecePositionForTest = (pieceIndex: number) => dispatch({ type: 'RESET_PIECE_TO_ORIGINAL', payload: pieceIndex });
+
+      // For responsive_adaptation.spec.ts and future tests
+      window.testAPI = {
+        generateShape: (shapeType) => dispatch({ type: 'SET_SHAPE_TYPE', payload: shapeType }),
+        generatePuzzle: (cutCount) => {
+          dispatch({ type: 'SET_CUT_TYPE', payload: 'straight' });
+          dispatch({ type: 'SET_CUT_COUNT', payload: cutCount });
+          generatePuzzle();
+        },
+        scatterPuzzle: () => scatterPuzzle(),
+        movePiece: (pieceIndex, x, y) => dispatch({ type: 'MOVE_PIECE', payload: { pieceIndex, x, y } }),
+        snapPiece: (pieceIndex) => {
+            dispatch({ type: 'RESET_PIECE_TO_ORIGINAL', payload: pieceIndex });
+            dispatch({ type: 'ADD_COMPLETED_PIECE', payload: pieceIndex });
+        },
+        getPieceCenter: (pieceIndex) => {
+            if (!state.puzzle) return { x: 0, y: 0 };
+            const piece = state.puzzle[pieceIndex];
+            return piece ? calculateCenter(piece.points) : { x: 0, y: 0 };
+        },
+        getPieceTargetCenter: (pieceIndex) => {
+            if (!state.originalPositions) return { x: 0, y: 0 };
+            const piece = state.originalPositions[pieceIndex];
+            return piece ? calculateCenter(piece.points) : { x: 0, y: 0 };
+        },
+      };
+    }
+  }, [state, generatePuzzle, scatterPuzzle, dispatch, rotatePiece]);
 
   const showHintOutline = useCallback(() => {
     dispatch({ type: "SHOW_HINT" })

@@ -10,6 +10,7 @@ export interface Point {
 }
 
 export interface PuzzlePiece {
+  id: number;
   points: Point[]
   originalPoints: Point[]
   rotation: number
@@ -20,6 +21,7 @@ export interface PuzzlePiece {
   originalY: number
   normalizedX?: number; // Added for adaptation
   normalizedY?: number; // Added for adaptation
+  isCompleted: boolean;
 }
 
 export type DraggingPiece = any; // 请根据实际定义替换 any
