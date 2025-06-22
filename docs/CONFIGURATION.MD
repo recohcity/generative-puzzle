@@ -1,156 +1,241 @@
 # 生成式拼图游戏 - 配置说明
 
-本文档旨在提供项目关键配置和参数的概览，方便开发者理解和调整游戏行为。
+> 修订日期：2025-06-22 23:10:45
 
-## 主要配置文件参考
-
-大部分核心配置和逻辑分散在以下文件中：
-
-- **难度与切割逻辑**: `utils/puzzle/cutGenerators.ts`, `utils/puzzle/PuzzleGenerator.ts`, `docs/difficulty-design.md`
-- **形状生成**: `utils/shape/ShapeGenerator.ts`
-- **拼图散开与分布**: `utils/puzzle/ScatterPuzzle.ts`
-- **核心状态管理**: `contexts/GameContext.tsx`
-- **渲染与交互**: `components/PuzzleCanvas.tsx`
-- **界面布局与路由**: `components/GameInterface.tsx` (作为布局路由), `components/layouts/DesktopLayout.tsx`, `components/layouts/PhonePortraitLayout.tsx`, `components/layouts/PhoneLandscapeLayout.tsx`
-- **控制组件**: `components/ShapeControls.tsx`, `components/PuzzleControlsCutType.tsx`, `components/PuzzleControlsCutCount.tsx`, `components/PuzzleControlsScatter.tsx`, `components/PuzzleControlsGamepad.tsx`, `components/ActionButtons.tsx`, `components/DesktopPuzzleSettings.tsx`, `components/GlobalUtilityButtons.tsx`
-- **设备适配逻辑**: 主要在 `GameInterface.tsx` (检测与分发) 和各个布局组件 (`components/layouts/`) 中实现特定布局。部分底层逻辑仍在 `ShapeGenerator.ts`, `ScatterPuzzle.ts`, `GameContext.tsx` 等。
-- **音效管理**: `utils/rendering/soundEffects.ts`
-- **构建配置**: `next.config.mjs`
-- **UI 与主题**: `tailwind.config.ts`, `components.json` (Shadcn UI)
-- **常量定义**: `utils/constants.ts` (如果存在重要常量)
-
-## 难度配置 (`utils/puzzle/cutGenerators.ts`, `docs/difficulty-design.md`)
-
-游戏难度主要由用户选择的"切割次数"（1-8）驱动，系统会根据此选择映射到实际的切割线数量和拼图块数。
-
-| 选择的切割次数 (难度) | 实际稳定生成的有效切割线数 | 最终产生拼图块数 |
-|-----------------------|-----------------------------|-------------------|
-| 1                     | 1                           | 2                 |
-| 2                     | 2                           | 3                 |
-| 3                     | 3                           | 4                 |
-| 4                     | 4                           | 5                 |
-| 5                     | 6                           | 7                 |
-| 6                     | 8                           | 9                 |
-| 7                     | 11                          | 12                |
-| 8                     | 13                          | 14                |
-
-**切割策略**:
-- **目标切割线数**: 代码会*尝试*生成略多于上表的切割线数（如难度8尝试14条），但通过 `isValidCut` 等验证逻辑确保最终生效的数量。
-- **中心切割概率**: 低难度优先使用穿过中心的切割线（概率高），高难度则倾向于随机切割（中心切割概率低）。具体概率计算见 `cutGenerators.ts` 内 `useCenterCutProbability`。
-- **随机性**: 高难度（≥7）会采用更随机的切割线生成模式 (`useExtremeRandomness`)，放宽验证条件。
-
-## 形状生成配置 (`utils/shape/ShapeGenerator.ts`)
-
-支持三种形状类型，其参数会根据设备类型和方向动态调整：
-
-- **多边形 (`polygon`)**:
-    - 顶点数: 5 至 (5 + `shapeParams.numPoints`) 随机 (移动端 `numPoints`=6, 桌面端=8)
-- **曲线 (`curve`)**:
-    - 顶点数: `shapeParams.detail` (移动端=120, 桌面端=200)
-- **不规则圆形 (`irregular`)**:
-    - 顶点数: `shapeParams.detail` (移动端=120, 桌面端=200)
-    - 通过噪声函数 (`noise`) 控制不规则程度，振幅 (`amplitude`) 移动端较小。
-
-**尺寸与归一化**:
-- 所有形状基于 `STANDARD_SIZE` (1000) 生成，然后通过 `normalizePoints` 函数根据实际画布尺寸 (`realCanvasWidth`, `realCanvasHeight`) 和设备/方向进行缩放和居中。
-- 移动设备（尤其竖屏）会使用更小的基础半径 (`baseRadius`) 和缩放因子 (`scaleFactor`) 以确保形状在屏幕内显示良好。
-
-## 切割配置 (`utils/puzzle/cutGenerators.ts`)
-
-- **支持类型**: 仅支持 `"straight"` (直线) 和 `"diagonal"` (斜线) 两种切割类型。
-- **实现**: 通过 `generateStraightCutLine` 和 `generateDiagonalCutLine` 生成基础切割线，`generateCuts` 函数根据难度和类型参数选择和验证最终使用的切割线。
-
-## 散开与分布配置 (`utils/puzzle/ScatterPuzzle.ts`, `docs/difficulty-design.md`)
-
-拼图散开时的分布策略：
-
-- **分布算法**:
-    - **手机竖屏**: 使用**螺旋分布算法**，将拼图从外向内螺旋排列，以适应狭长屏幕。
-    - **桌面/平板/手机横屏**: 使用**网格布局**，将画布划分为网格，拼图随机放置在网格单元内。
-- **分布因子**: 根据难度调整，控制拼图分散程度（低难度集中，高难度分散）。
-- **随机偏移**: 在网格单元内或螺旋路径附近添加随机偏移量，偏移范围也受难度影响。
-- **目标形状避开**: 散开时会计算原始形状区域，并优先将拼图放置在形状外的可用空间（上/右/下/左）。
-- **边界安全边距**: 根据设备和难度动态调整画布边缘的安全距离，防止拼图完全移出可视区域。手机竖屏使用更大的边距。
-
-## 碰撞与回弹配置 (`contexts/GameContext.tsx`, `components/PuzzleCanvas.tsx`)
-
-- **边界检测**:
-  - 通过 `calculatePieceBounds` 函数计算拼图的精确边界框（考虑旋转角度）
-  - 使用 `ensurePieceInBounds` 实现统一的边界约束处理，确保拼图不会超出画布
-  - 精确的边界触碰阈值（0.1像素），避免微小位移也触发碰撞检测
-- **回弹效果**:
-  - **回弹计算**: 根据拼图尺寸的30%计算回弹距离，使不同大小拼图的回弹效果视觉一致
-  - **回弹幅度**: 使用 `bounceBackFactor = 0.4` 控制回弹强度
-  - **最大回弹限制**: 设置回弹距离上限（30-80像素），防止过度回弹
-  - **方向识别**: 自动识别碰撞边界（上/右/下/左），据此确定回弹方向
-  - **二次校正**: 回弹后进行二次边界检查，确保不会再次超出画布
-- **视觉反馈**:
-  - **震动动画**: 拼图碰撞边界后执行震动序列 `[8, -6, 5, -4, 3, -2]` 像素的位移
-  - **音效反馈**: 碰撞时播放分层音效（低频120Hz + 高频240Hz），提供更丰富的感官反馈
-- **调试工具**:
-  - 按F10键切换显示调试元素（拼图边界框、画布边缘指示器和拼图ID）
-  - 拼图ID从1开始编号，便于开发测试和调试
-  - 拖拽停止后自动重绘，确保状态一致
-
-## 旋转配置 (`ScatterPuzzle.ts`, `docs/difficulty-design.md`)
-
-- **旋转增量**: 所有用户操作（按钮、双指）均使用 **15 度** 增量。
-- **初始随机旋转**: 拼图散开时的初始角度：
-    - **手机竖屏**: 简化为 90 度倍数（0, 90, 180, 270），根据难度增加选项。
-    - **桌面/平板/手机横屏**: 使用 15 度倍数，范围根据难度增加（低难度0-45度，中难度0-90度，高难度0-180度，极高难度0-345度）。
-- **角度修正**: `ScatterPuzzle.ts` 确保散开时的初始角度是 15 的倍数。
-
-## 设备适配配置 (分散在多个文件)
-
-- **检测**: 通过 `navigator.userAgent` 和 `window.innerWidth/innerHeight` 检测设备类型 (phone/tablet/desktop) 和方向 (portrait/landscape)。主要检测逻辑位于 `GameInterface.tsx`。
-- **主要适配点**:
-    - **UI 布局**: 由 `GameInterface.tsx` 根据检测结果渲染不同的布局组件 (`DesktopLayout`, `PhonePortraitLayout`, `PhoneLandscapeLayout`)。手机竖屏使用选项卡式控制面板。
-    - **画布尺寸**: 手机竖屏强制正方形并限制最大尺寸 (`PuzzleCanvas.tsx` -> `setInitialCanvasSize`, `handleResize`)。
-    - **形状参数**: 顶点数、半径、扰动幅度等 (`ShapeGenerator.ts`)。
-    - **分布策略**: 螺旋 vs 网格 (`ScatterPuzzle.ts`)。
-    - **初始旋转**: 90度 vs 15度倍数 (`ScatterPuzzle.ts`)。
-    - **边界约束**: 安全边距和约束严格度 (`GameContext.tsx` -> `ensurePieceInBounds`)。
-    - **字体大小**: 进度提示等 (`PuzzleCanvas.tsx`)。
-    - **按钮尺寸/间距**: `ShapeControls.tsx`, `GlobalUtilityButtons.tsx` 等组件内部处理。
-    - **音量**: `soundEffects.ts` 中可能包含基于设备类型的音量调整。
-
-## 媒体资源配置 (`public/`, `utils/rendering/soundEffects.ts`)
-
-- **背景图片**: `public/bg.jpg`
-- **背景音乐**: `public/puzzle-pieces.mp3` (通过 `soundEffects.ts` 控制播放/暂停/状态)
-- **预览图片**: `public/p1.png`, `public/p2.png`
-- **音效**: 具体实现位于 `utils/rendering/soundEffects.ts`，定义了如 `playButtonClickSound`, `playPieceSelectSound`, `playPieceSnapSound` 等函数。
-
-## 视觉与主题配置 (`tailwind.config.ts`, `components/PuzzleCanvas.tsx`)
-
-- **主题**: 主要通过 Tailwind CSS 实现，颜色配置在 `tailwind.config.ts`。整体为儿童友好的暖色系。
-- **核心效果**:
-    - **玻璃效果画布**: 通过 CSS 实现 (`app/globals.css`)。
-    - **动态阴影**: 在 `PuzzleCanvas.tsx` -> `drawPiece` 中根据 `isScattered` 和 `isCompleted` 状态绘制。
-    - **完成效果**: 包含星星、文字、发光等，在 `PuzzleCanvas.tsx` -> `drawCompletionEffect` 和 `drawPuzzle` 中实现。
-    - **提示轮廓**: 在 `PuzzleCanvas.tsx` -> `drawHintOutline` 中实现。
-
-## 构建与开发配置 (`next.config.mjs`, `app/page.tsx`)
-
-- **React StrictMode**: 在 `next.config.mjs` 中设置为 `false`，以解决开发模式下旋转功能重复执行的问题。
-- **Lazy Loading**: 主游戏组件 (`GameInterface.tsx`) 在 `app/page.tsx` 中使用 `next/dynamic` 进行懒加载和预加载。
-
-## 性能测试与报告配置 (`app/test/page.tsx`)
-
-- **数据来源**: 性能报告页面的所有数据均来自对 `/api/performance-trend` 的实时API调用。该API会动态扫描并解析 `playwright-test-logs/` 目录下的所有Markdown报告。
-- **性能基准值 (Benchmarks)**: 报告页面内置了一套性能基准值，用于评估各项指标并给出"优秀"、"良好"、"警告"等评级。这些基准值硬编码在 `app/test/page.tsx` 文件的 `BENCHMARKS`常量中。
-  - `loadTime`: 1000ms (页面加载时间)
-  - `shapeGenerationTime`: 500ms (形状生成时间)
-  - `puzzleGenerationTime`: 800ms (拼图生成时间)
-  - `scatterTime`: 800ms (散开时间)
-  - `pieceInteractionTime`: 1200ms (平均拼图交互时间)
-  - `minFps`: 30fps (最低帧率)
-  - `maxMemoryUsage`: 100MB (最大内存使用)
-
-## UI 组件配置 (`components.json`)
-
-- 该文件由 Shadcn UI CLI 生成和使用，用于跟踪已安装的基础 UI 组件。
+本文档详细列举并说明本项目所有关键配置点、参数、核心算法入口及其对应的源文件，便于开发者理解、调整和维护游戏行为。每次配置或算法有变动都需同步修订。
 
 ---
 
-本文档提供了主要配置点的概览。详细的实现逻辑和具体参数值请参考上述提到的源代码文件。 
+## 目录
+
+1. 主要配置文件与分工
+2. 难度与切割配置
+3. 形状生成配置
+4. 拼图散开与分布配置
+5. 碰撞与回弹配置
+6. 旋转配置
+7. 设备适配与响应式配置
+8. 媒体资源与音效配置
+9. 视觉与主题配置
+10. 构建与开发配置
+11. 性能测试与报告配置
+12. UI 组件配置
+
+---
+
+## 1. 主要配置文件与分工
+
+- `utils/puzzle/cutGenerators.ts`：切割算法与难度映射
+- `utils/puzzle/PuzzleGenerator.ts`：拼图块生成主逻辑
+- `utils/puzzle/ScatterPuzzle.ts`：拼图块散布与分布算法
+- `utils/shape/ShapeGenerator.ts`：基础形状生成与参数
+- `contexts/GameContext.tsx`：全局游戏状态、边界检测、回弹、适配
+- `components/PuzzleCanvas.tsx`：主画布渲染与交互
+- `components/GameInterface.tsx`、`components/layouts/`：多端布局与适配
+- `hooks/`：响应式尺寸、设备检测、适配、交互等钩子
+- `utils/rendering/soundEffects.ts`：音效管理
+- `public/`：静态资源（图片、音效）
+- `tailwind.config.ts`、`components.json`：UI 主题与组件
+- `next.config.mjs`：构建配置
+- `docs/difficulty-design.md`：难度与切割设计说明
+
+---
+
+## 2. 难度与切割配置
+
+- **cutCount**（切割次数）  
+  作用：用户选择的拼图切割难度，决定实际切割线数和拼图块数  
+  取值范围：1~8（整数）  
+  默认值：3  
+  影响点：拼图块数量、分布、吸附、回弹等  
+  配置/代码位置：`GameContext` 状态、`PuzzleControlsCutCount.tsx`、`cutGenerators.ts`
+
+- **cutType**（切割类型）  
+  作用：决定切割线类型  
+  取值范围：'straight' | 'diagonal'  
+  默认值：'straight'  
+  影响点：切割算法、拼图块形状  
+  配置/代码位置：`GameContext` 状态、`PuzzleControlsCutType.tsx`、`cutGenerators.ts`
+
+- **useCenterCutProbability**  
+  作用：低难度时优先生成穿过中心的切割线  
+  取值范围：0~1（随难度动态调整）  
+  默认值：0.8（低难度），0.2（高难度）  
+  影响点：切割线分布  
+  配置/代码位置：`cutGenerators.ts`
+
+- **useExtremeRandomness**  
+  作用：高难度时放宽切割线生成条件，增加随机性  
+  取值范围：布尔  
+  默认值：false（低难度），true（高难度）  
+  影响点：切割线生成  
+  配置/代码位置：`cutGenerators.ts`
+
+---
+
+## 3. 形状生成配置
+
+- **shapeType**  
+  作用：决定基础形状类型  
+  取值范围：'polygon' | 'curve' | 'irregular'  
+  默认值：'polygon'  
+  影响点：形状生成、拼图块形状  
+  配置/代码位置：`GameContext` 状态、`ShapeControls.tsx`、`ShapeGenerator.ts`
+
+- **numPoints**  
+  作用：多边形顶点数  
+  取值范围：5~12（随设备/难度动态调整）  
+  默认值：8（桌面），6（移动端）  
+  影响点：多边形复杂度  
+  配置/代码位置：`ShapeGenerator.ts`
+
+- **detail**  
+  作用：曲线/不规则圆形的细节点数  
+  取值范围：60~200  
+  默认值：200（桌面），120（移动端）  
+  影响点：曲线平滑度  
+  配置/代码位置：`ShapeGenerator.ts`
+
+- **amplitude**  
+  作用：不规则圆形的扰动幅度  
+  取值范围：0~0.2  
+  默认值：0.08（桌面），0.04（移动端）  
+  影响点：形状不规则程度  
+  配置/代码位置：`ShapeGenerator.ts`
+
+- **STANDARD_SIZE**  
+  作用：所有形状归一化的基准尺寸  
+  取值范围：1000（常量）  
+  默认值：1000  
+  影响点：归一化、缩放、适配  
+  配置/代码位置：`ShapeGenerator.ts`、`constants.ts`
+
+---
+
+## 4. 拼图散开与分布配置
+
+- **distributionType**  
+  作用：决定拼图块散布算法  
+  取值范围：'spiral'（竖屏）|'grid'（桌面/横屏）  
+  默认值：随设备/方向自动切换  
+  影响点：拼图初始分布  
+  配置/代码位置：`ScatterPuzzle.ts`、`GameInterface.tsx`
+
+- **distributionFactor**  
+  作用：控制拼图块分散程度  
+  取值范围：0.5~2.0（随难度动态调整）  
+  默认值：1.0  
+  影响点：拼图块间距  
+  配置/代码位置：`ScatterPuzzle.ts`
+
+- **safeMargin**  
+  作用：画布边缘安全距离，防止拼图超出可视区域  
+  取值范围：20~80（像素，随设备/难度动态调整）  
+  默认值：40  
+  影响点：拼图块初始位置  
+  配置/代码位置：`ScatterPuzzle.ts`
+
+---
+
+## 5. 碰撞与回弹配置
+
+- **bounceBackFactor**  
+  作用：控制拼图块碰撞边界后的回弹强度  
+  取值范围：0.1~0.6  
+  默认值：0.4  
+  影响点：回弹距离  
+  配置/代码位置：`GameContext.tsx`
+
+- **maxBounceDistance**  
+  作用：回弹距离上限  
+  取值范围：30~80（像素）  
+  默认值：60  
+  影响点：回弹效果  
+  配置/代码位置：`GameContext.tsx`
+
+- **collisionThreshold**  
+  作用：边界检测的精度阈值  
+  取值范围：0.05~0.2（像素）  
+  默认值：0.1  
+  影响点：碰撞检测灵敏度  
+  配置/代码位置：`GameContext.tsx`
+
+---
+
+## 6. 旋转配置
+
+- **rotationStep**  
+  作用：每次旋转的角度增量  
+  取值范围：15（度，常量）  
+  默认值：15  
+  影响点：旋转操作、吸附判定  
+  配置/代码位置：`ScatterPuzzle.ts`、`GameContext.tsx`
+
+- **initialRotationRange**  
+  作用：拼图块散开时的初始角度范围  
+  取值范围：0~345（度，随设备/难度动态调整）  
+  默认值：0~90（竖屏），0~180（桌面/横屏）  
+  影响点：拼图初始状态  
+  配置/代码位置：`ScatterPuzzle.ts`
+
+---
+
+## 7. 设备适配与响应式配置
+
+- **canvasMaxSize**  
+  作用：画布最大尺寸（竖屏强制正方形）  
+  取值范围：320~1024（像素，随设备/窗口动态调整）  
+  默认值：桌面 800，移动端 360  
+  影响点：画布、拼图缩放、适配  
+  配置/代码位置：`useResponsiveCanvasSizing.ts`、`PuzzleCanvas.tsx`
+
+- **isMobile**  
+  作用：是否为移动端设备  
+  取值范围：布尔  
+  默认值：自动检测  
+  影响点：布局、参数、分布、UI  
+  配置/代码位置：`useDeviceDetection.ts`、`GameInterface.tsx`
+
+- **isPortrait**  
+  作用：是否为竖屏  
+  取值范围：布尔  
+  默认值：自动检测  
+  影响点：布局、分布算法、UI  
+  配置/代码位置：`useDeviceDetection.ts`、`GameInterface.tsx`
+
+---
+
+## 8. 性能测试与报告配置
+
+- **BENCHMARKS**  
+  作用：性能基准值，用于评估各项指标  
+  取值范围/默认值：  
+    - `loadTime`: 1000ms  
+    - `shapeGenerationTime`: 500ms  
+    - `puzzleGenerationTime`: 800ms  
+    - `scatterTime`: 800ms  
+    - `pieceInteractionTime`: 1200ms  
+    - `minFps`: 30fps  
+    - `maxMemoryUsage`: 100MB  
+  影响点：性能趋势仪表盘评级  
+  配置/代码位置：`app/test/page.tsx`（BENCHMARKS 常量）
+
+---
+
+## 9. 视觉与主题配置
+
+- **primaryColor**  
+  作用：主色调  
+  取值范围：Tailwind 颜色变量  
+  默认值：#fbbf24（amber-400）  
+  影响点：UI 主题、按钮、进度条等  
+  配置/代码位置：`tailwind.config.ts`
+
+- **glassEffect**  
+  作用：画布玻璃效果  
+  取值范围：CSS filter  
+  默认值：blur(8px) + 透明度  
+  影响点：画布背景  
+  配置/代码位置：`app/globals.css`
+
+---

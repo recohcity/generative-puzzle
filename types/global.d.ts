@@ -11,8 +11,7 @@ declare global {
       getPieceCenter: (pieceIndex: number) => Point;
       getPieceTargetCenter: (pieceIndex: number) => Point;
     };
-    // Eslint-disable-next-line no-var
-    var __gameStateForTests__: any;
+    __gameStateForTests__?: any;
   }
 }
 

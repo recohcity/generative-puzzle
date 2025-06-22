@@ -21,12 +21,13 @@ import { useResponsiveCanvasSizing } from "@/hooks/useResponsiveCanvasSizing";
 // 导入新的拼图交互处理 Hook
 import { usePuzzleInteractions } from "@/hooks/usePuzzleInteractions";
 import { usePuzzleAdaptation } from '@/hooks/usePuzzleAdaptation';
+import { useDebugToggle } from '@/hooks/useDebugToggle';
 
 export default function PuzzleCanvas() {
   const { state, dispatch, canvasRef, backgroundCanvasRef, ensurePieceInBounds, calculatePieceBounds, rotatePiece } = useGame();
   
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [showDebugElements, setShowDebugElements] = useState(false);
+  const [showDebugElements] = useDebugToggle();
   const [isShaking, setIsShaking] = useState(false);
   
   const canvasSize = useResponsiveCanvasSizing({
@@ -75,7 +76,7 @@ export default function PuzzleCanvas() {
     if (!ctx || !backgroundCtx) {
       return;
     }
-    
+
     ctx.clearRect(0, 0, canvasSize.width, canvasSize.height);
     backgroundCtx.clearRect(0, 0, canvasSize.width, canvasSize.height);
     
@@ -103,26 +104,37 @@ export default function PuzzleCanvas() {
         const hintPiece = state.originalPositions.find((p: PuzzlePiece) => p.id === state.selectedPiece);
         if (hintPiece) {
           drawHintOutline(ctx, hintPiece);
-        }
+      }
       }
 
       if (showDebugElements && state.puzzle.length > 0) {
         state.puzzle.forEach((piece: PuzzlePiece, index: number) => {
           const bounds = calculatePieceBounds(piece);
           ctx.save();
-          ctx.strokeStyle = 'rgba(0, 100, 255, 0.7)';
+          ctx.strokeStyle = 'rgba(255, 0, 0, 0.85)';
           ctx.lineWidth = 2;
           ctx.setLineDash([4, 4]);
           ctx.beginPath();
           ctx.rect(bounds.minX, bounds.minY, bounds.width, bounds.height);
           ctx.stroke();
+
+          const centerX = bounds.minX + bounds.width / 2;
+          const centerY = bounds.minY + bounds.height / 2;
+          const r = 14;
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, r, 0, 2 * Math.PI);
           ctx.fillStyle = 'white';
-          ctx.fillRect(bounds.centerX - 10, bounds.centerY - 10, 20, 20);
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(255,0,0,0.85)';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([]);
+          ctx.stroke();
+
           ctx.fillStyle = 'black';
-          ctx.font = 'bold 12px Arial';
+          ctx.font = 'bold 15px Arial';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText((index + 1).toString(), bounds.centerX, bounds.centerY);
+          ctx.fillText((index + 1).toString(), centerX, centerY);
           ctx.restore();
         });
       }
@@ -139,7 +151,7 @@ export default function PuzzleCanvas() {
   }, [
     state.puzzle,
     state.completedPieces,
-    state.selectedPiece,
+    state.selectedPiece, 
     state.shapeType,
     state.originalShape,
     state.isScattered,
@@ -150,19 +162,6 @@ export default function PuzzleCanvas() {
     state.showHint,
     state.originalPositions
   ]);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'F10' || e.keyCode === 121) {
-        e.preventDefault();
-        setShowDebugElements(prev => !prev);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
 
   return (
     <div
