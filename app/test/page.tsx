@@ -21,6 +21,7 @@ interface TrendData {
   shapeType: string;
   cutType: string;
   cutCount: number;
+  version?: string; 
 }
 
 const BENCHMARKS = {
@@ -364,6 +365,7 @@ const PerformanceTrendPage: React.FC = () => {
               <thead className="sticky top-0 z-10 bg-gray-200">
                 <tr>
                   <th className="sticky left-0 bg-gray-200 border-r border-gray-300 px-3 py-2 text-left font-bold text-gray-700">测试时间</th>
+                  <th className="border-r border-gray-300 px-3 py-2 text-center font-bold text-gray-700">版本号</th>
                   <th className="border-r border-gray-300 px-3 py-2 text-center font-bold text-gray-700">状态</th>
                   {METRIC_KEYS.map(key => (
                     <th key={key} className="border-r border-gray-300 px-3 py-2 text-center font-bold text-gray-700">{METRIC_LABELS[key]}</th>
@@ -372,12 +374,13 @@ const PerformanceTrendPage: React.FC = () => {
                   <th className="border-r border-gray-300 px-3 py-2 text-center font-bold text-gray-700">切割类型</th>
                   <th className="border-r border-gray-300 px-3 py-2 text-center font-bold text-gray-700">切割次数</th>
                   <th className="px-3 py-2 text-center font-bold text-gray-700">拼图数量</th>
-              </tr>
-            </thead>
-            <tbody>
+                </tr>
+              </thead>
+              <tbody>
                 {pagedData.map((item, index) => (
                   <tr key={index} className="hover:bg-gray-50">
                     <td className="sticky left-0 bg-white border-r border-b border-gray-300 px-3 py-2 font-mono text-sm text-gray-800">{item.fullTime}</td>
+                    <td className="border-r border-b border-gray-300 px-3 py-2 text-center text-gray-800">{item.version || '未记录'}</td>
                     <td className="border-r border-b border-gray-300 px-3 py-2 text-center text-lg">{item.status}</td>
                     {METRIC_KEYS.map(key => {
                       const grade = getPerformanceGrade(key, item[key as keyof TrendData] as number);
@@ -395,9 +398,9 @@ const PerformanceTrendPage: React.FC = () => {
                     <td className="border-r border-b border-gray-300 px-3 py-2 text-center text-gray-800">{item.cutType}</td>
                     <td className="border-r border-b border-gray-300 px-3 py-2 text-center text-gray-800">{item.cutCount}</td>
                     <td className="border-b border-gray-300 px-3 py-2 text-center text-gray-800">{item.count}</td>
-                </tr>
-              ))}
-            </tbody>
+                  </tr>
+                ))}
+              </tbody>
           </table>
         </div>
           {/* 分页控件 */}

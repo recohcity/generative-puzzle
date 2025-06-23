@@ -44,6 +44,7 @@ export async function GET() {
           shapeType: meta.scenario.shapeType || '-',
           cutType: meta.scenario.cutType || '-',
           cutCount: meta.scenario.cutCount ?? '-',
+          version: meta.version || '未记录', // 新增
         });
       }
     }

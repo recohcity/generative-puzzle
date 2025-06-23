@@ -115,6 +115,7 @@ async function generateReport(suite) {
         title: testTitle,
         status: testStatus,
         timestamp: dayjs().tz('Asia/Hong_Kong').toISOString(),
+        version: metrics.version,
         metrics: {
             loadTime: metrics.loadTime,
             shapeGenerationTime: metrics.shapeGenerationTime,
@@ -161,6 +162,7 @@ async function generateReport(suite) {
     const scenarioContent = `
 | 参数 | 值 |
 |---|---|
+| 版本号 | ${metrics.version || '未记录'} |
 | 形状 | ${summaryData.scenario.shapeType || '未记录'} |
 | 切割类型 | ${summaryData.scenario.cutType || '未记录'} |
 | 切割次数 | ${summaryData.scenario.cutCount || '未记录'} |
@@ -181,6 +183,7 @@ ${JSON.stringify({ version: "1.0", data: summaryData }, null, 2)}
 
 - **测试日期**: ${timestamp}
 - **测试结果**: ${testTitle} (${testStatus})
+- **测试版本号**: ${metrics.version || '未记录'}
 
 ## 测试游戏场景参数
 ${scenarioContent}
@@ -245,14 +248,14 @@ async function updateIndex() {
 
     let trendTable = `
 ### 详细历史数据
-| 测试报告 | 状态 | 块数 | 加载 (ms) | 形状 (ms) | 切割 (ms) | 散开 (ms) | 交互 (ms) | FPS | 内存 (MB) |
-|---|---|---|---|---|---|---|---|---|---|
+| 测试报告 | 版本号 | 状态 | 块数 | 加载 (ms) | 形状 (ms) | 切割 (ms) | 散开 (ms) | 交互 (ms) | FPS | 内存 (MB) |
+|---|---|---|---|---|---|---|---|---|---|---|
 `;
 
     for (const data of reportsData) {
         const m = data.metrics;
         const s = data.scenario || {};
-        trendTable += `| [${dayjs(data.timestamp).tz('Asia/Hong_Kong').format('YYYY-MM-DD HH:mm')}](${data.fileName}) | ${data.status === '通过' ? '✅' : '❌'} | ${formatValue(s.pieceCount, '')} | ${getStatusIcon(m.loadTime, PERFORMANCE_BENCHMARKS.loadTime)} ${formatValue(m.loadTime)} | ${getStatusIcon(m.shapeGenerationTime, PERFORMANCE_BENCHMARKS.shapeGenerationTime)} ${formatValue(m.shapeGenerationTime)} | ${getStatusIcon(m.puzzleGenerationTime, PERFORMANCE_BENCHMARKS.puzzleGenerationTime)} ${formatValue(m.puzzleGenerationTime)} | ${getStatusIcon(m.scatterTime, PERFORMANCE_BENCHMARKS.scatterTime)} ${formatValue(m.scatterTime)} | ${getStatusIcon(m.avgInteractionTime, PERFORMANCE_BENCHMARKS.pieceInteractionTime)} ${formatValue(m.avgInteractionTime?.toFixed(1))} | ${getStatusIcon(m.avgFps, PERFORMANCE_BENCHMARKS.minFps, 'min')} ${formatValue(m.avgFps)} | ${getStatusIcon(m.memoryUsage, PERFORMANCE_BENCHMARKS.maxMemoryUsage / 1024 / 1024)} ${formatValue(m.memoryUsage)} |\n`;
+        trendTable += `| [${dayjs(data.timestamp).tz('Asia/Hong_Kong').format('YYYY-MM-DD HH:mm')}](${data.fileName}) | ${data.version || '未记录'} | ${data.status === '通过' ? '✅' : '❌'} | ${formatValue(s.pieceCount, '')} | ${getStatusIcon(m.loadTime, PERFORMANCE_BENCHMARKS.loadTime)} ${formatValue(m.loadTime)} | ${getStatusIcon(m.shapeGenerationTime, PERFORMANCE_BENCHMARKS.shapeGenerationTime)} ${formatValue(m.shapeGenerationTime)} | ${getStatusIcon(m.puzzleGenerationTime, PERFORMANCE_BENCHMARKS.puzzleGenerationTime)} ${formatValue(m.puzzleGenerationTime)} | ${getStatusIcon(m.scatterTime, PERFORMANCE_BENCHMARKS.scatterTime)} ${formatValue(m.scatterTime)} | ${getStatusIcon(m.avgInteractionTime, PERFORMANCE_BENCHMARKS.pieceInteractionTime)} ${formatValue(m.avgInteractionTime?.toFixed(1))} | ${getStatusIcon(m.avgFps, PERFORMANCE_BENCHMARKS.minFps, 'min')} ${formatValue(m.avgFps)} | ${getStatusIcon(m.memoryUsage, PERFORMANCE_BENCHMARKS.maxMemoryUsage / 1024 / 1024)} ${formatValue(m.memoryUsage)} |\n`;
     }
 
     const indexContent = `

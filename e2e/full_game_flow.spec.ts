@@ -1,4 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
+const { version } = require('../package.json'); // 顶部引入版本号
 
 // 定义性能指标接口
 interface PerformanceMetrics {
@@ -16,6 +17,7 @@ interface PerformanceMetrics {
   cutType?: string;
   cutCount?: number;
   pieceCount?: number;
+  version?: string; // 新增版本号字段
 }
 
 // 性能指标基准值
@@ -95,6 +97,7 @@ async function measurePerformance(page: Page): Promise<PerformanceMetrics> {
     cutType: 'N/A',
     cutCount: 0,
     pieceCount: 0,
+    version, // 新增
   };
 }
 
@@ -202,6 +205,7 @@ test('完整自动化游戏流程', async ({ page }) => {
     cutType: 'N/A',
     cutCount: 0,
     pieceCount: 0,
+    version, // 新增
   };
   let testError: any = null;
   try {
@@ -228,6 +232,7 @@ test('完整自动化游戏流程', async ({ page }) => {
     // 1. 页面加载性能
     const initialMetrics = await measurePerformance(page);
     metrics.loadTime = initialMetrics.loadTime;
+    metrics.version = version; // 在收集最终指标时也确保有
   console.log('步骤 1: 页面加载后渲染控制面板和画布 - 完成。');
 
     // 2. 形状生成性能
