@@ -1,0 +1,291 @@
+{
+  "config": {
+    "configFile": "/Users/recoh/Documents/myWork/Project/generative-puzzle/playwright.config.ts",
+    "rootDir": "/Users/recoh/Documents/myWork/Project/generative-puzzle/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        {
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/test-results.json"
+        }
+      ],
+      [
+        "list",
+        null
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/Users/recoh/Documents/myWork/Project/generative-puzzle/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/recoh/Documents/myWork/Project/generative-puzzle/e2e",
+        "testIgnore": [
+          "temp/**"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.53.1",
+    "workers": 4,
+    "webServer": {
+      "command": "npm run dev",
+      "url": "http://localhost:3000",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "full_game_flow.spec.ts",
+      "file": "full_game_flow.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "完整自动化游戏流程",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9034,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "步骤 1: 页面加载后渲染控制面板和画布 - 完成。\n"
+                    },
+                    {
+                      "text": "步骤 2: 选择云朵形状并生成 - 完成。\n"
+                    },
+                    {
+                      "text": "步骤 3: 选择斜线切割并渲染拼图 - 完成。\n"
+                    },
+                    {
+                      "text": "步骤 4: 点击散开拼图 - 完成。\n"
+                    },
+                    {
+                      "text": "步骤 5: 画布提示 (14 块) - 完成。\n"
+                    },
+                    {
+                      "text": "选中拼图块 0\n"
+                    },
+                    {
+                      "text": "拼图块 0 旋转后角度: 0 目标角度: 0\n"
+                    },
+                    {
+                      "text": "拼图块 0 重置后位置: {\"x\":448.74036236944056,\"y\":754.6459504976673,\"rotation\":0} 目标: {\"x\":448.74036236944056,\"y\":754.6459504976673,\"rotation\":0}\n"
+                    },
+                    {
+                      "text": "选中拼图块 1\n"
+                    },
+                    {
+                      "text": "拼图块 1 旋转后角度: 0 目标角度: 0\n"
+                    },
+                    {
+                      "text": "拼图块 1 重置后位置: {\"x\":399.5315236569256,\"y\":674.8536091590897,\"rotation\":0} 目标: {\"x\":399.5315236569256,\"y\":674.8536091590897,\"rotation\":0}\n"
+                    },
+                    {
+                      "text": "选中拼图块 2\n"
+                    },
+                    {
+                      "text": "拼图块 2 旋转后角度: 0 目标角度: 0\n"
+                    },
+                    {
+                      "text": "拼图块 2 重置后位置: {\"x\":346.81668352800955,\"y\":626.4867275624496,\"rotation\":0} 目标: {\"x\":346.81668352800955,\"y\":626.4867275624496,\"rotation\":0}\n"
+                    },
+                    {
+                      "text": "选中拼图块 3\n"
+                    },
+                    {
+                      "text": "拼图块 3 旋转后角度: 0 目标角度: 0\n"
+                    },
+                    {
+                      "text": "拼图块 3 重置后位置: {\"x\":529.1036689260161,\"y\":292.9979375321091,\"rotation\":0} 目标: {\"x\":529.1036689260161,\"y\":292.9979375321091,\"rotation\":0}\n"
+                    },
+                    {
+                      "text": "选中拼图块 4\n"
+                    },
+                    {
+                      "text": "拼图块 4 旋转后角度: 0 目标角度: 0\n"
+                    },
+                    {
+                      "text": "拼图块 4 重置后位置: {\"x\":573.6540316476726,\"y\":512.7532673320403,\"rotation\":0} 目标: {\"x\":573.6540316476726,\"y\":512.7532673320403,\"rotation\":0}\n"
+                    },
+                    {
+                      "text": "选中拼图块 5\n"
+                    },
+                    {
+                      "text": "拼图块 5 旋转后角度: 0 目标角度: 0\n"
+                    },
+                    {
+                      "text": "拼图块 5 重置后位置: {\"x\":543.1901169648731,\"y\":701.3271076982322,\"rotation\":0} 目标: {\"x\":543.1901169648731,\"y\":701.3271076982322,\"rotation\":0}\n"
+                    },
+                    {
+                      "text": "选中拼图块 6\n"
+                    },
+                    {
+                      "text": "拼图块 6 旋转后角度: 0 目标角度: 0\n"
+                    },
+                    {
+                      "text": "拼图块 6 重置后位置: {\"x\":707.9730231706469,\"y\":432.0095514082409,\"rotation\":0} 目标: {\"x\":707.9730231706469,\"y\":432.0095514082409,\"rotation\":0}\n"
+                    },
+                    {
+                      "text": "选中拼图块 7\n"
+                    },
+                    {
+                      "text": "拼图块 7 旋转后角度: 0 目标角度: 0\n"
+                    },
+                    {
+                      "text": "拼图块 7 重置后位置: {\"x\":621.1009904705797,\"y\":361.46950349044454,\"rotation\":0} 目标: {\"x\":621.1009904705797,\"y\":361.46950349044454,\"rotation\":0}\n"
+                    },
+                    {
+                      "text": "选中拼图块 8\n"
+                    },
+                    {
+                      "text": "拼图块 8 旋转后角度: 0 目标角度: 0\n"
+                    },
+                    {
+                      "text": "拼图块 8 重置后位置: {\"x\":687.6342648424395,\"y\":661.1372960830248,\"rotation\":0} 目标: {\"x\":687.6342648424395,\"y\":661.1372960830248,\"rotation\":0}\n"
+                    },
+                    {
+                      "text": "选中拼图块 9\n"
+                    },
+                    {
+                      "text": "拼图块 9 旋转后角度: 0 目标角度: 0\n"
+                    },
+                    {
+                      "text": "拼图块 9 重置后位置: {\"x\":316.74943332083177,\"y\":414.879690078114,\"rotation\":0} 目标: {\"x\":316.74943332083177,\"y\":414.879690078114,\"rotation\":0}\n"
+                    },
+                    {
+                      "text": "选中拼图块 10\n"
+                    },
+                    {
+                      "text": "拼图块 10 旋转后角度: 0 目标角度: 0\n"
+                    },
+                    {
+                      "text": "拼图块 10 重置后位置: {\"x\":580.5697235679397,\"y\":611.2070258409663,\"rotation\":0} 目标: {\"x\":580.5697235679397,\"y\":611.2070258409663,\"rotation\":0}\n"
+                    },
+                    {
+                      "text": "选中拼图块 11\n"
+                    },
+                    {
+                      "text": "拼图块 11 旋转后角度: 0 目标角度: 0\n"
+                    },
+                    {
+                      "text": "拼图块 11 重置后位置: {\"x\":413.8813394783697,\"y\":361.4108668814151,\"rotation\":0} 目标: {\"x\":413.8813394783697,\"y\":361.4108668814151,\"rotation\":0}\n"
+                    },
+                    {
+                      "text": "选中拼图块 12\n"
+                    },
+                    {
+                      "text": "拼图块 12 旋转后角度: 0 目标角度: 0\n"
+                    },
+                    {
+                      "text": "拼图块 12 重置后位置: {\"x\":277.03813538034046,\"y\":545.6999261182251,\"rotation\":0} 目标: {\"x\":277.03813538034046,\"y\":545.6999261182251,\"rotation\":0}\n"
+                    },
+                    {
+                      "text": "选中拼图块 13\n"
+                    },
+                    {
+                      "text": "拼图块 13 旋转后角度: 0 目标角度: 0\n"
+                    },
+                    {
+                      "text": "拼图块 13 重置后位置: {\"x\":742.8491626806284,\"y\":526.594976531461,\"rotation\":0} 目标: {\"x\":742.8491626806284,\"y\":526.594976531461,\"rotation\":0}\n"
+                    },
+                    {
+                      "text": "步骤 7: 等待所有拼图块在状态中被标记为完成...\n"
+                    },
+                    {
+                      "text": "步骤 7.1: completedPieces 数组长度已满足要求 - 完成。\n"
+                    },
+                    {
+                      "text": "步骤 7.2: isCompleted 状态标志已确认为 true - 完成。\n"
+                    },
+                    {
+                      "text": "步骤 8: 收集最终性能指标...\n"
+                    },
+                    {
+                      "text": "步骤 8: 性能指标收集完毕 - 完成。\n"
+                    },
+                    {
+                      "text": "完整自动化游戏流程测试通过！\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-06-24T09:12:53.339Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "performance-metrics",
+                      "contentType": "application/json",
+                      "body": "ewogICJsb2FkVGltZSI6IDU3OSwKICAic2hhcGVHZW5lcmF0aW9uVGltZSI6IDY3NywKICAicHV6emxlR2VuZXJhdGlvblRpbWUiOiAzNjEsCiAgInNjYXR0ZXJUaW1lIjogMTE4LAogICJwaWVjZUludGVyYWN0aW9uVGltZXMiOiBbCiAgICAxOTYsCiAgICA2NTgsCiAgICA0MTgsCiAgICAxOTUsCiAgICA0NjQsCiAgICAzNDgsCiAgICAyODMsCiAgICAxOTMsCiAgICAxODQsCiAgICAxNjIsCiAgICAyMTIsCiAgICAyMzQsCiAgICAyMjksCiAgICAxMTEKICBdLAogICJtZW1vcnlVc2FnZSI6IDUxLjAyMTU3NTkyNzczNDM3NSwKICAiZnBzIjogWwogICAgMjEsCiAgICAzNCwKICAgIDQwLAogICAgNTEsCiAgICA1NwogIF0sCiAgInRvdGFsVGVzdFRpbWUiOiA1MTczLAogICJwdXp6bGVJbnRlcmFjdGlvbkR1cmF0aW9uIjogMzg4NywKICAic2hhcGVUeXBlIjogIuS6keactSIsCiAgImN1dFR5cGUiOiAi5pac57q/IiwKICAiY3V0Q291bnQiOiA4LAogICJwaWVjZUNvdW50IjogMTQsCiAgInZlcnNpb24iOiAiMS4zLjE2Igp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fc13526413f196628f71-9e12c5d2c61c17c827a9",
+          "file": "full_game_flow.spec.ts",
+          "line": 191,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-06-24T09:12:51.729Z",
+    "duration": 11246.579000000002,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
