@@ -41,29 +41,28 @@ export const initBackgroundMusic = () => {
     backgroundMusic = new Audio('/puzzle-pieces.mp3');
     backgroundMusic.loop = true;
     backgroundMusic.volume = 0.5;
-    if (typeof window !== 'undefined') {
-      window.addEventListener('click', () => {
-        if (!audioUnlocked && backgroundMusic) {
-          backgroundMusic.play().then(() => {
-            isBackgroundMusicPlaying = true;
-            audioUnlocked = true;
-          }).catch(error => console.error('Error playing background music:', error));
-        }
-      }, { once: true });
-    }
   }
 };
 
 // Toggle background music playback
-export const toggleBackgroundMusic = (): boolean => {
+export const toggleBackgroundMusic = async (): Promise<boolean> => {
   if (backgroundMusic) {
+    const audioContext = createAudioContext();
+    if (audioContext && audioContext.state === 'suspended') {
+      await audioContext.resume();
+      audioUnlocked = true;
+    }
     if (isBackgroundMusicPlaying) {
       backgroundMusic.pause();
       isBackgroundMusicPlaying = false;
     } else {
-      backgroundMusic.play().then(() => {
+      try {
+        await backgroundMusic.play();
         isBackgroundMusicPlaying = true;
-      }).catch(error => console.error('Error resuming background music:', error));
+        audioUnlocked = true;
+      } catch (error) {
+        console.error('Error resuming background music:', error);
+      }
     }
   }
   return isBackgroundMusicPlaying;

@@ -72,7 +72,7 @@ export default function ActionButtons({ layout = 'mobile' }: ActionButtonsProps)
   }
   
   // Determine styles based on layout prop or detected device state
-  const buttonHeightClass = layout === 'desktop' ? 'h-10' : (isLandscape ? 'h-8 py-0.5' : 'h-9 py-0.5');
+  const buttonHeightClass = layout === 'desktop' ? 'h-9' : (isLandscape ? 'h-8 py-0.5' : 'h-9 py-0.5');
   const iconSizeClass = layout === 'desktop' ? 'w-4 h-4' : (isLandscape ? 'w-3 h-3' : 'w-4 h-4');
   const textSizeClass = layout === 'desktop' ? 'text-sm' : (isLandscape ? 'text-[12px]' : 'text-[12px]');
   const rotationInfoTextClass = layout === 'desktop' ? 'text-sm mt-2' : (isLandscape ? 'text-[12px] mt-1' : 'text-[12px] mt-1');
@@ -132,7 +132,7 @@ export default function ActionButtons({ layout = 'mobile' }: ActionButtonsProps)
           <div className="text-[#FFD5AB] font-medium">
             当前角度: {Math.round(state.puzzle[state.selectedPiece].rotation)}°
           </div>
-          <div className={`${rotationInfoSubTextClass} text-[#F68E5F] font-medium`}>
+          <div className={`text-xs text-[#FFD5AB] font-medium`}>
             {layout === 'mobile' && isPhone ? "可以使用2只手指旋转拼图" : "(旋转角度需与目标角度匹配才能放置)"}
           </div>
         </div>

@@ -37,6 +37,9 @@ next-env.d.ts
 /playwright-test-logs/*
 !/playwright-test-logs/.gitkeep
 
+#test-results
+/test-results
+
 # VSCode settings
 .vscode/
 

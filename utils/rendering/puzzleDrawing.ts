@@ -251,21 +251,32 @@ export const drawPiece = (
 
   // 绘制边框 - 只为未完成的拼图绘制边框，完成的拼图不绘制边框
   if (!isCompleted) {
-    // 设置描边颜色
-    ctx.strokeStyle = "#e2e8f0"; // 使用白色轮廓线
-    
-    // 根据是否被选中设置描边样式：选中时使用虚线
-    if (isSelected) {
-      ctx.setLineDash([5, 5]); // 选中时使用虚线
+    // 散开状态下未选中拼图不画轮廓线
+    if (isScattered && !isSelected) {
+      // 不画轮廓线
+    } else if (isSelected) {
+      // 选中拼图块，阴影极强烈，拾取感更强
+      ctx.shadowColor = 'rgba(255, 140, 0, 1)';
+      ctx.shadowBlur = 48;
+      ctx.shadowOffsetX = 24;
+      ctx.shadowOffsetY = 24;
+      ctx.setLineDash([]);
       ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(0,0,0,0)'; // 不画描边
+      ctx.stroke();
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
     } else {
+      // 其它情况（如未散开时）保持原有白色半透明轮廓
+      ctx.strokeStyle = "rgba(255,255,255,0.3)";
+      ctx.setLineDash([]);
+      ctx.lineWidth = 2;
+      ctx.stroke();
       ctx.setLineDash([]);
       ctx.lineWidth = 1;
     }
-
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.lineWidth = 1;
   }
 
   ctx.restore();

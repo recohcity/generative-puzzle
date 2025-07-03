@@ -64,7 +64,7 @@ export default function PuzzleControlsScatter({ goToNextTab }: PuzzleControlsSca
       <Button
         onClick={handleScatterPuzzle}
         disabled={!isPuzzleGenerated || state.isScattered}
-        className={`w-full ${isLandscape ? 'py-1 text-[12px]' : isPhone ? 'py-1.5 text-[12px]' : ''} bg-[#F68E5F] hover:bg-[#F47B42] text-white rounded-xl shadow-md ${(!isPuzzleGenerated || state.isScattered) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+        className={`w-full py-2 text-[14px] bg-[#F68E5F] hover:bg-[#F47B42] text-white rounded-xl shadow-md ${(!isPuzzleGenerated || state.isScattered) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
         variant="ghost"
       >
         <ScatterChart className={`${isLandscape ? 'w-3 h-3' : ''} w-4 h-4 mr-2`} />

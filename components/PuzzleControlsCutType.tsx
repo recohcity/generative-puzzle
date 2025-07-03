@@ -112,14 +112,14 @@ export default function PuzzleControlsCutType({ goToNextTab }: PuzzleControlsCut
             />
             <Label
               htmlFor="straight"
-              className={`flex items-center justify-center ${isLandscape ? 'p-1 text-[12px]' : isPhone ? 'p-1.5 text-[12px]' : 'p-2'} rounded-lg transition-all shadow-sm \
+              className={`flex items-center justify-center h-9 text-base rounded-xl transition-all shadow-sm \
                 ${localCutType === CutType.Straight 
                 ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]" 
                 : "bg-[#3D3852] text-white hover:bg-[#4D4862] active:bg-[#302B45]"}
                 ${!canModifySettings ? disabledClass : "cursor-pointer"}
               `}
             >
-              直线
+              <span className="text-[14px]">直线</span>
             </Label>
           </div>
           <div className="relative">
@@ -131,14 +131,14 @@ export default function PuzzleControlsCutType({ goToNextTab }: PuzzleControlsCut
             />
             <Label
               htmlFor="diagonal"
-              className={`flex items-center justify-center ${isLandscape ? 'p-1 text-[12px]' : isPhone ? 'p-1.5 text-[12px]' : 'p-2'} rounded-lg transition-all shadow-sm \
+              className={`flex items-center justify-center h-9 text-base rounded-xl transition-all shadow-sm \
                 ${localCutType === CutType.Diagonal 
                 ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]" 
                 : "bg-[#3D3852] text-white hover:bg-[#4D4862] active:bg-[#302B45]"}
                 ${!canModifySettings ? disabledClass : "cursor-pointer"}
               `}
             >
-              斜线
+              <span className="text-[14px]">斜线</span>
             </Label>
           </div>
         </RadioGroup>

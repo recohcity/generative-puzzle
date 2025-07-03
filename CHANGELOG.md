@@ -2,6 +2,22 @@
 
 本文档记录项目的所有版本更新内容和变更历史。
 
+## [v1.3.18] - 2025-07-03
+### 主题：按钮字号与音效控制体验优化
+
+#### 1. 按钮字号统一
+- **全局按钮字号统一为14px**：ShapeControls、PuzzleControlsCutType、PuzzleControlsCutCount、PuzzleControlsScatter、ActionButtons、DesktopLayout等所有主要按钮（含"生成形状""切割形状""散开拼图""重新开始"等）已批量统一为text-[14px]，视觉风格更一致。
+
+#### 2. 背景音乐控制逻辑修复
+- **背景音乐只能通过喇叭按钮控制**：修复了页面任意区域点击会触发背景音乐播放的问题。现在只有点击右上角喇叭按钮（toggleBackgroundMusic）才会播放/暂停背景音乐，页面其它区域点击不会影响音效。
+- **音频解锁与AudioContext resume**：背景音乐的AudioContext resume和解锁逻辑已合并到toggleBackgroundMusic，彻底移除全局window.click事件监听。
+
+#### 3. 其它UI细节与一致性优化
+- **UI一致性**：再次检查并批量修正所有按钮、提示、进度等字号，确保所有主按钮/交互元素均为14px。
+- **文档同步**：同步更新了项目结构、配置说明、README等文档，确保描述与实际实现一致。
+
+--- 
+
 ## [v1.3.17] - 2025-07-02
 ### 主题：材质美术升级、按钮描边批量清理与交互体验修复
 
@@ -545,3 +561,5 @@ Detected sound effect played via exposed function.
 - 提供多种拼图切割方式
 - 支持基本的拖拽、旋转交互
 - 包含完成效果和音效 
+
+

@@ -94,7 +94,7 @@ export default function PuzzleControlsCutCount({ goToNextTab }: PuzzleControlsCu
   const getDifficultyButtonStyle = (num: number) => {
     return `
       flex-1 aspect-square rounded-lg flex items-center justify-center 
-      ${isLandscape ? 'text-[12px]' : isPhone ? 'text-[12px]' : isSmallScreen ? 'text-[12px]' : 'text-base'} 
+      text-base 
       transition-all duration-200 shadow-sm min-w-0
       ${localCutCount === num 
         ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]" 
@@ -122,13 +122,13 @@ export default function PuzzleControlsCutCount({ goToNextTab }: PuzzleControlsCu
               aria-label={`选择切割${num}次`}
               disabled={!canModifySettings}
             >
-              {num}
+              <span className="text-[14px]">{num}</span>
             </button>
           ))}
         </div>
         
         {/* 难度指示器 */}
-        <div className="flex justify-between text-[12px] text-[#F26419] px-1 mt-1">
+        <div className="flex justify-between text-xs text-[#FFD5AB] px-1 mt-1">
           <span>简单</span>
           <span className="ml-auto">困难</span>
         </div>
@@ -138,15 +138,15 @@ export default function PuzzleControlsCutCount({ goToNextTab }: PuzzleControlsCu
       <Button 
         onClick={handleGeneratePuzzle} 
         disabled={!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType} 
-        className={`w-full ${isLandscape ? 'py-1 text-[12px]' : isPhone ? 'py-1.5 text-[12px]' : ''} bg-[#F68E5F] hover:bg-[#F47B42] text-white rounded-xl shadow-md ${(!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+        className={`w-full text-base bg-[#F68E5F] hover:bg-[#F47B42] text-white rounded-xl shadow-md ${(!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
       >
         <PuzzleIcon className={`${isLandscape ? 'w-3 h-3' : ''} w-4 h-4 mr-2`} />
-        切割形状
+        <span className="text-[14px]">切割形状</span>
       </Button>
       
       {/* 添加提示信息，当按钮不可点击时显示原因 */}
       {isShapeGenerated && !state.isScattered && (!hasCutType || !hasSelectedCount) && (
-        <div className="text-xs text-amber-400 text-center mt-1">
+        <div className="text-xs text-[#FFD5AB] text-center mt-1">
           {!hasCutType ? "请先选择切割类型" : !hasSelectedCount ? "请选择切割次数" : ""}
         </div>
       )}
