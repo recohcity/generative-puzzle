@@ -51,7 +51,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
     <div className="max-w-[1400px] w-full h-[calc(100vh-32px)] mx-auto relative flex flex-row gap-6 justify-center items-center">
       {/* Left Control Panel */}
       <div className="w-[350px] min-w-[350px] h-full flex-shrink-0">
-        <div className="bg-[#36323E] rounded-3xl border-2 border-[#463E50] h-full flex flex-col shadow-[0_10px_25px_rgba(0,0,0,0.3)] overflow-hidden p-4 lg:p-6">
+        <div className="bg-white/20 backdrop-blur-lg rounded-3xl border-2 border-white/30 h-full flex flex-col shadow-[0_10px_25px_rgba(0,0,0,0.3)] overflow-hidden p-4 lg:p-6">
           <div className="flex flex-col mb-1 flex-shrink-0">
             <div className="flex items-center justify-between">
               <h1 className={`${titleSizeClass} font-bold text-[#FFB17A]`}>生成式拼图游戏</h1>
@@ -65,28 +65,19 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
             <h3 className="text-sm font-medium mt-4 mb-1 text-[#FFD5AB]">拼图设置</h3>
           </div>
           <div className="space-y-4 flex-1 pr-1 -mr-1">
-            <div className="p-3 bg-[#463E50] rounded-2xl shadow-[0_4px_10px_rgba(0,0,0,0.2)] space-y-3">
-              <ShapeControls goToNextTab={goToNextTab} /> 
-              <PuzzleControlsCutType goToNextTab={goToNextTab} />
-              <PuzzleControlsCutCount goToNextTab={goToNextTab} />
-              <PuzzleControlsScatter goToNextTab={goToNextTab} />
-            </div>
-            
+            <ShapeControls goToNextTab={goToNextTab} /> 
+            <PuzzleControlsCutType goToNextTab={goToNextTab} />
+            <PuzzleControlsCutCount goToNextTab={goToNextTab} />
+            <PuzzleControlsScatter goToNextTab={goToNextTab} />
             <h3 className="text-sm font-medium mt-4 mb-1 text-[#FFD5AB]">游戏控制</h3>
-            
-            <div className="p-3 bg-[#463E50] rounded-2xl shadow-[0_4px_10px_rgba(0,0,0,0.2)] space-y-3">
-              <ActionButtons layout="desktop" />
-              <Button
-                onClick={handleDesktopResetGame}
-                className={`w-full h-12 text-base 
-                          bg-[#1E1A2A] text-white border-2 border-[#504C67] rounded-xl shadow-md 
-                          hover:bg-[#141022] hover:text-white hover:border-[#706B89] 
-                          active:bg-[#2A283E] active:text-white active:border-[#463E50]`}
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                重新开始
-              </Button>
-            </div>
+            <ActionButtons layout="desktop" />
+            <Button
+              onClick={handleDesktopResetGame}
+              className={`w-full h-12 text-base bg-[#1E1A2A] text-white rounded-xl shadow-md hover:bg-[#141022] hover:text-white hover:border-[#706B89] active:bg-[#2A283E] active:text-white active:border-[#463E50]`}
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              重新开始
+            </Button>
           </div>
         </div>
       </div>

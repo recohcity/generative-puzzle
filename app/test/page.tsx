@@ -22,6 +22,7 @@ interface TrendData {
   cutType: string;
   cutCount: number;
   version?: string; 
+  failReason?: string;
 }
 
 const BENCHMARKS = {
@@ -379,16 +380,26 @@ const PerformanceTrendPage: React.FC = () => {
               <tbody>
                 {pagedData.map((item, index) => (
                   <tr key={index} className="hover:bg-gray-50">
-                    <td className="sticky left-0 bg-white border-r border-b border-gray-300 px-3 py-2 font-mono text-sm text-gray-800">{item.fullTime}</td>
+                    <td className="sticky left-0 bg-white border-r border-b border-gray-300 px-3 py-2 font-mono text-sm text-gray-800">
+                      {item.fullTime}
+                    </td>
                     <td className="border-r border-b border-gray-300 px-3 py-2 text-center text-gray-800">{item.version || '未记录'}</td>
-                    <td className="border-r border-b border-gray-300 px-3 py-2 text-center text-lg">{item.status}</td>
+                    <td className="border-r border-b border-gray-300 px-3 py-2 text-center text-lg relative">
+                      {item.status}
+                      {item.status === '❌' && item.failReason && (
+                        <div className="absolute left-1/2 z-10 mt-2 w-64 -translate-x-1/2 rounded bg-red-50 border border-red-300 p-2 text-xs text-red-700 shadow-lg whitespace-pre-line">
+                          {item.failReason}
+                        </div>
+                      )}
+                    </td>
                     {METRIC_KEYS.map(key => {
                       const grade = getPerformanceGrade(key, item[key as keyof TrendData] as number);
                       const value = item[key as keyof TrendData] as number;
                       return (
                         <td key={key} className="border-r border-b border-gray-300 px-3 py-2 text-center">
-                          <div className={`px-2 py-1 rounded text-xs font-medium ${grade.bg} ${grade.color}`}>
+                          <div className={`px-2 py-1 rounded text-xs font-medium ${grade.bg} ${grade.color} flex items-center justify-center`}>
                             {key === 'avgInteractionTime' && value ? value.toFixed(2) : value}
+                            {grade.grade === '优秀' && <span className="ml-1 bg-green-500 text-white rounded px-1 text-[10px]">极优</span>}
                           </div>
                           <div className={`text-xs mt-1 ${grade.color}`}>{grade.grade}</div>
                         </td>

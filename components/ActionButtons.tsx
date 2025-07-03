@@ -88,9 +88,9 @@ export default function ActionButtons({ layout = 'mobile' }: ActionButtonsProps)
           disabled={
             !state.isScattered ||
             state.selectedPiece === null ||
-            state.completedPieces.includes(state.selectedPiece ?? -1) // Use nullish coalescing
+            state.completedPieces.includes(state.selectedPiece ?? -1)
           }
-          className={`w-full ${buttonHeightClass} px-0 bg-[#F68E5F] hover:bg-[#F47B42] text-white border-2 border-[#F26419] hover:border-[#E15A0F] active:bg-[#E15A0F] rounded-xl shadow-md 
+          className={`w-full ${buttonHeightClass} px-0 bg-[#F68E5F] hover:bg-[#F47B42] text-white rounded-xl shadow-md \
             ${!state.isScattered || state.selectedPiece === null || 
               state.completedPieces.includes(state.selectedPiece ?? -1) 
               ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
@@ -104,7 +104,7 @@ export default function ActionButtons({ layout = 'mobile' }: ActionButtonsProps)
         <Button
           onClick={() => handleRotatePiece(false)}
           disabled={!state.isScattered || state.selectedPiece === null || state.isCompleted}
-          className={`w-full ${buttonHeightClass} px-0 bg-[#F68E5F] hover:bg-[#F47B42] text-white border-2 border-[#F26419] hover:border-[#E15A0F] active:bg-[#E15A0F] rounded-xl shadow-md 
+          className={`w-full ${buttonHeightClass} px-0 bg-[#F68E5F] hover:bg-[#F47B42] text-white rounded-xl shadow-md \
             ${!state.isScattered || state.selectedPiece === null || state.isCompleted ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
           title="逆时针旋转"
           variant="ghost"
@@ -116,7 +116,7 @@ export default function ActionButtons({ layout = 'mobile' }: ActionButtonsProps)
         <Button
           onClick={() => handleRotatePiece(true)}
           disabled={!state.isScattered || state.selectedPiece === null || state.isCompleted}
-          className={`w-full ${buttonHeightClass} px-0 bg-[#F68E5F] hover:bg-[#F47B42] text-white border-2 border-[#F26419] hover:border-[#E15A0F] active:bg-[#E15A0F] rounded-xl shadow-md 
+          className={`w-full ${buttonHeightClass} px-0 bg-[#F68E5F] hover:bg-[#F47B42] text-white rounded-xl shadow-md \
             ${!state.isScattered || state.selectedPiece === null || state.isCompleted ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
           title="顺时针旋转"
           variant="ghost"

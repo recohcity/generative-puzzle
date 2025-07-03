@@ -238,4 +238,30 @@
   影响点：画布背景  
   配置/代码位置：`app/globals.css`
 
+- **materialTexture**（材质纹理填充）  
+  作用：拼图块和目标形状主色填充后叠加瓷砖气孔纹理，提升美术质感  
+  默认值：启用  
+  资源位置：`public/texture-tile.png`  
+  代码位置：`utils/rendering/puzzleDrawing.ts`
+
+- **backgroundEffect**（背景特效）  
+  作用：动态气泡背景特效，提升沉浸感  
+  默认值：启用  
+  组件位置：`components/animate-ui/backgrounds/bubble.tsx`
+
+- **buttonBorderless**（无描边按钮）  
+  作用：所有按钮已去除 border 样式，风格更简洁  
+  默认值：启用  
+  影响点：全局按钮视觉
+
+- **hintOutline**（提示轮廓与文字）  
+  作用：提示功能已修复，轮廓与“这里”文字可正确显示  
+  默认值：启用  
+  影响点：PuzzleCanvas.tsx
+
+- **puzzleZIndex**（拼图层级优化）  
+  作用：已完成拼图始终在下层，未完成拼图始终在上层，避免遮挡  
+  默认值：启用  
+  影响点：PuzzleCanvas.tsx、puzzleDrawing.ts
+
 ---

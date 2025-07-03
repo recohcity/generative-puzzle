@@ -21,6 +21,7 @@ import {
   playButtonClickSound // Still needed here for other buttons
 } from "@/utils/rendering/soundEffects"
 import DesktopPuzzleSettings from "./DesktopPuzzleSettings"; // <-- Import the new component
+import { BubbleBackground } from '../components/animate-ui/backgrounds/bubble';
 
 // --- Create Inner Component for Desktop Puzzle Settings ---
 // import { useGame } from "@/contexts/GameContext"; // No longer needed here
@@ -614,13 +615,9 @@ export default function CurveTestOptimized() {
     <GameProvider>
       <div 
         ref={gameContainerRef}
-        className="min-h-screen w-full p-4 lg:p-6 flex items-center justify-center"
-        style={{
-          backgroundImage: "url('/bg.jpg')",
-          backgroundSize: "cover",
-          backgroundPosition: "center"
-        }}
+        className="min-h-screen w-full p-4 lg:p-6 flex items-center justify-center relative overflow-hidden"
       >
+        <BubbleBackground interactive className="absolute inset-0 -z-10 w-full h-full" />
         {layoutToRender}
       </div>
     </GameProvider>

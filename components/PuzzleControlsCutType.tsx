@@ -112,10 +112,10 @@ export default function PuzzleControlsCutType({ goToNextTab }: PuzzleControlsCut
             />
             <Label
               htmlFor="straight"
-              className={`flex items-center justify-center ${isLandscape ? 'p-1 text-[12px]' : isPhone ? 'p-1.5 text-[12px]' : 'p-2'} border-2 rounded-lg transition-all shadow-sm 
+              className={`flex items-center justify-center ${isLandscape ? 'p-1 text-[12px]' : isPhone ? 'p-1.5 text-[12px]' : 'p-2'} rounded-lg transition-all shadow-sm \
                 ${localCutType === CutType.Straight 
-                ? "bg-[#F68E5F] text-white border-[#F26419] hover:bg-[#F47B42] hover:border-[#E15A0F] active:bg-[#E15A0F]" 
-                : "bg-[#3D3852] text-white border-transparent hover:border-[#504C67] hover:bg-[#4D4862] active:bg-[#302B45]"}
+                ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]" 
+                : "bg-[#3D3852] text-white hover:bg-[#4D4862] active:bg-[#302B45]"}
                 ${!canModifySettings ? disabledClass : "cursor-pointer"}
               `}
             >
@@ -131,10 +131,10 @@ export default function PuzzleControlsCutType({ goToNextTab }: PuzzleControlsCut
             />
             <Label
               htmlFor="diagonal"
-              className={`flex items-center justify-center ${isLandscape ? 'p-1 text-[12px]' : isPhone ? 'p-1.5 text-[12px]' : 'p-2'} border-2 rounded-lg transition-all shadow-sm 
+              className={`flex items-center justify-center ${isLandscape ? 'p-1 text-[12px]' : isPhone ? 'p-1.5 text-[12px]' : 'p-2'} rounded-lg transition-all shadow-sm \
                 ${localCutType === CutType.Diagonal 
-                ? "bg-[#F68E5F] text-white border-[#F26419] hover:bg-[#F47B42] hover:border-[#E15A0F] active:bg-[#E15A0F]" 
-                : "bg-[#3D3852] text-white border-transparent hover:border-[#504C67] hover:bg-[#4D4862] active:bg-[#302B45]"}
+                ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]" 
+                : "bg-[#3D3852] text-white hover:bg-[#4D4862] active:bg-[#302B45]"}
                 ${!canModifySettings ? disabledClass : "cursor-pointer"}
               `}
             >

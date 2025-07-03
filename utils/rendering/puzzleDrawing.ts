@@ -207,6 +207,48 @@ export const drawPiece = (
 
   ctx.fill(); // 填充当前路径
 
+  // --------- 叠加瓷砖气孔纹理 ---------
+  try {
+    // 只加载一次图片
+    if (!(window as any)._puzzleTextureImg) {
+      const img = new window.Image();
+      img.src = '/texture-tile.png';
+      (window as any)._puzzleTextureImg = img;
+    }
+    const textureImg = (window as any)._puzzleTextureImg;
+    if (textureImg.complete) {
+      ctx.save();
+      ctx.globalAlpha = 0.28; // 纹理透明度
+      ctx.globalCompositeOperation = 'multiply'; // 让黑色气孔叠加到主色
+      const pattern = ctx.createPattern(textureImg, 'repeat');
+      if (pattern) {
+        ctx.fillStyle = pattern;
+        ctx.beginPath();
+        ctx.moveTo(piece.points[0].x, piece.points[0].y);
+        for (let i = 1; i < piece.points.length; i++) {
+          const prev = piece.points[i - 1];
+          const current = piece.points[i];
+          const next = piece.points[(i + 1) % piece.points.length];
+          if (shapeType !== "polygon" && prev.isOriginal && current.isOriginal) {
+            const midX = (prev.x + current.x) / 2;
+            const midY = (prev.y + current.y) / 2;
+            const nextMidX = (current.x + next.x) / 2;
+            const nextMidY = (current.y + next.y) / 2;
+            ctx.quadraticCurveTo(current.x, current.y, nextMidX, nextMidY);
+          } else {
+            ctx.lineTo(current.x, current.y);
+          }
+        }
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1.0;
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.restore();
+    }
+  } catch (e) { /* ignore */ }
+  // --------- END 材质纹理 ---------
+
   // 绘制边框 - 只为未完成的拼图绘制边框，完成的拼图不绘制边框
   if (!isCompleted) {
     // 设置描边颜色
@@ -473,27 +515,51 @@ export const drawPuzzle = (
     
     // 先填充纯色
     ctx.fillStyle = fillColor;
-    
-    // 不使用模糊阴影，保持边缘锐利
     ctx.shadowColor = "transparent";
     ctx.shadowBlur = 0;
     ctx.fill();
-    
-    // 在边缘外围增加淡淡的发光效果，确保与填充色有明显区分
-    ctx.save();
-    ctx.shadowColor = "rgba(255, 159, 64, 0.6)";
-    ctx.shadowBlur = 15;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
-    
-    // 使用比填充色更淡的颜色绘制外发光形状
-    ctx.strokeStyle = "rgba(255, 159, 64, 0.3)";
-    ctx.lineWidth = 5;
-    
-    // 仅绘制描边而不再次填充，发光效果只影响描边
-    ctx.stroke();
-    ctx.restore();
-    
+
+    // --------- 叠加瓷砖气孔纹理 ---------
+    try {
+      if (!(window as any)._puzzleTextureImg) {
+        const img = new window.Image();
+        img.src = '/texture-tile.png';
+        (window as any)._puzzleTextureImg = img;
+      }
+      const textureImg = (window as any)._puzzleTextureImg;
+      if (textureImg.complete) {
+        ctx.save();
+        ctx.globalAlpha = 0.28;
+        ctx.globalCompositeOperation = 'multiply';
+        const pattern = ctx.createPattern(textureImg, 'repeat');
+        if (pattern) {
+          ctx.fillStyle = pattern;
+          ctx.beginPath();
+          ctx.moveTo(originalShape[0].x, originalShape[0].y);
+          for (let i = 1; i < originalShape.length; i++) {
+            const prev = originalShape[i - 1];
+            const current = originalShape[i];
+            const next = originalShape[(i + 1) % originalShape.length];
+            if (shapeType !== "polygon" && prev.isOriginal && current.isOriginal) {
+              const midX = (prev.x + current.x) / 2;
+              const midY = (prev.y + current.y) / 2;
+              const nextMidX = (current.x + next.x) / 2;
+              const nextMidY = (current.y + next.y) / 2;
+              ctx.quadraticCurveTo(current.x, current.y, nextMidX, nextMidY);
+            } else {
+              ctx.lineTo(current.x, current.y);
+            }
+          }
+          ctx.closePath();
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1.0;
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.restore();
+      }
+    } catch (e) { /* ignore */ }
+    // --------- END 材质纹理 ---------
+
     // 绘制完成效果
     drawCompletionEffect(ctx, originalShape, shapeType);
 
@@ -560,117 +626,57 @@ export const drawPuzzle = (
     ctx.restore(); // Restore state after applying text styles
 
   } else {
-    // 如果在散开状态且有原始形状，先绘制原始形状的轮廓作为目标指南
+    // 1. 先绘制目标形状（如有）
     if (isScattered && originalShape && originalShape.length > 0) {
-      ctx.save(); // 保存当前绘图状态
+      ctx.save();
       ctx.beginPath();
       ctx.moveTo(originalShape[0].x, originalShape[0].y);
-      
       if (shapeType === "polygon") {
-        // 多边形使用直线
         originalShape.forEach((point) => {
           ctx.lineTo(point.x, point.y);
         });
       } else {
-        // 曲线形状使用贝塞尔曲线
         for (let i = 1; i < originalShape.length; i++) {
           const prev = originalShape[i - 1];
           const current = originalShape[i];
           const next = originalShape[(i + 1) % originalShape.length];
-          
           const midX = (prev.x + current.x) / 2;
           const midY = (prev.y + current.y) / 2;
           const nextMidX = (current.x + next.x) / 2;
           const nextMidY = (current.y + next.y) / 2;
-          
           ctx.quadraticCurveTo(current.x, current.y, nextMidX, nextMidY);
         }
       }
-      
       ctx.closePath();
-      
-      // 完全匹配生成形状时的样式
       ctx.fillStyle = "rgba(45, 55, 72, 0.6)";
       ctx.strokeStyle = "rgba(203, 213, 225, 0.8)";
       ctx.lineWidth = 2.;
-      
-      // 先填充
       ctx.fill();
-      
-      // 添加内阴影效果，像凹下去一样
-      ctx.save();
-      
-      // 使用裁剪方式来限制内阴影只在形状内部
-      ctx.clip();
-      
-      // 创建从中心到边缘的渐变，增加深度感
-      const innerGradient = ctx.createRadialGradient(
-        ctx.canvas.width/2, ctx.canvas.height/2, 0,
-        ctx.canvas.width/2, ctx.canvas.height/2, ctx.canvas.width/2
-      );
-      
-      innerGradient.addColorStop(0, "rgba(255, 255, 255, 0.1)"); // 中心略亮
-      innerGradient.addColorStop(0.7, "rgba(0, 0, 0, 0)"); // 过渡区完全透明
-      innerGradient.addColorStop(1, "rgba(0, 0, 0, 0.25)"); // 边缘暗化
-      
-      // 应用渐变
-      ctx.fillStyle = innerGradient;
-      ctx.fill(); // 再次填充，叠加渐变效果
-      
-      // 绘制内阴影：从边缘向内
-      ctx.shadowColor = "rgba(0, 0, 0, 0.7)";
-      ctx.shadowBlur = 20;
-      ctx.shadowOffsetX = 6; 
-      ctx.shadowOffsetY = 6;
-      
-      // 绘制略小的形状以产生内阴影
-      ctx.lineWidth = 8;
-      ctx.stroke();
-      
-      // 从另一个角度添加内阴影，增强3D凹陷感
-      ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
-      ctx.shadowBlur = 10;
-      ctx.shadowOffsetX = -4;
-      ctx.shadowOffsetY = -4;
-      
-      ctx.lineWidth = 5;
-      ctx.stroke();
-      
       ctx.restore();
-      
-      // 添加轻微发光效果，保持原有的轮廓线样式
-      ctx.shadowColor = "rgba(255, 255, 255, 0.4)";
-      ctx.shadowBlur = 15;
-      ctx.stroke();
-      
-      // 重置阴影
-      ctx.shadowBlur = 0;
     }
 
-    // 绘制所有未完成的拼图，被选中的拼图最后绘制以确保在最上层
-    // 优化：在过滤时保留原始索引，避免 indexOf 的 O(N^2) 问题
+    // 2. 再绘制所有已完成拼图
     const piecesWithOriginalIndex = pieces.map((piece, index) => ({ piece, originalIndex: index }));
 
+    const completedPiecesWithIndex = piecesWithOriginalIndex.filter(
+      ({ originalIndex }) => completedPieces.includes(originalIndex)
+    );
+
+    completedPiecesWithIndex
+      .forEach(({ piece, originalIndex }) => {
+        drawPiece(ctx, piece, originalIndex, true, false, shapeType, isScattered);
+      });
+
+    // 3. 最后绘制所有未完成拼图（未选中的先，选中的最后）
     const uncompletedPiecesWithIndex = piecesWithOriginalIndex.filter(
       ({ originalIndex }) => !completedPieces.includes(originalIndex)
     );
 
-    // 先绘制未选中的未完成拼图
     uncompletedPiecesWithIndex
-      .filter(({ originalIndex }) => selectedPiece === null || originalIndex !== selectedPiece) // Use originalIndex for selection check
-      .forEach(({ piece, originalIndex }) => { // Destructure to get piece and originalIndex
+      .filter(({ originalIndex }) => selectedPiece === null || originalIndex !== selectedPiece)
+      .forEach(({ piece, originalIndex }) => {
         drawPiece(ctx, piece, originalIndex, false, false, shapeType, isScattered);
       });
-
-    // 再绘制已完成的拼图
-    piecesWithOriginalIndex
-      .filter(({ originalIndex }) => completedPieces.includes(originalIndex)) // Use originalIndex for completion check
-      .forEach(({ piece, originalIndex }) => { // Destructure to get piece and originalIndex
-        drawPiece(ctx, piece, originalIndex, true, false, shapeType, isScattered);
-      });
-
-    // 最后绘制被选中的拼图（如果在未完成列表中）
-    // 这一部分逻辑保持不变，因为它直接通过索引访问，没有性能问题
     if (selectedPiece !== null && !completedPieces.includes(selectedPiece)) {
       const piece = pieces[selectedPiece];
       drawPiece(ctx, piece, selectedPiece, false, true, shapeType, isScattered);

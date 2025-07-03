@@ -29,6 +29,8 @@ export async function GET() {
       const content = fs.readFileSync(filePath, 'utf-8');
       const meta = extractMetaFromMarkdown(content);
       if (meta && meta.metrics && meta.scenario) {
+        // status 字段只与流程通过/失败相关，性能极优不会导致失败
+        // 如有 failReason 字段，聚合到结果中，便于前端展示失败详情
         result.push({
           time: meta.timestamp ? new Date(meta.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
           fullTime: meta.timestamp ? new Date(meta.timestamp).toLocaleString('zh-CN', { hour12: false }) : 'N/A',
@@ -44,7 +46,8 @@ export async function GET() {
           shapeType: meta.scenario.shapeType || '-',
           cutType: meta.scenario.cutType || '-',
           cutCount: meta.scenario.cutCount ?? '-',
-          version: meta.version || '未记录', // 新增
+          version: meta.version || '未记录',
+          ...(meta.failReason ? { failReason: meta.failReason } : {})
         });
       }
     }

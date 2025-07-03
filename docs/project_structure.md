@@ -53,7 +53,7 @@
 
 ## components/
 - `GameInterface.tsx`：核心游戏界面，按设备/方向分发布局
-- `PuzzleCanvas.tsx`：主画布组件，负责钩子编排与渲染
+- `PuzzleCanvas.tsx`：主画布组件，负责钩子编排与渲染，支持材质纹理填充、拼图层级优化、提示轮廓与文字显示修复
 - `ActionButtons.tsx`：游戏操作按钮组件
 - `DesktopPuzzleSettings.tsx`：桌面端游戏设置面板
 - `GlobalUtilityButtons.tsx`：全局工具按钮（如全屏、主题切换）
@@ -70,7 +70,7 @@
 - `loading/`：加载动画组件目录
   - `LoadingScreen.tsx`：动态加载动画
   - `LoadingScreenStatic.tsx`：静态加载界面
-- `ui/`：基础 UI 组件库（Shadcn UI 自动生成）
+- `ui/`：基础 UI 组件库（Shadcn UI 自动生成，所有按钮已无描边，风格更简洁）
   - `accordion.tsx` 等：各类基础 UI 组件（按钮、表单、弹窗等）
 
 ---
@@ -117,6 +117,7 @@
 ## public/
 - `bg.jpg`：游戏背景图片
 - `puzzle-pieces.mp3`：游戏音效文件
+- `texture-tile.png`：瓷砖气孔材质纹理，用于拼图块和目标形状的美术填充
 
 ---
 
@@ -145,7 +146,7 @@
   - `ScatterPuzzle.ts`：拼图块散布算法
 - `rendering/`：Canvas 渲染与音效工具目录
   - `colorUtils.ts`：颜色处理工具
-  - `puzzleDrawing.ts`：Canvas 上绘制拼图块的函数
+  - `puzzleDrawing.ts`：Canvas 上绘制拼图块的函数，支持材质纹理填充与层级优化
   - `soundEffects.ts`：音效播放函数
   - `__tests__/`：渲染工具单元测试目录
     - `colorUtils.test.ts`：颜色工具测试脚本
@@ -162,4 +163,7 @@
 - 自动化性能报告归档目录（存放 Markdown/JSON 格式的测试报告，供仪表盘和 API 使用）
 
 ## test-results/
-- Playwright 测试原始结果目录（自动生成，存放原始测试结果文件） 
+- Playwright 测试原始结果目录（自动生成，存放原始测试结果文件）
+
+## animate-ui/backgrounds/bubble.tsx
+- 动态气泡背景特效组件，提升美术体验 

@@ -97,6 +97,28 @@ async function generateReport(suite) {
       metrics.avgInteractionTime = metrics.pieceInteractionTimes.reduce((a, b) => a + b, 0) / metrics.pieceInteractionTimes.length;
     }
 
+    // 新增：保证所有核心字段存在
+    const ensureNumber = v => (typeof v === 'number' && !isNaN(v) ? v : null);
+    const allMetrics = {
+      loadTime: ensureNumber(metrics.loadTime),
+      shapeGenerationTime: ensureNumber(metrics.shapeGenerationTime),
+      puzzleGenerationTime: ensureNumber(metrics.puzzleGenerationTime),
+      scatterTime: ensureNumber(metrics.scatterTime),
+      avgInteractionTime: ensureNumber(metrics.avgInteractionTime),
+      puzzleInteractionDuration: ensureNumber(metrics.puzzleInteractionDuration),
+      totalTestTime: ensureNumber(metrics.totalTestTime),
+      avgFps: metrics.fps && metrics.fps.length > 0 ? parseFloat((metrics.fps.reduce((a, b) => a + b, 0) / metrics.fps.length).toFixed(1)) : null,
+      memoryUsage: ensureNumber(metrics.memoryUsage),
+    };
+    const allScenario = {
+      shapeType: metrics.shapeType || null,
+      cutType: metrics.cutType || null,
+      cutCount: typeof metrics.cutCount === 'number' ? metrics.cutCount : null,
+      pieceCount: typeof metrics.pieceCount === 'number' ? metrics.pieceCount : null,
+    };
+    // 失败原因
+    const failReason = result.status !== 'passed' && result.errors && result.errors.length > 0 ? result.errors.map(e => e.message).join('\n') : undefined;
+
     const stdout = stripAnsiCodes(result.stdout.map(s => s.text || '').join(''));
     
     const timestamp = dayjs().tz('Asia/Hong_Kong').format('YYYY-MM-DD HH:mm:ss');
@@ -116,23 +138,9 @@ async function generateReport(suite) {
         status: testStatus,
         timestamp: dayjs().tz('Asia/Hong_Kong').toISOString(),
         version: metrics.version,
-        metrics: {
-            loadTime: metrics.loadTime,
-            shapeGenerationTime: metrics.shapeGenerationTime,
-            puzzleGenerationTime: metrics.puzzleGenerationTime,
-            scatterTime: metrics.scatterTime,
-            avgInteractionTime: metrics.avgInteractionTime,
-            puzzleInteractionDuration: metrics.puzzleInteractionDuration,
-            totalTestTime: metrics.totalTestTime,
-            avgFps: isNaN(avgFps) ? undefined : parseFloat(avgFps.toFixed(1)),
-            memoryUsage: isNaN(memMB) ? undefined : parseFloat(memMB.toFixed(2)),
-        },
-        scenario: {
-            shapeType: metrics.shapeType,
-            cutType: metrics.cutType,
-            cutCount: metrics.cutCount,
-            pieceCount: metrics.pieceCount,
-        }
+        metrics: allMetrics,
+        scenario: allScenario,
+        ...(failReason ? { failReason } : {})
     };
 
     const perfWarnings = [];
@@ -144,6 +152,15 @@ async function generateReport(suite) {
     if (!isNaN(avgFps) && avgFps < PERFORMANCE_BENCHMARKS.minFps) perfWarnings.push(`- **平均帧率**: (${avgFps.toFixed(1)}fps) 低于基准值 (${PERFORMANCE_BENCHMARKS.minFps}fps)\n  - **建议**: ${OPTIMIZATION_SUGGESTIONS.minFps}`);
     if (!isNaN(memMB) && memMB > (PERFORMANCE_BENCHMARKS.maxMemoryUsage / 1024 / 1024)) perfWarnings.push(`- **内存使用**: (${memMB.toFixed(2)}MB) 超过基准值 (${(PERFORMANCE_BENCHMARKS.maxMemoryUsage / 1024 / 1024)}MB)\n  - **建议**: ${OPTIMIZATION_SUGGESTIONS.maxMemoryUsage}`);
 
+    // 极优性能高亮展示（低于80%基准值）
+    const perfExcellent = [];
+    if (metrics.loadTime !== undefined && metrics.loadTime <= PERFORMANCE_BENCHMARKS.loadTime * 0.8) perfExcellent.push(`- 🚀 页面加载时间极优: ${metrics.loadTime}ms`);
+    if (metrics.shapeGenerationTime !== undefined && metrics.shapeGenerationTime <= PERFORMANCE_BENCHMARKS.shapeGenerationTime * 0.8) perfExcellent.push(`- 🚀 形状生成时间极优: ${metrics.shapeGenerationTime}ms`);
+    if (metrics.puzzleGenerationTime !== undefined && metrics.puzzleGenerationTime <= PERFORMANCE_BENCHMARKS.puzzleGenerationTime * 0.8) perfExcellent.push(`- 🚀 拼图生成时间极优: ${metrics.puzzleGenerationTime}ms`);
+    if (metrics.scatterTime !== undefined && metrics.scatterTime <= PERFORMANCE_BENCHMARKS.scatterTime * 0.8) perfExcellent.push(`- 🚀 散开时间极优: ${metrics.scatterTime}ms`);
+    if (metrics.avgInteractionTime !== undefined && metrics.avgInteractionTime <= PERFORMANCE_BENCHMARKS.pieceInteractionTime * 0.8) perfExcellent.push(`- 🚀 平均拼图交互时间极优: ${metrics.avgInteractionTime.toFixed(2)}ms`);
+    if (!isNaN(avgFps) && avgFps >= 50) perfExcellent.push(`- 🚀 平均帧率极优: ${avgFps.toFixed(1)}fps`);
+    if (!isNaN(memMB) && memMB <= (PERFORMANCE_BENCHMARKS.maxMemoryUsage / 1024 / 1024) * 0.5) perfExcellent.push(`- 🚀 内存使用极优: ${memMB.toFixed(2)}MB`);
 
     const perfContent = `
 | 指标 (单位)                | 结果      | 基准值    | 状态 |
@@ -188,11 +205,14 @@ ${JSON.stringify({ version: "1.0", data: summaryData }, null, 2)}
 ## 测试游戏场景参数
 ${scenarioContent}
 
+## 极优性能高亮
+${perfExcellent.length > 0 ? perfExcellent.join('\n') : '无'}
+
 ## 预警与优化建议
 ${perfWarnings.length > 0 ? perfWarnings.join('\n\n') : '✅  所有性能指标均在基准范围内。'}
 
 ## 性能评测指标
-f${perfContent}
+${perfContent}
 
 ## 流程步骤状态
 <details>

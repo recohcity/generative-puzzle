@@ -95,10 +95,10 @@ export default function PuzzleControlsCutCount({ goToNextTab }: PuzzleControlsCu
     return `
       flex-1 aspect-square rounded-lg flex items-center justify-center 
       ${isLandscape ? 'text-[12px]' : isPhone ? 'text-[12px]' : isSmallScreen ? 'text-[12px]' : 'text-base'} 
-      transition-all duration-200 border border-2 shadow-sm min-w-0
+      transition-all duration-200 shadow-sm min-w-0
       ${localCutCount === num 
-        ? "bg-[#F68E5F] text-white border-[#F26419] hover:bg-[#F47B42] hover:border-[#E15A0F] active:bg-[#E15A0F]" 
-        : "bg-[#3D3852] text-white border-transparent hover:border-[#504C67] hover:bg-[#4D4862] active:bg-[#302B45]"}
+        ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]" 
+        : "bg-[#3D3852] text-white hover:bg-[#4D4862] active:bg-[#302B45]"}
       ${!canModifySettings ? disabledClass : ""}
     `;
   };
@@ -138,7 +138,7 @@ export default function PuzzleControlsCutCount({ goToNextTab }: PuzzleControlsCu
       <Button 
         onClick={handleGeneratePuzzle} 
         disabled={!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType} 
-        className={`w-full ${isLandscape ? 'py-1 text-[12px]' : isPhone ? 'py-1.5 text-[12px]' : ''} bg-[#F68E5F] hover:bg-[#F47B42] text-white border-2 border-[#F26419] hover:border-[#E15A0F] active:bg-[#E15A0F] rounded-xl shadow-md ${(!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+        className={`w-full ${isLandscape ? 'py-1 text-[12px]' : isPhone ? 'py-1.5 text-[12px]' : ''} bg-[#F68E5F] hover:bg-[#F47B42] text-white rounded-xl shadow-md ${(!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
       >
         <PuzzleIcon className={`${isLandscape ? 'w-3 h-3' : ''} w-4 h-4 mr-2`} />
         切割形状

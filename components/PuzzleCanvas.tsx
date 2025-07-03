@@ -101,10 +101,10 @@ export default function PuzzleCanvas() {
       );
 
       if (state.showHint && state.selectedPiece !== null && state.originalPositions.length > 0) {
-        const hintPiece = state.originalPositions.find((p: PuzzlePiece) => p.id === state.selectedPiece);
+        const hintPiece = state.originalPositions[state.selectedPiece];
         if (hintPiece) {
           drawHintOutline(ctx, hintPiece);
-      }
+        }
       }
 
       if (showDebugElements && state.puzzle.length > 0) {

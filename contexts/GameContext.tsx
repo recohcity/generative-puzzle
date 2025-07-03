@@ -349,28 +349,37 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [state.shapeType, state.pendingShapeType, canvasRef, dispatch])
 
+  // 1. useRef 兜底，始终保存 puzzle 最新值
+  const puzzleRef = useRef(state.puzzle);
+  useEffect(() => {
+    puzzleRef.current = state.puzzle;
+    console.log('[DEBUG] puzzle changed:', state.puzzle);
+  }, [state.puzzle]);
+
+  // 2. generatePuzzle 加日志
   const generatePuzzle = useCallback(() => {
-    if (!state.originalShape) return
+    if (!state.originalShape) return;
     const { pieces, originalPositions } = PuzzleGenerator.generatePuzzle(
       state.originalShape,
       state.cutType,
       state.cutCount,
-    )
-    dispatch({ type: "SET_PUZZLE", payload: pieces })
-    dispatch({ type: "SET_ORIGINAL_POSITIONS", payload: originalPositions })
-  }, [state.originalShape, state.cutType, state.cutCount, dispatch])
+    );
+    console.log('[DEBUG] generatePuzzle pieces:', pieces);
+    dispatch({ type: "SET_PUZZLE", payload: pieces });
+    dispatch({ type: "SET_ORIGINAL_POSITIONS", payload: originalPositions });
+  }, [state.originalShape, state.cutType, state.cutCount, dispatch]);
 
+  // 3. scatterPuzzle 加日志和 useRef 兜底
   const scatterPuzzle = useCallback(() => {
-    if (!state.puzzle) {
-      console.warn("Cannot scatter puzzle: No puzzle pieces generated")
-      return
+    const puzzle = puzzleRef.current;
+    if (!puzzle) {
+      console.warn("Cannot scatter puzzle: No puzzle pieces generated");
+      return;
     }
-
     if (state.isScattered) {
-      console.warn("Puzzle already scattered")
-      return
+      console.warn("Puzzle already scattered");
+      return;
     }
-
     let targetShape = null;
     if (state.originalShape && state.originalShape.length > 0) {
       const bounds = state.originalShape.reduce(
@@ -390,81 +399,15 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         radius: radius
       };
     }
-
-    const scatteredPuzzle = ScatterPuzzle.scatterPuzzle(state.puzzle, {
+    const scatteredPuzzle = ScatterPuzzle.scatterPuzzle(puzzle, {
       canvasWidth: state.canvasWidth,
       canvasHeight: state.canvasHeight,
       targetShape: targetShape
-    })
-    
-    dispatch({ type: "SET_PUZZLE", payload: scatteredPuzzle })
-    dispatch({ type: "SET_IS_SCATTERED", payload: true })
-    
-    const piecesNeedingBounce = scatteredPuzzle.filter(piece => (piece as any).needsBounceAnimation);
-    
-    if (piecesNeedingBounce.length > 0) {
-      setTimeout(() => {
-        piecesNeedingBounce.forEach((p, index) => {
-          const piece = p as any;
-          const pieceIndex = scatteredPuzzle.indexOf(piece);
-          if (pieceIndex === -1 || !piece.bounceInfo) return;
-          
-          const shakeDirectionX = Math.sign(piece.bounceInfo.bounceX);
-          const shakeDirectionY = Math.sign(piece.bounceInfo.bounceY);
-          
-          let animationStep = 0;
-          const maxSteps = 6;
-          const shakeAmount = [8, -6, 5, -4, 3, -2];
-          
-          const shakeAnimation = () => {
-            if (animationStep >= maxSteps) return;
-            
-            const shakeX = shakeDirectionX * shakeAmount[animationStep];
-            const shakeY = shakeDirectionY * shakeAmount[animationStep];
-            
-            dispatch({
-              type: "UPDATE_PIECE_POSITION",
-              payload: { index: pieceIndex, dx: shakeX, dy: shakeY },
-            });
-            
-            animationStep++;
-            setTimeout(shakeAnimation, 30);
-          };
-          
-          setTimeout(() => {
-            try {
-              const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-              const oscillator1 = audioContext.createOscillator();
-              const gainNode1 = audioContext.createGain();
-              oscillator1.type = "sine";
-              oscillator1.frequency.setValueAtTime(120, audioContext.currentTime);
-              gainNode1.gain.setValueAtTime(0.4, audioContext.currentTime);
-              gainNode1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
-              oscillator1.connect(gainNode1);
-              gainNode1.connect(audioContext.destination);
-              
-              const oscillator2 = audioContext.createOscillator();
-              const gainNode2 = audioContext.createGain();
-              oscillator2.type = "sine";
-              oscillator2.frequency.setValueAtTime(240, audioContext.currentTime);
-              gainNode2.gain.setValueAtTime(0.2, audioContext.currentTime);
-              gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-              oscillator2.connect(gainNode2);
-              gainNode2.connect(audioContext.destination);
-              
-              oscillator1.start();
-              oscillator2.start();
-              oscillator1.stop(audioContext.currentTime + 0.15);
-              oscillator2.stop(audioContext.currentTime + 0.1);
-            } catch (e) {
-              console.log("Audio not supported");
-            }
-            shakeAnimation(); 
-          }, index * 100);
-        });
-      }, 300);
-    }
-  }, [state.puzzle, state.isScattered, state.canvasWidth, state.canvasHeight, state.originalShape, dispatch])
+    });
+    console.log('[DEBUG] scatterPuzzle result:', scatteredPuzzle);
+    dispatch({ type: "SET_PUZZLE", payload: scatteredPuzzle });
+    dispatch({ type: "SET_IS_SCATTERED", payload: true });
+  }, [state.isScattered, state.canvasWidth, state.canvasHeight, state.originalShape, dispatch]);
 
   // Test API setup must be after all dependent functions are defined.
   useEffect(() => {
@@ -511,24 +454,19 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }, 4000) // 延长提示显示时间到4秒
   }, [dispatch])
 
-  // 添加重置游戏函数
+  // 4. resetGame 加日志
   const resetGame = useCallback(() => {
-    // Clear the canvases first
     if (canvasRef.current) {
-      const ctx = canvasRef.current.getContext("2d")
-      if (ctx) {
-        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
-      }
+      const ctx = canvasRef.current.getContext("2d");
+      if (ctx) ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
     }
-        if (backgroundCanvasRef.current) {
-      const bgCtx = backgroundCanvasRef.current.getContext("2d")
-      if (bgCtx) {
-        bgCtx.clearRect(0, 0, backgroundCanvasRef.current.width, backgroundCanvasRef.current.height)
-        }
-      }
-    // Then dispatch the reset action
-    dispatch({ type: "RESET_GAME" })
-  }, []) // Keep dependencies empty if refs are stable
+    if (backgroundCanvasRef.current) {
+      const bgCtx = backgroundCanvasRef.current.getContext("2d");
+      if (bgCtx) bgCtx.clearRect(0, 0, backgroundCanvasRef.current.width, backgroundCanvasRef.current.height);
+    }
+    console.log('[DEBUG] resetGame called');
+    dispatch({ type: "RESET_GAME" });
+  }, []);
 
   // 简单的音效函数
   const playSnapSound = () => {
@@ -857,6 +795,14 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     }
   }, [dispatch, state.canvasWidth, state.canvasHeight, state.originalShape.length]);
+
+  // puzzle 相关副作用日志
+  useEffect(() => {
+    console.log('[DEBUG] GameContext puzzle:', state.puzzle);
+    console.log('[DEBUG] GameContext isScattered:', state.isScattered);
+    console.log('[DEBUG] GameContext completedPieces:', state.completedPieces);
+    console.log('[DEBUG] GameContext isCompleted:', state.isCompleted);
+  }, [state.puzzle, state.isScattered, state.completedPieces, state.isCompleted]);
 
   // 组装上下文值，添加resetGame函数
   const contextValue: GameContextProps = {

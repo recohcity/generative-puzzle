@@ -61,3 +61,10 @@ test.describe('Responsive Adaptation Tests', () => {
     expect(finalState.piece2.y).toBeCloseTo(finalState.targetForPiece2.y, 1);
   });
 }); 
+
+test('smoke', async ({ page }) => {
+  await page.goto('/');
+  const title = await page.title();
+  expect(title).toBeTruthy();
+  expect(title.length).toBeGreaterThan(0);
+});
