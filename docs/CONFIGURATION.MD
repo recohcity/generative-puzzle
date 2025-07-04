@@ -264,4 +264,9 @@
   默认值：启用  
   影响点：PuzzleCanvas.tsx、puzzleDrawing.ts
 
+- **loadingScreen**（加载页风格与体验）  
+  作用：加载页与主页面风格完全一致，极简高效，进度条与数字同步，动画平滑递增，彻底无黑屏  
+  默认值：启用  
+  组件位置：components/loading/LoadingScreen.tsx
+
 ---

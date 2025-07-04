@@ -27,7 +27,7 @@ function BubbleBackground({
   ref,
   className,
   children,
-  interactive = false,
+  interactive = false, // 是否开启交互(false: 不开启, true: 开启)
   transition = { stiffness: 100, damping: 20 },
   colors = {
     first: '18,113,255',

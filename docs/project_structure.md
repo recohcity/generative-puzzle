@@ -68,8 +68,7 @@
   - `PhoneLandscapeLayout.tsx`：手机横屏布局
   - `PhonePortraitLayout.tsx`：手机竖屏布局
 - `loading/`：加载动画组件目录
-  - `LoadingScreen.tsx`：动态加载动画
-  - `LoadingScreenStatic.tsx`：静态加载界面
+  - `LoadingScreen.tsx`：唯一加载动画组件，风格与主页面完全一致，极简高效。已移除 LoadingScreenStatic.tsx，所有加载流程统一为此组件。
 - `ui/`：基础 UI 组件库（Shadcn UI 自动生成，所有按钮已无描边，风格更简洁）
   - `accordion.tsx` 等：各类基础 UI 组件（按钮、表单、弹窗等）
 
@@ -115,7 +114,6 @@
 ---
 
 ## public/
-- `bg.jpg`：游戏背景图片
 - `puzzle-pieces.mp3`：游戏音效文件
 - `texture-tile.png`：瓷砖气孔材质纹理，用于拼图块和目标形状的美术填充
 
