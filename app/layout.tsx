@@ -3,12 +3,20 @@ import "@/app/globals.css"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
+import { useEffect } from "react"
+import EnvModeClient from "@/components/EnvModeClient";
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "生成式拼图游戏",
   description: "一个基于Next.js和React的生成式拼图游戏项目",
+}
+
+declare global {
+  interface Window {
+    __ENV_MODE__?: string;
+  }
 }
 
 export default function RootLayout({
@@ -26,9 +34,9 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
-      <body className={inter.className} suppressHydrationWarning={true}>
-        <ThemeProvider attribute="class" forcedTheme="dark" disableTransitionOnChange>
-          {/* <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange> */}
+      <body className={inter.className}>
+        <EnvModeClient />
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
         </ThemeProvider>
       </body>

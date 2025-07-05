@@ -39,8 +39,20 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   // 计算拼图完成进度
   const totalPieces = (state.puzzle ?? []).length;
   const completedPiecesCount = (state.completedPieces ?? []).length;
-  const puzzleProgressText = totalPieces > 0 ? `${completedPiecesCount} / ${totalPieces} 块拼图已完成` : '';
-  
+  // const puzzleProgressText = totalPieces > 0 ? `${completedPiecesCount} / ${totalPieces} 块拼图已完成` : '';
+
+  // 智能提示内容（新版流程）
+  let progressTip = '';
+  if (state.originalShape.length === 0 && state.puzzle === null && state.cutType === "") {
+    progressTip = "请点击生成你喜欢的形状";
+  } else if (state.originalShape.length > 0 && state.puzzle === null && state.cutType === "") {
+    progressTip = "请选择切割类型";
+  } else if (state.originalShape.length > 0 && state.puzzle === null && state.cutType !== "") {
+    progressTip = "请切割形状";
+  } else if (state.puzzle !== null) {
+    progressTip = `${completedPiecesCount} / ${totalPieces} 块拼图已完成`;
+  }
+
   // 处理重新开始按钮点击
   const handleDesktopResetGame = () => {
     playButtonClickSound();
@@ -84,10 +96,10 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
 
       {/* Right Game Area */}
       <div className="flex-1 h-full relative bg-white/30 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/30 flex flex-col justify-center items-center overflow-hidden">
-        {/* Puzzle Count Display */}
-        {totalPieces > 0 && (
+        {/* 智能提示区域 */}
+        {progressTip && (
           <div className="absolute top-4 text-base font-medium text-white bg-black/30 px-4 py-2 rounded-full z-10">
-            {puzzleProgressText}
+            {progressTip}
           </div>
         )}
         <PuzzleCanvas />

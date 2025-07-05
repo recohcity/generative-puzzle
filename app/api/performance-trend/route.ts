@@ -34,9 +34,11 @@ export async function GET() {
         result.push({
           time: meta.timestamp ? new Date(meta.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
           fullTime: meta.timestamp ? new Date(meta.timestamp).toLocaleString('zh-CN', { hour12: false }) : 'N/A',
+          envMode: meta.envMode || 'unknown',
           status: meta.status === '通过' ? '✅' : '❌',
           count: meta.scenario.pieceCount ?? 0,
-          loadTime: meta.metrics.loadTime ?? 0,
+          resourceLoadTime: meta.metrics.resourceLoadTime ?? meta.metrics.gotoLoadTime ?? 0,
+          e2eLoadTime: meta.metrics.e2eLoadTime ?? meta.metrics.loadTime ?? 0,
           shapeGenerationTime: meta.metrics.shapeGenerationTime ?? 0,
           puzzleGenerationTime: meta.metrics.puzzleGenerationTime ?? 0,
           scatterTime: meta.metrics.scatterTime ?? 0,

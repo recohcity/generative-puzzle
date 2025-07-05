@@ -91,9 +91,6 @@ export default function PuzzleControlsCutType({ goToNextTab }: PuzzleControlsCut
       {!isPhone && !isLandscape && (
         <div className="text-xs text-[#FFD5AB] mb-1">
           选择切割类型
-          {canModifySettings && !hasSelectedCutType && (
-            <span className="text-[#F26419] ml-1">*必选</span>
-          )}
         </div>
       )}
       <div>

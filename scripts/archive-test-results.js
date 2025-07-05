@@ -33,6 +33,9 @@ const OPTIMIZATION_SUGGESTIONS = {
     maxMemoryUsage: "检查是否存在内存泄漏，关注事件监听器的移除、大对象的引用释放等。",
 };
 
+// 新增端到端可交互加载时间基准值
+const E2E_LOAD_BENCHMARK = 1800;
+
 function stripAnsiCodes(str) {
   return str.replace(/[\u001b\u009b][[()#;?]*.{0,2}(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
 }
@@ -100,6 +103,8 @@ async function generateReport(suite) {
     // 新增：保证所有核心字段存在
     const ensureNumber = v => (typeof v === 'number' && !isNaN(v) ? v : null);
     const allMetrics = {
+      resourceLoadTime: ensureNumber(metrics.resourceLoadTime ?? metrics.gotoLoadTime),
+      e2eLoadTime: ensureNumber(metrics.e2eLoadTime ?? metrics.loadTime),
       loadTime: ensureNumber(metrics.loadTime),
       shapeGenerationTime: ensureNumber(metrics.shapeGenerationTime),
       puzzleGenerationTime: ensureNumber(metrics.puzzleGenerationTime),
@@ -129,8 +134,11 @@ async function generateReport(suite) {
     const testTitle = spec.title;
     const testStatus = result.status === 'passed' ? '通过' : '失败';
 
+    // 计算平均帧率和格式化内存
     const avgFps = metrics.fps && metrics.fps.length > 0 ? (metrics.fps.reduce((a, b) => a + b, 0) / metrics.fps.length) : NaN;
     const memMB = metrics.memoryUsage;
+    const avgFpsStr = isNaN(avgFps) ? '缺失' : avgFps.toFixed(2);
+    const memMBStr = isNaN(memMB) ? '缺失' : memMB.toFixed(2);
     
     const summaryData = {
         fileName: reportFileName,
@@ -138,40 +146,46 @@ async function generateReport(suite) {
         status: testStatus,
         timestamp: dayjs().tz('Asia/Hong_Kong').toISOString(),
         version: metrics.version,
+        envMode: metrics.envMode || 'unknown',
         metrics: allMetrics,
         scenario: allScenario,
         ...(failReason ? { failReason } : {})
     };
 
-    const perfWarnings = [];
-    if (metrics.loadTime > PERFORMANCE_BENCHMARKS.loadTime) perfWarnings.push(`- **页面加载时间**: (${metrics.loadTime}ms) 超过基准值 (${PERFORMANCE_BENCHMARKS.loadTime}ms)\n  - **建议**: ${OPTIMIZATION_SUGGESTIONS.loadTime}`);
-    if (metrics.shapeGenerationTime > PERFORMANCE_BENCHMARKS.shapeGenerationTime) perfWarnings.push(`- **形状生成时间**: (${metrics.shapeGenerationTime}ms) 超过基准值 (${PERFORMANCE_BENCHMARKS.shapeGenerationTime}ms)\n  - **建议**: ${OPTIMIZATION_SUGGESTIONS.shapeGenerationTime}`);
-    if (metrics.puzzleGenerationTime > PERFORMANCE_BENCHMARKS.puzzleGenerationTime) perfWarnings.push(`- **拼图生成时间**: (${metrics.puzzleGenerationTime}ms) 超过基准值 (${PERFORMANCE_BENCHMARKS.puzzleGenerationTime}ms)\n  - **建议**: ${OPTIMIZATION_SUGGESTIONS.puzzleGenerationTime}`);
-    if (metrics.scatterTime > PERFORMANCE_BENCHMARKS.scatterTime) perfWarnings.push(`- **散开时间**: (${metrics.scatterTime}ms) 超过基准值 (${PERFORMANCE_BENCHMARKS.scatterTime}ms)\n  - **建议**: ${OPTIMIZATION_SUGGESTIONS.scatterTime}`);
-    if (metrics.avgInteractionTime > PERFORMANCE_BENCHMARKS.pieceInteractionTime) perfWarnings.push(`- **平均拼图交互时间**: (${metrics.avgInteractionTime?.toFixed(2)}ms) 超过基准值 (${PERFORMANCE_BENCHMARKS.pieceInteractionTime}ms)\n  - **建议**: ${OPTIMIZATION_SUGGESTIONS.avgInteractionTime}`);
-    if (!isNaN(avgFps) && avgFps < PERFORMANCE_BENCHMARKS.minFps) perfWarnings.push(`- **平均帧率**: (${avgFps.toFixed(1)}fps) 低于基准值 (${PERFORMANCE_BENCHMARKS.minFps}fps)\n  - **建议**: ${OPTIMIZATION_SUGGESTIONS.minFps}`);
-    if (!isNaN(memMB) && memMB > (PERFORMANCE_BENCHMARKS.maxMemoryUsage / 1024 / 1024)) perfWarnings.push(`- **内存使用**: (${memMB.toFixed(2)}MB) 超过基准值 (${(PERFORMANCE_BENCHMARKS.maxMemoryUsage / 1024 / 1024)}MB)\n  - **建议**: ${OPTIMIZATION_SUGGESTIONS.maxMemoryUsage}`);
-
     // 极优性能高亮展示（低于80%基准值）
     const perfExcellent = [];
-    if (metrics.loadTime !== undefined && metrics.loadTime <= PERFORMANCE_BENCHMARKS.loadTime * 0.8) perfExcellent.push(`- 🚀 页面加载时间极优: ${metrics.loadTime}ms`);
+    if (metrics.resourceLoadTime !== undefined && metrics.resourceLoadTime <= 800) perfExcellent.push(`- 🚀 资源加载时间极优: ${metrics.resourceLoadTime}ms`);
+    if (metrics.e2eLoadTime !== undefined && metrics.e2eLoadTime <= 1200) perfExcellent.push(`- 🚀 端到端加载时间极优: ${metrics.e2eLoadTime}ms`);
     if (metrics.shapeGenerationTime !== undefined && metrics.shapeGenerationTime <= PERFORMANCE_BENCHMARKS.shapeGenerationTime * 0.8) perfExcellent.push(`- 🚀 形状生成时间极优: ${metrics.shapeGenerationTime}ms`);
     if (metrics.puzzleGenerationTime !== undefined && metrics.puzzleGenerationTime <= PERFORMANCE_BENCHMARKS.puzzleGenerationTime * 0.8) perfExcellent.push(`- 🚀 拼图生成时间极优: ${metrics.puzzleGenerationTime}ms`);
     if (metrics.scatterTime !== undefined && metrics.scatterTime <= PERFORMANCE_BENCHMARKS.scatterTime * 0.8) perfExcellent.push(`- 🚀 散开时间极优: ${metrics.scatterTime}ms`);
     if (metrics.avgInteractionTime !== undefined && metrics.avgInteractionTime <= PERFORMANCE_BENCHMARKS.pieceInteractionTime * 0.8) perfExcellent.push(`- 🚀 平均拼图交互时间极优: ${metrics.avgInteractionTime.toFixed(2)}ms`);
-    if (!isNaN(avgFps) && avgFps >= 50) perfExcellent.push(`- 🚀 平均帧率极优: ${avgFps.toFixed(1)}fps`);
+    if (!isNaN(avgFps) && avgFps >= 50) perfExcellent.push(`- 🚀 平均帧率极优: ${avgFps.toFixed(2)}fps`);
     if (!isNaN(memMB) && memMB <= (PERFORMANCE_BENCHMARKS.maxMemoryUsage / 1024 / 1024) * 0.5) perfExcellent.push(`- 🚀 内存使用极优: ${memMB.toFixed(2)}MB`);
 
+    // 预警与优化建议分项
+    const perfWarnings = [];
+    if (metrics.resourceLoadTime > 1000) perfWarnings.push(`- **资源加载时间**: (${metrics.resourceLoadTime}ms) 超过基准值 (1000ms)\n  - **建议**: 优化页面静态资源加载，如压缩图片、使用CDN、利用浏览器缓存等。`);
+    if (metrics.e2eLoadTime > 1800) perfWarnings.push(`- **端到端加载时间**: (${metrics.e2eLoadTime}ms) 超过基准值 (1800ms)\n  - **建议**: 优化首屏渲染、动画、异步数据等流程，提升整体可交互速度。`);
+    if (metrics.shapeGenerationTime > PERFORMANCE_BENCHMARKS.shapeGenerationTime) perfWarnings.push(`- **形状生成时间**: (${metrics.shapeGenerationTime}ms) 超过基准值 (${PERFORMANCE_BENCHMARKS.shapeGenerationTime}ms)\n  - **建议**: ${OPTIMIZATION_SUGGESTIONS.shapeGenerationTime}`);
+    if (metrics.puzzleGenerationTime > PERFORMANCE_BENCHMARKS.puzzleGenerationTime) perfWarnings.push(`- **拼图生成时间**: (${metrics.puzzleGenerationTime}ms) 超过基准值 (${PERFORMANCE_BENCHMARKS.puzzleGenerationTime}ms)\n  - **建议**: ${OPTIMIZATION_SUGGESTIONS.puzzleGenerationTime}`);
+    if (metrics.scatterTime > PERFORMANCE_BENCHMARKS.scatterTime) perfWarnings.push(`- **散开时间**: (${metrics.scatterTime}ms) 超过基准值 (${PERFORMANCE_BENCHMARKS.scatterTime}ms)\n  - **建议**: ${OPTIMIZATION_SUGGESTIONS.scatterTime}`);
+    if (metrics.avgInteractionTime > PERFORMANCE_BENCHMARKS.pieceInteractionTime) perfWarnings.push(`- **平均拼图交互时间**: (${metrics.avgInteractionTime?.toFixed(2)}ms) 超过基准值 (${PERFORMANCE_BENCHMARKS.pieceInteractionTime}ms)\n  - **建议**: ${OPTIMIZATION_SUGGESTIONS.avgInteractionTime}`);
+    if (!isNaN(avgFps) && avgFps < PERFORMANCE_BENCHMARKS.minFps) perfWarnings.push(`- **平均帧率**: (${avgFps.toFixed(2)}fps) 低于基准值 (${PERFORMANCE_BENCHMARKS.minFps}fps)\n  - **建议**: ${OPTIMIZATION_SUGGESTIONS.minFps}`);
+    if (!isNaN(memMB) && memMB > (PERFORMANCE_BENCHMARKS.maxMemoryUsage / 1024 / 1024)) perfWarnings.push(`- **内存使用**: (${memMB.toFixed(2)}MB) 超过基准值 (${(PERFORMANCE_BENCHMARKS.maxMemoryUsage / 1024 / 1024)}MB)\n  - **建议**: ${OPTIMIZATION_SUGGESTIONS.maxMemoryUsage}`);
+
+    // 性能评测指标表格，增加两行
     const perfContent = `
 | 指标 (单位)                | 结果      | 基准值    | 状态 |
 | -------------------------- | --------- | --------- | ---- |
-| 页面加载时间 (ms)          | ${formatValue(metrics.loadTime, 'ms')}      | < ${PERFORMANCE_BENCHMARKS.loadTime}ms    | ${getStatusIcon(metrics.loadTime, PERFORMANCE_BENCHMARKS.loadTime, 'max')} |
+| 资源加载时间 (ms)          | ${formatValue(metrics.resourceLoadTime, 'ms')}      | < 1000ms    | ${getStatusIcon(metrics.resourceLoadTime, 1000, 'max')} |
+| 端到端加载时间 (ms)        | ${formatValue(metrics.e2eLoadTime, 'ms')}      | < 1800ms    | ${getStatusIcon(metrics.e2eLoadTime, 1800, 'max')} |
 | 形状生成时间 (ms)          | ${formatValue(metrics.shapeGenerationTime, 'ms')} | < ${PERFORMANCE_BENCHMARKS.shapeGenerationTime}ms | ${getStatusIcon(metrics.shapeGenerationTime, PERFORMANCE_BENCHMARKS.shapeGenerationTime, 'max')} |
 | 拼图生成时间 (ms)          | ${formatValue(metrics.puzzleGenerationTime, 'ms')} | < ${PERFORMANCE_BENCHMARKS.puzzleGenerationTime}ms | ${getStatusIcon(metrics.puzzleGenerationTime, PERFORMANCE_BENCHMARKS.puzzleGenerationTime, 'max')} |
 | 散开时间 (ms)              | ${formatValue(metrics.scatterTime, 'ms')}      | < ${PERFORMANCE_BENCHMARKS.scatterTime}ms    | ${getStatusIcon(metrics.scatterTime, PERFORMANCE_BENCHMARKS.scatterTime, 'max')} |
 | 平均拼图交互时间 (ms)      | ${formatValue(metrics.avgInteractionTime?.toFixed(2), 'ms')} | < ${PERFORMANCE_BENCHMARKS.pieceInteractionTime}ms | ${getStatusIcon(metrics.avgInteractionTime, PERFORMANCE_BENCHMARKS.pieceInteractionTime, 'max')} |
-| 平均帧率 (fps)             | ${formatValue(isNaN(avgFps) ? undefined : avgFps.toFixed(1), 'fps')}       | > ${PERFORMANCE_BENCHMARKS.minFps}fps     | ${getStatusIcon(avgFps, PERFORMANCE_BENCHMARKS.minFps, 'min')} |
-| 内存使用 (MB)            | ${formatValue(isNaN(memMB) ? undefined : memMB.toFixed(2), 'MB')}       | < ${PERFORMANCE_BENCHMARKS.maxMemoryUsage / 1024 / 1024}MB     | ${getStatusIcon(memMB, PERFORMANCE_BENCHMARKS.maxMemoryUsage / 1024 / 1024, 'max')} |
+| 平均帧率 (fps)             | ${avgFpsStr}       | > ${PERFORMANCE_BENCHMARKS.minFps}fps     | ${getStatusIcon(avgFps, PERFORMANCE_BENCHMARKS.minFps, 'min')} |
+| 内存使用 (MB)            | ${memMBStr}       | < ${PERFORMANCE_BENCHMARKS.maxMemoryUsage / 1024 / 1024}MB     | ${getStatusIcon(memMB, PERFORMANCE_BENCHMARKS.maxMemoryUsage / 1024 / 1024, 'max')} |
 | 拼图交互总时长 (ms)        | ${formatValue(metrics.puzzleInteractionDuration, 'ms')} | -         | ℹ️   |
 | 总测试时间 (ms)            | ${formatValue(metrics.totalTestTime, 'ms')} | -         | ℹ️   |
 `;
@@ -268,14 +282,17 @@ async function updateIndex() {
 
     let trendTable = `
 ### 详细历史数据
-| 测试报告 | 版本号 | 状态 | 块数 | 加载 (ms) | 形状 (ms) | 切割 (ms) | 散开 (ms) | 交互 (ms) | FPS | 内存 (MB) |
-|---|---|---|---|---|---|---|---|---|---|---|
+| 测试报告 | 版本号 | 模式 | 块数 | 资源加载 (ms) | 端到端加载 (ms) | 形状 (ms) | 切割 (ms) | 散开 (ms) | 交互 (ms) | FPS | 内存 (MB) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
 `;
 
     for (const data of reportsData) {
         const m = data.metrics;
         const s = data.scenario || {};
-        trendTable += `| [${dayjs(data.timestamp).tz('Asia/Hong_Kong').format('YYYY-MM-DD HH:mm')}](${data.fileName}) | ${data.version || '未记录'} | ${data.status === '通过' ? '✅' : '❌'} | ${formatValue(s.pieceCount, '')} | ${getStatusIcon(m.loadTime, PERFORMANCE_BENCHMARKS.loadTime)} ${formatValue(m.loadTime)} | ${getStatusIcon(m.shapeGenerationTime, PERFORMANCE_BENCHMARKS.shapeGenerationTime)} ${formatValue(m.shapeGenerationTime)} | ${getStatusIcon(m.puzzleGenerationTime, PERFORMANCE_BENCHMARKS.puzzleGenerationTime)} ${formatValue(m.puzzleGenerationTime)} | ${getStatusIcon(m.scatterTime, PERFORMANCE_BENCHMARKS.scatterTime)} ${formatValue(m.scatterTime)} | ${getStatusIcon(m.avgInteractionTime, PERFORMANCE_BENCHMARKS.pieceInteractionTime)} ${formatValue(m.avgInteractionTime?.toFixed(1))} | ${getStatusIcon(m.avgFps, PERFORMANCE_BENCHMARKS.minFps, 'min')} ${formatValue(m.avgFps)} | ${getStatusIcon(m.memoryUsage, PERFORMANCE_BENCHMARKS.maxMemoryUsage / 1024 / 1024)} ${formatValue(m.memoryUsage)} |\n`;
+        const mode = (data.envMode || 'unknown') === 'production' ? '生产' : ((data.envMode || 'unknown') === 'development' ? '开发' : '未知');
+        const memValue = m.memoryUsage !== undefined && m.memoryUsage !== null && !isNaN(m.memoryUsage) ? Number(m.memoryUsage).toFixed(2) : formatValue(m.memoryUsage);
+        trendTable += `| [${dayjs(data.timestamp).tz('Asia/Hong_Kong').format('YYYY-MM-DD HH:mm')}](${data.fileName}) | ${data.version || '未记录'} | ${mode} | ${formatValue(s.pieceCount, '')} | ${getStatusIcon(m.resourceLoadTime ?? m.gotoLoadTime ?? m.loadTime, 1000, 'max')} ${formatValue(m.resourceLoadTime ?? m.gotoLoadTime ?? m.loadTime)} | ${getStatusIcon(m.e2eLoadTime ?? m.loadTime, 1800, 'max')} ${formatValue(m.e2eLoadTime ?? m.loadTime)} | ${getStatusIcon(m.shapeGenerationTime, PERFORMANCE_BENCHMARKS.shapeGenerationTime)} ${formatValue(m.shapeGenerationTime)} | ${getStatusIcon(m.puzzleGenerationTime, PERFORMANCE_BENCHMARKS.puzzleGenerationTime)} ${formatValue(m.puzzleGenerationTime)} | ${getStatusIcon(m.scatterTime, PERFORMANCE_BENCHMARKS.scatterTime)} ${formatValue(m.scatterTime)} | ${getStatusIcon(m.avgInteractionTime, PERFORMANCE_BENCHMARKS.pieceInteractionTime)} ${formatValue(m.avgInteractionTime?.toFixed(1))} | ${getStatusIcon(m.avgFps, PERFORMANCE_BENCHMARKS.minFps, 'min')} ${formatValue(m.avgFps)} | ${getStatusIcon(m.memoryUsage, PERFORMANCE_BENCHMARKS.maxMemoryUsage / 1024 / 1024)} ${memValue} |
+`;
     }
 
     const indexContent = `

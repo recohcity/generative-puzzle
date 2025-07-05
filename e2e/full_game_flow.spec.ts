@@ -8,7 +8,10 @@ const { version } = require('../package.json'); // 顶部引入版本号
 
 // 定义性能指标接口
 interface PerformanceMetrics {
+  gotoLoadTime?: number;
+  e2eLoadTime?: number;
   loadTime: number | undefined;
+  resourceLoadTime?: number; // 新增
   shapeGenerationTime: number | undefined;
   puzzleGenerationTime: number | undefined;
   scatterTime: number | undefined;
@@ -23,7 +26,8 @@ interface PerformanceMetrics {
   cutCount?: number;
   pieceCount?: number;
   version?: string; // 版本号字段
-  failReason?: string; // 失败原因字段
+  failReason?: string; // n失败原因字段
+  envMode?: string; // 环境模式字段
 }
 
 // 性能指标基准值
@@ -37,6 +41,18 @@ const PERFORMANCE_BENCHMARKS = {
   maxMemoryUsage: 100 * 1024 * 1024, // 最大内存使用基准：100MB
 };
 
+// 自动识别开发/生产环境
+function detectEnvMode() {
+  if (process.env.NODE_ENV) return process.env.NODE_ENV;
+  if (process.argv.some(arg => arg.includes('dev'))) return 'development';
+  if (process.argv.some(arg => arg.includes('start') || arg.includes('prod'))) return 'production';
+  try {
+    const fs = require('fs');
+    if (fs.existsSync('./.next') || fs.existsSync('./build') || fs.existsSync('./dist')) return 'production';
+  } catch {}
+  return 'development';
+}
+
 // 辅助函数：导航到页面并确保画布和控制面板可见
 async function gotoAndEnsureCanvas(page: Page) {
   await page.addInitScript(() => {
@@ -45,7 +61,7 @@ async function gotoAndEnsureCanvas(page: Page) {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('http://localhost:3000/');
   await page.waitForSelector('canvas.relative.cursor-pointer');
-  await expect(page.getByRole('button', { name: /生成形状|重新生成形状/ })).toBeVisible(); 
+  await waitForTip(page, '请点击生成你喜欢的形状');
 }
 
 // 辅助函数：旋转拼图到正确角度
@@ -169,15 +185,32 @@ function evaluatePerformance(metrics: PerformanceMetrics): { details: string[] }
 
   // 检查内存使用
   if (metrics.memoryUsage !== undefined && metrics.memoryUsage > PERFORMANCE_BENCHMARKS.maxMemoryUsage) {
-    details.push(`⚠️ 内存使用 (${(metrics.memoryUsage / 1024 / 1024).toFixed(2)}MB) 超过基准值 (${PERFORMANCE_BENCHMARKS.maxMemoryUsage / 1024 / 1024}MB)`);
+    details.push(`⚠️ 内存使用 (${metrics.memoryUsage.toFixed(2)}MB) 超过基准值 (${(PERFORMANCE_BENCHMARKS.maxMemoryUsage / 1024 / 1024).toFixed(2)}MB)`);
   } else if (metrics.memoryUsage !== undefined) {
-    details.push(`✅ 内存使用: ${(metrics.memoryUsage / 1024 / 1024).toFixed(2)}MB`);
+    details.push(`✅ 内存使用: ${metrics.memoryUsage.toFixed(2)}MB`);
   } else {
     details.push('内存使用: 缺失');
   }
 
   // 添加总测试时间
   details.push(`ℹ️ 总测试时间: ${metrics.totalTestTime}ms`);
+
+  // 页面资源加载时间
+  if (metrics.gotoLoadTime !== undefined && metrics.gotoLoadTime > 1000) {
+    details.push(`⚠️ 页面资源加载时间 (${metrics.gotoLoadTime}ms) 超过基准值 (1000ms)`);
+  } else if (metrics.gotoLoadTime !== undefined) {
+    details.push(`✅ 页面资源加载时间: ${metrics.gotoLoadTime}ms`);
+  } else {
+    details.push('页面资源加载时间: 缺失');
+  }
+  // 端到端可交互加载时间
+  if (metrics.e2eLoadTime !== undefined && metrics.e2eLoadTime > 1800) {
+    details.push(`⚠️ 端到端可交互加载时间 (${metrics.e2eLoadTime}ms) 超过基准值 (1800ms)`);
+  } else if (metrics.e2eLoadTime !== undefined) {
+    details.push(`✅ 端到端可交互加载时间: ${metrics.e2eLoadTime}ms`);
+  } else {
+    details.push('端到端可交互加载时间: 缺失');
+  }
 
   return { details };
 }
@@ -197,7 +230,38 @@ async function robustWaitForFunction(page: Page, fn: () => boolean, timeout = 30
   }
 }
 
+// 辅助函数：等待画布提示区域出现指定文本
+async function waitForTip(page: Page, expected: string) {
+  await page.waitForFunction((text) => {
+    const el = document.querySelector('div.absolute.top-4');
+    return el && el.textContent && el.textContent.trim() === text;
+  }, expected, { timeout: 10000 });
+}
+
 test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    (window as any).soundPlayedForTest = () => {};
+    // FPS采集脚本
+    let lastTime = performance.now();
+    let frames = 0;
+    const fpsData: number[] = [];
+    function measureFPS() {
+      const now = performance.now();
+      frames++;
+      if (now - lastTime >= 1000) {
+        const fps = Math.round((frames * 1000) / (now - lastTime));
+        fpsData.push(fps);
+        frames = 0;
+        lastTime = now;
+      }
+      (window as any).fpsData = fpsData;
+      requestAnimationFrame(measureFPS);
+    }
+    requestAnimationFrame(measureFPS);
+    // 隐藏动画，确保浏览器持续刷新
+    function dummyAnim() { requestAnimationFrame(dummyAnim); }
+    requestAnimationFrame(dummyAnim);
+  });
   await gotoAndEnsureCanvas(page);
 });
 
@@ -206,7 +270,10 @@ test.beforeEach(async ({ page }) => {
 test('完整自动化游戏流程', async ({ page }) => {
   const startTime = Date.now();
   const metrics: PerformanceMetrics = {
+    gotoLoadTime: undefined,
+    e2eLoadTime: undefined,
     loadTime: undefined,
+    resourceLoadTime: undefined,
     shapeGenerationTime: undefined,
     puzzleGenerationTime: undefined,
     scatterTime: undefined,
@@ -220,57 +287,52 @@ test('完整自动化游戏流程', async ({ page }) => {
     cutType: 'N/A',
     cutCount: 0,
     pieceCount: 0,
-    version, // 新增
+    version,
+    envMode: detectEnvMode(),
   };
   let testError: any = null;
   try {
-    // 开始监控FPS
-    await page.evaluate(() => {
-      let lastTime = performance.now();
-      let frames = 0;
-      const fpsData: number[] = [];
-      function measureFPS() {
-        const now = performance.now();
-        frames++;
-        if (now - lastTime >= 1000) {
-          const fps = Math.round((frames * 1000) / (now - lastTime));
-          fpsData.push(fps);
-          frames = 0;
-          lastTime = now;
-        }
-        (window as any).fpsData = fpsData;
-        requestAnimationFrame(measureFPS);
-      }
-      requestAnimationFrame(measureFPS);
-    });
+    // 1. 采集 page.goto 加载时长
+    const gotoStart = Date.now();
+    await page.goto('http://localhost:3000/', { waitUntil: 'load' });
+    metrics.gotoLoadTime = Date.now() - gotoStart;
+    metrics.resourceLoadTime = metrics.gotoLoadTime;
+    // 2. 采集端到端体验加载时长
+    const e2eStart = Date.now();
+    await gotoAndEnsureCanvas(page);
+    metrics.e2eLoadTime = Date.now() - e2eStart;
+    // 兼容老逻辑
+    metrics.loadTime = metrics.e2eLoadTime;
+    // 1.1 等待初始提示
+    await waitForTip(page, '请点击生成你喜欢的形状');
+    console.log('步骤 1: 初始提示 - 完成。');
 
-    // 1. 页面加载性能
-    const initialMetrics = await measurePerformance(page);
-    metrics.loadTime = initialMetrics.loadTime;
-    metrics.version = version; // 在收集最终指标时也确保有
-    console.log('步骤 1: 页面加载后渲染控制面板和画布 - 完成。');
-
-    // 2. 形状生成性能
-    const shapeStartTime = Date.now();
+    // 2. 形状生成时间采集
+    const shapeGenStart = Date.now();
     await page.getByRole('button', { name: /云朵形状|云朵/ }).click();
+    await waitForTip(page, '请选择切割类型');
+    metrics.shapeGenerationTime = Date.now() - shapeGenStart;
     metrics.shapeType = '云朵';
-    await page.getByRole('button', { name: /生成形状|重新生成形状/ }).click();
-    await robustWaitForFunction(page, () => (window as any).__gameStateForTests__.originalShape.length > 0);
-    metrics.shapeGenerationTime = Date.now() - shapeStartTime;
     console.log('步骤 2: 选择云朵形状并生成 - 完成。');
 
-    // 3. 拼图生成性能（严格按页面顺序：斜线→切割次数→切割形状）
-    const puzzleGenStart = Date.now();
+    // 3. 拼图生成时间采集
     await page.getByText('斜线').click();
     metrics.cutType = '斜线';
-    await page.getByRole('button', { name: '8' }).click(); // 默认选择1次切割,最多切割次数为8
+    await waitForTip(page, '请切割形状');
+    await page.getByRole('button', { name: '8' }).click();
     metrics.cutCount = 8;
+    const puzzleGenStart = Date.now();
     await page.getByRole('button', { name: /切割形状|重新切割形状/ }).click();
-    await robustWaitForFunction(page, () => (window as any).__gameStateForTests__.puzzle && (window as any).__gameStateForTests__.puzzle.length > 0);
+    // 等待拼图生成提示
+    await waitForTip(page, (await page.evaluate(() => {
+      const state = (window as any).__gameStateForTests__;
+      if (!state.puzzle) return '';
+      return `${state.completedPieces.length} / ${state.puzzle.length} 块拼图已完成`;
+    })));
     metrics.puzzleGenerationTime = Date.now() - puzzleGenStart;
-    console.log('步骤 3: 选择斜线切割并渲染拼图 - 完成。');
+    console.log('步骤 3: 切割形状并渲染拼图 - 完成。');
 
-    // 4. 散开拼图
+    // 5. 散开拼图
     const scatterStartTime = Date.now();
     await page.getByRole('button', { name: '散开拼图' }).click();
     
@@ -290,14 +352,14 @@ test('完整自动化游戏流程', async ({ page }) => {
     metrics.scatterTime = Date.now() - scatterStartTime;
     console.log(`步骤 4: 点击散开拼图 - 完成。`);
 
-    // 5. 画布提示
+    // 6. 画布提示
     const puzzle = await page.evaluate(() => (window as any).__gameStateForTests__.puzzle);
     const originalPositions = await page.evaluate(() => (window as any).__gameStateForTests__.originalPositions);
     metrics.pieceCount = puzzle.length;
     expect(puzzle.length).toBeGreaterThan(0);
     console.log(`步骤 5: 画布提示 (${puzzle.length} 块) - 完成。`);
 
-    // 6. 拼图交互性能
+    // 7. 拼图交互性能
     const puzzleInteractionStart = Date.now();
     for (let i = 0; i < puzzle.length; i++) {
       const pieceInteractionStartTime = Date.now();
@@ -352,8 +414,9 @@ test('完整自动化游戏流程', async ({ page }) => {
     console.log(`步骤 8: 收集最终性能指标...`);
     
     // 从浏览器中获取FPS数据
-    const fpsData = await page.evaluate(() => (window as any).fpsData || []);
+    const fpsData: number[] = await page.evaluate(() => (window as any).fpsData || []);
     metrics.fps = fpsData;
+    await page.waitForTimeout(1000); // 等待1秒，确保采集到至少1个fps数据
     
     // 收集最终内存使用情况
     const memory = await page.evaluate(async () => {
@@ -365,6 +428,10 @@ test('完整自动化游戏流程', async ({ page }) => {
     });
     metrics.memoryUsage = memory;
     
+    // 采集被测页面真实环境
+    const envMode = await page.evaluate(() => (window as any).__ENV_MODE__ || 'unknown');
+    metrics.envMode = envMode;
+
     // 计算总测试时间并附加到报告
     metrics.totalTestTime = Date.now() - startTime;
     await test.info().attach('performance-metrics', {
@@ -383,8 +450,9 @@ test('完整自动化游戏流程', async ({ page }) => {
     // 新增：记录失败原因，类型安全
     metrics.failReason = (e && typeof e === 'object' && 'message' in e) ? (e as any).message : String(e);
     try {
-      const fpsData = await page.evaluate(() => (window as any).fpsData || []);
+      const fpsData: number[] = await page.evaluate(() => (window as any).fpsData || []);
       metrics.fps = fpsData;
+      await page.waitForTimeout(1000); // 等待1秒，确保采集到至少1个fps数据
       const memory = await page.evaluate(async () => {
         if ((performance as any).memory) {
           return (performance as any).memory.usedJSHeapSize / 1024 / 1024;

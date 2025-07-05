@@ -251,38 +251,25 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [state.completedPieces, state.puzzle, state.isCompleted]);
 
-  const generateShape = useCallback(() => {
-    // 如果有待生成的形状类型，则使用它
-    const currentShapeType = state.pendingShapeType || state.shapeType;
+  // generateShape 支持传入 shapeType，点击按钮时强制生成新形状
+  const generateShape = useCallback((shapeType?: ShapeType) => {
+    // 如果传入 shapeType，则强制使用该类型
+    const currentShapeType = shapeType || state.pendingShapeType || state.shapeType;
     
     // 获取实际画布尺寸以确保形状居中
-    console.log("开始生成形状, 当前类型:", currentShapeType);
-    
     if (canvasRef.current) {
       const canvasWidth = canvasRef.current.width;
       const canvasHeight = canvasRef.current.height;
-      
-      // 日志输出当前画布状态
-      console.log("Canvas尺寸:", canvasWidth, "x", canvasHeight);
-      console.log("使用画布引用生成形状");
-      
-      // 确保画布尺寸有效
       if (canvasWidth <= 0 || canvasHeight <= 0) {
         console.warn("画布尺寸无效 - 使用默认值");
       }
-      
-      // 创建形状时考虑实际画布尺寸
       try {
-        // 调用ShapeGenerator生成形状
         const shape = ShapeGenerator.generateShape(currentShapeType);
-        console.log(`形状生成成功: ${shape.length}个点`);
-        
         if (shape.length === 0) {
           console.error("生成的形状没有点");
           return;
         }
-        
-        // 确保形状居中
+        // 居中
         const bounds = shape.reduce(
           (acc, point) => ({
             minX: Math.min(acc.minX, point.x),
@@ -292,62 +279,38 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           }),
           { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
         );
-        
-        // 计算形状中心和画布中心之间的差值
         const shapeCenterX = (bounds.minX + bounds.maxX) / 2;
         const shapeCenterY = (bounds.minY + bounds.maxY) / 2;
         const canvasCenterX = canvasWidth / 2;
         const canvasCenterY = canvasHeight / 2;
-        
-        // 计算需要移动的距离
         const offsetX = canvasCenterX - shapeCenterX;
         const offsetY = canvasCenterY - shapeCenterY;
-        
-        console.log("形状边界:", bounds);
-        console.log("形状中心:", shapeCenterX, shapeCenterY);
-        console.log("画布中心:", canvasCenterX, canvasCenterY);
-        console.log("偏移量:", offsetX, offsetY);
-        
-        // 移动所有点以居中形状
         const centeredShape = shape.map(point => ({
           ...point,
           x: point.x + offsetX,
           y: point.y + offsetY
         }));
-        
         dispatch({ type: "SET_ORIGINAL_SHAPE", payload: centeredShape });
-        
-        // 如果有待生成的形状类型，则更新形状类型
-        if (state.pendingShapeType) {
-          dispatch({ type: "SET_SHAPE_TYPE", payload: state.pendingShapeType });
-        }
+        // 强制更新 shapeType
+        dispatch({ type: "SET_SHAPE_TYPE", payload: currentShapeType });
       } catch (error) {
         console.error("形状生成失败:", error);
       }
     } else {
-      // 如果画布引用不可用，提供详细日志
-      console.warn("画布引用不可用 - 尝试使用默认方法");
-      
+      // 画布引用不可用，使用默认方法
       try {
         const shape = ShapeGenerator.generateShape(currentShapeType);
-        console.log(`使用默认方法生成形状: ${shape.length}个点`);
-        
         if (shape.length === 0) {
           console.error("生成的形状没有点");
           return;
         }
-        
         dispatch({ type: "SET_ORIGINAL_SHAPE", payload: shape });
-        
-        // 如果有待生成的形状类型，则更新形状类型
-        if (state.pendingShapeType) {
-          dispatch({ type: "SET_SHAPE_TYPE", payload: state.pendingShapeType });
-        }
+        dispatch({ type: "SET_SHAPE_TYPE", payload: currentShapeType });
       } catch (error) {
         console.error("默认形状生成失败:", error);
       }
     }
-  }, [state.shapeType, state.pendingShapeType, canvasRef, dispatch])
+  }, [state.shapeType, state.pendingShapeType, canvasRef, dispatch]);
 
   // 1. useRef 兜底，始终保存 puzzle 最新值
   const puzzleRef = useRef(state.puzzle);
@@ -409,17 +372,26 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     dispatch({ type: "SET_IS_SCATTERED", payload: true });
   }, [state.isScattered, state.canvasWidth, state.canvasHeight, state.originalShape, dispatch]);
 
-  // Test API setup must be after all dependent functions are defined.
+  // Test API setup（无论开发、生产、测试环境都挂载只读状态）
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
-      // For full_game_flow.spec.ts
-      (window as any).__gameStateForTests__ = state;
+    if (typeof window !== 'undefined') {
+      (window as any).__gameStateForTests__ = {
+        puzzle: state.puzzle,
+        completedPieces: state.completedPieces,
+        originalPositions: state.originalPositions,
+        isCompleted: state.isCompleted,
+      };
+    }
+  }, [state.puzzle, state.completedPieces, state.originalPositions, state.isCompleted]);
+
+  // 测试辅助函数：无论环境都挂载，保证 E2E 可用
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
       (window as any).selectPieceForTest = (pieceIndex: number) => dispatch({ type: 'SET_SELECTED_PIECE', payload: pieceIndex });
       (window as any).markPieceAsCompletedForTest = (pieceIndex: number) => dispatch({ type: 'ADD_COMPLETED_PIECE', payload: pieceIndex });
       (window as any).rotatePieceForTest = (clockwise: boolean) => rotatePiece(clockwise);
       (window as any).resetPiecePositionForTest = (pieceIndex: number) => dispatch({ type: 'RESET_PIECE_TO_ORIGINAL', payload: pieceIndex });
-
-      // For responsive_adaptation.spec.ts and future tests
+      // 其它 testAPI 保持原样
       window.testAPI = {
         generateShape: (shapeType) => dispatch({ type: 'SET_SHAPE_TYPE', payload: shapeType }),
         generatePuzzle: (cutCount) => {

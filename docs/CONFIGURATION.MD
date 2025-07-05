@@ -208,17 +208,25 @@
 ## 8. 性能测试与报告配置
 
 - **BENCHMARKS**  
-  作用：性能基准值，用于评估各项指标  
+  作用：性能基准值，用于评估各项指标，分为“资源加载(page.goto)”与“端到端加载(E2E)”两项，基准值分别为1000ms/1800ms，所有性能指标分项采集与分级，保留两位小数，报告、索引、终端日志格式统一。  
   取值范围/默认值：  
-    - `loadTime`: 1000ms  
+    - `resourceLoadTime`: 1000ms  
+    - `e2eLoadTime`: 1800ms  
     - `shapeGenerationTime`: 500ms  
     - `puzzleGenerationTime`: 800ms  
     - `scatterTime`: 800ms  
     - `pieceInteractionTime`: 1200ms  
     - `minFps`: 30fps  
     - `maxMemoryUsage`: 100MB  
-  影响点：性能趋势仪表盘评级  
+  影响点：性能趋势仪表盘评级、分组统计、对比、差异高亮、趋势分析  
   配置/代码位置：`app/test/page.tsx`（BENCHMARKS 常量）
+
+- **环境模式自动识别**  
+  作用：自动识别开发/生产环境，支持分组统计、对比、差异高亮、趋势分析  
+  取值范围：'development' | 'production'  
+  默认值：自动检测  
+  影响点：测试报告、API、前端可视化、分组统计、趋势分析  
+  配置/代码位置：`e2e/full_game_flow.spec.ts`、`app/test/page.tsx`、`scripts/archive-test-results.js`、`app/api/performance-trend/route.ts`
 
 ---
 
