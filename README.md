@@ -1,5 +1,7 @@
 # Generative Puzzle
 
+
+
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/recohcity/generative-puzzle)
 
 基于 Next.js 和 React 构建的高可维护、可测试的响应式生成式拼图游戏。
@@ -101,18 +103,25 @@ npm run build
 ## 运行测试与报告
 
 ```bash
-# 运行所有端到端测试（无头模式，自动归档性能报告）
+# 主流程自动化测试与归档（推荐，先运行所有E2E测试，再自动归档性能与流程报告）
 npm run test:e2e
 
+# 仅运行 Playwright 测试（不归档）
+npm run test
+
 # UI 模式下运行测试，便于调试
-npx playwright test --ui
+tnpx playwright test --ui
 
 # 查看最近一次生成的 HTML 测试报告
-npx playwright show-report
+npm run test:report
 ```
 
 - **性能趋势仪表盘**：访问 `/test` 页面，实时查看历史性能趋势与详细报告
 - **专项/临时测试隔离**：所有临时测试存放于 `e2e/temp/`，主流程测试环境始终纯净
+- **归档报告目录**：所有标准化 Markdown 报告归档于 `playwright-test-logs/`，便于前端聚合与趋势分析
+
+- [📖 Playwright自动化测试闭环工程指南（中文）](./docs/automated_testing_workflow.cn.md) 
+- [📖 Playwright E2E Closed-Loop Guide (EN)](./docs/automated_testing_workflow.en.md)
 
 ---
 

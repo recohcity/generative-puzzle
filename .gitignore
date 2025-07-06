@@ -39,6 +39,7 @@ next-env.d.ts
 /test-results/*
 !/test-results/.gitkeep
 
+
 # VSCode settings
 .vscode/
 

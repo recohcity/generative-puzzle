@@ -1,6 +1,26 @@
 # 生成式拼图游戏 Changelog
 
-本文档记录项目的所有版本更新内容和变更历史。
+
+
+## [v1.3.21] - 2025-07-06
+### 主题：Playwright自动化测试闭环工程文档与模板仓库发布
+
+[📖 Playwright自动化测试闭环工程指南（中文）](./docs/automated_testing_workflow.cn.md) ｜ [📖 Playwright E2E Closed-Loop Guide (EN)](./docs/automated_testing_workflow.en.md)
+
+#### 1. Playwright自动化测试闭环工程指南中英文版发布与同步
+- 发布并完善了《Playwright全链路自动化测试闭环工程实践指南》（中英文版），内容涵盖架构、流程、API、归档、前端可视化、CI/CD、迁移指引等全链路最佳实践。
+- 文档结构与代码100%一致，便于团队推广和新项目迁移。
+
+#### 2. 模板仓库链接添加与入口优化
+- 在中英文文档头部添加模板仓库直达链接：[recohcity/playwright-e2e-template](https://github.com/recohcity/playwright-e2e-template)
+- 在README.md添加中英文文档快捷入口，便于团队和新手一键访问工程指南。
+
+#### 3. 工程文档结构与CI/CD配置完善
+- 完善了工程文档的章节结构、目录排序、FAQ与迁移指引，提升可读性和落地效率。
+- 补充并优化了典型GitHub Actions CI/CD配置片段，适配主流Playwright官方最佳实践。
+- 归档脚本、API聚合、前端仪表盘等全链路流程同步校验，提升工程一致性与可维护性。
+
+---
 
 ## [v1.3.20] - 2025-07-06
 ### 主题：全链路自动化测试与性能可视化升级
@@ -32,7 +52,6 @@
 
 #### 6. 其它
 - 代码结构、类型、API、前端 UI 多项细节优化。
-- CHANGELOG.md 置顶本次更新。
 
 ---
 
