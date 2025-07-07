@@ -196,6 +196,23 @@ const calculateComplianceStats = (data: TrendData[]) => {
   };
 };
 
+// 1. 新增评级计算函数
+function getModeRating(stats: { successRate: number, compliantRate: number, exceededRate: number }) {
+  if (stats.successRate >= 0.95 && stats.compliantRate >= 0.95 && stats.exceededRate === 0) {
+    return { grade: 'A+', desc: '成功率极高，所有性能指标全部达标，系统稳定性和可靠性极佳，已达到高质量上线标准。' };
+  }
+  if (stats.successRate >= 0.90 && stats.compliantRate >= 0.90 && stats.exceededRate <= 0.01) {
+    return { grade: 'A', desc: '成功率和性能指标均表现优秀，系统稳定，适合生产环境。' };
+  }
+  if (stats.successRate >= 0.85 && stats.compliantRate >= 0.85 && stats.exceededRate <= 0.03) {
+    return { grade: 'B+', desc: '整体表现良好，偶有失败和性能波动，适合持续集成和问题预警。' };
+  }
+  if (stats.successRate >= 0.75 && stats.compliantRate >= 0.75 && stats.exceededRate <= 0.05) {
+    return { grade: 'B', desc: '有一定失败和性能波动，需关注优化。' };
+  }
+  return { grade: 'C', desc: '成功率和性能指标不达标，建议重点排查和优化。' };
+}
+
 
 const PerformanceTrendPage: React.FC = () => {
   const [trendData, setTrendData] = useState<TrendData[]>([]);
@@ -282,6 +299,26 @@ const PerformanceTrendPage: React.FC = () => {
 
   const complianceStats = calculateComplianceStats(trendData);
 
+  // 2. 统计开发/生产环境的指标
+  const devStats = calculateComplianceStats(devData);
+  const prodStats = calculateComplianceStats(prodData);
+
+  function parsePercent(str: string) {
+    // "93.7%" => 0.937
+    return parseFloat(str.replace('%','')) / 100;
+  }
+
+  const devRating = getModeRating({
+    successRate: parsePercent(devStats.successRate),
+    compliantRate: parsePercent(devStats.compliantRate),
+    exceededRate: parsePercent(devStats.exceededRate),
+  });
+  const prodRating = getModeRating({
+    successRate: parsePercent(prodStats.successRate),
+    compliantRate: parsePercent(prodStats.compliantRate),
+    exceededRate: parsePercent(prodStats.exceededRate),
+  });
+
   return (
     <main className="w-full min-h-screen bg-gray-50 p-4 sm:p-6 md:p-8" style={{ userSelect: 'text' }}>
       <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-lg p-4 sm:p-6">
@@ -290,6 +327,26 @@ const PerformanceTrendPage: React.FC = () => {
           <p className="text-sm text-gray-600 mt-1 sm:mt-0">基于 Playwright 的自动化测试与性能分析</p>
         </div>
         
+        <section className="mb-6">
+          <h2 className="font-semibold text-purple-800 mb-3 text-lg">📝 模式综合评级</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg">
+              <div className="flex items-center space-x-3">
+                <span className="text-lg font-bold text-green-800">生产模式</span>
+                <span className="text-3xl font-extrabold text-green-700">{prodRating.grade}</span>
+              </div>
+              <p className="mt-2 text-green-700 text-sm">{prodRating.desc}</p>
+            </div>
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
+              <div className="flex items-center space-x-3">
+                <span className="text-lg font-bold text-blue-800">开发模式</span>
+                <span className="text-3xl font-extrabold text-blue-700">{devRating.grade}</span>
+              </div>
+              <p className="mt-2 text-blue-700 text-sm">{devRating.desc}</p>
+            </div>
+          </div>
+        </section>
+
         <section className="mb-6">
           <h2 className="font-semibold text-gray-800 mb-3 text-lg">📈 测试执行统计</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -546,13 +603,12 @@ const PerformanceTrendPage: React.FC = () => {
         <section className="bg-orange-50 p-4 rounded-lg border-l-4 border-orange-500">
           <h2 className="font-semibold text-orange-800 mb-3 text-lg">🔧 性能优化建议</h2>
           <div className="text-sm text-orange-700 space-y-2">
-            <p><strong>资源加载优化:</strong> 关注资源加载时间超标的测试，检查页面静态资源（JS/CSS/图片等）体积和加载速度，建议压缩资源、使用CDN、开启缓存等。</p>
-            <p><strong>端到端加载优化:</strong> 关注端到端可交互加载时间超标的测试，检查首屏渲染、动画、异步数据等流程，优化 React/Next.js 渲染和初始化逻辑。</p>
-            <p><strong>交互优化:</strong> 关注交互时间超标的测试，检查拖拽和旋转过程中的事件处理和渲染逻辑，避免频繁或昂贵的计算导致卡顿。</p>
-            <p><strong>形状生成:</strong> 对于形状生成时间超标的场景，建议优化形状生成算法的复杂度，考虑是否有可优化的计算或缓存逻辑。</p>
-            <p><strong>加载性能:</strong> 对于加载时间显著超标的场景，需要排查页面资源加载瓶颈，如压缩图片、使用代码分割、利用浏览器缓存等。</p>
-            <p><strong>FPS 持续监控:</strong> FPS 目前稳定，但需持续监控，防止在复杂场景下出现性能退化。</p>
-            <p><strong>内存使用监控:</strong> 内存使用目前稳定，但需持续监控，防止内存泄漏和资源未释放导致性能下降。</p>
+            <p><strong>总体评价：</strong>生产环境各项性能指标均优于基准线，系统稳定，用户体验优秀，已达到高质量上线标准。开发环境部分指标超标属正常现象，但建议定期对比生产数据，防止因开发习惯导致的性能回退。</p>
+            <p><strong>资源加载与端到端加载：</strong>生产环境资源加载和端到端加载时间表现优异，绝大多数测试远低于基准值。开发环境波动较大，建议引入更接近生产的构建流程，便于提前发现潜在瓶颈。</p>
+            <p><strong>形状/拼图生成与交互：</strong>生产环境下形状生成、拼图生成、散开和交互性能均表现稳定，核心算法和渲染流程高效。建议持续关注极端场景下的性能波动，定期回归测试。</p>
+            <p><strong>FPS与内存：</strong>生产环境FPS长期稳定在60帧左右，内存使用极低，未见异常。建议持续监控大规模拼图或复杂动画场景，防止回归。</p>
+            <p><strong>开发/生产差异：</strong>多项指标在开发与生产环境间存在2倍及以上差异，主要源于资源未压缩、调试工具注入等。开发环境建议模拟生产优化，提升测试数据参考价值。</p>
+            <p><strong>自动化与趋势监控：</strong>建议持续自动化回归与趋势监控，关注资源体积、渲染链路、交互流畅性和内存使用，防止性能回退。差异显著的指标需定期分析，确保开发与生产环境的性能趋势一致。</p>
           </div>
         </section>
       </div>

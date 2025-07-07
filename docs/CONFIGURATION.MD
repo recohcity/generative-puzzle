@@ -277,4 +277,20 @@
   默认值：启用  
   组件位置：components/loading/LoadingScreen.tsx
 
+- **buttonIconSize**
+  作用：所有主流程按钮图标大小统一为24px，strokeWidth统一，风格高度一致。
+  默认值：24px
+  影响点：形状选择、切割、散开、提示、旋转、音量、全屏等主流程按钮
+  配置/代码位置：各主流程按钮组件
+
+---
+
+## 10. UI 组件配置
+
+- **hintAreaFlow**
+  作用：提示区内容严格按五步唯一流转，所有流程节点以提示区域为唯一判断标准。
+  默认值：五步唯一流转
+  影响点：画布提示区、自动化测试
+  配置/代码位置：DesktopLayout.tsx、PhoneLandscapeLayout.tsx、PhonePortraitLayout.tsx、E2E 测试脚本
+
 ---

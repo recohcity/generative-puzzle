@@ -140,7 +140,7 @@ export default function PuzzleControlsCutCount({ goToNextTab }: PuzzleControlsCu
         disabled={!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType} 
         className={`w-full text-base bg-[#F68E5F] hover:bg-[#F47B42] text-white rounded-xl shadow-md ${(!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
       >
-        <PuzzleIcon className={`${isLandscape ? 'w-3 h-3' : ''} w-4 h-4 mr-2`} />
+        <PuzzleIcon className="!w-6 !h-6 shrink-0 mr-2" strokeWidth={2} />
         <span className="text-[14px]">切割形状</span>
       </Button>
       

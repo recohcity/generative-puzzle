@@ -466,7 +466,7 @@ div[class*="rounded"] {
 
 /* 修复Safari中SVG属性和固定位置问题 */
 svg {
-  stroke-width: inherit;
+  /* stroke-width: inherit; */
   stroke-linecap: inherit;
   stroke-linejoin: inherit;
 }

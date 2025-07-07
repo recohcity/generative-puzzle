@@ -323,37 +323,31 @@ test('完整自动化游戏流程', async ({ page }) => {
     metrics.cutCount = 8;
     const puzzleGenStart = Date.now();
     await page.getByRole('button', { name: /切割形状|重新切割形状/ }).click();
-    // 等待拼图生成提示
-    await waitForTip(page, (await page.evaluate(() => {
-      const state = (window as any).__gameStateForTests__;
-      if (!state.puzzle) return '';
-      return `${state.completedPieces.length} / ${state.puzzle.length} 块拼图已完成`;
-    })));
+    // 切割后，等待“请散开拼图，开始游戏”
+    await waitForTip(page, '请散开拼图，开始游戏');
     metrics.puzzleGenerationTime = Date.now() - puzzleGenStart;
     console.log('步骤 3: 切割形状并渲染拼图 - 完成。');
 
     // 5. 散开拼图
     const scatterStartTime = Date.now();
     await page.getByRole('button', { name: '散开拼图' }).click();
-    
     // 两步等待，彻底规避 puzzle: undefined 的竞态窗口
-    // 第一步：等待 puzzle 属性出现
     await robustWaitForFunction(page, () => {
       const state = (window as any).__gameStateForTests__;
       return state && state.puzzle !== undefined;
     }, 30000);
-    // 第二步：等待 puzzle 和 originalPositions 都为数组且有内容
     await robustWaitForFunction(page, () => {
       const state = (window as any).__gameStateForTests__;
       return Array.isArray(state.puzzle) && state.puzzle.length > 0
         && Array.isArray(state.originalPositions) && state.originalPositions.length > 0;
     }, 30000);
-
+    // 散开后，等待进度提示
+    const puzzle = await page.evaluate(() => (window as any).__gameStateForTests__.puzzle);
+    await waitForTip(page, `0 / ${puzzle.length} 块拼图已完成`);
     metrics.scatterTime = Date.now() - scatterStartTime;
     console.log(`步骤 4: 点击散开拼图 - 完成。`);
 
     // 6. 画布提示
-    const puzzle = await page.evaluate(() => (window as any).__gameStateForTests__.puzzle);
     const originalPositions = await page.evaluate(() => (window as any).__gameStateForTests__.originalPositions);
     metrics.pieceCount = puzzle.length;
     expect(puzzle.length).toBeGreaterThan(0);

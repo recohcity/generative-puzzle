@@ -67,14 +67,14 @@ export default function PuzzleControlsScatter({ goToNextTab }: PuzzleControlsSca
         className={`w-full py-2 text-[14px] bg-[#F68E5F] hover:bg-[#F47B42] text-white rounded-xl shadow-md ${(!isPuzzleGenerated || state.isScattered) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
         variant="ghost"
       >
-        <ScatterChart className={`${isLandscape ? 'w-3 h-3' : ''} w-4 h-4 mr-2`} />
+        <ScatterChart className="!w-6 !h-6 shrink-0 mr-2" strokeWidth={2} />
         {state.isScattered ? "拼图已散开" : "散开拼图"}
       </Button>
 
       <div className={`text-center mt-2 ${isLandscape ? 'text-[12px]' : isPhone ? 'text-[12px]' : 'text-xs'} text-[#FFD5AB]`}>
         {state.isScattered 
-          ? "游戏已开始，拖动拼图碎片到正确位置" 
-          : "散开拼图后将无法修改拼图设置"
+          ? "游戏已开始，请将拼图拖到正确位置" 
+          : " "
         }
       </div>
     </div>

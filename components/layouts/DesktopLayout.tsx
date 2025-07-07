@@ -49,7 +49,9 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
     progressTip = "请选择切割类型";
   } else if (state.originalShape.length > 0 && state.puzzle === null && state.cutType !== "") {
     progressTip = "请切割形状";
-  } else if (state.puzzle !== null) {
+  } else if (state.puzzle !== null && !state.isScattered) {
+    progressTip = "请散开拼图，开始游戏";
+  } else if (state.puzzle !== null && state.isScattered) {
     progressTip = `${completedPiecesCount} / ${totalPieces} 块拼图已完成`;
   }
 

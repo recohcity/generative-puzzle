@@ -19,7 +19,7 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
   onToggleFullscreen,
   buttonSize = 'default',
 }) => {
-  const iconSizeClass = buttonSize === 'small' ? 'h-4 w-4' : 'h-5 w-5';
+  const iconSizeClass = '!w-6 !h-6 shrink-0';
   const buttonClass = `rounded-full ${buttonSize === 'small' ? 'w-6 h-6' : 'w-8 h-8'} text-[#FFB17A] hover:text-[#F26419] hover:bg-[#463E50] transition-colors`;
 
   return (
@@ -33,9 +33,9 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
         title={isMusicPlaying ? "关闭背景音乐" : "开启背景音乐"}
       >
         {isMusicPlaying ? (
-          <Volume2 className={iconSizeClass} />
+          <Volume2 className={iconSizeClass} width={24} height={24} strokeWidth={2} />
         ) : (
-          <VolumeX className={iconSizeClass} />
+          <VolumeX className={iconSizeClass} width={24} height={24} strokeWidth={2} />
         )}
       </Button>
       <Button
@@ -47,9 +47,9 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
         title={isFullscreen ? "退出全屏" : "进入全屏"}
       >
         {isFullscreen ? (
-          <Minimize className={iconSizeClass} />
+          <Minimize className={iconSizeClass} width={24} height={24} strokeWidth={2} />
         ) : (
-          <Maximize className={iconSizeClass} />
+          <Maximize className={iconSizeClass} width={24} height={24} strokeWidth={2} />
         )}
       </Button>
     </div>

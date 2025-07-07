@@ -73,7 +73,8 @@ export default function ActionButtons({ layout = 'mobile' }: ActionButtonsProps)
   
   // Determine styles based on layout prop or detected device state
   const buttonHeightClass = layout === 'desktop' ? 'h-9' : (isLandscape ? 'h-8 py-0.5' : 'h-9 py-0.5');
-  const iconSizeClass = layout === 'desktop' ? 'w-4 h-4' : (isLandscape ? 'w-3 h-3' : 'w-4 h-4');
+  // 统一图标大小为24px
+  const iconSizeClass = 'w-6 h-6';
   const textSizeClass = layout === 'desktop' ? 'text-sm' : (isLandscape ? 'text-[12px]' : 'text-[12px]');
   const rotationInfoTextClass = layout === 'desktop' ? 'text-sm mt-2' : (isLandscape ? 'text-[12px] mt-1' : 'text-[12px] mt-1');
   const rotationInfoSubTextClass = layout === 'desktop' ? 'text-xs mt-1' : (isLandscape ? 'text-[12px] mt-0.5' : 'text-[12px] mt-0.5');
@@ -97,7 +98,7 @@ export default function ActionButtons({ layout = 'mobile' }: ActionButtonsProps)
           title="显示提示"
           variant="ghost"
         >
-          <Lightbulb className={`${iconSizeClass} text-white`} />
+          <Lightbulb className="!w-6 !h-6 text-white shrink-0" strokeWidth={2} />
           {layout === 'mobile' && <span className={`ml-1 ${textSizeClass}`}>提示</span>}
         </Button>
 
@@ -109,7 +110,7 @@ export default function ActionButtons({ layout = 'mobile' }: ActionButtonsProps)
           title="逆时针旋转"
           variant="ghost"
         >
-          <RotateCcw className={`${iconSizeClass} text-white`} />
+          <RotateCcw className="!w-6 !h-6 text-white shrink-0" strokeWidth={2} />
            {layout === 'mobile' && <span className={`ml-1 ${textSizeClass}`}>左转</span>}
         </Button>
 
@@ -121,7 +122,7 @@ export default function ActionButtons({ layout = 'mobile' }: ActionButtonsProps)
           title="顺时针旋转"
           variant="ghost"
         >
-          <RotateCw className={`${iconSizeClass} text-white`} />
+          <RotateCw className="!w-6 !h-6 text-white shrink-0" strokeWidth={2} />
           {layout === 'mobile' && <span className={`ml-1 ${textSizeClass}`}>右转</span>}
         </Button>
       </div>

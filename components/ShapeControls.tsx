@@ -85,29 +85,38 @@ export default function ShapeControls({ goToNextTab }: ShapeControlsProps) {
         <div className="grid grid-cols-3 gap-2">
           <Button
             variant="ghost"
-            className={getButtonClass(ShapeType.Polygon)}
+            className={getButtonClass(ShapeType.Polygon) + " flex-col items-center justify-center gap-[2px] p-2"}
             onClick={() => handleShapeButtonClick(ShapeType.Polygon)}
             disabled={isShapeButtonDisabled}
           >
-            <Hexagon className={`${isLandscape ? 'w-4 h-4' : isPhone ? 'w-5 h-5' : 'w-6 h-6'} text-white mb-px`} />
+            <Hexagon 
+              className="!w-[24px] !h-[24px] text-white"
+              strokeWidth={2}
+            />
             <span className="text-[14px]">多边形</span>
           </Button>
           <Button
             variant="ghost"
-            className={getButtonClass(ShapeType.Curve)}
+            className={getButtonClass(ShapeType.Curve) + " flex-col items-center justify-center gap-[2px] p-2"}
             onClick={() => handleShapeButtonClick(ShapeType.Curve)}
             disabled={isShapeButtonDisabled}
           >
-            <Circle className={`${isLandscape ? 'w-4 h-4' : isPhone ? 'w-5 h-5' : 'w-6 h-6'} text-white mb-px`} />
+            <Circle 
+              className="!w-[24px] !h-[24px] text-white"
+              strokeWidth={2}
+            />
             <span className="text-[14px]">曲凸形状</span>
           </Button>
           <Button
             variant="ghost"
-            className={getButtonClass(ShapeType.Circle)}
+            className={getButtonClass(ShapeType.Circle) + " flex-col items-center justify-center gap-[2px] p-2"}
             onClick={() => handleShapeButtonClick(ShapeType.Circle)}
             disabled={isShapeButtonDisabled}
           >
-            <BlobIcon className={`${isLandscape ? 'w-4 h-4' : isPhone ? 'w-5 h-5' : 'w-6 h-6'} text-white mb-px`} />
+            <BlobIcon 
+              className="!w-[24px] !h-[24px] text-white"
+              strokeWidth={2}
+            />
             <span className="text-[14px]">云朵形状</span>
           </Button>
         </div>
