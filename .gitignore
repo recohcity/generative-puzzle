@@ -39,6 +39,8 @@ next-env.d.ts
 /test-results/*
 !/test-results/.gitkeep
 
+# debugLog F10 调试模式下导出的日志文件
+/debug-log/*
 
 # VSCode settings
 .vscode/
@@ -48,4 +50,5 @@ next-env.d.ts
 .env.development.local
 .env.test.local
 .env.production.local
+
 

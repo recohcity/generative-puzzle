@@ -9,7 +9,6 @@ import {
   drawPuzzle, 
   drawHintOutline, 
   drawCanvasBorderLine, 
-  drawDistributionArea,
   drawShape
 } from "@/utils/rendering/puzzleDrawing";
 
@@ -22,6 +21,7 @@ import { useResponsiveCanvasSizing } from "@/hooks/useResponsiveCanvasSizing";
 import { usePuzzleInteractions } from "@/hooks/usePuzzleInteractions";
 import { usePuzzleAdaptation } from '@/hooks/usePuzzleAdaptation';
 import { useDebugToggle } from '@/hooks/useDebugToggle';
+import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 
 export default function PuzzleCanvas() {
   const { state, dispatch, canvasRef, backgroundCanvasRef, ensurePieceInBounds, calculatePieceBounds, rotatePiece } = useGame();
@@ -29,7 +29,75 @@ export default function PuzzleCanvas() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [showDebugElements] = useDebugToggle();
   const [isShaking, setIsShaking] = useState(false);
-  
+  const debugLogRef = useRef<any[]>([]);
+  const device = useDeviceDetection(); // { isMobile, isTablet, isDesktop }
+
+  // 统一 debug 日志收集方法
+  function logDebugEvent(eventType: string, actionDesc: string, extra: any = {}) {
+    if (!showDebugElements) return;
+    const canvasWidth = canvasSize?.width || 0;
+    const canvasHeight = canvasSize?.height || 0;
+    const logicalWidth = canvasRef.current?.width || 0;
+    const logicalHeight = canvasRef.current?.height || 0;
+    const scale = (canvasWidth && logicalWidth) ? (canvasWidth / logicalWidth) : 1;
+    debugLogRef.current.push({
+      time: new Date().toISOString(),
+      event: eventType,
+      action: actionDesc,
+      device: {
+        isMobile: device?.isMobile,
+        isTablet: null, // 未实现
+        isDesktop: null, // 未实现
+        isPortrait: device?.isPortrait,
+        isAndroid: device?.isAndroid,
+        isIOS: device?.isIOS,
+        screen: { width: device?.screenWidth, height: device?.screenHeight }
+      },
+      canvas: {
+        width: canvasWidth,
+        height: canvasHeight,
+        logicalWidth,
+        logicalHeight,
+        scale
+      },
+      game: {
+        totalPieces: state.puzzle?.length,
+        completed: state.completedPieces?.length,
+        isScattered: state.isScattered,
+        isCompleted: state.isCompleted,
+        difficulty: state.difficulty || null
+      },
+      pieces: state.puzzle?.map((piece: PuzzlePiece, idx: number) => {
+        const center = piece.points.reduce((acc, p) => ({ x: acc.x + p.x, y: acc.y + p.y }), { x: 0, y: 0 });
+        center.x /= piece.points.length;
+        center.y /= piece.points.length;
+        return {
+          index: idx + 1,
+          center,
+          points: piece.points,
+          rotation: piece.rotation,
+          completed: state.completedPieces.includes(idx),
+          selected: state.selectedPiece === idx
+        };
+      }),
+      ...extra
+    });
+  }
+
+  // 导出 debuglog 的函数
+  function exportDebuglog() {
+    const now = new Date();
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const fileName = `debugLog-${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}.json`;
+    const blob = new Blob([JSON.stringify(debugLogRef.current, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   const canvasSize = useResponsiveCanvasSizing({
     containerRef,
     canvasRef,
@@ -77,6 +145,33 @@ export default function PuzzleCanvas() {
       return;
     }
 
+    // debug 日志收集（默认记录渲染）
+    logDebugEvent('render', '画布渲染');
+
+    // debug 日志输出
+    if (showDebugElements) {
+      console.log('[debugLog] canvas:', {
+        width: canvasSize.width,
+        height: canvasSize.height,
+        area: { x0: 0, y0: 0, x1: canvasSize.width, y1: canvasSize.height }
+      });
+      if (state.puzzle) {
+        state.puzzle.forEach((piece: PuzzlePiece, idx: number) => {
+          // 计算中心点
+          const center = piece.points.reduce((acc, p) => ({ x: acc.x + p.x, y: acc.y + p.y }), { x: 0, y: 0 });
+          center.x /= piece.points.length;
+          center.y /= piece.points.length;
+          console.log('[debugLog] piece', idx + 1, {
+            center,
+            points: piece.points,
+            rotation: piece.rotation,
+            completed: state.completedPieces.includes(idx),
+            selected: state.selectedPiece === idx
+          });
+        });
+      }
+    }
+
     ctx.clearRect(0, 0, canvasSize.width, canvasSize.height);
     backgroundCtx.clearRect(0, 0, canvasSize.width, canvasSize.height);
     
@@ -86,7 +181,7 @@ export default function PuzzleCanvas() {
     }
 
     if (showDebugElements) {
-      drawDistributionArea(ctx, canvasSize.width, canvasSize.height, showDebugElements);
+      // drawDistributionArea(ctx, canvasSize.width, canvasSize.height, showDebugElements);
     }
 
     if (state.puzzle) {
@@ -142,7 +237,7 @@ export default function PuzzleCanvas() {
       drawShape(ctx, state.originalShape, state.shapeType);
     }
     
-    drawCanvasBorderLine(ctx, canvasSize.width, canvasSize.height, false);
+    drawCanvasBorderLine(ctx, canvasSize.width, canvasSize.height, showDebugElements);
 
     if (isShaking) {
       ctx.restore();
@@ -168,6 +263,33 @@ export default function PuzzleCanvas() {
       ref={containerRef}
       className={`relative w-full h-full flex items-center justify-center overflow-hidden`}
     >
+      {/* debug模式下显示导出按钮 */}
+      {showDebugElements && (
+        <button
+          onClick={exportDebuglog}
+          style={{
+            position: 'absolute',
+            top: 16,
+            right: 16,
+            zIndex: 9999,
+            background: 'rgba(33, 0, 150, 0.8)',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 6,
+            padding: '10px 22px',
+            fontSize: 16,
+            fontWeight: 100,
+            letterSpacing: 1,
+            cursor: 'pointer',
+            boxShadow: '0 4px 16px rgba(6, 1, 1, 0.18)',
+            transition: 'background 0.2s',
+          }}
+          onMouseOver={e => (e.currentTarget.style.background = 'rgba(17, 3, 67, 0.8)')}
+          onMouseOut={e => (e.currentTarget.style.background = 'rgba(33, 0, 150, 0.8)')}
+        >
+          导出 debuglog
+        </button>
+      )}
       <canvas
         ref={backgroundCanvasRef}
         className="absolute top-0 left-0"

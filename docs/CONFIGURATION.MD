@@ -20,6 +20,7 @@
 10. 构建与开发配置
 11. 性能测试与报告配置
 12. UI 组件配置
+13. F10 Debug 调试模式配置
 
 ---
 
@@ -294,3 +295,68 @@
   配置/代码位置：DesktopLayout.tsx、PhoneLandscapeLayout.tsx、PhonePortraitLayout.tsx、E2E 测试脚本
 
 ---
+
+## 11. F10 Debug 调试模式配置（2025-06-22 最新版）
+
+### 功能说明
+
+F10 debug 模式用于开发和测试阶段，便于实时观察拼图布局、边界、序号及导出调试日志。该模式可通过键盘 F10 键一键切换，适用于桌面端和移动端（需外接键盘）。
+
+---
+
+### 启用方式
+
+- 按下 F10 键（或 keyCode 121）即可切换 debug 模式开关。
+- 相关 Hook：`hooks/useDebugToggle.ts`（监听 F10，管理 debug 状态）。
+
+---
+
+### 当前调试显示内容
+
+1. **拼图占位红色虚线矩形框+拼图序号**
+   - 每个拼图块显示红色虚线矩形边框，中心显示序号（从1开始）。
+   - 便于开发者定位拼图块实际占位和索引。
+   - 代码位置：`components/PuzzleCanvas.tsx`（debug 状态下渲染）、`utils/geometry/puzzleGeometry.ts`（边界计算）。
+
+2. **游戏有效交互区域红色虚线边框**
+   - 整个拼图交互区域显示红色虚线边框，辅助观察画布边界。
+   - 代码位置：`utils/rendering/puzzleDrawing.ts`（drawCanvasBorderLine）、`components/PuzzleCanvas.tsx`（debug 状态下调用）。
+
+3. **一键导出 debug 日志（debugLog）**
+   - debug 模式下，右上角显示“导出 debugLog”按钮，样式为半透明深蓝色背景、白色文字、圆角、阴影，悬停高亮，确保在任何背景下都清晰可见。
+   - 点击按钮后，自动下载当前所有调试日志为 debugLog-yyyymmddhhmmss.json 文件，便于问题复现和远程协作。
+   - 日志内容包括：canvas 区域、所有拼图块的中心、顶点、旋转角度、完成/选中状态、时间戳等。
+
+---
+
+### debug 日志（debugLog）输出
+
+- **日志内容**：
+  - canvas 有效交互区域尺寸与坐标（width, height, area）
+  - 每个拼图块的中心点、所有顶点坐标、旋转角度、完成/选中状态等
+  - 时间戳
+- **触发时机**：
+  - debug 模式开启时
+  - 画布尺寸变化、拼图块移动/散开/吸附、窗口 resize 时自动记录
+- **输出方式**：
+  - 日志收集到数组，点击“导出 debugLog”按钮后下载为 debugLog-yyyymmddhhmmss.json 文件
+- **优势**：
+  - 方便开发者在控制台快速定位问题
+  - 可将日志导出，便于远程协作、问题复现
+  - 结构化数据便于后续自动化分析
+
+---
+
+### 相关文件
+
+- `hooks/useDebugToggle.ts`：F10 监听与 debug 状态管理
+- `components/PuzzleCanvas.tsx`：debug 状态下的调试渲染逻辑与日志收集、导出按钮
+- `utils/rendering/puzzleDrawing.ts`：红色虚线边框绘制
+
+---
+
+### 扩展建议
+
+- 如果后续需要记录更多事件（如 drag、drop、rotate、reset 等），可在对应交互逻辑中调用 logDebugEvent 并传入不同 event/action。
+- 目前 isTablet/isDesktop 字段为 null，如需区分可扩展 useDeviceDetection。
+- 日志内容已非常适合问题复现、适配排查和自动化分析。
