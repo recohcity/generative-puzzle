@@ -26,6 +26,8 @@ const nextConfig = {
 
 mergeConfig(nextConfig, userConfig)
 
+export const dynamic = "force-dynamic";
+
 function mergeConfig(nextConfig, userConfig) {
   if (!userConfig) {
     return

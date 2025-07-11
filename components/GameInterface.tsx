@@ -22,6 +22,7 @@ import {
 } from "@/utils/rendering/soundEffects"
 import DesktopPuzzleSettings from "./DesktopPuzzleSettings"; // <-- Import the new component
 import { BubbleBackground } from '../components/animate-ui/backgrounds/bubble';
+import ResponsiveBackground from "@/components/ResponsiveBackground";
 
 // --- Create Inner Component for Desktop Puzzle Settings ---
 // import { useGame } from "@/contexts/GameContext"; // No longer needed here
@@ -617,7 +618,11 @@ export default function CurveTestOptimized() {
         ref={gameContainerRef}
         className="min-h-screen w-full p-4 lg:p-6 flex items-center justify-center relative overflow-hidden"
       >
-        <BubbleBackground interactive className="absolute inset-0 -z-10 w-full h-full" />
+        {deviceType === 'desktop' ? (
+          <BubbleBackground interactive className="absolute inset-0 w-full h-full" />
+        ) : (
+          <ResponsiveBackground />
+        )}
         {layoutToRender}
       </div>
     </GameProvider>

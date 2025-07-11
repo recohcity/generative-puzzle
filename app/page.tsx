@@ -2,19 +2,18 @@
 
 import dynamic from 'next/dynamic'
 import { useState, useEffect, useRef } from "react"
-import LoadingScreenStatic from "@/components/loading/LoadingScreenStatic"
+// import LoadingScreenStatic from "@/components/loading/LoadingScreenStatic"
 
 // 动态懒加载加载屏幕组件，但不使用静态替代，以减少中间状态切换
 const LoadingScreen = dynamic(() => import('@/components/loading/LoadingScreen'), { 
   ssr: false,
-  // 使用静态加载页面保持一致的UI
-  loading: () => <LoadingScreenStatic />
+  loading: () => null // 避免递归，使用 null
 })
 
 // 预加载主游戏组件，设置为priority
 const GameInterfaceComponent = dynamic(() => import('@/components/GameInterface'), {
   ssr: false,
-  loading: () => <LoadingScreenStatic /> // 加载时也显示静态加载界面
+  loading: () => null // 避免递归，使用 null
 })
 
 export default function HomePage() {
@@ -47,18 +46,18 @@ export default function HomePage() {
   // 如果还没有挂载，直接显示静态加载屏幕，防止闪烁
   if (!isMounted) {
     return (
-      <main className="no-scroll-container flex items-center justify-center min-h-screen">
-        <LoadingScreenStatic />
+      <main className="flex items-center justify-center min-h-screen">
+        <div />
       </main>
     )
   }
 
   return (
-    <main className="no-scroll-container flex items-center justify-center min-h-screen">
+    <main className="flex items-center justify-center min-h-screen">
       {isLoading ? (
-        <LoadingScreen onLoadComplete={handleLoadComplete} />
+        <LoadingScreen key="loading" onLoadComplete={handleLoadComplete} />
       ) : (
-        <GameInterfaceComponent />
+        <GameInterfaceComponent key="main" />
       )}
     </main>
   )
