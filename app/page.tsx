@@ -1,111 +1,65 @@
 "use client"
 
+import dynamic from 'next/dynamic'
 import { useState, useEffect, useRef } from "react"
-import LoadingScreen from "@/components/loading/LoadingScreen"
-import dynamic from "next/dynamic"
+import LoadingScreenStatic from "@/components/loading/LoadingScreenStatic"
 
-const GameInterfaceComponent = dynamic(() => import('@/components/GameInterface'), { ssr: false })
+// 动态懒加载加载屏幕组件，但不使用静态替代，以减少中间状态切换
+const LoadingScreen = dynamic(() => import('@/components/loading/LoadingScreen'), { 
+  ssr: false,
+  // 使用静态加载页面保持一致的UI
+  loading: () => <LoadingScreenStatic />
+})
+
+// 预加载主游戏组件，设置为priority
+const GameInterfaceComponent = dynamic(() => import('@/components/GameInterface'), {
+  ssr: false,
+  loading: () => <LoadingScreenStatic /> // 加载时也显示静态加载界面
+})
 
 export default function HomePage() {
-  const [realProgress, setRealProgress] = useState(0) // 真实进度 0~100
-  const [animatedProgress, setAnimatedProgress] = useState(0) // 动画进度 0~100
-  const [showGame, setShowGame] = useState(false)
-  const total = 9 // 资源总数
-  const loadedRef = useRef(0)
-  const animationRef = useRef<number | null>(null)
-  const animationStart = useRef<number | null>(null)
-  const ANIMATION_DURATION = 1200 // ms
-
-  // 真实资源加载进度
+  const [isLoading, setIsLoading] = useState(true)
+  const [isMounted, setIsMounted] = useState(false)
+  // 添加一个标记，用于避免重复预加载
+  const gamePreloaded = useRef(false)
+  
+  // 确保在客户端渲染时立即显示加载页面，并开始预加载游戏组件
   useEffect(() => {
-    loadedRef.current = 0
-    setRealProgress(0)
-    // 1. 音效
-    const audio = new Audio("/puzzle-pieces.mp3")
-    audio.addEventListener("canplaythrough", handleLoaded, { once: true })
-    audio.addEventListener("error", handleLoaded, { once: true })
-    // 2. 贴图
-    const img = new window.Image()
-    img.src = "/texture-tile.png"
-    img.onload = handleLoaded
-    img.onerror = handleLoaded
-    // 3-9. 主要组件
-    import('@/components/animate-ui/backgrounds/bubble').then(handleLoaded).catch(handleLoaded)
-    import('@/components/GameInterface').then(handleLoaded).catch(handleLoaded)
-    import('@/components/PuzzleCanvas').then(handleLoaded).catch(handleLoaded)
-    import('@/components/ActionButtons').then(handleLoaded).catch(handleLoaded)
-    import('@/components/DesktopPuzzleSettings').then(handleLoaded).catch(handleLoaded)
-    import('@/components/PuzzleControlsCutType').then(handleLoaded).catch(handleLoaded)
-    import('@/components/PuzzleControlsCutCount').then(handleLoaded).catch(handleLoaded)
-    // 清理
-    return () => {
-      audio.removeEventListener("canplaythrough", handleLoaded)
-      audio.removeEventListener("error", handleLoaded)
-      audio.src = "" // 释放音频资源，防止内存泄漏
-      img.onload = null
-      img.onerror = null
-    }
-    function handleLoaded() {
-      loadedRef.current += 1
-      setRealProgress(Math.floor((loadedRef.current / total) * 100))
+    // 立即设置为已挂载
+    setIsMounted(true)
+    
+    // 立即开始预加载游戏组件，不等待空闲时间
+    if (!gamePreloaded.current) {
+      gamePreloaded.current = true
+      
+      // 直接开始并行预加载，不使用requestIdleCallback
+      import('@/components/GameInterface')
+        .then(() => console.log('游戏组件预加载完成'))
+        .catch(err => console.error('游戏组件预加载失败:', err))
     }
   }, [])
+  
+  const handleLoadComplete = () => {
+    console.log('加载完成，显示游戏组件')
+    setIsLoading(false)
+  }
 
-  // 动画自适应：动画总时长 1.2s 匀速递增到 99%，资源加载完后直接补到 100%
-  useEffect(() => {
-    let raf: number
-    function animate(ts: number) {
-      if (animationStart.current === null) animationStart.current = ts
-      const elapsed = ts - animationStart.current
-      if (realProgress < 100) {
-        // 匀速递增到99%
-        const percent = Math.min((elapsed / ANIMATION_DURATION) * 99, 99)
-        setAnimatedProgress(percent)
-        raf = requestAnimationFrame(animate)
-      } else {
-        // 资源已加载完，动画补到100%
-        setAnimatedProgress(prev => {
-          if (prev < 100) {
-            const next = Math.min(prev + 2, 100)
-            if (next < 100) {
-              raf = requestAnimationFrame(animate)
-            }
-            return next
-          }
-          return 100
-        })
-      }
-    }
-    raf = requestAnimationFrame(animate)
-    return () => {
-      animationStart.current = null
-      cancelAnimationFrame(raf)
-    }
-  }, [realProgress])
-
-  // 切换到主内容
-  useEffect(() => {
-    if (!showGame && animatedProgress >= 100 && realProgress >= 100) {
-      setShowGame(true)
-    }
-  }, [animatedProgress, realProgress, showGame])
+  // 如果还没有挂载，直接显示静态加载屏幕，防止闪烁
+  if (!isMounted) {
+    return (
+      <main className="no-scroll-container flex items-center justify-center min-h-screen">
+        <LoadingScreenStatic />
+      </main>
+    )
+  }
 
   return (
-    <main className="no-scroll-container flex items-center justify-center min-h-screen relative">
-      {/* 无缝预渲染主内容 */}
-      <div style={{
-        visibility: showGame ? 'visible' : 'hidden',
-        position: showGame ? 'static' : 'absolute',
-        zIndex: showGame ? 1 : -1,
-        width: '100%',
-        height: '100%',
-        top: 0,
-        left: 0,
-      }}>
+    <main className="no-scroll-container flex items-center justify-center min-h-screen">
+      {isLoading ? (
+        <LoadingScreen onLoadComplete={handleLoadComplete} />
+      ) : (
         <GameInterfaceComponent />
-      </div>
-      {/* 加载动画 */}
-      {!showGame && <LoadingScreen progress={animatedProgress} />}
+      )}
     </main>
   )
 }

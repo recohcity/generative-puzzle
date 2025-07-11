@@ -62,7 +62,6 @@
 
 - `app/`：Next.js 路由、布局、API、性能仪表盘
 - `components/`：核心 UI 组件、PuzzleCanvas（重构后仅编排各钩子与渲染）
-- `components/loading/LoadingScreen.tsx`：唯一加载动画组件，风格与主页面完全一致，极简高效
 - `contexts/`：全局状态管理（GameContext，含测试 API 挂载）
 - `hooks/`：自定义钩子（响应式尺寸、设备检测、交互、适配、调试等）
 - `e2e/`：Playwright 测试脚本（主流程、专项、临时）

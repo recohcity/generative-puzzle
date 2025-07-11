@@ -256,10 +256,10 @@ export const drawPiece = (
       // 不画轮廓线
     } else if (isSelected) {
       // 选中拼图块，阴影极强烈，拾取感更强
-      ctx.shadowColor = 'rgb(0, 0, 0)';
+      ctx.shadowColor = 'rgba(255, 140, 0, 1)';
       ctx.shadowBlur = 48;
-      ctx.shadowOffsetX = 48;
-      ctx.shadowOffsetY = 48;
+      ctx.shadowOffsetX = 24;
+      ctx.shadowOffsetY = 24;
       ctx.setLineDash([]);
       ctx.lineWidth = 2;
       ctx.strokeStyle = 'rgba(0,0,0,0)'; // 不画描边
