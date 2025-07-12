@@ -20,6 +20,9 @@ export default function ShapeControls({ goToNextTab }: ShapeControlsProps) {
   // 形状按钮本地选中状态
   const [selectedShape, setSelectedShape] = useState<ShapeType | null>(null);
 
+  // 首次生成形状自动重置逻辑
+  const [hasGeneratedShape, setHasGeneratedShape] = useState(false);
+
   // 设备检测
   useEffect(() => {
     const checkDevice = () => {
@@ -55,12 +58,24 @@ export default function ShapeControls({ goToNextTab }: ShapeControlsProps) {
     if (isShapeButtonDisabled) return;
     playButtonClickSound();
     setSelectedShape(shapeType);
-    generateShape(shapeType); // 传入类型，强制生成新形状
-    // 生成形状后自动跳转到下一个tab（如有）
-    if (goToNextTab) {
+    if (!hasGeneratedShape) {
+      resetGame();
+      setHasGeneratedShape(true);
       setTimeout(() => {
-        goToNextTab();
-      }, 300);
+        generateShape(shapeType);
+        if (goToNextTab) {
+          setTimeout(() => {
+            goToNextTab();
+          }, 300);
+        }
+      }, 0);
+    } else {
+      generateShape(shapeType);
+      if (goToNextTab) {
+        setTimeout(() => {
+          goToNextTab();
+        }, 300);
+      }
     }
   };
 

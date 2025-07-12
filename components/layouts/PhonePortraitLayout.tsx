@@ -31,9 +31,9 @@ const PhonePortraitLayout: React.FC<PhonePortraitLayoutProps> = ({
   goToFirstTab,
 }) => {
   return (
-    <div className="max-w-[1400px] w-full h-[calc(100vh-32px)] mx-auto relative flex flex-col gap-6">
+    <div className="max-w-[1400px] w-full mx-auto relative flex flex-col">
       {/* Title and Global Controls */}
-      <div className="flex flex-col">
+      <div className="flex flex-col mb-2">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold text-[#FFB17A]">生成式拼图游戏</h1>
           <GlobalUtilityButtons 
@@ -46,8 +46,8 @@ const PhonePortraitLayout: React.FC<PhonePortraitLayoutProps> = ({
       </div>
 
       {/* Control Panel (Bottom for Portrait) */}
-      <div className="w-full h-[50vh] order-2 flex-shrink-0">
-        <div className="bg-[#36323E] rounded-3xl border-2 border-[#463E50] h-full flex flex-col shadow-[0_10px_25px_rgba(0,0,0,0.3)] overflow-hidden p-4 lg:p-6">
+      <div className="order-2 flex flex-col items-center gap-4 pt-2 pb-4" style={{ marginBottom: 15 }}>
+        <div className="bg-[#36323E] rounded-3xl border-2 border-[#463E50] flex flex-col shadow-[0_10px_25px_rgba(0,0,0,0.3)] overflow-hidden p-4 lg:p-6">
           {/* Tabs */}
           <div className="flex justify-center bg-[#2A283E] rounded-xl mb-1 overflow-x-auto whitespace-nowrap scrollbar-hide">
             {(['shape', 'puzzle', 'cut', 'scatter', 'controls'] as const).map((tab) => (
@@ -81,9 +81,11 @@ const PhonePortraitLayout: React.FC<PhonePortraitLayoutProps> = ({
               </div>
             )}
             {activeTab === 'cut' && (
-              <div className="p-1.5 bg-[#463E50] rounded-2xl shadow-[0_4px_10px_rgba(0,0,0,0.2)]">
+              <div className="p-1.5 px-4 bg-[#463E50] rounded-2xl shadow-[0_4px_10px_rgba(0,0,0,0.2)]">
                 <h3 className="text-xs font-medium mb-1 text-[#FFD5AB]">选择切割次数</h3>
-                <PuzzleControlsCutCount goToNextTab={goToNextTab} />
+                <div className="max-w-[290px] w-full mx-auto">
+                  <PuzzleControlsCutCount goToNextTab={goToNextTab} />
+                </div>
               </div>
             )}
             {activeTab === 'scatter' && (
@@ -103,7 +105,24 @@ const PhonePortraitLayout: React.FC<PhonePortraitLayoutProps> = ({
       </div>
 
       {/* Game Area (Top for Portrait) */}
-      <div className="w-full h-[50vh] order-1 relative bg-white/20 backdrop-blur-sm rounded-3xl shadow-[0_10px_25px_rgba(0,0,0,0.2)] border-2 border-white/30 flex justify-center items-center overflow-hidden">
+      <div
+        className="order-1 bg-white/20 backdrop-blur-sm rounded-3xl shadow-[0_10px_25px_rgba(0,0,0,0.2)] border-2 border-white/30 overflow-hidden"
+        style={{
+          width: 'calc(100vw - 30px)',
+          height: 'calc(100vw - 30px)',
+          maxWidth: 'calc(100vw - 30px)',
+          maxHeight: 'calc(100vw - 30px)',
+          margin: '0 auto',
+          boxSizing: 'border-box',
+          position: 'relative',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 0,
+        }}
+      >
         <PuzzleCanvas />
       </div>
       

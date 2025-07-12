@@ -10,14 +10,16 @@ export default function ResponsiveBackground({ className = "", style }: { classN
 
   useEffect(() => {
     // 只在客户端执行
-    const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-    const isLandscape = window.innerWidth > window.innerHeight;
-    if (!isMobile || isLandscape) {
-      // 桌面端 或 移动横屏
-      setBgSrc(LANDSCAPE);
-    } else {
-      // 移动竖屏
-      setBgSrc(PORTRAIT);
+    if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
+      const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+      const isLandscape = window.innerWidth > window.innerHeight;
+      if (!isMobile || isLandscape) {
+        // 桌面端 或 移动横屏
+        setBgSrc(LANDSCAPE);
+      } else {
+        // 移动竖屏
+        setBgSrc(PORTRAIT);
+      }
     }
   }, []);
 

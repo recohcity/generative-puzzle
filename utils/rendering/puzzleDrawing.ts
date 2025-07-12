@@ -487,6 +487,8 @@ export const drawPuzzle = (
   originalShape?: Point[], // 原始形状的顶点数组 (用于显示轮廓或完成状态)
   isScattered: boolean = false // 游戏是否处于拼图散开的状态
 ) => {
+  // [E2E-debugLOG] drawPuzzle called
+  console.log('[E2E-debugLOG] drawPuzzle', { piecesLen: pieces?.length, completedLen: completedPieces?.length });
   // 清除整个画布，准备重新绘制
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 

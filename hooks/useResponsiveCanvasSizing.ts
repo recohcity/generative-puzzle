@@ -53,47 +53,21 @@ export function useResponsiveCanvasSizing({
     let newWidth: number, newHeight: number;
 
     if (isMobile && isPortrait) {
-      // 移动设备竖屏模式 - 使用严格的正方形画布，保持较小尺寸以确保拼图完全可见
+      // 移动端竖屏，画布最大化填满容器（正方形），最小边距为1px
       const minDimension = Math.min(containerWidth, containerHeight);
-      const maxSize = Math.min(
-        minDimension,
-        isAndroid ? 360 : 320, // 根据 Android 或其他移动设备调整最大尺寸
-        Math.min(screenWidth, screenHeight) * 0.9
-      );
-
-      newWidth = maxSize;
-      newHeight = maxSize;
-      console.log("[useResponsiveCanvasSizing] 移动设备竖屏模式，强制使用严格限制的1:1正方形画布:", newWidth, "x", newHeight);
+      newWidth = Math.max(1, minDimension);
+      newHeight = Math.max(1, minDimension);
+      console.log("[useResponsiveCanvasSizing] 移动端竖屏，画布填满容器:", newWidth, "x", newHeight);
     } else if (isMobile && !isPortrait) {
-      // 移动设备横屏模式 - 利用宽屏空间，使用更宽的矩形画布
-      const availableHeight = Math.min(containerHeight, screenHeight * 0.8);
-      const aspectRatio = 16 / 9;
-      newWidth = Math.min(availableHeight * aspectRatio, containerWidth * 0.9);
-      newHeight = availableHeight;
-      console.log("[useResponsiveCanvasSizing] 移动设备横屏模式，使用宽屏比例画布:", newWidth, "x", newHeight);
-    } else if (isAndroid || (screenWidth < 1024 && screenHeight < 1024)) {
-      // iPad或平板设备 (泛化为非移动触摸设备或较小屏幕)
-      const aspectRatio = containerWidth / containerHeight;
-
-      if (aspectRatio > 1.5) {
-        // 横向过宽，限制宽度
-        newHeight = Math.min(containerHeight, 600);
-        newWidth = Math.min(newHeight * 1.5, containerWidth);
-      } else if (aspectRatio < 0.7) {
-        // 竖向过高，限制高度
-        newWidth = Math.min(containerWidth, 600);
-        newHeight = Math.min(newWidth * 1.5, containerHeight);
-      } else {
-        // 近似正方形，维持比例
-        newWidth = containerWidth;
-        newHeight = containerHeight;
-      }
-      console.log("[useResponsiveCanvasSizing] 平板设备，使用调整比例画布:", newWidth, "x", newHeight);
+      // 移动端横屏，画布最大化填满容器
+      newWidth = Math.max(1, containerWidth);
+      newHeight = Math.max(1, containerHeight);
+      console.log("[useResponsiveCanvasSizing] 移动端横屏，画布填满容器:", newWidth, "x", newHeight);
     } else {
-      // 桌面设备
-      newWidth = containerWidth;
-      newHeight = containerHeight;
-      console.log("[useResponsiveCanvasSizing] 桌面设备，使用全尺寸画布:", newWidth, "x", newHeight);
+      // 平板/桌面，画布最大化填满容器
+      newWidth = Math.max(1, containerWidth);
+      newHeight = Math.max(1, containerHeight);
+      console.log("[useResponsiveCanvasSizing] 桌面/平板，画布填满容器:", newWidth, "x", newHeight);
     }
 
     // 确保使用整数值避免渲染问题

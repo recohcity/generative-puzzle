@@ -261,7 +261,7 @@ export default function PuzzleCanvas() {
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-full flex items-center justify-center overflow-hidden`}
+      style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}
     >
       {/* debug模式下显示导出按钮 */}
       {showDebugElements && (
@@ -292,14 +292,14 @@ export default function PuzzleCanvas() {
       )}
       <canvas
         ref={backgroundCanvasRef}
-        className="absolute top-0 left-0"
+        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
         width={canvasSize?.width || 0}
         height={canvasSize?.height || 0}
       />
       <canvas
         ref={canvasRef}
         id="puzzle-canvas"
-        className="relative cursor-pointer"
+        style={{ width: '100%', height: '100%', position: 'relative', cursor: 'pointer' }}
         width={canvasSize?.width || 0}
         height={canvasSize?.height || 0}
         onMouseDown={handleMouseDown}

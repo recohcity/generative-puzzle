@@ -48,6 +48,8 @@ export default function PuzzleControlsScatter({ goToNextTab }: PuzzleControlsSca
   const disabledClass = "opacity-30 pointer-events-none";
 
   const handleScatterPuzzle = () => {
+    // [E2E-debugLOG] 点击散开拼图按钮
+    console.log('[E2E-debugLOG] handleScatterPuzzle', { puzzleLen: state.puzzle?.length, isScattered: state.isScattered });
     playButtonClickSound()
     scatterPuzzle()
     
