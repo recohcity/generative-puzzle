@@ -1,0 +1,60 @@
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
+import React from "react";
+
+interface RestartButtonProps {
+  onClick: () => void;
+  disabled?: boolean;
+  style?: React.CSSProperties;
+  className?: string;
+  fontSize?: number | string;
+  iconSize?: number | string;
+  height?: number | string;
+  children?: React.ReactNode;
+}
+
+const DEFAULT_HEIGHT = 36;
+const DEFAULT_FONT_SIZE = 15;
+const DEFAULT_ICON_SIZE = 24;
+
+const RestartButton: React.FC<RestartButtonProps> = ({
+  onClick,
+  disabled = false,
+  style = {},
+  className = "",
+  fontSize = DEFAULT_FONT_SIZE,
+  iconSize = DEFAULT_ICON_SIZE,
+  height = DEFAULT_HEIGHT,
+  children = "重新开始",
+}) => {
+  return (
+    <Button
+      onClick={onClick}
+      disabled={disabled}
+      className={`w-full bg-[#1E1A2A] text-white rounded-3xl shadow-md hover:bg-[#141022] hover:text-white hover:border-[#706B89] active:bg-[#2A283E] active:text-white active:border-[#463E50] min-h-0 p-0 leading-none ${className}`}
+      style={{
+        height,
+        fontSize,
+        minHeight: 0,
+        paddingTop: 0,
+        paddingBottom: 0,
+        lineHeight: 1,
+        ...style,
+      }}
+    >
+      <RefreshCw
+        className="mr-2"
+        style={{
+          width: iconSize,
+          height: iconSize,
+          color: "#F68E5F",
+          flexShrink: 0,
+          lineHeight: 1,
+        }}
+      />
+      <span style={{lineHeight: 1}}>{children}</span>
+    </Button>
+  );
+};
+
+export default RestartButton; 

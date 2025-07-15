@@ -1,6 +1,6 @@
 # 生成式拼图游戏 - 配置说明
 
-> 修订日期：2025-06-22 23:10:45
+> 修订日期：2025-07-16
 
 本文档详细列举并说明本项目所有关键配置点、参数、核心算法入口及其对应的源文件，便于开发者理解、调整和维护游戏行为。每次配置或算法有变动都需同步修订。
 
@@ -188,7 +188,12 @@
   取值范围：320~1024（像素，随设备/窗口动态调整）  
   默认值：桌面 800，移动端 360  
   影响点：画布、拼图缩放、适配  
-  配置/代码位置：`useResponsiveCanvasSizing.ts`、`PuzzleCanvas.tsx`
+  配置/代码位置：`useResponsiveCanvasSizing.ts`、`PuzzleCanvas.tsx`  
+  
+- **全局画布与面板自适应**  
+  作用：桌面端/移动端竖屏/横屏下，画布始终正方形最大化利用空间，面板与画布高度联动，所有自适应逻辑由父容器驱动，PuzzleCanvas 只需100%适配父容器。  
+  配置/代码位置：`GameContext.tsx`（集中管理画布状态）、`PhoneTabPanel.tsx`（移动端Tab面板集中管理）、`DesktopLayout.tsx`、`PhonePortraitLayout.tsx`、`PhoneLandscapeLayout.tsx`  
+  说明：详见 `docs/puzzle_memory_adaptation_optimization/step1_canvas_adaptation_plan.md`。
 
 - **isMobile**  
   作用：是否为移动端设备  
@@ -203,6 +208,11 @@
   默认值：自动检测  
   影响点：布局、分布算法、UI  
   配置/代码位置：`useDeviceDetection.ts`、`GameInterface.tsx`
+
+- **tabPanelAdaptive**  
+  作用：移动端Tab面板集中管理，PhoneTabPanel组件负责tab切换与内容区像素级布局，所有tab内容与全局状态同步，tab与画布高度联动。  
+  配置/代码位置：`components/layouts/PhoneTabPanel.tsx`、`GameContext.tsx`  
+  说明：详见 `docs/puzzle_memory_adaptation_optimization/step1_canvas_adaptation_plan.md`。
 
 ---
 
@@ -293,6 +303,16 @@
   默认值：五步唯一流转
   影响点：画布提示区、自动化测试
   配置/代码位置：DesktopLayout.tsx、PhoneLandscapeLayout.tsx、PhonePortraitLayout.tsx、E2E 测试脚本
+
+- **tabPanelAdaptive**  
+  作用：移动端Tab面板集中管理，PhoneTabPanel组件负责tab切换与内容区像素级布局，所有tab内容与全局状态同步，tab与画布高度联动。  
+  配置/代码位置：`components/layouts/PhoneTabPanel.tsx`、`GameContext.tsx`  
+  说明：详见 `docs/puzzle_memory_adaptation_optimization/step1_canvas_adaptation_plan.md`。
+
+- **panelCanvasAdaptive**  
+  作用：桌面端/移动端画布与面板正方形自适应，所有端像素级体验一致。  
+  配置/代码位置：`GameContext.tsx`、`DesktopLayout.tsx`、`PhonePortraitLayout.tsx`、`PhoneLandscapeLayout.tsx`  
+  说明：详见 `docs/puzzle_memory_adaptation_optimization/step1_canvas_adaptation_plan.md`。
 
 ---
 

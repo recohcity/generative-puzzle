@@ -19,14 +19,101 @@ import { PuzzlePiece } from "@/types/puzzleTypes";
 import { useResponsiveCanvasSizing } from "@/hooks/useResponsiveCanvasSizing";
 // 导入新的拼图交互处理 Hook
 import { usePuzzleInteractions } from "@/hooks/usePuzzleInteractions";
+// 修正：usePuzzleAdaptation为具名导出，需用花括号导入
 import { usePuzzleAdaptation } from '@/hooks/usePuzzleAdaptation';
 import { useDebugToggle } from '@/hooks/useDebugToggle';
 import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 
+// ========================
+// 画布适配核心流程说明
+//
+// 1. 画布相关状态（canvasWidth, canvasHeight, scale, orientation, previousCanvasSize）
+//    统一由GameContext集中管理，作为全局适配与归一化的唯一基准。
+// 2. 监听机制采用window.resize、orientationchange和ResizeObserver，
+//    并用requestAnimationFrame节流，避免高频重绘，保障性能。
+// 3. 每次尺寸/方向变化时，先记录previousCanvasSize，再原子性更新所有画布相关状态，
+//    保证适配流程的前后状态可追溯、一致。
+// 4. 画布状态变化后，自动驱动下游适配（如usePuzzleAdaptation），
+//    保证目标形状、拼图块等内容始终与画布同步，且幂等、无需手动触发。
+// 5. 对极端尺寸（超小、超大、超宽、超窄）和方向切换场景，
+//    设定安全区间，超出时自动回退，防止内容溢出、消失或变形。
+//
+// 以上流程和参数均有详细注释，便于团队理解、维护和后续扩展。
+// ========================
+
+// 画布尺寸边界常量
+const MIN_CANVAS_WIDTH = 320; // 画布最小宽度，防止内容过小或消失
+const MIN_CANVAS_HEIGHT = 320; // 画布最小高度
+const MAX_CANVAS_WIDTH = 2560; // 画布最大宽度，防止内容溢出
+const MAX_CANVAS_HEIGHT = 1440; // 画布最大高度
+
+// 画布自适应监听与节流实现
+function useCanvasResizeObserver(onResize: (width: number, height: number) => void) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    let frameId: number | null = null;
+    const handleResize = () => {
+      if (frameId) return;
+      frameId = window.requestAnimationFrame(() => {
+        frameId = null;
+        if (containerRef.current) {
+          const rect = containerRef.current.getBoundingClientRect();
+          onResize(Math.round(rect.width), Math.round(rect.height));
+        }
+      });
+    };
+    // 监听window resize和orientationchange
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    // 可选：使用ResizeObserver监听容器变化
+    let observer: ResizeObserver | null = null;
+    if (containerRef.current && 'ResizeObserver' in window) {
+      observer = new ResizeObserver(() => handleResize());
+      observer.observe(containerRef.current);
+    }
+    // 初始化时触发一次
+    handleResize();
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+      if (observer && containerRef.current) observer.disconnect();
+      if (frameId) window.cancelAnimationFrame(frameId);
+    };
+  }, [onResize]);
+  return containerRef;
+}
+
 export default function PuzzleCanvas() {
   const { state, dispatch, canvasRef, backgroundCanvasRef, ensurePieceInBounds, calculatePieceBounds, rotatePiece } = useGame();
   
-  const containerRef = useRef<HTMLDivElement | null>(null);
+  // 画布resize时的原子状态更新（含边界与容错处理）
+  const containerRef = useCanvasResizeObserver((width, height) => {
+    // 边界处理：限制画布尺寸在安全区间，防止极端场景下内容溢出或消失
+    let safeWidth = Math.max(MIN_CANVAS_WIDTH, Math.min(width, MAX_CANVAS_WIDTH));
+    let safeHeight = Math.max(MIN_CANVAS_HEIGHT, Math.min(height, MAX_CANVAS_HEIGHT));
+    if (safeWidth !== width || safeHeight !== height) {
+      // 可选：在UI或console给出提示，便于调试和用户感知
+      // console.warn('画布尺寸已自动回退到安全区域:', safeWidth, safeHeight);
+    }
+    // 记录前一帧尺寸，便于归一化适配和状态恢复
+    const prevWidth = state.canvasWidth;
+    const prevHeight = state.canvasHeight;
+    // 方向判断，便于移动端适配
+    const orientation = safeWidth >= safeHeight ? 'landscape' : 'portrait';
+    // scale如有自适应缩放需求可扩展，这里暂用1
+    const scale = 1;
+    // 原子性dispatch所有相关状态，保证适配一致性
+    dispatch({
+      type: 'UPDATE_CANVAS_SIZE',
+      payload: {
+        canvasWidth: safeWidth,
+        canvasHeight: safeHeight,
+        scale,
+        orientation,
+        previousCanvasSize: { width: prevWidth, height: prevHeight },
+      },
+    });
+  });
   const [showDebugElements] = useDebugToggle();
   const [isShaking, setIsShaking] = useState(false);
   const debugLogRef = useRef<any[]>([]);
@@ -104,7 +191,11 @@ export default function PuzzleCanvas() {
     backgroundCanvasRef,
   });
   
-  usePuzzleAdaptation(canvasSize);
+  // 顶层直接调用 usePuzzleAdaptation，确保每次渲染都响应最新画布状态
+  usePuzzleAdaptation({ 
+    width: state.canvasWidth, 
+    height: state.canvasHeight
+  });
 
   const {
     handleMouseDown,
@@ -261,7 +352,7 @@ export default function PuzzleCanvas() {
   return (
     <div
       ref={containerRef}
-      style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}
+      style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden', boxSizing: 'content-box' }}
     >
       {/* debug模式下显示导出按钮 */}
       {showDebugElements && (
@@ -292,14 +383,14 @@ export default function PuzzleCanvas() {
       )}
       <canvas
         ref={backgroundCanvasRef}
-        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', boxSizing: 'content-box' }}
         width={canvasSize?.width || 0}
         height={canvasSize?.height || 0}
       />
       <canvas
         ref={canvasRef}
         id="puzzle-canvas"
-        style={{ width: '100%', height: '100%', position: 'relative', cursor: 'pointer' }}
+        style={{ width: '100%', height: '100%', position: 'relative', cursor: 'pointer', boxSizing: 'content-box' }}
         width={canvasSize?.width || 0}
         height={canvasSize?.height || 0}
         onMouseDown={handleMouseDown}

@@ -4,10 +4,18 @@ import { Point, PuzzlePiece } from '@/types/puzzleTypes';
 import { calculateCenter } from '@/utils/geometry/puzzleGeometry';
 
 /**
- * A custom hook that adapts the puzzle state when the canvas size changes.
- * It listens for changes in canvasSize and recalculates the positions of all puzzle pieces
- * to maintain their relative placement on the new canvas.
- * This hook does not return anything; it dispatches actions to the GameContext.
+ * usePuzzleAdaptation
+ * 本 Hook 负责在画布尺寸变化时，自动适配所有拼图块的位置和旋转，实现拼图状态的记忆与恢复。
+ * 监听 canvasSize、isScattered、previousCanvasSize、puzzle、originalPositions 等依赖。
+ * 
+ * 适配流程：
+ * 1. 对于已完成的拼图块，查找 originalPositions，按归一化点位和新画布尺寸缩放恢复。
+ *    （注意：此处假设 originalPositions 的点为归一化坐标，需与生成逻辑保持一致）
+ * 2. 对于未完成的拼图块，计算当前中心点，归一化为 normalizedX/Y（相对于 previousCanvasSize），
+ *    再反归一化到新画布尺寸，保持相对位置。
+ *    （建议：在拖拽/移动拼图块时同步更新 normalizedX/Y 字段，便于下次适配更精确）
+ * 3. 适配后通过 dispatch({ type: 'UPDATE_ADAPTED_PUZZLE_STATE', payload: { ... } }) 批量更新状态。
+ *    （注意：payload 字段需与 reducer 保持一致，否则适配结果无法写入 state）
  */
 export const usePuzzleAdaptation = (canvasSize: { width: number; height: number } | null) => {
   const { state, dispatch } = useGame();

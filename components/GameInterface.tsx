@@ -283,9 +283,9 @@ export default function CurveTestOptimized() {
   };
 
   // 处理音乐切换
-  const handleToggleMusic = () => {
+  const handleToggleMusic = async () => {
     playButtonClickSound();
-    const newStatus = toggleBackgroundMusic();
+    const newStatus = await toggleBackgroundMusic();
     setIsMusicPlaying(newStatus);
   };
   

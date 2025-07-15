@@ -231,11 +231,9 @@ async function robustWaitForFunction(page: Page, fn: () => boolean, timeout = 30
 }
 
 // 辅助函数：等待画布提示区域出现指定文本
+// 更稳健的文本等待方式
 async function waitForTip(page: Page, expected: string) {
-  await page.waitForFunction((text) => {
-    const el = document.querySelector('div.absolute.top-4');
-    return el && el.textContent && el.textContent.trim() === text;
-  }, expected, { timeout: 10000 });
+  await expect(page.getByText(expected)).toBeVisible({ timeout: 10000 });
 }
 
 test.beforeEach(async ({ page }) => {
@@ -268,7 +266,7 @@ test.beforeEach(async ({ page }) => {
 // --- 完整流程自动化测试脚本 ---
 
 test('完整自动化游戏流程', async ({ page }) => {
-  // [E2E-debugLOG] 测试开始，记录初始时间
+  // 测试开始，记录初始时间
   console.log('[E2E-debugLOG] 测试开始', { startTime: Date.now() });
   const startTime = Date.now();
   const metrics: PerformanceMetrics = {
@@ -306,82 +304,68 @@ test('完整自动化游戏流程', async ({ page }) => {
     // 兼容老逻辑
     metrics.loadTime = metrics.e2eLoadTime;
     // 1.1 等待初始提示
-    // [E2E-debugLOG] 等待初始提示前
-    console.log('[E2E-debugLOG] 等待初始提示前');
+    // 等待初始提示前
     await waitForTip(page, '请点击生成你喜欢的形状');
-    // [E2E-debugLOG] 初始提示已出现
-    console.log('[E2E-debugLOG] 初始提示已出现');
+    // 初始提示已出现
     console.log('步骤 1: 初始提示 - 完成。');
 
     // 2. 形状生成时间采集
     const shapeGenStart = Date.now();
-    // [E2E-debugLOG] 点击云朵形状按钮前
-    console.log('[E2E-debugLOG] 点击云朵形状按钮前');
+    // 点击云朵形状按钮前
     await page.getByRole('button', { name: /云朵形状|云朵/ }).click();
-    // [E2E-debugLOG] 点击云朵形状按钮后
-    console.log('[E2E-debugLOG] 点击云朵形状按钮后');
+    // 点击云朵形状按钮后
     await waitForTip(page, '请选择切割类型');
     metrics.shapeGenerationTime = Date.now() - shapeGenStart;
     metrics.shapeType = '云朵';
-    // [E2E-debugLOG] 形状生成后，当前全局状态
+    // 形状生成后，当前全局状态
     const stateAfterShape = await page.evaluate(() => (window as any).__gameStateForTests__);
     console.log('[E2E-debugLOG] 形状生成后全局状态', stateAfterShape);
     console.log('步骤 2: 选择云朵形状并生成 - 完成。');
 
     // 3. 拼图生成时间采集
-    // [E2E-debugLOG] 选择斜线切割类型前
-    console.log('[E2E-debugLOG] 选择斜线切割类型前');
+    // 选择斜线切割类型前
     await page.getByText('斜线').click();
     metrics.cutType = '斜线'; // 新增：记录切割类型
-    // [E2E-debugLOG] 选择斜线切割类型后
-    console.log('[E2E-debugLOG] 选择斜线切割类型后');
+    // 选择斜线切割类型后
     await waitForTip(page, '请切割形状');
-    // [E2E-debugLOG] 选择切割次数前
-    console.log('[E2E-debugLOG] 选择切割次数前');
+    // 选择切割次数前
     await page.getByRole('button', { name: '8' }).click();
     metrics.cutCount = 8; // 新增：记录切割次数
-    // [E2E-debugLOG] 选择切割次数后
-    console.log('[E2E-debugLOG] 选择切割次数后');
+    // 选择切割次数后
     const puzzleGenStart = Date.now();
-    // [E2E-debugLOG] 点击切割形状按钮前
-    console.log('[E2E-debugLOG] 点击切割形状按钮前');
+    // 点击切割形状按钮前
     await page.getByRole('button', { name: /切割形状|重新切割形状/ }).click();
-    // [E2E-debugLOG] 点击切割形状按钮后
-    console.log('[E2E-debugLOG] 点击切割形状按钮后');
+    // 点击切割形状按钮后
     await waitForTip(page, '请散开拼图，开始游戏');
     metrics.puzzleGenerationTime = Date.now() - puzzleGenStart;
-    // [E2E-debugLOG] 切割形状后全局状态
+    // 切割形状后全局状态
     const stateAfterCut = await page.evaluate(() => (window as any).__gameStateForTests__);
     console.log('[E2E-debugLOG] 切割形状后全局状态', stateAfterCut);
     console.log('步骤 3: 切割形状并渲染拼图 - 完成。');
 
     // 5. 散开拼图
     const scatterStartTime = Date.now();
-    // [E2E-debugLOG] 点击散开拼图按钮前
-    console.log('[E2E-debugLOG] 点击散开拼图按钮前');
+    // 点击散开拼图按钮前
     await page.getByRole('button', { name: '散开拼图' }).click();
-    // [E2E-debugLOG] 点击散开拼图按钮后
-    console.log('[E2E-debugLOG] 点击散开拼图按钮后');
-    // [E2E-debugLOG] robustWaitForFunction 等待 puzzle !== undefined 前
-    console.log('[E2E-debugLOG] robustWaitForFunction 等待 puzzle !== undefined 前');
+    // 点击散开拼图按钮后
+    // robustWaitForFunction 等待 puzzle !== undefined 前
     await robustWaitForFunction(page, () => {
       const state = (window as any).__gameStateForTests__;
       return state && state.puzzle !== undefined;
     }, 30000);
-    // [E2E-debugLOG] robustWaitForFunction puzzle !== undefined 后
+    // robustWaitForFunction puzzle !== undefined 后
     const stateAfterPuzzleNotUndef = await page.evaluate(() => (window as any).__gameStateForTests__);
     console.log('[E2E-debugLOG] puzzle !== undefined 后全局状态', stateAfterPuzzleNotUndef);
-    // [E2E-debugLOG] robustWaitForFunction 等待 puzzle/positions 数组前
-    console.log('[E2E-debugLOG] robustWaitForFunction 等待 puzzle/positions 数组前');
+    // robustWaitForFunction 等待 puzzle/positions 数组前
     await robustWaitForFunction(page, () => {
       const state = (window as any).__gameStateForTests__;
       return Array.isArray(state.puzzle) && state.puzzle.length > 0
         && Array.isArray(state.originalPositions) && state.originalPositions.length > 0;
     }, 30000);
-    // [E2E-debugLOG] robustWaitForFunction puzzle/positions 数组后
+    // robustWaitForFunction puzzle/positions 数组后
     const stateAfterPuzzleArray = await page.evaluate(() => (window as any).__gameStateForTests__);
     console.log('[E2E-debugLOG] puzzle/positions 数组后全局状态', stateAfterPuzzleArray);
-    // [E2E-debugLOG] 获取 puzzle 长度
+    // 获取 puzzle 长度
     const puzzle = await page.evaluate(() => (window as any).__gameStateForTests__.puzzle);
     console.log('[E2E-debugLOG] puzzle 长度', puzzle ? puzzle.length : puzzle);
     await waitForTip(page, `0 / ${puzzle.length} 块拼图已完成`);
@@ -389,7 +373,7 @@ test('完整自动化游戏流程', async ({ page }) => {
     console.log(`步骤 4: 点击散开拼图 - 完成。`);
 
     // 6. 画布提示
-    // [E2E-debugLOG] 获取 originalPositions
+    // 获取 originalPositions
     const originalPositions = await page.evaluate(() => (window as any).__gameStateForTests__.originalPositions);
     console.log('[E2E-debugLOG] 获取 originalPositions', originalPositions ? originalPositions.length : originalPositions);
     metrics.pieceCount = puzzle.length;
@@ -397,7 +381,7 @@ test('完整自动化游戏流程', async ({ page }) => {
     console.log(`步骤 5: 画布提示 (${puzzle.length} 块) - 完成。`);
 
     // 7. 拼图交互性能
-    // [E2E-debugLOG] 拼图交互性能测试开始
+    // 拼图交互性能测试开始
     console.log('[E2E-debugLOG] 拼图交互性能测试开始');
     let puzzleInteractionStartTime = Date.now();
     for (let i = 0; i < puzzle.length; i++) {
@@ -435,24 +419,22 @@ test('完整自动化游戏流程', async ({ page }) => {
       metrics.pieceInteractionTimes.push(pieceInteractionEndTime - pieceInteractionStartTime);
     }
     metrics.puzzleInteractionDuration = Date.now() - puzzleInteractionStartTime;
-    // [E2E-debugLOG] 拼图交互性能测试结束
+    // 拼图交互性能测试结束
     console.log('[E2E-debugLOG] 拼图交互性能测试结束');
 
     // 步骤 7: 验证游戏是否最终完成（重构后的正确逻辑）
     console.log(`步骤 7: 等待所有拼图块在状态中被标记为完成...`);
-    // [E2E-debugLOG] robustWaitForFunction 等待 completedPieces 填满前
-    console.log('[E2E-debugLOG] robustWaitForFunction 等待 completedPieces 填满前');
+    // robustWaitForFunction 等待 completedPieces 填满前
     await robustWaitForFunction(page, () => {
       const state = (window as any).__gameStateForTests__;
       return state.completedPieces && state.puzzle && state.completedPieces.length === state.puzzle.length;
     }, 30000);
-    // [E2E-debugLOG] completedPieces 填满后全局状态
+    // completedPieces 填满后全局状态
     const stateAfterCompleted = await page.evaluate(() => (window as any).__gameStateForTests__);
     console.log('[E2E-debugLOG] completedPieces 填满后全局状态', stateAfterCompleted);
-    // [E2E-debugLOG] robustWaitForFunction 等待 isCompleted 前
-    console.log('[E2E-debugLOG] robustWaitForFunction 等待 isCompleted 前');
+    // robustWaitForFunction 等待 isCompleted 前
     await robustWaitForFunction(page, () => (window as any).__gameStateForTests__.isCompleted, 30000);
-    // [E2E-debugLOG] isCompleted 状态为 true 后全局状态
+    // isCompleted 状态为 true 后全局状态
     const stateAfterIsCompleted = await page.evaluate(() => (window as any).__gameStateForTests__);
     console.log('[E2E-debugLOG] isCompleted 状态为 true 后全局状态', stateAfterIsCompleted);
     console.log(`步骤 7.1: completedPieces 数组长度已满足要求 - 完成。`);

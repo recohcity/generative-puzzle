@@ -7,9 +7,10 @@ import { useState, useEffect } from "react" // Keep useEffect for potential futu
 
 interface ActionButtonsProps {
   layout?: 'mobile' | 'desktop'; // Prop to differentiate layout styles if needed
+  buttonHeight?: number;
 }
 
-export default function ActionButtons({ layout = 'mobile' }: ActionButtonsProps) {
+export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: ActionButtonsProps) {
   const { 
     state,
     rotatePiece,
@@ -81,9 +82,9 @@ export default function ActionButtons({ layout = 'mobile' }: ActionButtonsProps)
 
 
   return (
-    <div className="space-y-3">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
       {/* Action Buttons Grid */}
-      <div className="grid grid-cols-3 gap-2">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
         <Button
           onClick={handleShowHint}
           disabled={
@@ -91,49 +92,77 @@ export default function ActionButtons({ layout = 'mobile' }: ActionButtonsProps)
             state.selectedPiece === null ||
             state.completedPieces.includes(state.selectedPiece ?? -1)
           }
-          className={`w-full ${buttonHeightClass} px-0 bg-[#F68E5F] hover:bg-[#F47B42] text-white rounded-xl shadow-md \
-            ${!state.isScattered || state.selectedPiece === null || 
-              state.completedPieces.includes(state.selectedPiece ?? -1) 
-              ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+          className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md ${!state.isScattered || state.selectedPiece === null || state.completedPieces.includes(state.selectedPiece ?? -1) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+          style={{
+            height: buttonHeight,
+            borderRadius: '14px',
+            fontSize: '14px',
+            padding: 0,
+            lineHeight: '18px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '4px',
+          }}
           title="显示提示"
           variant="ghost"
         >
-          <Lightbulb className="!w-6 !h-6 text-white shrink-0" strokeWidth={2} />
-          {layout === 'mobile' && <span className={`ml-1 ${textSizeClass}`}>提示</span>}
+          <Lightbulb style={{ width: '16px', height: '16px' }} className="text-white shrink-0" strokeWidth={2} />
+          {layout === 'mobile' && <span style={{ fontSize: '14px', marginLeft: '2px' }}>提示</span>}
         </Button>
 
         <Button
           onClick={() => handleRotatePiece(false)}
           disabled={!state.isScattered || state.selectedPiece === null || state.isCompleted}
-          className={`w-full ${buttonHeightClass} px-0 bg-[#F68E5F] hover:bg-[#F47B42] text-white rounded-xl shadow-md \
-            ${!state.isScattered || state.selectedPiece === null || state.isCompleted ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+          className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md ${!state.isScattered || state.selectedPiece === null || state.isCompleted ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+          style={{
+            height: buttonHeight,
+            borderRadius: '14px',
+            fontSize: '14px',
+            padding: 0,
+            lineHeight: '18px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '4px',
+          }}
           title="逆时针旋转"
           variant="ghost"
         >
-          <RotateCcw className="!w-6 !h-6 text-white shrink-0" strokeWidth={2} />
-           {layout === 'mobile' && <span className={`ml-1 ${textSizeClass}`}>左转</span>}
+          <RotateCcw style={{ width: '16px', height: '16px' }} className="text-white shrink-0" strokeWidth={2} />
+          {layout === 'mobile' && <span style={{ fontSize: '14px', marginLeft: '2px' }}>左转</span>}
         </Button>
 
         <Button
           onClick={() => handleRotatePiece(true)}
           disabled={!state.isScattered || state.selectedPiece === null || state.isCompleted}
-          className={`w-full ${buttonHeightClass} px-0 bg-[#F68E5F] hover:bg-[#F47B42] text-white rounded-xl shadow-md \
-            ${!state.isScattered || state.selectedPiece === null || state.isCompleted ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+          className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md ${!state.isScattered || state.selectedPiece === null || state.isCompleted ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+          style={{
+            height: buttonHeight,
+            borderRadius: '14px',
+            fontSize: '14px',
+            padding: 0,
+            lineHeight: '18px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '4px',
+          }}
           title="顺时针旋转"
           variant="ghost"
         >
-          <RotateCw className="!w-6 !h-6 text-white shrink-0" strokeWidth={2} />
-          {layout === 'mobile' && <span className={`ml-1 ${textSizeClass}`}>右转</span>}
+          <RotateCw style={{ width: '16px', height: '16px' }} className="text-white shrink-0" strokeWidth={2} />
+          {layout === 'mobile' && <span style={{ fontSize: '14px', marginLeft: '2px' }}>右转</span>}
         </Button>
       </div>
 
       {/* Rotation Info */}
       {state.selectedPiece !== null && state.puzzle && (
-        <div className={`text-center ${rotationInfoTextClass}`}>
-          <div className="text-[#FFD5AB] font-medium">
+        <div style={{ textAlign: 'center', fontSize: '14px', marginTop: '6px', color: '#FFD5AB', fontWeight: 500 }}>
+          <div>
             当前角度: {Math.round(state.puzzle[state.selectedPiece].rotation)}°
           </div>
-          <div className={`text-xs text-[#FFD5AB] font-medium`}>
+          <div style={{ fontSize: '12px', marginTop: '2px', color: '#FFD5AB', fontWeight: 500 }}>
             {layout === 'mobile' && isPhone ? "可以使用2只手指旋转拼图" : "(旋转角度需与目标角度匹配才能放置)"}
           </div>
         </div>

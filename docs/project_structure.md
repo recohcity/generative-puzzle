@@ -1,5 +1,5 @@
 # 项目结构（项目地图）
-> 修订日期：2025-06-22 23:10:45
+> 修订日期：2025-07-16
 
 本文件严格对照实际目录结构，分层列出每个目录和主要文件，并为每个文件写明一句简要用途。每次目录或功能有变动都需同步修订。
 
@@ -48,13 +48,13 @@
     - `route.ts`：聚合并返回性能报告数据的 API 路由
 - `test/`：测试相关页面目录
   - `page.tsx`：性能趋势仪表盘页面，支持开发/生产分组、对比、差异高亮、趋势分析，所有性能指标分项采集与分级，自动高亮环境差异。
-- 画布上方提示区严格按五步唯一流转，所有流程节点以提示区域为唯一判断标准，自动化测试脚本已同步适配。
+- 画布与面板自适应：桌面端/移动端竖屏/横屏下，画布始终正方形最大化利用空间，面板与画布高度联动，所有自适应逻辑由父容器驱动，PuzzleCanvas 只需100%适配父容器。全局状态集中管理于 GameContext，所有端像素级体验一致。详见 step1_canvas_adaptation_plan.md。
 
 ---
 
 ## components/
-- `GameInterface.tsx`：核心游戏界面，按设备/方向分发布局
-- `PuzzleCanvas.tsx`：主画布组件，负责钩子编排与渲染，支持材质纹理填充、拼图层级优化、提示轮廓与文字显示修复
+- `GameInterface.tsx`：核心游戏界面，按设备/方向分发布局，驱动画布与面板自适应。
+- `PuzzleCanvas.tsx`：主画布组件，100%适配父容器，所有自适应逻辑交由父容器处理。
 - `ActionButtons.tsx`：游戏操作按钮组件（已移除“生成形状”按钮相关逻辑）
 - `DesktopPuzzleSettings.tsx`：桌面端游戏设置面板（已适配新形状生成逻辑）
 - `GlobalUtilityButtons.tsx`：全局工具按钮（如全屏、主题切换）
@@ -68,6 +68,7 @@
   - `DesktopLayout.tsx`：桌面端布局
   - `PhoneLandscapeLayout.tsx`：手机横屏布局
   - `PhonePortraitLayout.tsx`：手机竖屏布局
+  - `PhoneTabPanel.tsx`：移动端Tab面板集中管理组件，负责tab切换、内容区像素级布局、与全局状态同步，tab与画布高度联动。
 - `loading/`：加载动画组件目录
   - `LoadingScreen.tsx`：动态加载动画
   - `LoadingScreenStatic.tsx`：静态加载界面
@@ -78,7 +79,7 @@
 ---
 
 ## contexts/
-- `GameContext.tsx`：核心状态管理中心，useReducer 管理全局游戏状态，自动挂载 window.testAPI（测试环境下）
+- `GameContext.tsx`：核心状态管理中心，useReducer 管理全局游戏状态，集中管理画布尺寸、scale、orientation、previousCanvasSize，驱动所有自适应逻辑，自动挂载 window.testAPI（测试环境下）。
 
 ---
 
@@ -102,7 +103,7 @@
 
 ## hooks/
 - `usePuzzleInteractions.ts`：拼图交互逻辑钩子（拖拽、旋转、吸附、回弹、音效等）
-- `useResponsiveCanvasSizing.ts`：响应式画布尺寸管理钩子
+- `useResponsiveCanvasSizing.ts`：响应式画布尺寸管理钩子，监听resize/orientationchange/ResizeObserver，原子性更新状态，驱动下游适配。
 - `useDeviceDetection.ts`：设备/方向检测钩子
 - `usePuzzleAdaptation.ts`：拼图状态适配钩子（随画布尺寸/方向变化）
 - `useDebugToggle.ts`：调试模式切换钩子（F10）
@@ -169,3 +170,7 @@
 
 ## animate-ui/backgrounds/bubble.tsx
 - 动态气泡背景特效组件，提升美术体验 
+
+## 其它目录说明
+- 相关常量、布局、像素级体验、流程图文档已归档于 docs/puzzle_memory_adaptation_optimization/step1_canvas_adaptation_plan.md。
+- 其它UI/交互细节持续优化，所有端体验高度统一。 

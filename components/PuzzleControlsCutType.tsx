@@ -8,9 +8,10 @@ import { useState, useEffect } from "react"
 
 interface PuzzleControlsCutTypeProps {
   goToNextTab?: () => void;
+  buttonHeight?: number;
 }
 
-export default function PuzzleControlsCutType({ goToNextTab }: PuzzleControlsCutTypeProps) {
+export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }: PuzzleControlsCutTypeProps) {
   const { state, dispatch } = useGame()
   // 添加本地状态，初始值为空字符串，表示未选择
   const [localCutType, setLocalCutType] = useState<string>("")
@@ -86,10 +87,10 @@ export default function PuzzleControlsCutType({ goToNextTab }: PuzzleControlsCut
   }
 
   return (
-    <div className="space-y-4">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--panel-scale, 1) * 16px)' }}>
       {/* 添加切割类型标签 - 仅在非手机设备上显示 */}
       {!isPhone && !isLandscape && (
-        <div className="text-xs text-[#FFD5AB] mb-1">
+        <div style={{ fontSize: 'calc(var(--panel-scale, 1) * 12px)', color: '#FFD5AB', marginBottom: 'calc(var(--panel-scale, 1) * 4px)' }}>
           选择切割类型
         </div>
       )}
@@ -97,7 +98,7 @@ export default function PuzzleControlsCutType({ goToNextTab }: PuzzleControlsCut
         <RadioGroup 
           value={localCutType} 
           onValueChange={canModifySettings ? handleCutTypeChange : undefined} 
-          className="grid grid-cols-2 gap-2"
+          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'calc(var(--panel-scale, 1) * 8px)' }}
           disabled={!canModifySettings}
         >
           <div className="relative">
@@ -109,14 +110,24 @@ export default function PuzzleControlsCutType({ goToNextTab }: PuzzleControlsCut
             />
             <Label
               htmlFor="straight"
-              className={`flex items-center justify-center h-9 text-base rounded-xl transition-all shadow-sm \
+              className={`flex items-center justify-center transition-all shadow-sm \
                 ${localCutType === CutType.Straight 
                 ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]" 
                 : "bg-[#3D3852] text-white hover:bg-[#4D4862] active:bg-[#302B45]"}
                 ${!canModifySettings ? disabledClass : "cursor-pointer"}
               `}
+              style={{
+                height: buttonHeight,
+                fontSize: 'calc(var(--panel-scale, 1) * 16px)',
+                lineHeight: 'calc(var(--panel-scale, 1) * 20px)',
+                borderRadius: 'calc(var(--panel-scale, 1) * 12px)',
+                width: '100%',
+                justifyContent: 'center',
+                alignItems: 'center',
+                display: 'flex',
+              }}
             >
-              <span className="text-[14px]">直线</span>
+              <span style={{ fontSize: 'calc(var(--panel-scale, 1) * 14px)' }}>直线</span>
             </Label>
           </div>
           <div className="relative">
@@ -128,14 +139,24 @@ export default function PuzzleControlsCutType({ goToNextTab }: PuzzleControlsCut
             />
             <Label
               htmlFor="diagonal"
-              className={`flex items-center justify-center h-9 text-base rounded-xl transition-all shadow-sm \
+              className={`flex items-center justify-center transition-all shadow-sm \
                 ${localCutType === CutType.Diagonal 
                 ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]" 
                 : "bg-[#3D3852] text-white hover:bg-[#4D4862] active:bg-[#302B45]"}
                 ${!canModifySettings ? disabledClass : "cursor-pointer"}
               `}
+              style={{
+                height: buttonHeight,
+                fontSize: 'calc(var(--panel-scale, 1) * 16px)',
+                lineHeight: 'calc(var(--panel-scale, 1) * 20px)',
+                borderRadius: 'calc(var(--panel-scale, 1) * 12px)',
+                width: '100%',
+                justifyContent: 'center',
+                alignItems: 'center',
+                display: 'flex',
+              }}
             >
-              <span className="text-[14px]">斜线</span>
+              <span style={{ fontSize: 'calc(var(--panel-scale, 1) * 14px)' }}>斜线</span>
             </Label>
           </div>
         </RadioGroup>

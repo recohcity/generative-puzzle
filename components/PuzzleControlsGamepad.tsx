@@ -5,12 +5,15 @@ import { RefreshCw } from "lucide-react"
 import { playButtonClickSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
 import ActionButtons from "./ActionButtons"
+import RestartButton from "@/components/RestartButton";
 
 interface PuzzleControlsGamepadProps {
   goToFirstTab?: () => void;
+  controlButtonHeight?: number;
+  restartButtonHeight?: number;
 }
 
-export default function PuzzleControlsGamepad({ goToFirstTab }: PuzzleControlsGamepadProps) {
+export default function PuzzleControlsGamepad({ goToFirstTab, controlButtonHeight, restartButtonHeight }: PuzzleControlsGamepadProps) {
   const { 
     state,
     resetGame,
@@ -66,20 +69,15 @@ export default function PuzzleControlsGamepad({ goToFirstTab }: PuzzleControlsGa
   return (
     <div className="space-y-4">
       {/* Use the new ActionButtons component for Hint/Rotate */}
-      <ActionButtons layout="mobile" />
+      <ActionButtons layout="mobile" buttonHeight={controlButtonHeight} />
 
       {/* 重新开始按钮 */}
       <div>
-        <Button 
-          onClick={handleResetGame} 
-          className={`w-full ${resetButtonHeightClass} 
-                    bg-[#1E1A2A] text-white border-2 border-[#504C67] rounded-xl shadow-md 
-                    hover:bg-[#141022] hover:text-white hover:border-[#706B89] 
-                    active:bg-[#2A283E] active:text-white active:border-[#463E50]`}
-        >
-          <RefreshCw className={`${resetIconSizeClass} mr-2`} />
-          重新开始
-        </Button>
+        <RestartButton 
+          onClick={handleResetGame}
+          style={{ marginTop: 0 }}
+          height={restartButtonHeight}
+        />
       </div>
     </div>
   )

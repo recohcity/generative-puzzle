@@ -7,9 +7,10 @@ import { useState, useEffect } from "react"
 
 interface PuzzleControlsScatterProps {
   goToNextTab?: () => void;
+  buttonHeight?: number;
 }
 
-export default function PuzzleControlsScatter({ goToNextTab }: PuzzleControlsScatterProps) {
+export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 34 }: PuzzleControlsScatterProps) {
   const { 
     state,
     scatterPuzzle 
@@ -48,8 +49,6 @@ export default function PuzzleControlsScatter({ goToNextTab }: PuzzleControlsSca
   const disabledClass = "opacity-30 pointer-events-none";
 
   const handleScatterPuzzle = () => {
-    // [E2E-debugLOG] 点击散开拼图按钮
-    console.log('[E2E-debugLOG] handleScatterPuzzle', { puzzleLen: state.puzzle?.length, isScattered: state.isScattered });
     playButtonClickSound()
     scatterPuzzle()
     
@@ -62,18 +61,36 @@ export default function PuzzleControlsScatter({ goToNextTab }: PuzzleControlsSca
   }
 
   return (
-    <div className="space-y-4">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
       <Button
         onClick={handleScatterPuzzle}
         disabled={!isPuzzleGenerated || state.isScattered}
-        className={`w-full py-2 text-[14px] bg-[#F68E5F] hover:bg-[#F47B42] text-white rounded-xl shadow-md ${(!isPuzzleGenerated || state.isScattered) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+        className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md ${(!isPuzzleGenerated || state.isScattered) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+        style={{
+          fontSize: '14px',
+          borderRadius: '14px',
+          minHeight: buttonHeight,
+          height: buttonHeight,
+          padding: '0 16px',
+          lineHeight: '18px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+        }}
         variant="ghost"
       >
-        <ScatterChart className="!w-6 !h-6 shrink-0 mr-2" strokeWidth={2} />
+        <ScatterChart style={{ width: '16px', height: '16px', marginRight: '6px', flexShrink: 0 }} strokeWidth={2} />
         {state.isScattered ? "拼图已散开" : "散开拼图"}
       </Button>
 
-      <div className={`text-center mt-2 ${isLandscape ? 'text-[12px]' : isPhone ? 'text-[12px]' : 'text-xs'} text-[#FFD5AB]`}>
+      <div style={{
+        textAlign: 'center',
+        marginTop: '8px',
+        fontSize: '12px',
+        color: '#FFD5AB',
+        lineHeight: '16px',
+      }}>
         {state.isScattered 
           ? "游戏已开始，请将拼图拖到正确位置" 
           : " "

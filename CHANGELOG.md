@@ -1,5 +1,36 @@
 # 生成式拼图游戏 Changelog
 
+## [v1.3.27] - 2025-07-16
+### 主题：全局画布与面板适配重构、移动端Tab集中管理与像素级体验升级
+
+#### 1. 桌面端/移动端画布与面板正方形自适应
+- 桌面端、移动端竖屏/横屏下，画布始终正方形最大化利用空间，边距、圆角、阴影等像素级统一。
+- 桌面端：画布边长 = min(window.innerHeight - 80, window.innerWidth - 面板宽度 - 40)，面板高度与画布同步。
+- 移动端竖屏：画布居上，tab面板居下，画布边长 = min(屏幕宽-20, 屏幕高-面板高-20)。
+- 移动端横屏：tab面板居左，画布居右，画布边长 = min(屏幕高-20, 屏幕宽-面板宽-20)。
+- 极端小屏/超窄屏下自动收缩，优先保证安全区和内容可见。
+- GameContext 集中管理画布状态，PuzzleCanvas 只需 100% 适配父容器。
+
+#### 2. 移动端Tab面板集中管理与像素级体验
+- PhoneTabPanel 组件集中管理 tab 激活项（activeTab），tab切换全局驱动，所有tab内容组件独立渲染，内容区像素级布局。
+- tab按钮与内容区分离，横向等宽分布，内容区自适应宽度，最大化利用面板空间。
+- tab切换时所有内容组件自动读取全局 GameContext 状态，切换无状态丢失、不残留。
+- tab面板与画布高度联动，竖屏/横屏下内容不溢出。
+- 所有按钮、内容区、提示信息等与桌面端风格一致，体验高度统一。
+
+#### 3. 响应式监听与原子更新
+- 监听 window.resize、orientationchange、ResizeObserver，requestAnimationFrame 节流，防止高频重绘。
+- 每次变化时，先记录 previousCanvasSize，再原子性更新所有画布相关状态。
+- 画布变化后，拼图块、目标形状等内容同步适配，无历史问题复现。
+
+#### 4. 详细文档与流程图归档
+- 适配方案、流程图、典型代码片段、极端场景说明等已归档于 `docs/puzzle_memory_adaptation_optimization/step1_canvas_adaptation_plan.md`，便于团队查阅和持续优化。
+
+#### 5. 其它UI/交互细节优化
+- tab内容区、按钮、提示、交互等细节持续打磨，所有端像素级一致。
+- 代码结构、注释、常量集中管理，便于维护和扩展。
+
+---
 
 ## [v1.3.26] - 2025-07-13
 ### 主题：拼图消失问题彻底修复、进度条与手机端适配细节优化
@@ -327,20 +358,4 @@
 
 ### 修复及优化
 - **拼图数量提示恢复**：
-    - 修复了画布上方拼图数量提示（如 `0/14 块完成`）缺失的问题，在 `components/layouts/DesktopLayout.tsx` 中正确显示进度。
-    - 增加了对 `state.puzzle` 和 `state.completedPieces` 的空值检查，避免在渲染时出现 `TypeError: Cannot read properties of null (reading 'length')`。
-- **Playwright 测试环境及流程优化**：
-    - 修正了 `package.json` 中 `test:e2e` 脚本的配置，明确指定 Playwright 仅运行 `e2e/` 目录下的测试，避免了与 Jest 单元测试的冲突。
-    - 更新了 `e2e/puzzle_canvas.spec.ts` 中 `page.goto` 的 URL 为 `http://localhost:3000/`，以匹配 Next.js 开发服务器的实际端口。
-    - 为 `components/PuzzleCanvas.tsx` 中的主 `<canvas>` 元素添加了 `id="puzzle-canvas"` 属性，确保 Playwright 测试能够正确识别并等待画布加载。
-    - 调整了音效测试逻辑，通过点击"重新开始"按钮来可靠地触发音效，确保测试的稳定性和可重复性。
-
-### 类型系统及Linter错误修正 (新完善内容)
-- **拼图数量提示重复问题修复**: 移除了 `components/PuzzleCanvas.tsx` 中重复的拼图数量提示，现在仅在 `components/layouts/DesktopLayout.tsx` 中显示。
-- **类型定义整合与统一**:
-    - 将 `ShapeType`, `CutType`, `Point`, `PuzzlePiece`, `Bounds`, `CutLine`, `PieceBounds`, `GameState`, `GameContextProps`, `GameAction` 等所有相关类型定义统一整合至 `types/puzzleTypes.ts`。
-    - 删除了冗余的 `types/types.ts` 文件。
-    - 更新了所有引用旧 `types/types.ts` 的文件（包括 `components/PuzzleControlsCutType.tsx`, `components/ShapeControls.tsx`, `utils/puzzle/PuzzleGenerator.ts`, `utils/puzzle/cutGenerators.ts`）的导入路径。
-- **`PuzzlePiece` 接口完善**: 在 `types/puzzleTypes.ts` 的 `PuzzlePiece` 接口中补充了 `id` 和 `isCompleted` 属性，并在 `utils/puzzle/PuzzleGenerator.ts` 中确保了这些属性的正确初始化。
-- **`components/PuzzleCanvas.tsx` 错误修正**: 
-    - 移除了未使用的 `useDebugToggle`
+    - 修复了画布上方拼图数量提示（如 `

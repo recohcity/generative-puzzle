@@ -12,12 +12,15 @@ import { calculateCenter } from "@/utils/geometry/puzzleGeometry"
 // 导入从 puzzleTypes.ts 迁移的类型
 import { Point, PuzzlePiece, DraggingPiece, PieceBounds, GameState, GameAction as GameActionType, GameContextProps, ShapeType, CutType } from "@/types/puzzleTypes";
 
-// Define types
-// ... existing code ...
-
+// 删除本地GameState接口声明，全部使用types/puzzleTypes.ts导入的GameState类型
 // 更新GameContextProps接口
 // ... existing code ...
 
+// 画布相关状态统一管理（全局适配基准）
+// - canvasWidth/canvasHeight: 当前画布像素尺寸，随容器/窗口变化实时更新
+// - scale: 当前画布的缩放比例（如有适配缩放需求时使用）
+// - orientation: 当前画布方向（'portrait' | 'landscape'），便于移动端适配
+// - previousCanvasSize: 上一次画布尺寸（{ width: number, height: number }），用于归一化适配和状态恢复
 const initialState: GameState = {
   originalShape: [],
   puzzle: null,
@@ -27,27 +30,24 @@ const initialState: GameState = {
   isCompleted: false,
   isScattered: false,
   showHint: false,
-  shapeType: ShapeType.Polygon,
+  shapeType: '' as any, // 初始无选中
   pendingShapeType: null,
   cutType: "" as CutType,
   cutCount: 1,
   originalPositions: [],
-  canvasWidth: 800,  // 默认画布宽度
-  canvasHeight: 600, // 默认画布高度
-  previousCanvasSize: null, // 初始化为 null
+  canvasWidth: 0, // 当前画布宽度（像素）
+  canvasHeight: 0, // 当前画布高度（像素）
+  previousCanvasSize: { width: 0, height: 0 }, // 上一次画布尺寸
 }
 
 function gameReducer(state: GameState, action: GameActionType): GameState {
-  // [E2E-debugLOG] reducer 入口
-  console.log('[E2E-debugLOG] reducer', { type: action.type, payload: action.payload, prevState: state });
+  // reducer 入口
   switch (action.type) {
     case "SET_ORIGINAL_SHAPE":
-      // [E2E-debugLOG] SET_ORIGINAL_SHAPE
-      console.log('[E2E-debugLOG] SET_ORIGINAL_SHAPE', { payload: action.payload });
+      // SET_ORIGINAL_SHAPE
       return { ...state, originalShape: action.payload }
     case "SET_PUZZLE":
-      // [E2E-debugLOG] SET_PUZZLE
-      console.log('[E2E-debugLOG] SET_PUZZLE', { payload: action.payload });
+      // SET_PUZZLE
       return { ...state, puzzle: action.payload }
     case "SET_DRAGGING_PIECE":
       return { ...state, draggingPiece: action.payload }
@@ -108,7 +108,6 @@ function gameReducer(state: GameState, action: GameActionType): GameState {
       const piece = newPuzzle[state.selectedPiece]
       const oldRotation = piece.rotation;
       piece.rotation = (piece.rotation + (action.payload.clockwise ? 15 : -15) + 360) % 360
-      console.log(`[GameReducer] ROTATE_PIECE: Selected piece ${state.selectedPiece}, Old Angle: ${oldRotation}, New Angle: ${piece.rotation}, Clockwise: ${action.payload.clockwise}`);
       return { ...state, puzzle: newPuzzle }
     case "UPDATE_PIECE_POSITION":
       if (!state.puzzle) return state
@@ -149,8 +148,7 @@ function gameReducer(state: GameState, action: GameActionType): GameState {
     case "HIDE_HINT":
       return { ...state, showHint: false }
     case "RESET_GAME":
-      // [E2E-debugLOG] RESET_GAME
-      console.log('[E2E-debugLOG] RESET_GAME');
+      // RESET_GAME
       return {
         ...initialState,
         // 完全重置游戏，不保留任何上一轮的设置
@@ -172,16 +170,14 @@ function gameReducer(state: GameState, action: GameActionType): GameState {
         lastShapeOffsetY: action.payload.offsetY 
       }
     case "BATCH_UPDATE":
-      // [E2E-debugLOG] BATCH_UPDATE
-      console.log('[E2E-debugLOG] BATCH_UPDATE', { payload: action.payload });
+      // BATCH_UPDATE
       return {
         ...state,
         puzzle: action.payload.puzzle,
         originalPositions: action.payload.originalPositions
       }
     case "SYNC_ALL_POSITIONS":
-      // [E2E-debugLOG] SYNC_ALL_POSITIONS
-      console.log('[E2E-debugLOG] SYNC_ALL_POSITIONS', { payload: action.payload });
+      // SYNC_ALL_POSITIONS
       return {
         ...state,
         originalShape: action.payload.originalShape,
@@ -242,9 +238,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const rotatePiece = useCallback(
     (clockwise: boolean) => {
-      console.log(`[GameContext] rotatePiece called, clockwise: ${clockwise}`);
       dispatch({ type: "ROTATE_PIECE", payload: { clockwise } })
-      console.log('[GameContext] ROTATE_PIECE dispatched');
     },
     [dispatch],
   )
@@ -326,7 +320,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const puzzleRef = useRef(state.puzzle);
   useEffect(() => {
     puzzleRef.current = state.puzzle;
-    console.log('[DEBUG] puzzle changed:', state.puzzle);
+    console.log('puzzle changed:', state.puzzle);
   }, [state.puzzle]);
 
   // 2. generatePuzzle 加日志
@@ -337,7 +331,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       state.cutType,
       state.cutCount,
     );
-    console.log('[DEBUG] generatePuzzle pieces:', pieces);
+    console.log('generatePuzzle pieces:', pieces);
     dispatch({ type: "SET_PUZZLE", payload: pieces });
     dispatch({ type: "SET_ORIGINAL_POSITIONS", payload: originalPositions });
   }, [state.originalShape, state.cutType, state.cutCount, dispatch]);
@@ -345,8 +339,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // 3. scatterPuzzle 加日志和 useRef 兜底
   const scatterPuzzle = useCallback(() => {
     const puzzle = puzzleRef.current;
-    // [E2E-debugLOG] 散开前 puzzle 长度
-    console.log('[E2E-debugLOG] scatterPuzzle before', { puzzleLen: puzzle?.length, canvasWidth: state.canvasWidth, canvasHeight: state.canvasHeight });
+    // 散开前 puzzle 长度
+    const canvasWidth = state.canvasWidth ?? 0;
+    const canvasHeight = state.canvasHeight ?? 0;
+    console.log('scatterPuzzle before', { puzzleLen: puzzle?.length, canvasWidth, canvasHeight });
     if (!puzzle) {
       console.warn("Cannot scatter puzzle: No puzzle pieces generated");
       return;
@@ -375,14 +371,14 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       };
     }
     const scatteredPuzzle = ScatterPuzzle.scatterPuzzle(puzzle, {
-      canvasWidth: state.canvasWidth,
-      canvasHeight: state.canvasHeight,
+      canvasWidth,
+      canvasHeight,
       targetShape: targetShape
     });
-    // [E2E-debugLOG] 散开后 puzzle 长度
-    console.log('[E2E-debugLOG] scatterPuzzle after', { scatteredLen: scatteredPuzzle?.length, result: scatteredPuzzle });
+    // 散开后 puzzle 长度
+    console.log('scatterPuzzle after', { scatteredLen: scatteredPuzzle?.length, result: scatteredPuzzle });
     if (!scatteredPuzzle || !Array.isArray(scatteredPuzzle) || scatteredPuzzle.length === 0) {
-      console.error('[E2E-debugLOG] scatterPuzzle failed, fallback to original puzzle');
+      console.error('scatterPuzzle failed, fallback to original puzzle');
       return;
     }
     dispatch({ type: "SET_PUZZLE", payload: scatteredPuzzle });
@@ -453,7 +449,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const bgCtx = backgroundCanvasRef.current.getContext("2d");
       if (bgCtx) bgCtx.clearRect(0, 0, backgroundCanvasRef.current.width, backgroundCanvasRef.current.height);
     }
-    console.log('[DEBUG] resetGame called');
+    console.log('resetGame called');
     dispatch({ type: "RESET_GAME" });
   }, []);
 
@@ -580,8 +576,14 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   
   // 添加边界约束函数
   const ensurePieceInBounds = useCallback((piece: PuzzlePiece, dx: number, dy: number, safeMargin: number = 1) => {
-    const { canvasWidth, canvasHeight } = state;
-    if (canvasWidth === undefined || canvasHeight === undefined) {
+    // 修正：强制以 canvasRef.current.width/height 为主判据
+    let canvasW = canvasRef.current?.width;
+    let canvasH = canvasRef.current?.height;
+    if (!canvasW || !canvasH) {
+      canvasW = (state.canvasWidth ?? 0);
+      canvasH = (state.canvasHeight ?? 0);
+    }
+    if (!canvasW || !canvasH) {
       console.warn("Canvas size not available for boundary check.");
       return { constrainedDx: dx, constrainedDy: dy, hitBoundary: false };
     }
@@ -601,7 +603,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         current: { minX: currentBounds.minX, maxX: currentBounds.maxX, minY: currentBounds.minY, maxY: currentBounds.maxY },
         potential: { minX: potentialMinX, maxX: potentialMaxX, minY: potentialMinY, maxY: potentialMaxY }
       },
-      canvas: { width: canvasWidth, height: canvasHeight },
+      canvas: { width: canvasW, height: canvasH },
       safeMargin: safeMargin,
       movement: { dx, dy }
     });
@@ -632,14 +634,14 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             hitBoundary = true;
             console.log(`  ⚠️ 触碰左边界: 当前${potentialMinX}px < 安全边距${safeMargin}px, 修正${correctionX}px`);
         }
-    } else if (potentialMaxX > canvasWidth - safeMargin) {
+    } else if (potentialMaxX > canvasW - safeMargin) {
         // 精确检测是否确实超出边界
-        const boundaryViolation = potentialMaxX - (canvasWidth - safeMargin);
+        const boundaryViolation = potentialMaxX - (canvasW - safeMargin);
         // 只有当确实超出边界时才标记为碰撞
         if (boundaryViolation > 0.1) {
             correctionX = -(boundaryViolation); // 需要向左修正
             hitBoundary = true;
-            console.log(`  ⚠️ 触碰右边界: 当前${potentialMaxX}px > 画布宽度${canvasWidth - safeMargin}px, 修正${correctionX}px`);
+            console.log(`  ⚠️ 触碰右边界: 当前${potentialMaxX}px > 画布宽度${canvasW - safeMargin}px, 修正${correctionX}px`);
         }
     }
 
@@ -653,14 +655,14 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             hitBoundary = true;
             console.log(`  ⚠️ 触碰上边界: 当前${potentialMinY}px < 安全边距${safeMargin}px, 修正${correctionY}px`);
         }
-    } else if (potentialMaxY > canvasHeight - safeMargin) {
+    } else if (potentialMaxY > canvasH - safeMargin) {
         // 精确检测是否确实超出边界
-        const boundaryViolation = potentialMaxY - (canvasHeight - safeMargin);
+        const boundaryViolation = potentialMaxY - (canvasH - safeMargin);
         // 只有当确实超出边界时才标记为碰撞
         if (boundaryViolation > 0.1) {
             correctionY = -(boundaryViolation); // 需要向上修正
             hitBoundary = true;
-            console.log(`  ⚠️ 触碰下边界: 当前${potentialMaxY}px > 画布高度${canvasHeight - safeMargin}px, 修正${correctionY}px`);
+            console.log(`  ⚠️ 触碰下边界: 当前${potentialMaxY}px > 画布高度${canvasH - safeMargin}px, 修正${correctionY}px`);
         }
     }
 
@@ -698,8 +700,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           secondCorrection = true;
           console.log(`  ⚠️ 回弹后仍触碰左边界, 最终修正dx=${constrainedDx}`);
         }
-        if (finalMaxX > canvasWidth - safeMargin) {
-          constrainedDx = (canvasWidth - safeMargin) - currentBounds.maxX;
+        if (finalMaxX > canvasW - safeMargin) {
+          constrainedDx = (canvasW - safeMargin) - currentBounds.maxX;
           secondCorrection = true;
           console.log(`  ⚠️ 回弹后仍触碰右边界, 最终修正dx=${constrainedDx}`);
         }
@@ -708,8 +710,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           secondCorrection = true;
           console.log(`  ⚠️ 回弹后仍触碰上边界, 最终修正dy=${constrainedDy}`);
         }
-        if (finalMaxY > canvasHeight - safeMargin) {
-          constrainedDy = (canvasHeight - safeMargin) - currentBounds.maxY;
+        if (finalMaxY > canvasH - safeMargin) {
+          constrainedDy = (canvasH - safeMargin) - currentBounds.maxY;
           secondCorrection = true;
           console.log(`  ⚠️ 回弹后仍触碰下边界, 最终修正dy=${constrainedDy}`);
         }
@@ -761,11 +763,14 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     return { constrainedDx, constrainedDy, hitBoundary };
-  }, [state.canvasWidth, state.canvasHeight, calculatePieceBounds, state.puzzle]);
+  }, [state.canvasWidth, state.canvasHeight, calculatePieceBounds, state.puzzle, canvasRef]);
   
-  // updateCanvasSize 函数修正：只调整尺寸，不重置 puzzle
+  // updateCanvasSize 函数
+  // 仅更新画布尺寸，不重置 puzzle 状态。会将当前尺寸存入 previousCanvasSize，
+  // 新尺寸存入 canvasWidth/canvasHeight，供适配逻辑使用。
+  // 该函数是画布尺寸变化时状态记忆与恢复的关键入口。
   const updateCanvasSize = useCallback((width: number, height: number) => {
-    console.log('[E2E-debugLOG] updateCanvasSize called', { width, height });
+    console.log('updateCanvasSize called', { width, height });
     // 至少确保有一个最小尺寸
     const finalWidth = Math.max(width, 320); // 强制最小宽度320
     const finalHeight = Math.max(height, 200);
@@ -776,42 +781,43 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         payload: { width: finalWidth, height: finalHeight }
       });
       // 不再自动 RESET_GAME 或 SET_PUZZLE(null)
-      console.log('[E2E-debugLOG] updateCanvasSize: only update size, do not reset puzzle');
+      console.log('updateCanvasSize: only update size, do not reset puzzle');
     }
   }, [dispatch, state.canvasWidth, state.canvasHeight]);
 
   // puzzle 相关副作用日志
+  // 便于调试和追踪尺寸变化对拼图状态的影响。
   useEffect(() => {
-    console.log('[DEBUG] GameContext puzzle:', state.puzzle);
-    console.log('[DEBUG] GameContext isScattered:', state.isScattered);
-    console.log('[DEBUG] GameContext completedPieces:', state.completedPieces);
-    console.log('[DEBUG] GameContext isCompleted:', state.isCompleted);
+    console.log('GameContext puzzle:', state.puzzle);
+    console.log('GameContext isScattered:', state.isScattered);
+    console.log('GameContext completedPieces:', state.completedPieces);
+    console.log('GameContext isCompleted:', state.isCompleted);
   }, [state.puzzle, state.isScattered, state.completedPieces, state.isCompleted]);
 
   // useEffect 插桩
   // 画布尺寸变化副作用
   useEffect(() => {
-    console.log('[E2E-debugLOG] useEffect: canvasWidth/canvasHeight changed', { canvasWidth: state.canvasWidth, canvasHeight: state.canvasHeight });
+    console.log('useEffect: canvasWidth/canvasHeight changed', { canvasWidth: state.canvasWidth, canvasHeight: state.canvasHeight });
   }, [state.canvasWidth, state.canvasHeight]);
   // puzzle 相关副作用
   useEffect(() => {
-    console.log('[E2E-debugLOG] useEffect: puzzle changed', { puzzle: state.puzzle });
+    console.log('useEffect: puzzle changed', { puzzle: state.puzzle });
   }, [state.puzzle]);
   // originalShape 相关副作用
   useEffect(() => {
-    console.log('[E2E-debugLOG] useEffect: originalShape changed', { originalShape: state.originalShape });
+    console.log('useEffect: originalShape changed', { originalShape: state.originalShape });
   }, [state.originalShape]);
   // isScattered 相关副作用
   useEffect(() => {
-    console.log('[E2E-debugLOG] useEffect: isScattered changed', { isScattered: state.isScattered });
+    console.log('useEffect: isScattered changed', { isScattered: state.isScattered });
   }, [state.isScattered]);
   // completedPieces 相关副作用
   useEffect(() => {
-    console.log('[E2E-debugLOG] useEffect: completedPieces changed', { completedPieces: state.completedPieces });
+    console.log('useEffect: completedPieces changed', { completedPieces: state.completedPieces });
   }, [state.completedPieces]);
   // isCompleted 相关副作用
   useEffect(() => {
-    console.log('[E2E-debugLOG] useEffect: isCompleted changed', { isCompleted: state.isCompleted });
+    console.log('useEffect: isCompleted changed', { isCompleted: state.isCompleted });
   }, [state.isCompleted]);
 
   // 新增 isCanvasReady 标志
@@ -823,7 +829,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // 1. useRef 兜底，始终保存 puzzle 最新值
     // 2. generatePuzzle 加日志
     // 3. scatterPuzzle 加日志和 useRef 兜底
-  }, [isCanvasReady, state.deviceType, state.originalShape, state.cutType, state.cutCount]);
+  }, [isCanvasReady, state.originalShape, state.cutType, state.cutCount]);
 
   // 画布尺寸变化时自动重新分布拼图，保证resize后拼图不会消失
   useEffect(() => {
@@ -849,8 +855,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         };
       }
       const scatteredPuzzle = ScatterPuzzle.scatterPuzzle(state.puzzle, {
-        canvasWidth: state.canvasWidth,
-        canvasHeight: state.canvasHeight,
+        canvasWidth: state.canvasWidth ?? 0,
+        canvasHeight: state.canvasHeight ?? 0,
         targetShape: targetShape
       });
       if (scatteredPuzzle && Array.isArray(scatteredPuzzle) && scatteredPuzzle.length > 0) {

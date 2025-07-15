@@ -8,9 +8,11 @@ import { useState, useEffect } from "react"
 
 interface PuzzleControlsCutCountProps {
   goToNextTab?: () => void;
+  buttonHeight?: number;
+  actionButtonHeight?: number;
 }
 
-export default function PuzzleControlsCutCount({ goToNextTab }: PuzzleControlsCutCountProps) {
+export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28, actionButtonHeight = 36 }: PuzzleControlsCutCountProps) {
   const { 
     state, 
     dispatch, 
@@ -93,9 +95,7 @@ export default function PuzzleControlsCutCount({ goToNextTab }: PuzzleControlsCu
   // 难度选择按钮的样式
   const getDifficultyButtonStyle = (num: number) => {
     return `
-      flex-1 aspect-square rounded-lg flex items-center justify-center 
-      text-base 
-      transition-all duration-200 shadow-sm min-w-0
+      flex-1 aspect-square flex items-center justify-center transition-all duration-200 shadow-sm min-w-0
       ${localCutCount === num 
         ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]" 
         : "bg-[#3D3852] text-white hover:bg-[#4D4862] active:bg-[#302B45]"}
@@ -104,16 +104,16 @@ export default function PuzzleControlsCutCount({ goToNextTab }: PuzzleControlsCu
   };
 
   return (
-    <div className="space-y-4 w-full overflow-visible">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', width: '100%', overflow: 'visible' }}>
       {/* 添加切割次数标签 - 仅在非手机设备上显示 */}
       {!isPhone && !isLandscape && (
-        <div className="text-xs text-[#FFD5AB] mb-1">
+        <div style={{ fontSize: '12px', color: '#FFD5AB', marginBottom: '4px', lineHeight: '16px' }}>
           选择切割次数
         </div>
       )}
       <div className="w-full">
         {/* 所有按钮放在一行：1-8 */}
-        <div className="flex justify-between w-full gap-[2px] sm:gap-1 mb-1">
+        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', gap: '3px', marginBottom: '4px' }}>
           {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
             <button
               key={num}
@@ -121,16 +121,26 @@ export default function PuzzleControlsCutCount({ goToNextTab }: PuzzleControlsCu
               className={getDifficultyButtonStyle(num)}
               aria-label={`选择切割${num}次`}
               disabled={!canModifySettings}
+              style={{
+                borderRadius: '14px',
+                fontSize: '14px',
+                minWidth: buttonHeight,
+                minHeight: buttonHeight,
+                width: buttonHeight,
+                height: buttonHeight,
+                padding: 0,
+                gap: 0,
+                lineHeight: '18px'
+              }}
             >
-              <span className="text-[14px]">{num}</span>
+              <span style={{ fontSize: '14px' }}>{num}</span>
             </button>
           ))}
         </div>
-        
         {/* 难度指示器 */}
-        <div className="flex justify-between text-xs text-[#FFD5AB] px-1 mt-1">
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#FFD5AB', padding: '0 4px', marginTop: '4px', marginBottom: '12px', lineHeight: '16px' }}>
           <span>简单</span>
-          <span className="ml-auto">困难</span>
+          <span style={{ marginLeft: 'auto' }}>困难</span>
         </div>
       </div>
 
@@ -138,15 +148,22 @@ export default function PuzzleControlsCutCount({ goToNextTab }: PuzzleControlsCu
       <Button 
         onClick={handleGeneratePuzzle} 
         disabled={!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType} 
-        className={`w-full text-base bg-[#F68E5F] hover:bg-[#F47B42] text-white rounded-xl shadow-md ${(!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+        className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md ${(!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+        style={{
+          fontSize: '14px',
+          borderRadius: '14px',
+          minHeight: actionButtonHeight,
+          height: actionButtonHeight,
+          padding: '0 16px',
+          lineHeight: '18px'
+        }}
       >
-        <PuzzleIcon className="!w-6 !h-6 shrink-0 mr-2" strokeWidth={2} />
-        <span className="text-[14px]">切割形状</span>
+        <PuzzleIcon style={{ width: '20px', height: '20px', marginRight: '8px', flexShrink: 0 }} strokeWidth={2} />
+        <span style={{ fontSize: '14px' }}>切割形状</span>
       </Button>
-      
       {/* 添加提示信息，当按钮不可点击时显示原因 */}
       {isShapeGenerated && !state.isScattered && (!hasCutType || !hasSelectedCount) && (
-        <div className="text-xs text-[#FFD5AB] text-center mt-1">
+        <div style={{ fontSize: '12px', color: '#FFD5AB', textAlign: 'center', marginTop: '4px', lineHeight: '16px' }}>
           {!hasCutType ? "请先选择切割类型" : !hasSelectedCount ? "请选择切割次数" : ""}
         </div>
       )}

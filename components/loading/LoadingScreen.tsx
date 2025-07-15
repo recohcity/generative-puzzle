@@ -75,9 +75,8 @@ export default function LoadingScreen({ onLoadComplete }: LoadingScreenProps) {
   }, [displayProgress, onLoadComplete]);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden">
-      <ResponsiveBackground />
-      {/* 拼图碎片已删除，仅保留核心内容 */}
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-violet-900 to-blue-900">
+      {/* ResponsiveBackground 已移除，直接用渐变背景 */}
       <div className="relative z-10 flex flex-col items-center">
         <h1 className="text-6xl font-bold text-white mb-8 md:text-6xl text-4xl sm:text-center text-left w-full px-6">
           Generative<br className="md:hidden" /> Puzzle
