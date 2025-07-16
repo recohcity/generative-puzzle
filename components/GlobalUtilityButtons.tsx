@@ -20,19 +20,23 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
   buttonSize = 'default',
 }) => {
   const iconSizeClass = '!w-6 !h-6 shrink-0';
-  const buttonClass = `rounded-full ${buttonSize === 'small' ? 'w-6 h-6' : 'w-8 h-8'} text-[#FFB17A] hover:text-[#F26419] hover:bg-[#463E50] transition-colors bg-[#3D3852] shadow-md border border-white/30`;
+  const buttonClass = `rounded-full ${buttonSize === 'small' ? 'w-6 h-6' : 'w-8 h-8'} text-[#F68E5F] bg-[#1E1A2A] hover:bg-[#141022] active:bg-[#2A283E] transition-colors border-none shadow-none`;
   const iconSize = 12;
   const buttonStyle = {
-    width: '32px',
-    height: '32px',
+    width: '26px',
+    height: '26px',
     borderRadius: '16px',
-    minWidth: '32px',
-    minHeight: '32px',
+    minWidth: '26px',
+    minHeight: '26px',
     padding: 0,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    // background, boxShadow, border 由 class 控制
+    background: '#1E1A2A',
+    boxShadow: 'none',
+    border: 'none',
+    color: '#F68E5F',
+    opacity: 1,
   };
 
   return (

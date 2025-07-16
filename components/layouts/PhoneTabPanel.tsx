@@ -60,7 +60,7 @@ const TAB_BUTTON_FONT_SIZE = 12; // tab按钮字体大小
 const SHAPE_BUTTON_HEIGHT = 60; // 形状按钮
 const MOBILE_SHAPE_BUTTON_FONT_SIZE = 14; // 形状按钮文字字号（移动端）
 const CUT_TYPE_BUTTON_HEIGHT = 36; // 直线/斜线按钮
-const NUMBER_BUTTON_HEIGHT = 30; // 数字按钮
+const NUMBER_BUTTON_HEIGHT = 28; // 数字按钮
 const ACTION_BUTTON_HEIGHT = 36; // 切割形状、散开拼图
 // 新增：独立控制按钮高度
 const MOBILE_CONTROL_BUTTON_HEIGHT = 36; // 控制按钮高度（更矮）
@@ -106,6 +106,17 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
   const handleRestart = () => {
     resetGame();
     if (goToFirstTab) goToFirstTab();
+    // 防止 tab 切换后形状按钮卡住 active 状态（移动端）
+    setTimeout(() => {
+      document.querySelectorAll('button').forEach(btn => {
+        btn.style.pointerEvents = 'none';
+      });
+      setTimeout(() => {
+        document.querySelectorAll('button').forEach(btn => {
+          btn.style.pointerEvents = '';
+        });
+      }, 100);
+    }, 0);
   };
 
   return (

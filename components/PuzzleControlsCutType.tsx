@@ -113,7 +113,7 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
               className={`flex items-center justify-center transition-all shadow-sm \
                 ${localCutType === CutType.Straight 
                 ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]" 
-                : "bg-[#3D3852] text-white hover:bg-[#4D4862] active:bg-[#302B45]"}
+                : "bg-[#1E1A2A] text-white hover:bg-[#2A283E] active:bg-[#2A283E]"}
                 ${!canModifySettings ? disabledClass : "cursor-pointer"}
               `}
               style={{
@@ -142,7 +142,7 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
               className={`flex items-center justify-center transition-all shadow-sm \
                 ${localCutType === CutType.Diagonal 
                 ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]" 
-                : "bg-[#3D3852] text-white hover:bg-[#4D4862] active:bg-[#302B45]"}
+                : "bg-[#1E1A2A] text-white hover:bg-[#2A283E] active:bg-[#2A283E]"}
                 ${!canModifySettings ? disabledClass : "cursor-pointer"}
               `}
               style={{

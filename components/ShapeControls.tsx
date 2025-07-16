@@ -89,9 +89,9 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
     let base =
       isActive
         ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]"
-        : "bg-[#3D3852] text-white hover:bg-[#4D4862] active:bg-[#302B45]";
+        : "bg-[#1E1A2A] text-white hover:bg-[#2A283E] active:bg-[#2A283E]";
     if (isShapeButtonDisabled) {
-      base += " opacity-30 cursor-not-allowed";
+      base += " opacity-30 cursor-not-allowed text-white";
     }
     return `flex flex-col items-center justify-center shadow-sm transition-all duration-200 ${base}`;
   };

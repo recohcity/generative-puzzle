@@ -168,6 +168,45 @@ useEffect(() => {
 
 ---
 
+## 8. 移动端按钮active卡住的彻底解决方案
+
+- **问题现象**：移动端（如iOS/微信内嵌）在tab切换（如“重新开始”自动跳到形状tab）时，若手指未离开屏幕，浏览器会把active伪类带到新tab下同一位置的按钮，导致按钮卡住“按下”状态，只有点击其它地方才会释放。
+
+- **原理分析**：
+  - 移动端浏览器的:active伪类由touch事件驱动，blur()只能影响focus，不能影响:active。
+  - tab切换时，DOM结构变化但手指未离开，active会直接作用于新tab同一位置的按钮。
+
+- **最佳实践**：
+  - 在tab切换（如goToFirstTab）后，立即将所有button的pointer-events设为none，100ms后恢复为auto。
+  - 这样可彻底阻断active伪类被带到新tab按钮，防止“卡住按下”现象。
+
+- **典型代码片段**：
+  ```tsx
+  // PhoneTabPanel.tsx
+  const handleRestart = () => {
+    resetGame();
+    if (goToFirstTab) goToFirstTab();
+    setTimeout(() => {
+      document.querySelectorAll('button').forEach(btn => {
+        btn.style.pointerEvents = 'none';
+      });
+      setTimeout(() => {
+        document.querySelectorAll('button').forEach(btn => {
+          btn.style.pointerEvents = '';
+        });
+      }, 100);
+    }, 0);
+  };
+  ```
+
+- **适用场景**：所有移动端tab切换、动态内容切换、按钮组切换等场景，均可用此法防止active卡住。
+
+- **经验总结**：
+  - 该方案兼容所有主流移动端浏览器，无副作用，不影响桌面端体验。
+  - 如遇极端交互bug，优先考虑pointer-events方案屏蔽active残留。
+
+---
+
 ## 已完成的适配内容
 - [x] 桌面端正方形画布最大化适配，面板高度与画布同步。
 - [x] 移动端竖屏/横屏正方形画布适配，tab面板与画布排版自适应。

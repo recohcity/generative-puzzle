@@ -95,10 +95,10 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
   // 难度选择按钮的样式
   const getDifficultyButtonStyle = (num: number) => {
     return `
-      flex-1 aspect-square flex items-center justify-center transition-all duration-200 shadow-sm min-w-0
+      flex-1 flex items-center justify-center transition-all duration-200 shadow-sm min-w-0
       ${localCutCount === num 
         ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]" 
-        : "bg-[#3D3852] text-white hover:bg-[#4D4862] active:bg-[#302B45]"}
+        : "bg-[#1E1A2A] text-white hover:bg-[#141022] active:bg-[#2A283E]"}
       ${!canModifySettings ? disabledClass : ""}
     `;
   };
@@ -122,15 +122,18 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
               aria-label={`选择切割${num}次`}
               disabled={!canModifySettings}
               style={{
-                borderRadius: '14px',
+                borderRadius: '50%', // 圆形
                 fontSize: '14px',
-                minWidth: buttonHeight,
-                minHeight: buttonHeight,
                 width: buttonHeight,
                 height: buttonHeight,
+                minWidth: buttonHeight,
+                minHeight: buttonHeight,
+                maxWidth: buttonHeight,
+                maxHeight: buttonHeight,
                 padding: 0,
                 gap: 0,
-                lineHeight: '18px'
+                lineHeight: '18px',
+                aspectRatio: '1 / 1',
               }}
             >
               <span style={{ fontSize: '14px' }}>{num}</span>
