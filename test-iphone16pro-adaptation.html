@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iPhone 16全系列Canvas适配测试</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .device-info {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .canvas-preview {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+        }
+        .canvas-mock {
+            background: rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+            font-weight: bold;
+        }
+        .panel-mock {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px;
+            color: white;
+            text-align: center;
+        }
+        .debug-info {
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        .layout-portrait {
+            flex-direction: column;
+            align-items: center;
+        }
+        .layout-landscape {
+            flex-direction: row;
+            align-items: flex-start;
+        }
+        .iphone-indicator {
+            background: rgba(255, 215, 0, 0.3);
+            border: 2px solid rgba(255, 215, 0, 0.8);
+            color: #333;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+        h1, h2, h3 {
+            color: white;
+            text-align: center;
+        }
+        .info-text {
+            color: rgba(255, 255, 255, 0.9);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>iPhone 16 Series Canvas Adaptation Test</h1>
+        
+        <div id="iphone-indicator" class="iphone-indicator" style="display: none;">
+            🎯 检测到iPhone 16 Pro尺寸！
+        </div>
+        
+        <div class="device-info">
+            <h3>设备信息</h3>
+            <div class="info-text">
+                <p><strong>窗口尺寸:</strong> <span id="window-size">-</span></p>
+                <p><strong>逻辑像素:</strong> <span id="logical-pixels">-</span></p>
+                <p><strong>设备类型:</strong> <span id="device-type">-</span></p>
+                <p><strong>布局模式:</strong> <span id="layout-mode">-</span></p>
+                <p><strong>iPhone 16系列检测:</strong> <span id="iphone-detection">-</span></p>
+            </div>
+        </div>
+
+        <div class="canvas-preview" id="canvas-preview">
+            <!-- 动态生成的布局预览 -->
+        </div>
+
+        <div class="debug-info" id="debug-info">
+            <!-- 调试信息 -->
+        </div>
+    </div>
+
+    <script>
+        // 更新的适配常量（与TypeScript版本同步）
+        const MOBILE_ADAPTATION = {
+            PORTRAIT: {
+                CANVAS_MARGIN: 10,
+                PANEL_MARGIN: 10,
+                SAFE_AREA_TOP: 10,
+                SAFE_AREA_BOTTOM: 30,
+                PANEL_HEIGHT: 180,
+            },
+            LANDSCAPE: {
+                CANVAS_MARGIN: 1,
+                PANEL_MARGIN: 10,
+                SAFE_AREA_TOP: 1,
+                SAFE_AREA_BOTTOM: 1,
+                MIN_PANEL_WIDTH: 240,
+                MAX_PANEL_WIDTH: 350,
+            },
+            MIN_CANVAS_SIZE: 240,
+            MAX_CANVAS_SIZE: 400, // 提高到400px以充分利用空间
+        };
+
+        const DEVICE_THRESHOLDS = {
+            DESKTOP_MIN_WIDTH: 1024,
+            TABLET_MIN_WIDTH: 640,
+            PHONE_MAX_WIDTH: 639,
+            DESKTOP_MOBILE_HEIGHT: 560,
+        };
+
+        function calculateMobilePortraitCanvasSize(windowWidth, windowHeight, panelHeight) {
+            const { CANVAS_MARGIN, SAFE_AREA_TOP, SAFE_AREA_BOTTOM, PANEL_HEIGHT } = MOBILE_ADAPTATION.PORTRAIT;
+            const { MIN_CANVAS_SIZE, MAX_CANVAS_SIZE } = MOBILE_ADAPTATION;
+
+            // 检测iPhone 16系列
+            const iPhone16Detection = detectiPhone16Series(windowWidth, windowHeight);
+            
+            const actualPanelHeight = panelHeight || PANEL_HEIGHT;
+            const availableWidth = windowWidth - CANVAS_MARGIN * 2;
+            const availableHeight = windowHeight - actualPanelHeight - CANVAS_MARGIN - SAFE_AREA_TOP - SAFE_AREA_BOTTOM;
+
+            let canvasSize;
+            let maxCanvasSize = MAX_CANVAS_SIZE;
+
+            // iPhone 16系列特殊优化
+            if (iPhone16Detection.detected && iPhone16Detection.orientation === 'portrait') {
+                canvasSize = Math.min(availableWidth, availableHeight);
+                
+                // 根据不同iPhone 16机型设置不同的最大画布尺寸
+                switch (iPhone16Detection.model) {
+                    case 'iPhone 16e': // 390×844
+                        maxCanvasSize = Math.min(canvasSize, 355);
+                        break;
+                    case 'iPhone 16': // 393×852
+                        maxCanvasSize = Math.min(canvasSize, 360);
+                        break;
+                    case 'iPhone 16 Plus': // 430×932  
+                        maxCanvasSize = Math.min(canvasSize, 400);
+                        break;
+                    case 'iPhone 16 Pro': // 402×874
+                        maxCanvasSize = Math.min(canvasSize, 370);
+                        break;
+                    case 'iPhone 16 Pro Max': // 440×956
+                        maxCanvasSize = Math.min(canvasSize, 410);
+                        break;
+                    default:
+                        maxCanvasSize = Math.min(canvasSize, 380);
+                }
+            } else if (windowWidth <= 460 && windowHeight >= 800) {
+                // 其他高分辨率手机竖屏模式（扩大范围以包含iPhone 16 Pro Max）
+                canvasSize = Math.min(availableWidth, availableHeight);
+                
+                // 根据宽度范围进行优化
+                if (windowWidth >= 430) {
+                    // 大屏手机 (iPhone 16 Plus, Pro Max等)
+                    maxCanvasSize = Math.min(canvasSize, 400);
+                } else if (windowWidth >= 390) {
+                    // 中等屏幕手机 (iPhone 16, Pro等)
+                    maxCanvasSize = Math.min(canvasSize, 370);
+                } else {
+                    // 标准尺寸手机
+                    maxCanvasSize = Math.min(canvasSize, 340);
+                }
+            } else {
+                // 其他设备使用标准计算
+                canvasSize = Math.min(availableWidth, availableHeight);
+                maxCanvasSize = MAX_CANVAS_SIZE;
+            }
+
+            // 应用最小值和最大值限制
+            canvasSize = Math.max(MIN_CANVAS_SIZE, Math.min(canvasSize, maxCanvasSize));
+
+            return {
+                canvasSize,
+                canvasMargin: CANVAS_MARGIN,
+                safeAreaTop: SAFE_AREA_TOP,
+                safeAreaBottom: SAFE_AREA_BOTTOM,
+                debug: {
+                    windowSize: `${windowWidth}x${windowHeight}`,
+                    availableWidth,
+                    availableHeight,
+                    actualPanelHeight,
+                    iPhone16Model: iPhone16Detection.model,
+                    iPhone16Detected: iPhone16Detection.detected,
+                    maxCanvasSize,
+                    isHighResolutionPhone: windowWidth <= 460 && windowHeight >= 800,
+                }
+            };
+        }
+
+        function calculateMobileLandscapeCanvasSize(windowWidth, windowHeight) {
+            const { CANVAS_MARGIN, SAFE_AREA_TOP, MIN_PANEL_WIDTH, MAX_PANEL_WIDTH } = MOBILE_ADAPTATION.LANDSCAPE;
+            const { MIN_CANVAS_SIZE, MAX_CANVAS_SIZE } = MOBILE_ADAPTATION;
+
+            // 检测iPhone 16系列
+            const iPhone16Detection = detectiPhone16Series(windowWidth, windowHeight);
+
+            // 计算可用高度（这通常是限制因素）
+            const availableHeight = windowHeight - CANVAS_MARGIN * 2 - SAFE_AREA_TOP;
+
+            let panelWidth = MIN_PANEL_WIDTH;
+            let canvasSize;
+            let maxCanvasSize = 400;
+
+            // iPhone 16系列特殊优化
+            if (iPhone16Detection.detected && iPhone16Detection.orientation === 'landscape') {
+                // 根据不同iPhone 16机型优化面板宽度和画布尺寸
+                // 优化策略：较小屏幕需要更宽的面板以容纳tab按钮，较大屏幕可以适当减少面板宽度给画布更多空间
+                switch (iPhone16Detection.model) {
+                    case 'iPhone 16e': // 844×390 (最小屏幕，需要足够的面板宽度)
+                        panelWidth = 270; // 增加面板宽度确保tab按钮舒适显示
+                        maxCanvasSize = 350; // 适配较小的高度
+                        break;
+                    case 'iPhone 16': // 852×393 (小屏幕，需要较宽面板)
+                        panelWidth = 270; // 与16e保持一致，确保tab按钮显示良好
+                        maxCanvasSize = 360; // 相应调整画布尺寸
+                        break;
+                    case 'iPhone 16 Plus': // 932×430 (大屏幕，可以平衡面板和画布)
+                        panelWidth = 250; // 适中的面板宽度
+                        maxCanvasSize = 410; // 充分利用大屏空间
+                        break;
+                    case 'iPhone 16 Pro': // 874×402 (中等屏幕)
+                        panelWidth = 260; // 适中的面板宽度
+                        maxCanvasSize = 380; // 平衡面板和画布
+                        break;
+                    case 'iPhone 16 Pro Max': // 956×440 (最大屏幕，可以给画布更多空间)
+                        panelWidth = 260; // 适中的面板宽度，给画布更多空间
+                        maxCanvasSize = 420; // 充分利用超大屏空间
+                        break;
+                    default:
+                        panelWidth = 260; // 统一默认值，确保兼容性
+                        maxCanvasSize = 380;
+                }
+                
+                const availableWidth = windowWidth - panelWidth - CANVAS_MARGIN * 2;
+                canvasSize = Math.min(availableHeight, availableWidth);
+                canvasSize = Math.min(canvasSize, maxCanvasSize);
+                
+            } else if (windowWidth >= 800 && windowHeight <= 460) {
+                // 其他高分辨率手机横屏模式（扩大范围以包含iPhone 16 Pro Max）
+                
+                // 根据屏幕宽度动态调整
+                if (windowWidth >= 950) {
+                    // 超大屏手机 (类似iPhone 16 Pro Max)
+                    panelWidth = 240;
+                    maxCanvasSize = 430;
+                } else if (windowWidth >= 900) {
+                    // 大屏手机 (类似iPhone 16 Plus)
+                    panelWidth = 220;
+                    maxCanvasSize = 420;
+                } else if (windowWidth >= 850) {
+                    // 中等屏幕手机 (类似iPhone 16 Pro)
+                    panelWidth = 220;
+                    maxCanvasSize = 390;
+                } else {
+                    // 标准尺寸手机 (类似iPhone 16)
+                    panelWidth = 260; // 与iPhone 16保持一致
+                    maxCanvasSize = 370;
+                }
+                
+                const availableWidth = windowWidth - panelWidth - CANVAS_MARGIN * 2;
+                canvasSize = Math.min(availableHeight, availableWidth);
+                canvasSize = Math.min(canvasSize, maxCanvasSize);
+                
+            } else {
+                // 标准设备使用原有逻辑
+                const availableWidth = windowWidth - MIN_PANEL_WIDTH - CANVAS_MARGIN * 2;
+                canvasSize = Math.min(availableHeight, availableWidth);
+                panelWidth = MIN_PANEL_WIDTH;
+                maxCanvasSize = MAX_CANVAS_SIZE;
+            }
+
+            // 应用最小值和最大值限制
+            canvasSize = Math.max(MIN_CANVAS_SIZE, Math.min(canvasSize, maxCanvasSize));
+            panelWidth = Math.max(MIN_PANEL_WIDTH, Math.min(panelWidth, MAX_PANEL_WIDTH));
+
+            return {
+                canvasSize,
+                panelWidth,
+                canvasMargin: CANVAS_MARGIN,
+                safeAreaTop: SAFE_AREA_TOP,
+                debug: {
+                    windowSize: `${windowWidth}x${windowHeight}`,
+                    availableHeight,
+                    availableWidth: windowWidth - panelWidth - CANVAS_MARGIN * 2,
+                    iPhone16Model: iPhone16Detection.model,
+                    iPhone16Detected: iPhone16Detection.detected,
+                    maxCanvasSize,
+                    isHighResolutionLandscape: windowWidth >= 800 && windowHeight <= 460,
+                    spaceUtilization: `画布${canvasSize}px vs 可用高度${availableHeight}px`,
+                }
+            };
+        }
+
+        function getDeviceLayoutMode(windowWidth, windowHeight) {
+            const { DESKTOP_MIN_WIDTH, TABLET_MIN_WIDTH, DESKTOP_MOBILE_HEIGHT } = DEVICE_THRESHOLDS;
+
+            const aspectRatio = Math.max(windowWidth, windowHeight) / Math.min(windowWidth, windowHeight);
+            const isLongScreen = aspectRatio > 1.8;
+            
+            let isMobileUserAgent = false;
+            if (typeof navigator !== 'undefined') {
+                const ua = navigator.userAgent;
+                isMobileUserAgent = /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+            }
+            
+            const isHighResolutionMobile = isLongScreen && (
+                (windowWidth > 1000 && windowHeight > 2000) ||
+                (windowHeight > 1000 && windowWidth > 2000)
+            );
+            
+            const forceMobile = isMobileUserAgent || isHighResolutionMobile || windowHeight < DESKTOP_MOBILE_HEIGHT;
+            
+            if (forceMobile) {
+                return {
+                    deviceType: 'phone',
+                    layoutMode: windowWidth > windowHeight ? 'landscape' : 'portrait',
+                    forceReason: isMobileUserAgent ? 'user_agent' : 
+                                isHighResolutionMobile ? 'high_resolution_mobile' : 
+                                'height_threshold'
+                };
+            }
+
+            if (windowWidth >= DESKTOP_MIN_WIDTH && !isLongScreen) {
+                return {
+                    deviceType: 'desktop',
+                    layoutMode: 'desktop',
+                };
+            } else if (windowWidth >= TABLET_MIN_WIDTH && !isLongScreen) {
+                return {
+                    deviceType: 'tablet',
+                    layoutMode: 'desktop',
+                };
+            } else {
+                return {
+                    deviceType: 'phone',
+                    layoutMode: windowWidth > windowHeight ? 'landscape' : 'portrait',
+                };
+            }
+        }
+
+        function detectiPhone16Series(windowWidth, windowHeight) {
+            // iPhone 16系列逻辑像素尺寸（5个机型）
+            const iPhone16Models = {
+                'iPhone 16e': {
+                    portrait: { width: 390, height: 844 },
+                    landscape: { width: 844, height: 390 }
+                },
+                'iPhone 16': {
+                    portrait: { width: 393, height: 852 },
+                    landscape: { width: 852, height: 393 }
+                },
+                'iPhone 16 Plus': {
+                    portrait: { width: 430, height: 932 },
+                    landscape: { width: 932, height: 430 }
+                },
+                'iPhone 16 Pro': {
+                    portrait: { width: 402, height: 874 },
+                    landscape: { width: 874, height: 402 }
+                },
+                'iPhone 16 Pro Max': {
+                    portrait: { width: 440, height: 956 },
+                    landscape: { width: 956, height: 440 }
+                }
+            };
+
+            // 检测当前设备是否匹配iPhone 16系列
+            for (const [modelName, dimensions] of Object.entries(iPhone16Models)) {
+                const { portrait, landscape } = dimensions;
+                
+                // 精确匹配
+                if ((windowWidth === portrait.width && windowHeight === portrait.height) ||
+                    (windowWidth === landscape.width && windowHeight === landscape.height)) {
+                    return {
+                        detected: true,
+                        model: modelName,
+                        orientation: windowWidth > windowHeight ? 'landscape' : 'portrait',
+                        exact: true
+                    };
+                }
+                
+                // 范围匹配（允许±10px的误差）
+                const tolerance = 10;
+                const isPortraitRange = Math.abs(windowWidth - portrait.width) <= tolerance && 
+                                       Math.abs(windowHeight - portrait.height) <= tolerance;
+                const isLandscapeRange = Math.abs(windowWidth - landscape.width) <= tolerance && 
+                                        Math.abs(windowHeight - landscape.height) <= tolerance;
+                
+                if (isPortraitRange || isLandscapeRange) {
+                    return {
+                        detected: true,
+                        model: modelName,
+                        orientation: windowWidth > windowHeight ? 'landscape' : 'portrait',
+                        exact: false
+                    };
+                }
+            }
+
+            return {
+                detected: false,
+                model: null,
+                orientation: null,
+                exact: false
+            };
+        }
+
+        function updateDisplay() {
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const deviceInfo = getDeviceLayoutMode(windowWidth, windowHeight);
+            const iPhoneDetection = detectiPhone16Series(windowWidth, windowHeight);
+
+            // 更新设备信息
+            document.getElementById('window-size').textContent = `${windowWidth} × ${windowHeight}`;
+            document.getElementById('logical-pixels').textContent = `${windowWidth} × ${windowHeight} (DPR: ${window.devicePixelRatio || 1})`;
+            document.getElementById('device-type').textContent = deviceInfo.deviceType;
+            document.getElementById('layout-mode').textContent = deviceInfo.layoutMode;
+            
+            // iPhone 16系列检测结果
+            const iPhoneIndicator = document.getElementById('iphone-indicator');
+            const iPhoneDetectionSpan = document.getElementById('iphone-detection');
+            
+            if (iPhoneDetection.detected) {
+                iPhoneIndicator.style.display = 'block';
+                iPhoneIndicator.textContent = `🎯 检测到${iPhoneDetection.model}！`;
+                iPhoneDetectionSpan.textContent = `✅ ${iPhoneDetection.model} ${iPhoneDetection.orientation} (${iPhoneDetection.exact ? '精确匹配' : '范围匹配'})`;
+                iPhoneDetectionSpan.style.color = '#4CAF50';
+            } else {
+                iPhoneIndicator.style.display = 'none';
+                iPhoneDetectionSpan.textContent = '❌ 未检测到iPhone 16系列';
+                iPhoneDetectionSpan.style.color = '#f44336';
+            }
+
+            // 生成布局预览
+            const preview = document.getElementById('canvas-preview');
+            preview.innerHTML = '';
+
+            let canvasSize, panelWidth, panelHeight;
+            let debugInfo = {};
+
+            if (deviceInfo.deviceType === 'phone') {
+                if (deviceInfo.layoutMode === 'portrait') {
+                    // 竖屏布局
+                    preview.className = 'canvas-preview layout-portrait';
+                    
+                    const result = calculateMobilePortraitCanvasSize(windowWidth, windowHeight);
+                    canvasSize = result.canvasSize;
+                    panelHeight = MOBILE_ADAPTATION.PORTRAIT.PANEL_HEIGHT;
+
+                    // 创建画布模拟
+                    const canvasMock = document.createElement('div');
+                    canvasMock.className = 'canvas-mock';
+                    canvasMock.style.width = canvasSize + 'px';
+                    canvasMock.style.height = canvasSize + 'px';
+                    canvasMock.textContent = `Canvas ${canvasSize}×${canvasSize}`;
+
+                    // 创建面板模拟
+                    const panelMock = document.createElement('div');
+                    panelMock.className = 'panel-mock';
+                    panelMock.style.width = canvasSize + 'px';
+                    panelMock.style.height = panelHeight + 'px';
+                    panelMock.textContent = `Panel ${canvasSize}×${panelHeight}`;
+
+                    preview.appendChild(canvasMock);
+                    preview.appendChild(panelMock);
+
+                    debugInfo = result.debug;
+                } else {
+                    // 横屏布局
+                    preview.className = 'canvas-preview layout-landscape';
+                    
+                    const result = calculateMobileLandscapeCanvasSize(windowWidth, windowHeight);
+                    canvasSize = result.canvasSize;
+                    panelWidth = result.panelWidth;
+
+                    // 创建面板模拟
+                    const panelMock = document.createElement('div');
+                    panelMock.className = 'panel-mock';
+                    panelMock.style.width = panelWidth + 'px';
+                    panelMock.style.height = canvasSize + 'px';
+                    panelMock.textContent = `Panel ${panelWidth}×${canvasSize}`;
+
+                    // 创建画布模拟
+                    const canvasMock = document.createElement('div');
+                    canvasMock.className = 'canvas-mock';
+                    canvasMock.style.width = canvasSize + 'px';
+                    canvasMock.style.height = canvasSize + 'px';
+                    canvasMock.textContent = `Canvas ${canvasSize}×${canvasSize}`;
+
+                    preview.appendChild(panelMock);
+                    preview.appendChild(canvasMock);
+
+                    debugInfo = result.debug;
+                }
+            } else {
+                // 桌面布局
+                preview.innerHTML = '<div class="info-text">桌面布局 - 使用固定面板宽度和响应式画布</div>';
+                debugInfo = { message: '桌面布局不在此测试范围内' };
+            }
+
+            // 更新调试信息
+            const debugElement = document.getElementById('debug-info');
+            debugElement.innerHTML = `
+                <strong>调试信息:</strong><br>
+                设备检测: ${JSON.stringify(deviceInfo, null, 2)}<br>
+                iPhone 16 Pro检测: ${JSON.stringify(iPhoneDetection, null, 2)}<br>
+                布局计算: ${JSON.stringify(debugInfo, null, 2)}
+            `;
+        }
+
+        // 初始化和监听窗口变化
+        updateDisplay();
+        window.addEventListener('resize', updateDisplay);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(updateDisplay, 300);
+        });
+    </script>
+</body>
+</html>

@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import PuzzleCanvas from "@/components/PuzzleCanvas";
 import PhoneTabPanel from "./PhoneTabPanel";
+import { MOBILE_ADAPTATION, calculateMobileLandscapeCanvasSize } from '@/constants/canvasAdaptation';
 
 interface PhoneLandscapeLayoutProps {
   isMusicPlaying: boolean;
@@ -15,16 +16,15 @@ interface PhoneLandscapeLayoutProps {
   goToFirstTab: () => void;
 }
 
-const PANEL_MARGIN = 10;
-const BOTTOM_SAFE_MARGIN = 20;
-const MIN_PANEL_WIDTH = 220;
-const MAX_PANEL_WIDTH = 600;
-
 const getCanvasSize = () => {
-  if (typeof window === 'undefined') return 375;
-  const h = window.innerHeight - PANEL_MARGIN * 2 - BOTTOM_SAFE_MARGIN;
-  const w = window.innerWidth - MIN_PANEL_WIDTH - PANEL_MARGIN * 2;
-  return Math.max(220, Math.min(h, w));
+  if (typeof window === 'undefined') return { canvasSize: 375, panelWidth: 375, canvasMargin: MOBILE_ADAPTATION.LANDSCAPE.CANVAS_MARGIN };
+  
+  const { canvasSize, panelWidth, canvasMargin } = calculateMobileLandscapeCanvasSize(
+    window.innerWidth, 
+    window.innerHeight
+  );
+  
+  return { canvasSize, panelWidth, canvasMargin };
 };
 
 const PhoneLandscapeLayout: React.FC<PhoneLandscapeLayoutProps> = ({
@@ -37,13 +37,41 @@ const PhoneLandscapeLayout: React.FC<PhoneLandscapeLayoutProps> = ({
   goToNextTab,
   goToFirstTab,
 }) => {
-  const canvasSize = useMemo(() => getCanvasSize(), []);
-  const panelWidth = canvasSize;
+  // 响应式画布尺寸，类似竖屏布局
+  const [canvasData, setCanvasData] = useState(() => getCanvasSize());
+  useEffect(() => {
+    const handleResize = () => setCanvasData(getCanvasSize());
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  const { canvasSize, panelWidth, canvasMargin } = canvasData;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'row', height: '100vh', alignItems: 'flex-start', justifyContent: 'center', overflow: 'auto', paddingBottom: BOTTOM_SAFE_MARGIN }}>
-      {/* 左侧tab面板 */}
-      <div style={{ width: panelWidth, minWidth: MIN_PANEL_WIDTH, maxWidth: MAX_PANEL_WIDTH, height: canvasSize, display: 'flex', alignItems: 'flex-start', marginBottom: BOTTOM_SAFE_MARGIN }}>
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'row', 
+      height: '100vh', 
+      alignItems: 'flex-start', 
+      justifyContent: 'center', 
+      overflow: 'auto', 
+      paddingTop: MOBILE_ADAPTATION.LANDSCAPE.SAFE_AREA_TOP,
+      paddingBottom: MOBILE_ADAPTATION.LANDSCAPE.SAFE_AREA_BOTTOM,
+      paddingLeft: canvasMargin,
+      paddingRight: canvasMargin,
+    }}>
+      {/* 左侧tab面板 - 宽度与画布一致 */}
+      <div
+        id="panel-container"
+        style={{ 
+          width: canvasSize, // 面板宽度与画布宽度一致
+          minWidth: canvasSize, // 最小宽度也设为画布宽度
+          maxWidth: canvasSize, // 最大宽度也设为画布宽度
+          height: canvasSize, 
+          display: 'flex', 
+          alignItems: 'flex-start',
+          marginTop: canvasMargin,
+        }}
+      >
         <PhoneTabPanel
           activeTab={activeTab}
           onTabChange={onTabChange}
@@ -62,7 +90,8 @@ const PhoneLandscapeLayout: React.FC<PhoneLandscapeLayoutProps> = ({
         style={{
           width: canvasSize,
           height: canvasSize,
-          marginLeft: 16,
+          marginLeft: canvasMargin,
+          marginTop: canvasMargin,
           background: 'rgba(255,255,255,0.12)',
           borderRadius: 24,
           boxShadow: '0 10px 25px rgba(0,0,0,0.2)',

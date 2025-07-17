@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import PuzzleCanvas from "@/components/PuzzleCanvas";
 import PhoneTabPanel from "./PhoneTabPanel";
+import { MOBILE_ADAPTATION, calculateMobilePortraitCanvasSize } from '@/constants/canvasAdaptation';
 
 interface PhonePortraitLayoutProps {
   isMusicPlaying: boolean;
@@ -15,9 +16,18 @@ interface PhonePortraitLayoutProps {
   goToFirstTab: () => void;
 }
 
-const getCanvasWidth = () => {
-  if (typeof window === 'undefined') return 320;
-  return Math.max(220, Math.min(window.innerWidth - 30, 500));
+const getCanvasSize = () => {
+  if (typeof window === 'undefined') return { canvasSize: 320, canvasMargin: MOBILE_ADAPTATION.PORTRAIT.CANVAS_MARGIN };
+  
+  // 使用新的固定面板高度
+  const panelHeight = MOBILE_ADAPTATION.PORTRAIT.PANEL_HEIGHT;
+  const { canvasSize, canvasMargin } = calculateMobilePortraitCanvasSize(
+    window.innerWidth, 
+    window.innerHeight, 
+    panelHeight
+  );
+  
+  return { canvasSize, canvasMargin };
 };
 
 const PhonePortraitLayout: React.FC<PhonePortraitLayoutProps> = ({
@@ -30,19 +40,36 @@ const PhonePortraitLayout: React.FC<PhonePortraitLayoutProps> = ({
   goToNextTab,
   goToFirstTab,
 }) => {
-  const canvasWidth = useMemo(() => getCanvasWidth(), []);
+  // 响应式画布尺寸
+  const [canvasData, setCanvasData] = useState(() => getCanvasSize());
+  useEffect(() => {
+    const handleResize = () => setCanvasData(getCanvasSize());
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  const { canvasSize, canvasMargin } = canvasData;
+  const canvasWidth = canvasSize;
+  const canvasHeight = canvasSize; // 保证正方形
 
   return (
-    <div className="flex flex-col items-center min-h-screen w-full" style={{ background: 'none' }}>
+    <div 
+      className="flex flex-col items-center min-h-screen w-full" 
+      style={{ 
+        background: 'none',
+        paddingTop: MOBILE_ADAPTATION.PORTRAIT.SAFE_AREA_TOP,
+        paddingBottom: MOBILE_ADAPTATION.PORTRAIT.SAFE_AREA_BOTTOM,
+      }}
+    >
       {/* 画布区域 */}
       <div
         className="order-1 bg-white/20 backdrop-blur-sm rounded-3xl shadow-[0_10px_25px_rgba(0,0,0,0.2)] border-2 border-white/30 overflow-hidden"
         style={{
           width: canvasWidth,
-          height: canvasWidth,
+          height: canvasHeight,
           maxWidth: canvasWidth,
-          maxHeight: canvasWidth,
-          margin: '0 auto',
+          maxHeight: canvasHeight,
+          margin: `${canvasMargin}px auto`,
           boxSizing: 'border-box',
           position: 'relative',
           display: 'flex',
@@ -54,7 +81,14 @@ const PhonePortraitLayout: React.FC<PhonePortraitLayoutProps> = ({
         <PuzzleCanvas />
       </div>
       {/* 底部tab面板 */}
-      <div className="order-2 flex flex-col items-center gap-4 pt-2 pb-4 w-full" style={{ marginBottom: 15, width: canvasWidth }}>
+      <div
+        id="panel-container"
+        className="order-2 flex flex-col items-center gap-4 pt-2 pb-4 w-full"
+        style={{ 
+          width: canvasWidth,
+          marginTop: canvasMargin,
+        }}
+      >
         <PhoneTabPanel
           activeTab={activeTab}
           onTabChange={onTabChange}

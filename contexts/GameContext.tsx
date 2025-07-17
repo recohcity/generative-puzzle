@@ -265,7 +265,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const canvasWidth = canvasRef.current.width;
       const canvasHeight = canvasRef.current.height;
       if (canvasWidth <= 0 || canvasHeight <= 0) {
-        console.warn("画布尺寸无效 - 使用默认值");
+        // 画布尺寸无效，使用默认值
       }
       try {
         const shape = ShapeGenerator.generateShape(currentShapeType);
@@ -320,7 +320,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const puzzleRef = useRef(state.puzzle);
   useEffect(() => {
     puzzleRef.current = state.puzzle;
-    console.log('puzzle changed:', state.puzzle);
+    // 拼图状态更新
   }, [state.puzzle]);
 
   // 2. generatePuzzle 加日志
@@ -331,7 +331,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       state.cutType,
       state.cutCount,
     );
-    console.log('generatePuzzle pieces:', pieces);
+    // 拼图生成完成
     dispatch({ type: "SET_PUZZLE", payload: pieces });
     dispatch({ type: "SET_ORIGINAL_POSITIONS", payload: originalPositions });
   }, [state.originalShape, state.cutType, state.cutCount, dispatch]);
@@ -342,7 +342,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // 散开前 puzzle 长度
     const canvasWidth = state.canvasWidth ?? 0;
     const canvasHeight = state.canvasHeight ?? 0;
-    console.log('scatterPuzzle before', { puzzleLen: puzzle?.length, canvasWidth, canvasHeight });
+    // 散布拼图前的状态检查
     if (!puzzle) {
       console.warn("Cannot scatter puzzle: No puzzle pieces generated");
       return;
@@ -376,7 +376,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       targetShape: targetShape
     });
     // 散开后 puzzle 长度
-    console.log('scatterPuzzle after', { scatteredLen: scatteredPuzzle?.length, result: scatteredPuzzle });
+    // 散布拼图完成
     if (!scatteredPuzzle || !Array.isArray(scatteredPuzzle) || scatteredPuzzle.length === 0) {
       console.error('scatterPuzzle failed, fallback to original puzzle');
       return;
@@ -449,7 +449,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const bgCtx = backgroundCanvasRef.current.getContext("2d");
       if (bgCtx) bgCtx.clearRect(0, 0, backgroundCanvasRef.current.width, backgroundCanvasRef.current.height);
     }
-    console.log('resetGame called');
+    // 重置游戏状态
     dispatch({ type: "RESET_GAME" });
   }, []);
 
@@ -506,7 +506,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // 添加计算拼图边界的函数
   const calculatePieceBounds = useCallback((piece: PuzzlePiece): PieceBounds => {
     if (!piece.points || piece.points.length === 0) {
-      console.warn("Empty piece or no points found");
+      // 静默处理空拼图块，避免控制台警告
       return {
         minX: 0, maxX: 0, minY: 0, maxY: 0,
         width: 0, height: 0, centerX: 0, centerY: 0
@@ -597,16 +597,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const potentialMinY = currentBounds.minY + dy;
     const potentialMaxY = currentBounds.maxY + dy;
 
-    // 调试信息：记录边界检测细节
-    console.log(`碰撞检测详情 [拼图ID: ${state.puzzle?.indexOf(piece) ?? -1}]:`, {
-      pieceBounds: {
-        current: { minX: currentBounds.minX, maxX: currentBounds.maxX, minY: currentBounds.minY, maxY: currentBounds.maxY },
-        potential: { minX: potentialMinX, maxX: potentialMaxX, minY: potentialMinY, maxY: potentialMaxY }
-      },
-      canvas: { width: canvasW, height: canvasH },
-      safeMargin: safeMargin,
-      movement: { dx, dy }
-    });
+    // 边界检测逻辑
 
     let constrainedDx = dx;
     let constrainedDy = dy;
@@ -632,7 +623,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (boundaryViolation > 0.1) {
             correctionX = boundaryViolation; // 需要向右修正
             hitBoundary = true;
-            console.log(`  ⚠️ 触碰左边界: 当前${potentialMinX}px < 安全边距${safeMargin}px, 修正${correctionX}px`);
+
         }
     } else if (potentialMaxX > canvasW - safeMargin) {
         // 精确检测是否确实超出边界
@@ -641,7 +632,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (boundaryViolation > 0.1) {
             correctionX = -(boundaryViolation); // 需要向左修正
             hitBoundary = true;
-            console.log(`  ⚠️ 触碰右边界: 当前${potentialMaxX}px > 画布宽度${canvasW - safeMargin}px, 修正${correctionX}px`);
+
         }
     }
 
@@ -653,7 +644,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (boundaryViolation > 0.1) {
             correctionY = boundaryViolation; // 需要向下修正
             hitBoundary = true;
-            console.log(`  ⚠️ 触碰上边界: 当前${potentialMinY}px < 安全边距${safeMargin}px, 修正${correctionY}px`);
+
         }
     } else if (potentialMaxY > canvasH - safeMargin) {
         // 精确检测是否确实超出边界
@@ -662,7 +653,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (boundaryViolation > 0.1) {
             correctionY = -(boundaryViolation); // 需要向上修正
             hitBoundary = true;
-            console.log(`  ⚠️ 触碰下边界: 当前${potentialMaxY}px > 画布高度${canvasH - safeMargin}px, 修正${correctionY}px`);
+
         }
     }
 
@@ -672,7 +663,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         constrainedDx = dx + correctionX;
         constrainedDy = dy + correctionY;
         
-        console.log(`  🔄 应用修正: dx从${dx}修正为${constrainedDx}, dy从${dy}修正为${constrainedDy}`);
+
 
         // 计算回弹距离，与修正方向相反，但距离有限制
         // 使用Math.sign确保回弹方向正确，Math.min限制最大回弹距离
@@ -685,7 +676,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         constrainedDx += bounceX;
         constrainedDy += bounceY;
         
-        console.log(`  🔄 应用回弹: 回弹X=${bounceX}, 回弹Y=${bounceY}, 最终dx=${constrainedDx}, dy=${constrainedDy}`);
+
 
         // 再次进行边界检查，确保回弹没有导致再次超出边界
         const finalMinX = currentBounds.minX + constrainedDx;
@@ -698,26 +689,26 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (finalMinX < safeMargin) {
           constrainedDx = safeMargin - currentBounds.minX;
           secondCorrection = true;
-          console.log(`  ⚠️ 回弹后仍触碰左边界, 最终修正dx=${constrainedDx}`);
+
         }
         if (finalMaxX > canvasW - safeMargin) {
           constrainedDx = (canvasW - safeMargin) - currentBounds.maxX;
           secondCorrection = true;
-          console.log(`  ⚠️ 回弹后仍触碰右边界, 最终修正dx=${constrainedDx}`);
+
         }
         if (finalMinY < safeMargin) {
           constrainedDy = safeMargin - currentBounds.minY;
           secondCorrection = true;
-          console.log(`  ⚠️ 回弹后仍触碰上边界, 最终修正dy=${constrainedDy}`);
+
         }
         if (finalMaxY > canvasH - safeMargin) {
           constrainedDy = (canvasH - safeMargin) - currentBounds.maxY;
           secondCorrection = true;
-          console.log(`  ⚠️ 回弹后仍触碰下边界, 最终修正dy=${constrainedDy}`);
+
         }
         
         if (secondCorrection) {
-          console.log(`  🔄 第二次边界修正: 最终dx=${constrainedDx}, dy=${constrainedDy}`);
+
         }
 
         // 播放碰撞音效 - 仅在触碰边界时
@@ -770,7 +761,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // 新尺寸存入 canvasWidth/canvasHeight，供适配逻辑使用。
   // 该函数是画布尺寸变化时状态记忆与恢复的关键入口。
   const updateCanvasSize = useCallback((width: number, height: number) => {
-    console.log('updateCanvasSize called', { width, height });
+    // 更新画布尺寸
     // 至少确保有一个最小尺寸
     const finalWidth = Math.max(width, 320); // 强制最小宽度320
     const finalHeight = Math.max(height, 200);
@@ -781,44 +772,15 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         payload: { width: finalWidth, height: finalHeight }
       });
       // 不再自动 RESET_GAME 或 SET_PUZZLE(null)
-      console.log('updateCanvasSize: only update size, do not reset puzzle');
+      // 画布尺寸已更新
     }
   }, [dispatch, state.canvasWidth, state.canvasHeight]);
 
   // puzzle 相关副作用日志
   // 便于调试和追踪尺寸变化对拼图状态的影响。
-  useEffect(() => {
-    console.log('GameContext puzzle:', state.puzzle);
-    console.log('GameContext isScattered:', state.isScattered);
-    console.log('GameContext completedPieces:', state.completedPieces);
-    console.log('GameContext isCompleted:', state.isCompleted);
-  }, [state.puzzle, state.isScattered, state.completedPieces, state.isCompleted]);
+  // 游戏状态监控（已移除调试日志）
 
-  // useEffect 插桩
-  // 画布尺寸变化副作用
-  useEffect(() => {
-    console.log('useEffect: canvasWidth/canvasHeight changed', { canvasWidth: state.canvasWidth, canvasHeight: state.canvasHeight });
-  }, [state.canvasWidth, state.canvasHeight]);
-  // puzzle 相关副作用
-  useEffect(() => {
-    console.log('useEffect: puzzle changed', { puzzle: state.puzzle });
-  }, [state.puzzle]);
-  // originalShape 相关副作用
-  useEffect(() => {
-    console.log('useEffect: originalShape changed', { originalShape: state.originalShape });
-  }, [state.originalShape]);
-  // isScattered 相关副作用
-  useEffect(() => {
-    console.log('useEffect: isScattered changed', { isScattered: state.isScattered });
-  }, [state.isScattered]);
-  // completedPieces 相关副作用
-  useEffect(() => {
-    console.log('useEffect: completedPieces changed', { completedPieces: state.completedPieces });
-  }, [state.completedPieces]);
-  // isCompleted 相关副作用
-  useEffect(() => {
-    console.log('useEffect: isCompleted changed', { isCompleted: state.isCompleted });
-  }, [state.isCompleted]);
+  // 状态变化监控（已移除调试日志）
 
   // 新增 isCanvasReady 标志
   const isCanvasReady = state.canvasWidth > 0 && state.canvasHeight > 0;

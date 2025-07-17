@@ -101,7 +101,6 @@ export function usePuzzleInteractions({
 
   // 鼠标按下事件
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    console.log("DEBUG: handleMouseDown triggered in usePuzzleInteractions.");
     if (e.button !== 0) return; // 只响应鼠标左键
 
     const canvas = canvasRef.current;
@@ -379,7 +378,9 @@ export function usePuzzleInteractions({
   };
 
   const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    e.preventDefault() // 防止触摸事件触发鼠标事件
+    // 在React事件中，preventDefault通常是安全的
+    // 如果仍有问题，浏览器会忽略而不会抛出错误
+    e.preventDefault();
 
     if (!canvasRef.current || !state.puzzle) return
     if (!state.isScattered) return // 如果拼图没有散开，不允许交互
@@ -479,7 +480,8 @@ export function usePuzzleInteractions({
   
   // 触摸移动事件处理
   const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    e.preventDefault() // 防止页面滚动
+    // 在React合成事件中，preventDefault通常是安全的
+    e.preventDefault();
     if (!state.draggingPiece || !state.puzzle) return
 
     const canvas = canvasRef.current
@@ -642,8 +644,9 @@ export function usePuzzleInteractions({
   
   // 处理触摸结束事件
   const handleTouchEnd = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    e.preventDefault(); // 防止iOS上的默认事件
-    e.stopPropagation(); // 阻止事件传播
+    // 在React合成事件中，preventDefault通常是安全的
+    e.preventDefault();
+    e.stopPropagation();
     
     // 检查是否所有触摸点都已结束
       if (e.touches.length === 0) {

@@ -8,6 +8,7 @@ import GlobalUtilityButtons from "@/components/GlobalUtilityButtons";
 import RestartButton from "@/components/RestartButton";
 import { Button } from "@/components/ui/button";
 import { useGame } from "@/contexts/GameContext";
+import { playRotateSound, playButtonClickSound } from "@/utils/rendering/soundEffects";
 
 interface PhoneTabPanelProps {
   activeTab: 'shape' | 'puzzle' | 'cut' | 'scatter' | 'controls';
@@ -36,8 +37,8 @@ const TITLE_CLASS = "font-bold text-[#FFB17A] text-lg md:text-xl leading-tight";
 // 分区标题样式
 const SECTION_TITLE_CLASS = "font-semibold text-[#FFD5AB] text-md mb-2 leading-snug "; // 分区标题字号、颜色、粗细、下边距
 
-  // 卡片内小标题样式
-  const CARD_TITLE_CLASS = "text-xs font-medium mb-3 text-[#FFD5AB] leading-tight text-center"; // 卡片内小标题字号、颜色、粗细、下边距、居中
+// 卡片内小标题样式
+const CARD_TITLE_CLASS = "text-xs font-medium mb-3 text-[#FFD5AB] leading-tight text-center"; // 卡片内小标题字号、颜色、粗细、下边距、居中
 
 // tab按钮样式
 const TAB_BUTTON_CLASS = "flex-1 px-0 py-1 text-sm font-medium mx-0 transition-colors text-center"; // flex-1 让按钮均分
@@ -48,15 +49,21 @@ const CARD_CLASS = "p-2 bg-[#463E50] rounded-4xl shadow-md w-full mb-2"; // 卡�
 // 分区容器样式
 const SECTION_CLASS = "mb-1"; // 分区下边距
 
-// 面板根容器样式
-const PANEL_CLASS = "bg-white/30 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/30 h-full w-full flex flex-col p-6 gap-4"; // 整体背景、圆角、阴影、边框、内边距、分区间距
+// 面板根容器样式 - 横屏模式优化内边距
+const PANEL_CLASS_BASE = "bg-white/30 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/30 h-full w-full flex flex-col gap-4"; // 基础样式，不包含padding
+const PANEL_PADDING_PORTRAIT = "p-6"; // 竖屏模式的内边距
+const PANEL_PADDING_LANDSCAPE = "px-6 py-6"; // 横屏模式的内边距（与竖屏模式保持一致的水平内边距，提供舒适的呼吸空间）
 
 // 新增：可调内容区水平padding参数
 const CONTENT_HORIZONTAL_PADDING = 0; // 可根据需要调整
+// 横屏模式tab容器的特殊padding设置 - 最大化优化，让tab容器接近画布宽度
+const TAB_CONTAINER_HORIZONTAL_PADDING_LANDSCAPE = -60; // 横屏模式下tab容器最大化扩展，获得接近画布的宽度
 
 // 新增：移动端/桌面端各类按钮高度常量
 const TAB_BUTTON_HEIGHT = 36; // tab按钮
-const TAB_BUTTON_FONT_SIZE = 12; // tab按钮字体大小
+const TAB_BUTTON_FONT_SIZE = 12; // tab按钮字体大小（竖屏）
+const TAB_BUTTON_FONT_SIZE_LANDSCAPE = 14; // tab按钮字体大小（横屏）
+const TAB_BUTTON_HEIGHT_LANDSCAPE = 40; // 横屏模式tab按钮高度（稍微增加）
 const SHAPE_BUTTON_HEIGHT = 60; // 形状按钮
 const MOBILE_SHAPE_BUTTON_FONT_SIZE = 14; // 形状按钮文字字号（移动端）
 const CUT_TYPE_BUTTON_HEIGHT = 36; // 直线/斜线按钮
@@ -95,12 +102,15 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
 
   // 按钮点击事件
   const handleShowHint = () => {
+    playButtonClickSound();
     showHintOutline();
   };
   const handleRotateLeft = () => {
+    playRotateSound();
     rotatePiece(false);
   };
   const handleRotateRight = () => {
+    playRotateSound();
     rotatePiece(true);
   };
   const handleRestart = () => {
@@ -121,13 +131,13 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
 
   return (
     <div
-      className={PANEL_CLASS}
+      className={`${PANEL_CLASS_BASE} ${isLandscape ? PANEL_PADDING_LANDSCAPE : PANEL_PADDING_PORTRAIT}`}
       style={style}
     >
       {/* 顶部标题和全局按钮 */}
       <div className="flex items-center justify-between mb-0">
         <h1 className={TITLE_CLASS}>生成式拼图游戏</h1>
-        <GlobalUtilityButtons 
+        <GlobalUtilityButtons
           isMusicPlaying={isMusicPlaying}
           isFullscreen={isFullscreen}
           onToggleMusic={onToggleMusic}
@@ -135,13 +145,19 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
         />
       </div>
       {/* Tab按钮与内容区间距最小化 */}
-      <div className="mb-0" style={{paddingLeft: CONTENT_HORIZONTAL_PADDING, paddingRight: CONTENT_HORIZONTAL_PADDING}}>
+      <div
+        className="mb-0"
+        style={{
+          paddingLeft: CONTENT_HORIZONTAL_PADDING,
+          paddingRight: CONTENT_HORIZONTAL_PADDING,
+        }}
+      >
         <div
           className="flex w-full bg-[#2A283E] rounded-xl overflow-x-hidden whitespace-nowrap scrollbar-hide"
           style={{
-            height: TAB_BUTTON_HEIGHT,
-            minHeight: TAB_BUTTON_HEIGHT,
-            maxHeight: TAB_BUTTON_HEIGHT,
+            height: isLandscape ? TAB_BUTTON_HEIGHT_LANDSCAPE : TAB_BUTTON_HEIGHT,
+            minHeight: isLandscape ? TAB_BUTTON_HEIGHT_LANDSCAPE : TAB_BUTTON_HEIGHT,
+            maxHeight: isLandscape ? TAB_BUTTON_HEIGHT_LANDSCAPE : TAB_BUTTON_HEIGHT,
           }}
         >
           {(['shape', 'puzzle', 'cut', 'scatter', 'controls'] as const).map((tab) => (
@@ -162,7 +178,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                 maxHeight: '100%',
                 borderRadius: 0,
                 padding: 0,
-                fontSize: TAB_BUTTON_FONT_SIZE,
+                fontSize: isLandscape ? TAB_BUTTON_FONT_SIZE_LANDSCAPE : TAB_BUTTON_FONT_SIZE,
                 fontWeight: 500,
                 lineHeight: 1,
                 overflow: 'hidden',
@@ -174,7 +190,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
         </div>
       </div>
       {/* 拼图设置分区内容，应用可调padding */}
-      <div style={{paddingLeft: CONTENT_HORIZONTAL_PADDING, paddingRight: CONTENT_HORIZONTAL_PADDING, width: '100%', marginTop: 0}}>
+      <div style={{ paddingLeft: CONTENT_HORIZONTAL_PADDING, paddingRight: CONTENT_HORIZONTAL_PADDING, width: '100%', marginTop: 0 }}>
         {(activeTab === 'shape' || activeTab === 'puzzle' || activeTab === 'cut' || activeTab === 'scatter') && (
           <div className={SECTION_CLASS + ' mt-0'}>
             {/* 分区标题已上移，这里不再渲染 */}
@@ -234,7 +250,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                   onClick={handleShowHint}
                   disabled={isHintDisabled}
                 >
-                  <span style={{lineHeight: 1}}>提示</span>
+                  <span style={{ lineHeight: 1 }}>提示</span>
                 </Button>
                 <Button
                   style={{
@@ -258,7 +274,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                   onClick={handleRotateLeft}
                   disabled={isRotateDisabled}
                 >
-                  <span style={{lineHeight: 1}}>左转</span>
+                  <span style={{ lineHeight: 1 }}>左转</span>
                 </Button>
                 <Button
                   style={{
@@ -282,10 +298,10 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                   onClick={handleRotateRight}
                   disabled={isRotateDisabled}
                 >
-                  <span style={{lineHeight: 1}}>右转</span>
+                  <span style={{ lineHeight: 1 }}>右转</span>
                 </Button>
               </div>
-              
+
               {/* 拼图角度提示信息 */}
               {state.selectedPiece !== null && state.puzzle && (
                 <div style={{ textAlign: 'center', fontSize: '14px', marginTop: '10px', color: '#FFD5AB', fontWeight: 500 }}>
@@ -297,7 +313,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                   </div>
                 </div>
               )}
-             
+
               {/* 重新开始按钮（移动端专用） */}
               <RestartButton
                 onClick={handleRestart}

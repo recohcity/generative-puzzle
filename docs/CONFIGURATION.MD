@@ -1,6 +1,6 @@
 # 生成式拼图游戏 - 配置说明
 
-> 修订日期：2025-07-16
+> 修订日期：2025-07-17
 
 本文档详细列举并说明本项目所有关键配置点、参数、核心算法入口及其对应的源文件，便于开发者理解、调整和维护游戏行为。每次配置或算法有变动都需同步修订。
 
@@ -20,7 +20,8 @@
 10. 构建与开发配置
 11. 性能测试与报告配置
 12. UI 组件配置
-13. F10 Debug 调试模式配置
+13. 触摸事件与交互配置
+14. F10 Debug 调试模式配置
 
 ---
 
@@ -216,7 +217,62 @@
 
 ---
 
-## 8. 性能测试与报告配置
+## 8. 媒体资源与音效配置
+
+- **backgroundMusic**  
+  作用：背景音乐开关与音量控制  
+  取值范围：布尔（开关）+ 0~1（音量）  
+  默认值：false（静音），0.3（音量）  
+  影响点：用户体验、沉浸感  
+  配置/代码位置：`utils/rendering/soundEffects.ts`、`GlobalUtilityButtons.tsx`
+
+- **pieceSelectSound**  
+  作用：拼图块选中音效  
+  取值范围：频率 440Hz~880Hz，持续时间 0.1~0.3s  
+  默认值：660Hz，0.15s  
+  影响点：交互反馈  
+  配置/代码位置：`utils/rendering/soundEffects.ts`
+
+- **pieceSnapSound**  
+  作用：拼图块吸附音效  
+  取值范围：频率 880Hz~1760Hz，持续时间 0.2~0.4s  
+  默认值：1320Hz，0.3s  
+  影响点：成功反馈  
+  配置/代码位置：`utils/rendering/soundEffects.ts`
+
+- **puzzleCompletedSound**  
+  作用：拼图完成音效（音阶序列）  
+  取值范围：C5-E5-G5-C6 音阶，间隔 0.1s  
+  默认值：[523.25, 659.25, 783.99, 1046.5]Hz  
+  影响点：完成庆祝  
+  配置/代码位置：`utils/rendering/soundEffects.ts`
+
+- **rotateSound**  
+  作用：拼图块旋转音效  
+  取值范围：频率 330Hz~440Hz，持续时间 0.08~0.15s  
+  默认值：380Hz，0.12s  
+  影响点：操作反馈  
+  配置/代码位置：`utils/rendering/soundEffects.ts`
+
+- **collisionSound**  
+  作用：边界碰撞音效（双音调）  
+  取值范围：低音 120Hz + 高音 240Hz，持续时间 0.1~0.15s  
+  默认值：120Hz + 240Hz，0.15s + 0.1s  
+  影响点：边界反馈  
+  配置/代码位置：`GameContext.tsx`
+
+- **staticAssets**  
+  作用：静态资源文件配置  
+  资源列表：  
+    - `public/bg.jpg`：游戏背景图片  
+    - `public/puzzle-pieces.mp3`：游戏音效文件  
+    - `public/texture-tile.png`：瓷砖气孔材质纹理  
+  影响点：视觉效果、音效体验  
+  配置/代码位置：`public/` 目录
+
+---
+
+## 9. 视觉与主题配置
 
 - **BENCHMARKS**  
   作用：性能基准值，用于评估各项指标，分为“资源加载(page.goto)”与“端到端加载(E2E)”两项，基准值分别为1000ms/1800ms，所有性能指标分项采集与分级，保留两位小数，报告、索引、终端日志格式统一。  
@@ -296,7 +352,36 @@
 
 ---
 
-## 10. UI 组件配置
+## 10. 构建与开发配置
+
+- **Next.js 配置**  
+  作用：框架构建配置  
+  配置文件：`next.config.mjs`  
+  主要配置：静态资源、图片优化、构建输出
+
+- **Tailwind CSS 配置**  
+  作用：样式框架配置  
+  配置文件：`tailwind.config.ts`  
+  主要配置：主题色彩、响应式断点、自定义样式
+
+- **TypeScript 配置**  
+  作用：类型检查配置  
+  配置文件：`tsconfig.json`  
+  主要配置：编译选项、路径映射、严格模式
+
+- **Playwright 配置**  
+  作用：E2E 测试配置  
+  配置文件：`playwright.config.ts`、`playwright.full.config.ts`  
+  主要配置：浏览器、超时、报告生成
+
+- **Jest 配置**  
+  作用：单元测试配置  
+  配置文件：`jest.config.js`  
+  主要配置：测试环境、模块映射、覆盖率
+
+---
+
+## 11. UI 组件配置
 
 - **hintAreaFlow**
   作用：提示区内容严格按五步唯一流转，所有流程节点以提示区域为唯一判断标准。
@@ -316,7 +401,122 @@
 
 ---
 
-## 11. F10 Debug 调试模式配置（2025-06-22 最新版）
+## 11. 性能测试与报告配置
+
+- **BENCHMARKS**  
+  作用：性能基准值，用于评估各项指标，分为"资源加载(page.goto)"与"端到端加载(E2E)"两项，基准值分别为1000ms/1800ms，所有性能指标分项采集与分级，保留两位小数，报告、索引、终端日志格式统一。  
+  取值范围/默认值：  
+    - `resourceLoadTime`: 1000ms  
+    - `e2eLoadTime`: 1800ms  
+    - `shapeGenerationTime`: 500ms  
+    - `puzzleGenerationTime`: 800ms  
+    - `scatterTime`: 800ms  
+    - `pieceInteractionTime`: 1200ms  
+    - `minFps`: 30fps  
+    - `maxMemoryUsage`: 100MB  
+  影响点：性能趋势仪表盘评级、分组统计、对比、差异高亮、趋势分析  
+  配置/代码位置：`app/test/page.tsx`（BENCHMARKS 常量）
+
+- **环境模式自动识别**  
+  作用：自动识别开发/生产环境，支持分组统计、对比、差异高亮、趋势分析  
+  取值范围：'development' | 'production'  
+  默认值：自动检测  
+  影响点：测试报告、API、前端可视化、分组统计、趋势分析  
+  配置/代码位置：`e2e/full_game_flow.spec.ts`、`app/test/page.tsx`、`scripts/archive-test-results.js`、`app/api/performance-trend/route.ts`
+
+---
+
+## 12. UI 组件配置
+
+- **hintAreaFlow**
+  作用：提示区内容严格按五步唯一流转，所有流程节点以提示区域为唯一判断标准。
+  默认值：五步唯一流转
+  影响点：画布提示区、自动化测试
+  配置/代码位置：DesktopLayout.tsx、PhoneLandscapeLayout.tsx、PhonePortraitLayout.tsx、E2E 测试脚本
+
+- **tabPanelAdaptive**  
+  作用：移动端Tab面板集中管理，PhoneTabPanel组件负责tab切换与内容区像素级布局，所有tab内容与全局状态同步，tab与画布高度联动。  
+  配置/代码位置：`components/layouts/PhoneTabPanel.tsx`、`GameContext.tsx`  
+  说明：详见 `docs/puzzle_memory_adaptation_optimization/step1_canvas_adaptation_plan.md`。
+
+- **panelCanvasAdaptive**  
+  作用：桌面端/移动端画布与面板正方形自适应，所有端像素级体验一致。  
+  配置/代码位置：`GameContext.tsx`、`DesktopLayout.tsx`、`PhonePortraitLayout.tsx`、`PhoneLandscapeLayout.tsx`  
+  说明：详见 `docs/puzzle_memory_adaptation_optimization/step1_canvas_adaptation_plan.md`。
+
+---
+
+## 13. 触摸事件与交互配置
+
+- **touchEventHandling**  
+  作用：移动端触摸事件处理，解决被动监听器 preventDefault 问题  
+  取值范围：{ passive: false }（非被动监听器）  
+  默认值：非被动模式，允许 preventDefault  
+  影响点：移动端拖拽、旋转、页面滚动阻止  
+  配置/代码位置：`components/PuzzleCanvas.tsx`、`hooks/usePuzzleInteractions.ts`
+
+- **touchSensitivity**  
+  作用：触摸检测灵敏度  
+  取值范围：20~50（像素）  
+  默认值：30（触摸），20（鼠标）  
+  影响点：拼图块选中精度  
+  配置/代码位置：`hooks/usePuzzleInteractions.ts`
+
+- **magnetThreshold**  
+  作用：磁吸效果触发距离  
+  取值范围：30~80（像素）  
+  默认值：50  
+  影响点：拼图块自动吸附  
+  配置/代码位置：`hooks/usePuzzleInteractions.ts`
+
+- **magnetStrength**  
+  作用：磁吸力强度  
+  取值范围：0.1~0.3  
+  默认值：0.15  
+  影响点：磁吸效果强度  
+  配置/代码位置：`hooks/usePuzzleInteractions.ts`
+
+- **rotationThreshold**  
+  作用：双指旋转触发阈值  
+  取值范围：3~10（度）  
+  默认值：5  
+  影响点：双指旋转灵敏度  
+  配置/代码位置：`hooks/usePuzzleInteractions.ts`
+
+- **shakeAnimation**  
+  作用：边界碰撞震动动画配置  
+  取值范围：震动次数 4~8，幅度 [8, -6, 5, -4, 3, -2]  
+  默认值：6次震动，间隔30ms  
+  影响点：边界反馈视觉效果  
+  配置/代码位置：`hooks/usePuzzleInteractions.ts`
+
+---
+
+## 14. 构建与开发配置
+
+- **Next.js 配置**  
+  作用：框架构建配置  
+  配置文件：`next.config.mjs`  
+  主要配置：静态资源、图片优化、构建输出
+
+- **Tailwind CSS 配置**  
+  作用：样式框架配置  
+  配置文件：`tailwind.config.ts`  
+  主要配置：主题色彩、响应式断点、自定义样式
+
+- **TypeScript 配置**  
+  作用：类型检查配置  
+  配置文件：`tsconfig.json`  
+  主要配置：编译选项、路径映射、严格模式
+
+- **Playwright 配置**  
+  作用：E2E 测试配置  
+  配置文件：`playwright.config.ts`、`playwright.full.config.ts`  
+  主要配置：浏览器、超时、报告生成
+
+---
+
+## 15. F10 Debug 调试模式配置（2025-07-17 最新版）
 
 ### 功能说明
 

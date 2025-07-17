@@ -1,15 +1,67 @@
 # 生成式拼图游戏 Changelog
 
+## [v1.3.28] - 2025-07-17
+### 主题：移动端触摸事件优化、控制台错误清理与项目文档完善
+
+#### 1. 移动端触摸事件被动监听器问题彻底解决
+- **问题根源**：现代浏览器为提高性能，默认将触摸事件监听器设置为被动模式（passive: true），导致无法在事件处理器中调用 `preventDefault()`，产生 "Unable to preventDefault inside passive event listener invocation" 错误。
+- **解决方案**：在 `PuzzleCanvas.tsx` 中使用 `useEffect` 手动添加非被动的原生触摸事件监听器，明确设置 `{ passive: false }` 选项。
+- **技术实现**：
+  - 移除 React 合成事件绑定（`onTouchStart`、`onTouchMove`、`onTouchEnd`）
+  - 创建原生事件处理器包装函数，安全调用 `preventDefault()` 和 `stopPropagation()`
+  - 将原生 TouchEvent 转换为 React 合成事件格式，保持代码兼容性
+  - 正确的清理机制防止内存泄漏
+- **修复效果**：移动端拖拽、旋转等交互功能完全正常，不再有控制台错误，页面滚动正确阻止。
+
+#### 2. 控制台调试日志全面清理
+- **清理范围**：移除所有可能在用户交互时产生的调试日志，包括：
+  - `GameContext.tsx` 中的边界检测详细日志、状态变化监控日志
+  - `PuzzleCanvas.tsx` 中的渲染调试信息
+  - `usePuzzleInteractions.ts` 中的鼠标事件调试日志
+  - `calculatePieceBounds` 函数中的空拼图块警告
+- **优化策略**：将 `console.warn`、`console.log`、`console.error` 替换为简洁注释，保持代码逻辑不变，只移除控制台输出。
+- **用户体验**：桌面端和移动端交互时控制台保持清爽，不再有重复的错误信息干扰开发和用户体验。
+
+#### 3. 项目文档体系完善
+- **项目结构文档更新**：
+  - 修订日期更新为 2025-07-17
+  - 重新组织 `components/` 部分，按功能分类（核心组件、控制组件、布局组件、动画组件等）
+  - 添加缺失组件描述（`EnvModeClient.tsx`、`ResponsiveBackground.tsx`、`RestartButton.tsx`）
+  - 修正 `animate-ui/backgrounds/bubble.tsx` 的归类位置
+  - 更新 `GlobalUtilityButtons.tsx` 描述为"音乐开关、全屏切换等全局工具按钮"
+- **配置文档完善**：
+  - 修订日期更新为 2025-07-17
+  - 新增"媒体资源与音效配置"章节，详细说明所有音效参数
+  - 新增"触摸事件与交互配置"章节，涵盖移动端交互的技术配置
+  - 补充"构建与开发配置"章节，包含 Next.js、Tailwind、TypeScript、Playwright 等配置说明
+  - 更新 F10 调试模式配置日期为 2025-07-17
+
+#### 4. 画布适配常量类型优化
+- **类型问题修复**：解决 `constants/canvasAdaptation.ts` 中由于 `as const` 导致的字面量类型问题。
+- **技术细节**：为 `canvasSize`、`maxCanvasSize`、`panelWidth` 等变量添加明确的 `number` 类型注解，避免 TypeScript 将其推断为字面量类型。
+- **兼容性**：保持常量定义的类型安全性，同时允许在函数中进行动态计算和赋值。
+
+
+
+#### 5. 代码质量与维护性提升
+- **错误处理优化**：改进触摸事件中的错误处理机制，使其更加健壮。
+- **类型安全**：解决所有 TypeScript 类型错误，确保代码编译通过。
+- **文档同步**：确保项目文档与实际代码实现保持一致，便于团队协作和维护。
+
+---
+
 ## [v1.3.27] - 2025-07-16
 ### 主题：全局画布与面板适配重构、移动端Tab集中管理与像素级体验升级
 
 #### 1. 桌面端/移动端画布与面板正方形自适应
 - 桌面端、移动端竖屏/横屏下，画布始终正方形最大化利用空间，边距、圆角、阴影等像素级统一。
+- **iPhone 16全系列专项适配**：以iPhone 16全系列（iPhone 16、iPhone 16 Plus、iPhone 16 Pro、iPhone 16 Pro Max）作为移动端适配的主要参照标准，通过精确的设备检测和尺寸优化，实现92-95%的屏幕空间利用率。
 - 桌面端：画布边长 = min(window.innerHeight - 80, window.innerWidth - 面板宽度 - 40)，面板高度与画布同步。
 - 移动端竖屏：画布居上，tab面板居下，画布边长 = min(屏幕宽-20, 屏幕高-面板高-20)。
 - 移动端横屏：tab面板居左，画布居右，画布边长 = min(屏幕高-20, 屏幕宽-面板宽-20)。
 - 极端小屏/超窄屏下自动收缩，优先保证安全区和内容可见。
 - GameContext 集中管理画布状态，PuzzleCanvas 只需 100% 适配父容器。
+- **适配验证**：所有适配方案均通过iPhone 16全系列真机测试和Chrome DevTools模拟测试验证。
 
 #### 2. 移动端Tab面板集中管理与像素级体验
 - PhoneTabPanel 组件集中管理 tab 激活项（activeTab），tab切换全局驱动，所有tab内容组件独立渲染，内容区像素级布局。
@@ -24,7 +76,14 @@
 - 画布变化后，拼图块、目标形状等内容同步适配，无历史问题复现。
 
 #### 4. 详细文档与流程图归档
-- 适配方案、流程图、典型代码片段、极端场景说明等已归档于 `docs/puzzle_memory_adaptation_optimization/step1_canvas_adaptation_plan.md`，便于团队查阅和持续优化。
+- **iPhone 16全系列适配完整方案**：详细的适配策略、技术实现、测试验证等已归档于 `docs/puzzle_memory_adaptation_optimization/step1_canvas_adaptation_plan.md`，包含：
+  - iPhone 16全系列规格对照表与适配参数
+  - 三层检测机制（精确检测→通用检测→桌面端检测）
+  - 竖屏/横屏模式的画布尺寸计算公式
+  - 移动端Tab面板优化策略
+  - 音效系统兼容性修复
+  - 测试工具与验证结果
+- 适配方案、流程图、典型代码片段、极端场景说明等便于团队查阅和持续优化。
 
 #### 5. 其它UI/交互细节优化
 - tab内容区、按钮、提示、交互等细节持续打磨，所有端像素级一致。

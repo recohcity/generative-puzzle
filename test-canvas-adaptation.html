@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>画布适配参数测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        .success { border-left: 4px solid #28a745; }
+        .info { border-left: 4px solid #17a2b8; }
+        .warning { border-left: 4px solid #ffc107; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .size-display {
+            display: inline-block;
+            margin: 5px;
+            padding: 5px 10px;
+            background: #e9ecef;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>画布适配参数测试</h1>
+    
+    <div class="test-container">
+        <h2>当前窗口信息</h2>
+        <div id="window-info" class="test-result info">
+            <div>窗口尺寸: <span id="window-size"></span></div>
+            <div>设备类型: <span id="device-type"></span></div>
+            <div>布局模式: <span id="layout-mode"></span></div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>桌面端适配测试</h2>
+        <div id="desktop-results" class="test-result success"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>移动端竖屏适配测试</h2>
+        <div id="mobile-portrait-results" class="test-result success"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>移动端横屏适配测试</h2>
+        <div id="mobile-landscape-results" class="test-result success"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>实时测试</h2>
+        <p>调整浏览器窗口大小来测试响应式适配：</p>
+        <button onclick="updateTests()">刷新测试</button>
+        <button onclick="simulateDesktop()">模拟桌面端</button>
+        <button onclick="simulateMobile()">模拟移动端</button>
+        <button onclick="simulateUltraWide()">模拟超宽屏</button>
+        <div id="realtime-results" class="test-result info"></div>
+    </div>
+
+    <script>
+        // 模拟适配参数常量（从 constants/canvasAdaptation.ts 复制）
+        const DESKTOP_ADAPTATION = {
+            TOP_BOTTOM_MARGIN: 40,
+            LEFT_RIGHT_MARGIN: 10,
+            CANVAS_PANEL_GAP: 10,
+            PANEL_WIDTH: 350,
+            MIN_PANEL_WIDTH: 280,
+            MIN_CANVAS_SIZE: 320,
+            MAX_CANVAS_SIZE: 2560,
+            MIN_HEIGHT_THRESHOLD: 560,
+        };
+
+        const MOBILE_ADAPTATION = {
+            PORTRAIT: {
+                CANVAS_MARGIN: 10,
+                PANEL_MARGIN: 10,
+                SAFE_AREA_BOTTOM: 20,
+            },
+            LANDSCAPE: {
+                CANVAS_MARGIN: 10,
+                PANEL_MARGIN: 10,
+                SAFE_AREA_BOTTOM: 20,
+                MIN_PANEL_WIDTH: 220,
+                MAX_PANEL_WIDTH: 600,
+            },
+            MIN_CANVAS_SIZE: 220,
+            MAX_CANVAS_SIZE: 800,
+        };
+
+        const DEVICE_THRESHOLDS = {
+            DESKTOP_MIN_WIDTH: 1024,
+            TABLET_MIN_WIDTH: 640,
+            PHONE_MAX_WIDTH: 639,
+            DESKTOP_MOBILE_HEIGHT: 560,
+        };
+
+        // 计算函数（更新后的逻辑，优先基于高度适配，确保面板完整显示）
+        function calculateDesktopCanvasSize(windowWidth, windowHeight) {
+            const { TOP_BOTTOM_MARGIN, LEFT_RIGHT_MARGIN, CANVAS_PANEL_GAP, PANEL_WIDTH, MIN_CANVAS_SIZE, MAX_CANVAS_SIZE } = DESKTOP_ADAPTATION;
+            
+            // 计算可用高度（主要适配依据）
+            const availableHeight = windowHeight - TOP_BOTTOM_MARGIN * 2;
+            
+            // 计算可用宽度（用于检查是否有足够空间）
+            const availableWidth = windowWidth - LEFT_RIGHT_MARGIN * 2 - PANEL_WIDTH - CANVAS_PANEL_GAP;
+            
+            // 画布边长主要基于可用高度，但不能超过可用宽度
+            let canvasSize = availableHeight;
+            
+            // 如果可用宽度不够，则限制画布尺寸
+            if (availableWidth < canvasSize) {
+                canvasSize = availableWidth;
+            }
+            
+            // 应用最小值和最大值限制
+            canvasSize = Math.max(MIN_CANVAS_SIZE, Math.min(canvasSize, MAX_CANVAS_SIZE));
+            
+            return {
+                canvasSize,
+                panelHeight: canvasSize,
+                actualPanelWidth: PANEL_WIDTH,
+                // 调试信息
+                debug: {
+                    availableHeight,
+                    availableWidth,
+                    isHeightLimited: availableHeight <= availableWidth,
+                    isWidthLimited: availableWidth < availableHeight,
+                    heightBasedSize: availableHeight,
+                    widthBasedSize: availableWidth,
+                }
+            };
+        }
+
+        function calculateMobilePortraitCanvasSize(windowWidth, windowHeight, panelHeight = 200) {
+            const { CANVAS_MARGIN, SAFE_AREA_BOTTOM } = MOBILE_ADAPTATION.PORTRAIT;
+            const { MIN_CANVAS_SIZE } = MOBILE_ADAPTATION;
+            
+            const availableWidth = windowWidth - CANVAS_MARGIN * 2;
+            const availableHeight = windowHeight - panelHeight - CANVAS_MARGIN - SAFE_AREA_BOTTOM;
+            
+            const canvasSize = Math.max(MIN_CANVAS_SIZE, Math.min(availableWidth, availableHeight));
+            
+            return {
+                canvasSize,
+                canvasMargin: CANVAS_MARGIN,
+                safeAreaBottom: SAFE_AREA_BOTTOM,
+            };
+        }
+
+        function calculateMobileLandscapeCanvasSize(windowWidth, windowHeight) {
+            const { CANVAS_MARGIN, MIN_PANEL_WIDTH } = MOBILE_ADAPTATION.LANDSCAPE;
+            const { MIN_CANVAS_SIZE } = MOBILE_ADAPTATION;
+            
+            const availableHeight = windowHeight - CANVAS_MARGIN * 2;
+            const availableWidth = windowWidth - MIN_PANEL_WIDTH - CANVAS_MARGIN * 2;
+            
+            const canvasSize = Math.max(MIN_CANVAS_SIZE, Math.min(availableHeight, availableWidth));
+            
+            return {
+                canvasSize,
+                panelWidth: canvasSize,
+                canvasMargin: CANVAS_MARGIN,
+            };
+        }
+
+        function getDeviceLayoutMode(windowWidth, windowHeight) {
+            const { DESKTOP_MIN_WIDTH, TABLET_MIN_WIDTH, DESKTOP_MOBILE_HEIGHT } = DEVICE_THRESHOLDS;
+            
+            if (windowHeight < DESKTOP_MOBILE_HEIGHT) {
+                return {
+                    deviceType: 'phone',
+                    layoutMode: windowWidth > windowHeight ? 'landscape' : 'portrait',
+                    forceReason: 'height_threshold'
+                };
+            }
+            
+            if (windowWidth >= DESKTOP_MIN_WIDTH) {
+                return {
+                    deviceType: 'desktop',
+                    layoutMode: 'desktop',
+                };
+            } else if (windowWidth >= TABLET_MIN_WIDTH) {
+                return {
+                    deviceType: 'tablet',
+                    layoutMode: 'desktop',
+                };
+            } else {
+                return {
+                    deviceType: 'phone',
+                    layoutMode: windowWidth > windowHeight ? 'landscape' : 'portrait',
+                };
+            }
+        }
+
+        function updateWindowInfo() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const deviceInfo = getDeviceLayoutMode(width, height);
+            
+            document.getElementById('window-size').textContent = `${width} × ${height}`;
+            document.getElementById('device-type').textContent = deviceInfo.deviceType;
+            document.getElementById('layout-mode').textContent = deviceInfo.layoutMode + (deviceInfo.forceReason ? ` (${deviceInfo.forceReason})` : '');
+        }
+
+        function updateTests() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            // 桌面端测试
+            const desktopResult = calculateDesktopCanvasSize(width, height);
+            let debugInfo = '';
+            if (desktopResult.debug) {
+                const d = desktopResult.debug;
+                debugInfo = `
+                    <div style="margin-top: 10px; padding: 8px; background: #e3f2fd; border-radius: 4px;">
+                        <div><strong>调试信息:</strong></div>
+                        <div>基于高度的尺寸: <span class="size-display">${d.heightBasedSize}px</span></div>
+                        <div>基于宽度的尺寸: <span class="size-display">${d.widthBasedSize}px</span></div>
+                        <div>是否受高度限制: <span class="size-display">${d.isHeightLimited ? '是' : '否'}</span></div>
+                        <div>是否受宽度限制: <span class="size-display">${d.isWidthLimited ? '是' : '否'}</span></div>
+                        <div>宽高比: <span class="size-display">${(d.availableWidth / d.availableHeight).toFixed(2)}</span></div>
+                        <div>适配策略: <span class="size-display">${d.isHeightLimited ? '高度优先' : '宽度限制'}</span></div>
+                    </div>
+                `;
+            }
+            document.getElementById('desktop-results').innerHTML = `
+                <div><strong>桌面端计算结果:</strong></div>
+                <div>画布尺寸: <span class="size-display">${desktopResult.canvasSize}px</span></div>
+                <div>面板高度: <span class="size-display">${desktopResult.panelHeight}px</span></div>
+                <div>面板宽度: <span class="size-display">${desktopResult.actualPanelWidth}px</span></div>
+                <div>可用宽度: <span class="size-display">${desktopResult.debug ? desktopResult.debug.availableWidth : 'N/A'}px</span></div>
+                <div>可用高度: <span class="size-display">${desktopResult.debug ? desktopResult.debug.availableHeight : 'N/A'}px</span></div>
+                ${debugInfo}
+            `;
+
+            // 移动端竖屏测试
+            const portraitResult = calculateMobilePortraitCanvasSize(width, height);
+            document.getElementById('mobile-portrait-results').innerHTML = `
+                <div><strong>移动端竖屏计算结果:</strong></div>
+                <div>画布尺寸: <span class="size-display">${portraitResult.canvasSize}px</span></div>
+                <div>画布边距: <span class="size-display">${portraitResult.canvasMargin}px</span></div>
+                <div>底部安全区: <span class="size-display">${portraitResult.safeAreaBottom}px</span></div>
+            `;
+
+            // 移动端横屏测试
+            const landscapeResult = calculateMobileLandscapeCanvasSize(width, height);
+            document.getElementById('mobile-landscape-results').innerHTML = `
+                <div><strong>移动端横屏计算结果:</strong></div>
+                <div>画布尺寸: <span class="size-display">${landscapeResult.canvasSize}px</span></div>
+                <div>面板宽度: <span class="size-display">${landscapeResult.panelWidth}px</span></div>
+                <div>画布边距: <span class="size-display">${landscapeResult.canvasMargin}px</span></div>
+            `;
+
+            // 实时结果
+            const deviceInfo = getDeviceLayoutMode(width, height);
+            let currentResult;
+            if (deviceInfo.layoutMode === 'desktop') {
+                currentResult = desktopResult;
+            } else if (deviceInfo.layoutMode === 'portrait') {
+                currentResult = portraitResult;
+            } else {
+                currentResult = landscapeResult;
+            }
+
+            document.getElementById('realtime-results').innerHTML = `
+                <div><strong>当前适配结果 (${deviceInfo.deviceType} - ${deviceInfo.layoutMode}):</strong></div>
+                <div>推荐画布尺寸: <span class="size-display">${currentResult.canvasSize}px</span></div>
+                <div>窗口尺寸: <span class="size-display">${width} × ${height}</span></div>
+                <div>适配比例: <span class="size-display">${(currentResult.canvasSize / Math.min(width, height) * 100).toFixed(1)}%</span></div>
+            `;
+
+            updateWindowInfo();
+        }
+
+        function simulateDesktop() {
+            // 模拟桌面端尺寸
+            const result = calculateDesktopCanvasSize(1920, 1080);
+            alert(`桌面端模拟 (1920×1080):\n画布尺寸: ${result.canvasSize}px\n面板高度: ${result.panelHeight}px`);
+        }
+
+        function simulateMobile() {
+            // 模拟移动端尺寸
+            const portraitResult = calculateMobilePortraitCanvasSize(375, 667);
+            const landscapeResult = calculateMobileLandscapeCanvasSize(667, 375);
+            alert(`移动端模拟:\n竖屏 (375×667): ${portraitResult.canvasSize}px\n横屏 (667×375): ${landscapeResult.canvasSize}px`);
+        }
+
+        function simulateUltraWide() {
+            // 模拟超宽屏尺寸
+            const ultraWideResults = [
+                { size: '2560×1440', result: calculateDesktopCanvasSize(2560, 1440) },
+                { size: '3440×1440', result: calculateDesktopCanvasSize(3440, 1440) },
+                { size: '5120×1440', result: calculateDesktopCanvasSize(5120, 1440) },
+            ];
+            
+            let message = '超宽屏模拟测试:\n\n';
+            ultraWideResults.forEach(({ size, result }) => {
+                message += `${size}: ${result.canvasSize}px`;
+                if (result.debug && result.debug.isUltraWide) {
+                    message += ' (超宽屏限制生效)';
+                }
+                message += '\n';
+            });
+            
+            alert(message);
+        }
+
+        // 初始化和事件监听
+        window.addEventListener('load', updateTests);
+        window.addEventListener('resize', updateTests);
+        
+        // 定期更新（用于测试）
+        setInterval(updateTests, 1000);
+    </script>
+</body>
+</html>

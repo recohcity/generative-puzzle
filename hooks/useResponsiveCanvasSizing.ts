@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, RefObject } from "react";
 import { useGame } from "@/contexts/GameContext"; // 导入 GameContext 的 useGame
 import { useDeviceDetection } from "@/hooks/useDeviceDetection"; // 导入设备检测 Hook
+import { MOBILE_ADAPTATION, DESKTOP_ADAPTATION } from "@/constants/canvasAdaptation";
 
 // 定义 Hook 的 props 接口
 interface UseResponsiveCanvasSizingProps {
@@ -74,9 +75,10 @@ export function useResponsiveCanvasSizing({
     newWidth = Math.floor(newWidth);
     newHeight = Math.floor(newHeight);
 
-    // 安全检查，确保尺寸不为0或负数
-    if (newWidth <= 0) newWidth = 320;
-    if (newHeight <= 0) newHeight = 320;
+    // 安全检查，确保尺寸不为0或负数，使用统一的最小尺寸常量
+    const minCanvasSize = isMobile ? MOBILE_ADAPTATION.MIN_CANVAS_SIZE : DESKTOP_ADAPTATION.MIN_CANVAS_SIZE;
+    if (newWidth <= 0) newWidth = minCanvasSize;
+    if (newHeight <= 0) newHeight = minCanvasSize;
 
     // 设置画布 DOM 元素的尺寸
     canvasRef.current.width = newWidth;

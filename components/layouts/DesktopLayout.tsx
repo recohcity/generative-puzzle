@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { useGame } from "@/contexts/GameContext";
 import { playButtonClickSound } from "@/utils/rendering/soundEffects";
+import { DESKTOP_ADAPTATION, calculateDesktopCanvasSize } from '@/constants/canvasAdaptation';
 
 interface DesktopLayoutProps {
   isMusicPlaying: boolean;
@@ -66,38 +67,38 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   const DESKTOP_CONTROL_BUTTON_HEIGHT = 36; // 提示/左转/右转（桌面端）
   const DESKTOP_RESTART_BUTTON_HEIGHT = 40; // 重新开始（桌面端）
 
-  // 新增：动态正方形画布尺寸
+  // 动态计算画布尺寸
   const [canvasSize, setCanvasSize] = useState(560); // 默认560
   const leftPanelRef = useRef<HTMLDivElement>(null);
-  // 适配参数
-  const minEdgeMargin = 10;
-  const bottomSafeMargin = 60; // 新增底部安全区
-  const canvasPanelGap = 10;
-  const minPanelWidth = 280;
-  const panelWidth = 350;
+  
+  // 使用统一适配参数
   const windowWidth = typeof window !== 'undefined' ? window.innerWidth : 1920;
   const windowHeight = typeof window !== 'undefined' ? window.innerHeight : 1080;
-  let actualPanelWidth = panelWidth;
-  let availableWidth = windowWidth - 2 * minEdgeMargin - actualPanelWidth - canvasPanelGap;
-  let availableHeight = windowHeight - minEdgeMargin - bottomSafeMargin; // 修正：底部安全区
-  if (availableWidth < availableHeight) {
-    actualPanelWidth = Math.max(minPanelWidth, windowWidth - 2 * minEdgeMargin - availableHeight - canvasPanelGap);
-    availableWidth = windowWidth - 2 * minEdgeMargin - actualPanelWidth - canvasPanelGap;
-    if (availableWidth < availableHeight) {
-      availableHeight = availableWidth;
-    }
+  
+  // 使用统一计算函数（现在返回计算好的边距）
+  const calculationResult = calculateDesktopCanvasSize(windowWidth, windowHeight);
+  const { canvasSize: canvasSizeFinal, panelHeight, actualPanelWidth, actualLeftRightMargin } = calculationResult;
+  
+  // 计算布局参数
+  const { TOP_BOTTOM_MARGIN, LEFT_RIGHT_MARGIN, CANVAS_PANEL_GAP, MIN_PANEL_WIDTH } = DESKTOP_ADAPTATION;
+  
+  // 添加调试信息（开发环境下）
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+    const contentWidth = actualPanelWidth + CANVAS_PANEL_GAP + canvasSizeFinal;
+    console.log('桌面端布局调试信息:', {
+      windowSize: `${windowWidth}x${windowHeight}`,
+      canvasSize: canvasSizeFinal,
+      margins: { 
+        top: TOP_BOTTOM_MARGIN, 
+        leftRight: actualLeftRightMargin,
+        original: LEFT_RIGHT_MARGIN 
+      },
+      contentWidth: contentWidth,
+      totalUsedWidth: actualLeftRightMargin * 2 + contentWidth,
+      isUltraWide: windowWidth > windowHeight * 2,
+      adaptationStrategy: '新安全边距模式',
+    });
   }
-  const canvasSizeFinal = Math.max(320, Math.min(availableHeight, availableWidth));
-  const panelHeight = canvasSizeFinal;
-  // 内容实际宽高
-  const contentWidth = minEdgeMargin + actualPanelWidth + canvasPanelGap + canvasSizeFinal + minEdgeMargin;
-  const contentHeight = minEdgeMargin + canvasSizeFinal + minEdgeMargin;
-  const extraWidth = Math.max(0, windowWidth - contentWidth);
-  const extraHeight = Math.max(0, windowHeight - contentHeight);
-  const paddingLeft = minEdgeMargin + Math.floor(extraWidth / 2);
-  const paddingRight = minEdgeMargin + Math.ceil(extraWidth / 2);
-  const paddingTop = minEdgeMargin + Math.floor(extraHeight / 2);
-  const paddingBottom = minEdgeMargin + Math.ceil(extraHeight / 2);
   // 面板缩放比例
   // panelScale极限下限提升为0.4，保证内容极限压缩但不至于不可用
   const panelScale = Math.max(0.4, Math.min(canvasSizeFinal / 560, 1.0));
@@ -122,27 +123,33 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
     return () => window.removeEventListener('resize', updateLayout);
   }, [canvasSizeFinal, actualPanelWidth, panelHeight]);
 
+
+
   return (
     <div style={{
       minWidth: '100vw',
+      minHeight: '100vh',
       boxSizing: 'border-box',
-      paddingTop: minEdgeMargin,
-      paddingBottom: bottomSafeMargin, // 保证底部安全区
-      paddingLeft: minEdgeMargin,
-      paddingRight: minEdgeMargin,
       display: 'flex',
       flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
       overflow: 'hidden',
+      paddingTop: TOP_BOTTOM_MARGIN,
+      paddingBottom: TOP_BOTTOM_MARGIN,
+      paddingLeft: actualLeftRightMargin,
+      paddingRight: actualLeftRightMargin,
     }}>
       <div style={{
-        marginTop: 0,
-        marginBottom: 'auto',
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'flex-start',
-        gap: canvasPanelGap,
+        gap: CANVAS_PANEL_GAP,
         justifyContent: 'center',
         boxSizing: 'border-box',
+        maxWidth: '100%',
+        // 确保内容在超宽屏幕下居中，不贴边
+        width: 'fit-content',
       }}>
         {/* Left Control Panel */}
         <div
@@ -151,7 +158,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
           style={{
             height: panelHeight,
             width: actualPanelWidth,
-            minWidth: minPanelWidth,
+            minWidth: MIN_PANEL_WIDTH,
             // 去除marginTop/marginLeft，完全由外层padding控制
             ...(panelScale <= 0.5 ? { '--panel-scale': 0.4 } : { '--panel-scale': panelScale })
           } as React.CSSProperties}
@@ -233,8 +240,8 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
             <PuzzleCanvas />
           </div>
         </div>
+        </div>
       </div>
-    </div>
   );
 };
 

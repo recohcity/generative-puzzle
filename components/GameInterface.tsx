@@ -36,6 +36,7 @@ import ResponsiveBackground from "@/components/ResponsiveBackground";
 import DesktopLayout from "./layouts/DesktopLayout";
 import PhonePortraitLayout from "./layouts/PhonePortraitLayout";
 import PhoneLandscapeLayout from "./layouts/PhoneLandscapeLayout";
+import { getDeviceLayoutMode, DEVICE_THRESHOLDS } from '@/constants/canvasAdaptation';
 
 export default function CurveTestOptimized() {
   // --- Remove useGame hook call from top level --- 
@@ -58,42 +59,31 @@ export default function CurveTestOptimized() {
   // 添加控制面板选项卡状态（仅用于手机模式）
   const [activeTab, setActiveTab] = useState<'shape' | 'puzzle' | 'cut' | 'scatter' | 'controls'>('shape');
 
-  // 检测设备类型
+  // 使用统一的设备检测逻辑
   useEffect(() => {
     const detectDevice = () => {
-      const ua = navigator.userAgent;
       const width = window.innerWidth;
       const height = window.innerHeight;
-      const isPortrait = height > width;
       
-      // 检测是否为iPhone
-      const isIPhone = /iPhone/i.test(ua);
+      // 使用统一的设备检测函数
+      const deviceLayoutInfo = getDeviceLayoutMode(width, height);
       
-      // 检测是否为Android手机
-      const isAndroid = /Android/i.test(ua);
+      // 更新设备类型状态
+      setDeviceType(deviceLayoutInfo.deviceType);
       
-      // 检测是否为iPad
-      const isIPad = /iPad/i.test(ua) || 
-                   (/Macintosh/i.test(ua) && 'ontouchend' in document);
-      
-      const isMobile = isIPhone || isAndroid;
-      
-      // 更新手机屏幕方向状态
-      if (isMobile) {
-        setPhoneMode(isPortrait ? 'portrait' : 'landscape');
-        console.log(`手机方向: ${isPortrait ? '竖屏' : '横屏'}`);
+      // 更新手机模式状态
+      if (deviceLayoutInfo.deviceType === 'phone') {
+        setPhoneMode(deviceLayoutInfo.layoutMode as 'portrait' | 'landscape');
+        console.log(`手机方向: ${deviceLayoutInfo.layoutMode === 'portrait' ? '竖屏' : '横屏'}`);
       }
       
-      // 根据屏幕宽度和设备类型确定最终设备类型
-      if (isIPhone || isAndroid || width < 640) {
-        setDeviceType('phone');
-      } else if (isIPad || (width >= 640 && width < 1024)) {
-        setDeviceType('tablet');
-      } else {
-        setDeviceType('desktop');
-      }
-      
-      console.log(`设备类型: ${deviceType}, 手机模式: ${phoneMode}, 屏幕: ${width}x${height}, iPhone: ${isIPhone}, Android: ${isAndroid}, iPad: ${isIPad}`);
+      console.log(`设备检测结果:`, {
+        deviceType: deviceLayoutInfo.deviceType,
+        layoutMode: deviceLayoutInfo.layoutMode,
+        screenSize: `${width}x${height}`,
+        forceReason: deviceLayoutInfo.forceReason || 'normal',
+        threshold: DEVICE_THRESHOLDS.DESKTOP_MOBILE_HEIGHT
+      });
     };
     
     // 初始化检测
@@ -616,7 +606,12 @@ export default function CurveTestOptimized() {
     <GameProvider>
       <div 
         ref={gameContainerRef}
-        className="min-h-screen w-full p-4 lg:p-6 flex items-center justify-center relative overflow-hidden"
+        className="min-h-screen w-full relative overflow-hidden"
+        style={{
+          // 移除默认的padding和flex居中，让子布局完全控制
+          padding: 0,
+          display: 'block', // 改为block，不使用flex
+        }}
       >
         {deviceType === 'desktop' ? (
           <BubbleBackground interactive className="absolute inset-0 w-full h-full" />

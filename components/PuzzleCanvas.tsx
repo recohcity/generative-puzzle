@@ -41,11 +41,13 @@ import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 // 以上流程和参数均有详细注释，便于团队理解、维护和后续扩展。
 // ========================
 
-// 画布尺寸边界常量
-const MIN_CANVAS_WIDTH = 320; // 画布最小宽度，防止内容过小或消失
-const MIN_CANVAS_HEIGHT = 320; // 画布最小高度
-const MAX_CANVAS_WIDTH = 2560; // 画布最大宽度，防止内容溢出
-const MAX_CANVAS_HEIGHT = 1440; // 画布最大高度
+import { DESKTOP_ADAPTATION, MOBILE_ADAPTATION } from '@/constants/canvasAdaptation';
+
+// 画布尺寸边界常量（使用统一适配参数）
+const MIN_CANVAS_WIDTH = DESKTOP_ADAPTATION.MIN_CANVAS_SIZE; // 画布最小宽度，防止内容过小或消失
+const MIN_CANVAS_HEIGHT = DESKTOP_ADAPTATION.MIN_CANVAS_SIZE; // 画布最小高度
+const MAX_CANVAS_WIDTH = DESKTOP_ADAPTATION.MAX_CANVAS_SIZE; // 画布最大宽度，防止内容溢出
+const MAX_CANVAS_HEIGHT = DESKTOP_ADAPTATION.MAX_CANVAS_SIZE; // 画布最大高度
 
 // 画布自适应监听与节流实现
 function useCanvasResizeObserver(onResize: (width: number, height: number) => void) {
@@ -221,6 +223,66 @@ export default function PuzzleCanvas() {
     playRotateSound,
   });
 
+  // 手动绑定触摸事件以避免被动监听器问题
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    // 将React事件处理器转换为原生事件处理器
+    const nativeHandleTouchStart = (e: TouchEvent) => {
+      e.preventDefault(); // 在非被动监听器中可以安全调用
+      // 创建React合成事件对象
+      const syntheticEvent = {
+        preventDefault: () => {},
+        touches: Array.from(e.touches).map(touch => ({
+          clientX: touch.clientX,
+          clientY: touch.clientY
+        }))
+      } as React.TouchEvent<HTMLCanvasElement>;
+      handleTouchStart(syntheticEvent);
+    };
+
+    const nativeHandleTouchMove = (e: TouchEvent) => {
+      e.preventDefault(); // 在非被动监听器中可以安全调用
+      const syntheticEvent = {
+        preventDefault: () => {},
+        touches: Array.from(e.touches).map(touch => ({
+          clientX: touch.clientX,
+          clientY: touch.clientY
+        }))
+      } as React.TouchEvent<HTMLCanvasElement>;
+      handleTouchMove(syntheticEvent);
+    };
+
+    const nativeHandleTouchEnd = (e: TouchEvent) => {
+      e.preventDefault(); // 在非被动监听器中可以安全调用
+      e.stopPropagation();
+      const syntheticEvent = {
+        preventDefault: () => {},
+        stopPropagation: () => {},
+        touches: Array.from(e.touches).map(touch => ({
+          clientX: touch.clientX,
+          clientY: touch.clientY
+        }))
+      } as React.TouchEvent<HTMLCanvasElement>;
+      handleTouchEnd(syntheticEvent);
+    };
+
+    // 添加非被动的触摸事件监听器
+    canvas.addEventListener('touchstart', nativeHandleTouchStart, { passive: false });
+    canvas.addEventListener('touchmove', nativeHandleTouchMove, { passive: false });
+    canvas.addEventListener('touchend', nativeHandleTouchEnd, { passive: false });
+    canvas.addEventListener('touchcancel', nativeHandleTouchEnd, { passive: false });
+
+    return () => {
+      // 清理事件监听器
+      canvas.removeEventListener('touchstart', nativeHandleTouchStart);
+      canvas.removeEventListener('touchmove', nativeHandleTouchMove);
+      canvas.removeEventListener('touchend', nativeHandleTouchEnd);
+      canvas.removeEventListener('touchcancel', nativeHandleTouchEnd);
+    };
+  }, [handleTouchStart, handleTouchMove, handleTouchEnd]);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     const backgroundCanvas = backgroundCanvasRef.current;
@@ -240,28 +302,7 @@ export default function PuzzleCanvas() {
     logDebugEvent('render', '画布渲染');
 
     // debug 日志输出
-    if (showDebugElements) {
-      console.log('[debugLog] canvas:', {
-        width: canvasSize.width,
-        height: canvasSize.height,
-        area: { x0: 0, y0: 0, x1: canvasSize.width, y1: canvasSize.height }
-      });
-      if (state.puzzle) {
-        state.puzzle.forEach((piece: PuzzlePiece, idx: number) => {
-          // 计算中心点
-          const center = piece.points.reduce((acc, p) => ({ x: acc.x + p.x, y: acc.y + p.y }), { x: 0, y: 0 });
-          center.x /= piece.points.length;
-          center.y /= piece.points.length;
-          console.log('[debugLog] piece', idx + 1, {
-            center,
-            points: piece.points,
-            rotation: piece.rotation,
-            completed: state.completedPieces.includes(idx),
-            selected: state.selectedPiece === idx
-          });
-        });
-      }
-    }
+    // 调试信息（已移除控制台输出）
 
     ctx.clearRect(0, 0, canvasSize.width, canvasSize.height);
     backgroundCtx.clearRect(0, 0, canvasSize.width, canvasSize.height);
@@ -397,10 +438,7 @@ export default function PuzzleCanvas() {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onTouchCancel={handleTouchEnd}
+        // 触摸事件通过useEffect手动绑定以避免被动监听器问题
       />
     </div>
   );

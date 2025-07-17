@@ -210,17 +210,22 @@ export const playRotateSound = async (): Promise<void> => {
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
 
-    oscillator.type = 'square';
-    oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.05);
-    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.08);
+    // 旋转音效：使用triangle波形创造更柔和的旋转感
+    oscillator.type = 'triangle';
+    // 使用中等频率，营造旋转的感觉
+    oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+    // 轻微的频率上升，模拟旋转动作
+    oscillator.frequency.linearRampToValueAtTime(450, audioContext.currentTime + 0.08);
+    
+    // 适中的音量和较短的持续时间，适合快速旋转操作
+    gainNode.gain.setValueAtTime(0.25, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.12);
 
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
 
     oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.08);
+    oscillator.stop(audioContext.currentTime + 0.12);
   } catch (error) {
     console.error('Error playing rotate sound:', error);
   }
