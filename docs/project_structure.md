@@ -24,9 +24,8 @@
 - `components.json`：Shadcn UI 组件配置
 - `next-env.d.ts`：Next.js 环境类型声明
 
-### 测试工具
-- `test-canvas-adaptation.html`：通用画布适配参数测试页面，支持桌面端、移动端、超宽屏等所有场景的实时测试，为开发过程提供可视化验证工具
-- `test-iphone16pro-adaptation.html`：iPhone 16全系列专用适配测试页面，提供可视化布局预览和精确设备检测，确保移动端适配的像素级精确性
+### 测试目录
+- `tests/`：测试文件目录（见下）
 
 ### 核心目录
 - `app/`：Next.js 应用目录（见下）
@@ -223,7 +222,14 @@
 
 ---
 
+## tests/
+- `canvas-adaptation/`：画布适配测试目录
+  - `test-canvas-adaptation.html`：通用画布适配参数测试页面，支持桌面端、移动端、超宽屏等所有场景的实时测试
+  - `test-iphone16pro-adaptation.html`：iPhone 16全系列专用适配测试页面，提供可视化布局预览和精确设备检测
+  - `test-desktop-adaptation.html`：桌面端适配测试页面，专注于桌面端布局和响应式适配
+  - `test-ultrawide-desktop.html`：超宽屏桌面适配测试页面，针对3000px+宽度的超宽屏显示器优化
+
 ## 其它目录说明
 - 相关常量、布局、像素级体验、流程图文档已归档于 docs/puzzle_memory_adaptation_optimization/step1_canvas_adaptation_plan.md
 - 其它UI/交互细节持续优化，所有端体验高度统一
-- 测试文件（test-canvas-adaptation.html 和 test-iphone16pro-adaptation.html）在开发过程中发挥了重要作用，为适配逻辑验证提供了可视化工具，确保了跨设备的一致性体验
+- 测试文件在开发过程中发挥了重要作用，为适配逻辑验证提供了可视化工具，确保了跨设备的一致性体验

@@ -195,20 +195,36 @@
         function getDeviceLayoutMode(windowWidth, windowHeight) {
             const { DESKTOP_MIN_WIDTH, TABLET_MIN_WIDTH, DESKTOP_MOBILE_HEIGHT } = DEVICE_THRESHOLDS;
             
-            if (windowHeight < DESKTOP_MOBILE_HEIGHT) {
+            // 计算宽高比，用于识别移动设备的长条形屏幕
+            const aspectRatio = Math.max(windowWidth, windowHeight) / Math.min(windowWidth, windowHeight);
+            const isLongScreen = aspectRatio > 1.8; // 长宽比大于1.8通常是手机屏幕
+            
+            // 检测是否是桌面大屏幕
+            const isLargeDesktopScreen = windowWidth >= 1920 && windowHeight >= 900;
+            
+            // 高分辨率移动设备检测
+            const isHighResolutionMobile = isLongScreen && (
+                (windowWidth > 1000 && windowHeight > 2000) || // 竖屏高分辨率手机
+                (windowHeight > 1000 && windowWidth > 2000)    // 横屏高分辨率手机
+            );
+            
+            // 强制移动端判断条件 - 排除桌面大屏幕
+            const forceMobile = (windowHeight < DESKTOP_MOBILE_HEIGHT || isHighResolutionMobile) && !isLargeDesktopScreen;
+            
+            if (forceMobile) {
                 return {
                     deviceType: 'phone',
                     layoutMode: windowWidth > windowHeight ? 'landscape' : 'portrait',
-                    forceReason: 'height_threshold'
+                    forceReason: isHighResolutionMobile ? 'high_resolution_mobile' : 'height_threshold'
                 };
             }
             
-            if (windowWidth >= DESKTOP_MIN_WIDTH) {
+            if (windowWidth >= DESKTOP_MIN_WIDTH && !isLongScreen) {
                 return {
                     deviceType: 'desktop',
                     layoutMode: 'desktop',
                 };
-            } else if (windowWidth >= TABLET_MIN_WIDTH) {
+            } else if (windowWidth >= TABLET_MIN_WIDTH && !isLongScreen) {
                 return {
                     deviceType: 'tablet',
                     layoutMode: 'desktop',
@@ -322,9 +338,17 @@
                 { size: '5120×1440', result: calculateDesktopCanvasSize(5120, 1440) },
             ];
             
+            // 检查设备类型
+            const deviceTypes = [
+                { size: '2560×1440', mode: getDeviceLayoutMode(2560, 1440) },
+                { size: '3440×1440', mode: getDeviceLayoutMode(3440, 1440) },
+                { size: '5120×1440', mode: getDeviceLayoutMode(5120, 1440) },
+            ];
+            
             let message = '超宽屏模拟测试:\n\n';
-            ultraWideResults.forEach(({ size, result }) => {
-                message += `${size}: ${result.canvasSize}px`;
+            ultraWideResults.forEach(({ size, result }, index) => {
+                const deviceMode = deviceTypes[index].mode;
+                message += `${size}: ${result.canvasSize}px - 设备类型: ${deviceMode.deviceType}, 布局模式: ${deviceMode.layoutMode}`;
                 if (result.debug && result.debug.isUltraWide) {
                     message += ' (超宽屏限制生效)';
                 }

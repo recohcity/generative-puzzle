@@ -399,7 +399,10 @@ export function getDeviceLayoutMode(windowWidth: number, windowHeight: number) {
 
     // 计算宽高比，用于识别移动设备的长条形屏幕
     const aspectRatio = Math.max(windowWidth, windowHeight) / Math.min(windowWidth, windowHeight);
-    const isLongScreen = aspectRatio > 1.8; // 长宽比大于1.8通常是手机屏幕
+    
+    // 长宽比大于1.8通常是手机屏幕，但超宽屏桌面显示器也可能有较大的宽高比
+    // 因此，我们需要额外检查屏幕尺寸，排除大屏幕显示器
+    const isLongScreen = aspectRatio > 1.8 && windowWidth < 2000;
 
     // 检测用户代理（如果在浏览器环境中）
     let isMobileUserAgent = false;
@@ -409,13 +412,24 @@ export function getDeviceLayoutMode(windowWidth: number, windowHeight: number) {
     }
 
     // 高分辨率移动设备检测：宽高比很大的屏幕通常是手机
+    // 但需要排除桌面端的大屏幕显示器
     const isHighResolutionMobile = isLongScreen && (
         (windowWidth > 1000 && windowHeight > 2000) || // 竖屏高分辨率手机
         (windowHeight > 1000 && windowWidth > 2000)    // 横屏高分辨率手机
     );
-
-    // 强制移动端判断条件
-    const forceMobile = isMobileUserAgent || isHighResolutionMobile || windowHeight < DESKTOP_MOBILE_HEIGHT;
+    
+    // 检测是否是桌面大屏幕 - 更强的检测逻辑，支持超宽屏
+    const isLargeDesktopScreen = (windowWidth >= 1920 && windowHeight >= 900) || // 标准大屏幕
+                                (windowWidth >= 2560 && windowHeight >= 800) || // 超宽屏
+                                (windowWidth >= 3000); // 任何超过3000px宽的屏幕都视为桌面
+    
+    // 强制桌面模式的条件
+    const forceDesktop = isLargeDesktopScreen || 
+                        (windowWidth >= 1600 && windowHeight >= 800) || // 宽屏桌面
+                        (windowWidth * windowHeight >= 2500000); // 总像素数超过250万的大屏幕
+    
+    // 强制移动端判断条件 - 排除桌面大屏幕
+    const forceMobile = (isMobileUserAgent || isHighResolutionMobile || windowHeight < DESKTOP_MOBILE_HEIGHT) && !forceDesktop;
 
     if (forceMobile) {
         return {
@@ -427,13 +441,22 @@ export function getDeviceLayoutMode(windowWidth: number, windowHeight: number) {
         };
     }
 
+    // 强制桌面模式优先判断
+    if (forceDesktop) {
+        return {
+            deviceType: 'desktop' as const,
+            layoutMode: 'desktop' as const,
+            forceReason: 'large_screen'
+        };
+    }
+    
     // 传统的宽度判断（用于真正的桌面/平板设备）
-    if (windowWidth >= DESKTOP_MIN_WIDTH && !isLongScreen) {
+    if (windowWidth >= DESKTOP_MIN_WIDTH && (!isLongScreen || windowWidth >= 2000)) {
         return {
             deviceType: 'desktop' as const,
             layoutMode: 'desktop' as const,
         };
-    } else if (windowWidth >= TABLET_MIN_WIDTH && !isLongScreen) {
+    } else if (windowWidth >= TABLET_MIN_WIDTH && (!isLongScreen || windowWidth >= 1200)) {
         return {
             deviceType: 'tablet' as const,
             layoutMode: 'desktop' as const, // 平板使用桌面布局
