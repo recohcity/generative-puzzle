@@ -30,7 +30,9 @@ export type DraggingPiece = any; // 请根据实际定义替换 any
 export type PieceBounds = any; // 请根据实际定义替换 any
 
 export interface GameState {
-  originalShape: Point[]
+  originalShape: Point[] // 当前显示的形状（可能已适配）
+  baseShape?: Point[] // 基础形状（未经适配的原始形状）
+  baseCanvasSize?: { width: number; height: number } // 基础形状对应的画布尺寸
   puzzle: PuzzlePiece[] | null
   draggingPiece: DraggingPiece | null
   selectedPiece: number | null

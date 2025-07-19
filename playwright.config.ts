@@ -4,7 +4,7 @@ export default defineConfig({
   // 测试目录
   testDir: './e2e',
   // 忽略临时测试目录
-  //testIgnore: ['temp/**'],
+  testIgnore: ['temp/**'],
   // 报告配置
   reporter: [
     ['html', { open: 'never' }],

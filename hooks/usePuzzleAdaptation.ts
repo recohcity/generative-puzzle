@@ -84,7 +84,8 @@ export const usePuzzleAdaptation = (canvasSize: { width: number; height: number 
     dispatch({
       type: 'UPDATE_ADAPTED_PUZZLE_STATE',
       payload: {
-        puzzle: newPuzzleState,
+        newPuzzleData: newPuzzleState,
+        newPreviousCanvasSize: canvasSize,
       },
     });
 

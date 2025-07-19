@@ -23,6 +23,8 @@ import { Point, PuzzlePiece, DraggingPiece, PieceBounds, GameState, GameAction a
 // - previousCanvasSize: 上一次画布尺寸（{ width: number, height: number }），用于归一化适配和状态恢复
 const initialState: GameState = {
   originalShape: [],
+  baseShape: [], // 基础形状（未经适配）
+  baseCanvasSize: { width: 0, height: 0 }, // 基础形状对应的画布尺寸
   puzzle: null,
   draggingPiece: null,
   selectedPiece: null,
@@ -46,6 +48,14 @@ function gameReducer(state: GameState, action: GameActionType): GameState {
     case "SET_ORIGINAL_SHAPE":
       // SET_ORIGINAL_SHAPE
       return { ...state, originalShape: action.payload }
+    case "SET_BASE_SHAPE":
+      // SET_BASE_SHAPE - 设置基础形状和对应的画布尺寸
+      // 注意：只设置基础形状，不更新originalShape，让useShapeAdaptation负责适配
+      return { 
+        ...state, 
+        baseShape: action.payload.shape,
+        baseCanvasSize: action.payload.canvasSize
+      }
     case "SET_PUZZLE":
       // SET_PUZZLE
       return { ...state, puzzle: action.payload }
@@ -273,7 +283,12 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           console.error("生成的形状没有点");
           return;
         }
-        // 居中
+        // 直接根据画布尺寸适配形状
+        // 形状直径应该是画布较小边的30%
+        const canvasMinDimension = Math.min(canvasWidth, canvasHeight);
+        const targetDiameter = canvasMinDimension * 0.3;
+        
+        // 计算当前形状的大致直径
         const bounds = shape.reduce(
           (acc, point) => ({
             minX: Math.min(acc.minX, point.x),
@@ -283,18 +298,56 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           }),
           { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
         );
+        
+        const currentDiameter = Math.max(
+          bounds.maxX - bounds.minX,
+          bounds.maxY - bounds.minY
+        );
+        
+        // 计算缩放比例
+        const scaleRatio = currentDiameter > 0 ? targetDiameter / currentDiameter : 0.3;
+        
+        // 计算形状中心
         const shapeCenterX = (bounds.minX + bounds.maxX) / 2;
         const shapeCenterY = (bounds.minY + bounds.maxY) / 2;
         const canvasCenterX = canvasWidth / 2;
         const canvasCenterY = canvasHeight / 2;
-        const offsetX = canvasCenterX - shapeCenterX;
-        const offsetY = canvasCenterY - shapeCenterY;
-        const centeredShape = shape.map(point => ({
-          ...point,
-          x: point.x + offsetX,
-          y: point.y + offsetY
-        }));
-        dispatch({ type: "SET_ORIGINAL_SHAPE", payload: centeredShape });
+        
+        // 缩放并居中形状
+        const adaptedShape = shape.map(point => {
+          // 相对于形状中心的坐标
+          const relativeX = point.x - shapeCenterX;
+          const relativeY = point.y - shapeCenterY;
+          
+          // 应用缩放
+          const scaledX = relativeX * scaleRatio;
+          const scaledY = relativeY * scaleRatio;
+          
+          // 重新定位到画布中心
+          return {
+            ...point,
+            x: canvasCenterX + scaledX,
+            y: canvasCenterY + scaledY,
+          };
+        });
+        
+        console.log(`形状生成适配: 画布=${canvasWidth}x${canvasHeight}, 目标直径=${targetDiameter.toFixed(1)}, 当前直径=${currentDiameter.toFixed(1)}, 缩放比例=${scaleRatio.toFixed(3)}`);
+        // 设置基础形状
+        dispatch({ 
+          type: "SET_BASE_SHAPE", 
+          payload: { 
+            shape: adaptedShape, 
+            canvasSize: { width: canvasWidth, height: canvasHeight } 
+          } 
+        });
+        
+        // 同时设置当前显示形状，确保立即显示
+        // 这样即使适配Hook有延迟，形状也能立即显示
+        dispatch({ 
+          type: "SET_ORIGINAL_SHAPE", 
+          payload: adaptedShape 
+        });
+        
         // 强制更新 shapeType
         dispatch({ type: "SET_SHAPE_TYPE", payload: currentShapeType });
       } catch (error) {
@@ -308,7 +361,70 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           console.error("生成的形状没有点");
           return;
         }
-        dispatch({ type: "SET_ORIGINAL_SHAPE", payload: shape });
+        // 设置基础形状（使用默认画布尺寸）
+        const defaultCanvasSize = { width: 800, height: 600 };
+        
+        // 即使没有画布引用，也要根据默认尺寸适配形状
+        const canvasMinDimension = Math.min(defaultCanvasSize.width, defaultCanvasSize.height);
+        const targetDiameter = canvasMinDimension * 0.3;
+        
+        // 计算当前形状的大致直径
+        const bounds = shape.reduce(
+          (acc, point) => ({
+            minX: Math.min(acc.minX, point.x),
+            minY: Math.min(acc.minY, point.y),
+            maxX: Math.max(acc.maxX, point.x),
+            maxY: Math.max(acc.maxY, point.y),
+          }),
+          { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
+        );
+        
+        const currentDiameter = Math.max(
+          bounds.maxX - bounds.minX,
+          bounds.maxY - bounds.minY
+        );
+        
+        // 计算缩放比例
+        const scaleRatio = currentDiameter > 0 ? targetDiameter / currentDiameter : 0.3;
+        
+        // 计算形状中心
+        const shapeCenterX = (bounds.minX + bounds.maxX) / 2;
+        const shapeCenterY = (bounds.minY + bounds.maxY) / 2;
+        const canvasCenterX = defaultCanvasSize.width / 2;
+        const canvasCenterY = defaultCanvasSize.height / 2;
+        
+        // 缩放并居中形状
+        const adaptedShape = shape.map(point => {
+          // 相对于形状中心的坐标
+          const relativeX = point.x - shapeCenterX;
+          const relativeY = point.y - shapeCenterY;
+          
+          // 应用缩放
+          const scaledX = relativeX * scaleRatio;
+          const scaledY = relativeY * scaleRatio;
+          
+          // 重新定位到画布中心
+          return {
+            ...point,
+            x: canvasCenterX + scaledX,
+            y: canvasCenterY + scaledY,
+          };
+        });
+        
+        dispatch({ 
+          type: "SET_BASE_SHAPE", 
+          payload: { 
+            shape: adaptedShape, 
+            canvasSize: defaultCanvasSize // 默认尺寸
+          } 
+        });
+        
+        // 同时设置当前显示形状，确保立即显示
+        dispatch({ 
+          type: "SET_ORIGINAL_SHAPE", 
+          payload: adaptedShape 
+        });
+        
         dispatch({ type: "SET_SHAPE_TYPE", payload: currentShapeType });
       } catch (error) {
         console.error("默认形状生成失败:", error);
@@ -393,9 +509,39 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         completedPieces: state.completedPieces,
         originalPositions: state.originalPositions,
         isCompleted: state.isCompleted,
+        originalShape: state.originalShape,
+        baseShape: state.baseShape,
+        canvasWidth: state.canvasWidth,
+        canvasHeight: state.canvasHeight,
       };
+      
+      // 为测试脚本暴露游戏状态 - 确保每次状态变化都更新
+      (window as any).__GAME_STATE__ = {
+        originalShape: state.originalShape,
+        baseShape: state.baseShape,
+        canvasWidth: state.canvasWidth,
+        canvasHeight: state.canvasHeight,
+        puzzle: state.puzzle,
+        isCompleted: state.isCompleted,
+        shapeType: state.shapeType,
+        // 添加调试信息
+        _debug: {
+          originalShapeLength: state.originalShape?.length || 0,
+          baseShapeLength: state.baseShape?.length || 0,
+          hasValidCanvas: state.canvasWidth > 0 && state.canvasHeight > 0,
+          timestamp: Date.now()
+        }
+      };
+      
+      // 在控制台输出状态更新信息，便于调试
+      console.log('__GAME_STATE__ 已更新:', {
+        originalShapeLength: state.originalShape?.length || 0,
+        baseShapeLength: state.baseShape?.length || 0,
+        canvasSize: `${state.canvasWidth}x${state.canvasHeight}`,
+        shapeType: state.shapeType
+      });
     }
-  }, [state.puzzle, state.completedPieces, state.originalPositions, state.isCompleted]);
+  }, [state.puzzle, state.completedPieces, state.originalPositions, state.isCompleted, state.originalShape, state.baseShape, state.canvasWidth, state.canvasHeight]);
 
   // 测试辅助函数：无论环境都挂载，保证 E2E 可用
   useEffect(() => {

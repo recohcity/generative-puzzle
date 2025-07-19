@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useMemo } from "react"
 import { useGame } from "@/contexts/GameContext"
 import { playPieceSelectSound, playPieceSnapSound, playPuzzleCompletedSound, playRotateSound } from "@/utils/rendering/soundEffects"
 import { calculatePieceBounds } from "@/utils/geometry/puzzleGeometry";
@@ -21,6 +21,8 @@ import { useResponsiveCanvasSizing } from "@/hooks/useResponsiveCanvasSizing";
 import { usePuzzleInteractions } from "@/hooks/usePuzzleInteractions";
 // 修正：usePuzzleAdaptation为具名导出，需用花括号导入
 import { usePuzzleAdaptation } from '@/hooks/usePuzzleAdaptation';
+// 导入形状适配Hook
+import { useShapeAdaptation } from '@/hooks/useShapeAdaptation';
 import { useDebugToggle } from '@/hooks/useDebugToggle';
 import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 
@@ -193,7 +195,90 @@ export default function PuzzleCanvas() {
     backgroundCanvasRef,
   });
   
-  // 顶层直接调用 usePuzzleAdaptation，确保每次渲染都响应最新画布状态
+  // 顶层直接调用适配Hooks，确保每次渲染都响应最新画布状态
+  // 1. 形状适配 - 确保目标形状随画布尺寸正确适配（使用新的记忆适配系统）
+  // 使用useMemo来避免每次渲染都创建新的画布尺寸对象
+  const memoizedCanvasSize = useMemo(() => {
+    if (state.canvasWidth && state.canvasHeight && state.canvasWidth > 0 && state.canvasHeight > 0) {
+      return { width: state.canvasWidth, height: state.canvasHeight };
+    } else if (canvasSize && canvasSize.width > 0 && canvasSize.height > 0) {
+      return { width: canvasSize.width, height: canvasSize.height };
+    }
+    return null;
+  }, [state.canvasWidth, state.canvasHeight, canvasSize?.width, canvasSize?.height]);
+
+  const { 
+    adaptShape, 
+    memoryManager, 
+    shapeMemoryId, 
+    isMemorySystemAvailable 
+  } = useShapeAdaptation(memoizedCanvasSize);
+  
+  // 使用useRef跟踪上一次的尺寸和适配状态，避免不必要的重新渲染
+  const prevSizeRef = useRef({ width: 0, height: 0 });
+  const isAdaptingRef = useRef(false);
+  
+  // 在画布尺寸变化时手动触发适配，使用防抖机制避免频繁调用
+  useEffect(() => {
+    // 使用防抖来避免频繁调用
+    const debounceTimer = setTimeout(() => {
+      // 只有当尺寸真正变化且不在适配过程中时才触发适配
+      if (
+        state.canvasWidth > 0 && 
+        state.canvasHeight > 0 && 
+        typeof adaptShape === 'function' &&
+        !isAdaptingRef.current
+      ) {
+        // 检查尺寸是否有变化（降低阈值，确保更敏感的适配）
+        const sizeChanged = 
+          !prevSizeRef.current.width || 
+          !prevSizeRef.current.height ||
+          Math.abs(state.canvasWidth - prevSizeRef.current.width) > 1 || 
+          Math.abs(state.canvasHeight - prevSizeRef.current.height) > 1;
+        
+        // 只要有形状数据就触发适配，确保形状始终正确显示
+        const hasShapeData = state.originalShape && state.originalShape.length > 0;
+        
+        // 输出适配条件检查日志
+        console.log('🔍 适配条件检查:', {
+          sizeChanged,
+          hasShapeData,
+          originalShapeLength: state.originalShape?.length || 0,
+          canvasSize: `${state.canvasWidth}x${state.canvasHeight}`,
+          prevSize: `${prevSizeRef.current.width}x${prevSizeRef.current.height}`
+        });
+        
+        // 当尺寸变化且有形状数据时触发适配
+        if (sizeChanged && hasShapeData) {
+          // 标记正在适配中
+          isAdaptingRef.current = true;
+          
+          // 更新上一次的尺寸
+          prevSizeRef.current = { 
+            width: state.canvasWidth, 
+            height: state.canvasHeight 
+          };
+          
+          console.log(`🔄 触发形状适配: 尺寸=${state.canvasWidth}x${state.canvasHeight}, 原因=尺寸变化`);
+          
+          // 简单的同步调用
+          console.log('🎯 准备调用adaptShape');
+          if (typeof adaptShape === 'function') {
+            console.log('🔄 调用adaptShape函数');
+            adaptShape();
+            console.log('✅ adaptShape调用完成');
+          } else {
+            console.error('❌ adaptShape不是函数:', typeof adaptShape);
+          }
+          isAdaptingRef.current = false;
+        }
+      }
+    }, 100); // 100ms防抖延迟
+    
+    return () => clearTimeout(debounceTimer);
+  }, [state.canvasWidth, state.canvasHeight]); // 移除adaptShape依赖
+  
+  // 2. 拼图适配 - 确保拼图块随画布尺寸正确适配
   usePuzzleAdaptation({ 
     width: state.canvasWidth, 
     height: state.canvasHeight

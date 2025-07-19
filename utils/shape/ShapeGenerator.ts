@@ -10,43 +10,33 @@ export class ShapeGenerator {
   // 使用固定的画布尺寸标准化所有形状
   private static readonly STANDARD_SIZE = 1000;
 
+  /**
+   * 生成标准化形状（固定尺寸，不依赖画布）
+   * @param shapeType 形状类型
+   * @returns 标准化的形状点集（以STANDARD_SIZE为基准）
+   */
   static generateShape(shapeType: ShapeType): Point[] {
-    console.log(`开始生成形状: 类型=${shapeType}`);
+    console.log(`开始生成标准化形状: 类型=${shapeType}`);
     
-    // 检测设备和屏幕方向
-    const ua = navigator.userAgent;
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
-    const isPortrait = window.innerHeight > window.innerWidth;
-    
-    console.log(`设备检测: 移动设备=${isMobile}, 竖屏模式=${isPortrait}, 屏幕尺寸=${window.innerWidth}x${window.innerHeight}`);
-    
-    // 获取真实的canvas元素
-    const canvas = document.querySelector('canvas');
-    const realCanvasWidth = canvas ? canvas.width : window.innerWidth;
-    const realCanvasHeight = canvas ? canvas.height : window.innerHeight;
-    
-    console.log(`实际画布尺寸: ${realCanvasWidth}x${realCanvasHeight}`);
-    
-    // 计算中心点
+    // 计算标准尺寸的中心点
     const centerX = this.STANDARD_SIZE / 2;
     const centerY = this.STANDARD_SIZE / 2;
     
-    // 计算半径 - 使用较小的比例以确保形状完全在画布内
-    // 在手机竖屏模式下使用更小的半径，避免形状变形
-    const baseRadius = this.STANDARD_SIZE * (isMobile && isPortrait ? 0.25 : 0.3);
+    // 形状直径为标准尺寸的15%，更小的基础尺寸
+    // 这个值会在adaptShapeToCanvas中根据设备类型和屏幕尺寸进行调整
+    const baseRadius = this.STANDARD_SIZE * 0.15; // 标准尺寸的15%
     
-    // 根据设备类型调整生成参数
     const shapeParams = {
-      numPoints: isMobile ? 6 : 8,  // 移动设备使用更少的点
-      minRadius: baseRadius * 0.8,  // 确保最小半径更小，增加形状变化
+      numPoints: 8,
+      minRadius: baseRadius * 0.8,
       maxRadius: baseRadius,
-      amplitude: isMobile ? 0.03 : 0.08,  // 移动设备使用更小的扰动
-      detail: isMobile ? 120 : 200,       // 移动设备使用更少的细节点
+      amplitude: 0.08,
+      detail: 200,
     };
     
-    console.log(`形状参数: 中心点(${centerX}, ${centerY}), 半径=${shapeParams.minRadius}-${shapeParams.maxRadius}`);
+    console.log(`标准形状参数: 中心点(${centerX}, ${centerY}), 半径=${shapeParams.minRadius}-${shapeParams.maxRadius}`);
     
-    // 生成形状
+    // 生成标准化形状
     let points: Point[] = [];
     switch (shapeType) {
       case "polygon":
@@ -62,69 +52,8 @@ export class ShapeGenerator {
         points = this.generateStandardPolygon(centerX, centerY, shapeParams);
     }
     
-    // 将标准形状点转换为适合实际画布的坐标
-    return this.normalizePoints(points, realCanvasWidth, realCanvasHeight, isMobile, isPortrait);
-  }
-  
-  // 将标准尺寸坐标转换为适合实际画布的坐标
-  private static normalizePoints(
-    points: Point[], 
-    targetWidth: number, 
-    targetHeight: number, 
-    isMobile: boolean = false, 
-    isPortrait: boolean = false
-  ): Point[] {
-    console.log(`形状归一化: 目标画布=${targetWidth}x${targetHeight}, 移动设备=${isMobile}, 竖屏模式=${isPortrait}`);
-    
-    // 缩放因子：确保不超出画布
-    const scaleFactor = isMobile ? 0.8 : 0.9;
-    
-    // 使用正方形区域来计算转换的标准大小，避免变形
-    const minDimension = Math.min(targetWidth, targetHeight);
-    
-    // 计算缩放比例 - 根据画布的较小边缩放
-    const scale = (minDimension / this.STANDARD_SIZE) * scaleFactor;
-    
-    // 根据缩放比例计算形状的总体尺寸
-    let minX = Infinity, minY = Infinity;
-    let maxX = -Infinity, maxY = -Infinity;
-    
-    for (const point of points) {
-      const x = (point.x - this.STANDARD_SIZE / 2) * scale;
-      const y = (point.y - this.STANDARD_SIZE / 2) * scale;
-      
-      minX = Math.min(minX, x);
-      minY = Math.min(minY, y);
-      maxX = Math.max(maxX, x);
-      maxY = Math.max(maxY, y);
-    }
-    
-    const width = maxX - minX;
-    const height = maxY - minY;
-    
-    // 根据实际画布尺寸计算居中偏移量
-    const offsetX = (targetWidth - width) / 2 - minX;
-    const offsetY = (targetHeight - height) / 2 - minY;
-    
-    console.log(`形状尺寸: 宽度=${width}, 高度=${height}, 偏移=(${offsetX}, ${offsetY}), 缩放=${scale}`);
-    
-    // 应用转换，确保形状居中显示
-    return points.map(point => {
-      // 将点相对于标准尺寸中心点调整
-      const normalizedX = point.x - this.STANDARD_SIZE / 2;
-      const normalizedY = point.y - this.STANDARD_SIZE / 2;
-      
-      // 应用缩放
-      const scaledX = normalizedX * scale;
-      const scaledY = normalizedY * scale;
-      
-      // 应用居中偏移
-      return {
-        x: scaledX + targetWidth / 2,
-        y: scaledY + targetHeight / 2,
-        isOriginal: point.isOriginal,
-      };
-    });
+    console.log(`生成标准化形状完成: ${points.length}个点`);
+    return points;
   }
   
   // 生成标准多边形
@@ -196,4 +125,3 @@ export class ShapeGenerator {
     return points;
   }
 }
-

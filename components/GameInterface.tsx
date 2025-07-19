@@ -431,12 +431,18 @@ export default function CurveTestOptimized() {
           (gameContainer as any).msRequestFullscreen();
           }
           // 切换按钮状态 - 如果直接调用没有触发fullscreenchange事件，手动更新状态
+          // 使用更长的延迟，确保全屏状态稳定后再更新
           setTimeout(() => {
-            if (checkFullscreenState() && !isFullscreen) {
-              console.log("全屏已激活但状态未更新，手动更新");
-              setIsFullscreen(true);
+            try {
+              const isFullscreenNow = checkFullscreenState();
+              if (isFullscreenNow !== isFullscreen) {
+                console.log(`全屏状态不一致，从 ${isFullscreen} 更新为 ${isFullscreenNow}`);
+                setIsFullscreen(isFullscreenNow);
+              }
+            } catch (error) {
+              console.error("检查全屏状态时出错:", error);
             }
-          }, 300);
+          }, 500);
         } catch (error) {
           console.log("请求进入全屏出错:", error);
         }
