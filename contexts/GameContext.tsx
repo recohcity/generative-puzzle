@@ -10,7 +10,40 @@ import { ScatterPuzzle } from "@/utils/puzzle/ScatterPuzzle"
 import { calculateCenter } from "@/utils/geometry/puzzleGeometry"
 
 // 导入从 puzzleTypes.ts 迁移的类型
-import { Point, PuzzlePiece, DraggingPiece, PieceBounds, GameState, GameAction as GameActionType, GameContextProps, ShapeType, CutType } from "@/types/puzzleTypes";
+import { Point, PuzzlePiece, DraggingPiece, PieceBounds, GameState, GameContextProps, ShapeType, CutType } from "@/types/puzzleTypes";
+
+// Step3: 定义GameAction类型，包含新的UPDATE_SHAPE_AND_PUZZLE action
+type GameAction = 
+  | { type: "SET_ORIGINAL_SHAPE"; payload: Point[] }
+  | { type: "SET_BASE_SHAPE"; payload: { baseShape: Point[]; canvasSize: { width: number; height: number } } }
+  | { type: "SET_PUZZLE"; payload: PuzzlePiece[] | null }
+  | { type: "SET_BASE_PUZZLE"; payload: PuzzlePiece[] | null } // Step3新增
+  | { type: "SET_ORIGINAL_POSITIONS"; payload: PuzzlePiece[] } // Step3新增
+  | { type: "SET_DRAGGING_PIECE"; payload: DraggingPiece | null }
+  | { type: "SET_SELECTED_PIECE"; payload: number | null }
+  | { type: "SET_COMPLETED_PIECES"; payload: number[] }
+  | { type: "ADD_COMPLETED_PIECE"; payload: number }
+  | { type: "SET_IS_SCATTERED"; payload: boolean }
+  | { type: "GENERATE_SHAPE" }
+  | { type: "GENERATE_PUZZLE" }
+  | { type: "SCATTER_PUZZLE" }
+  | { type: "ROTATE_PIECE"; payload: { clockwise: boolean } }
+  | { type: "UPDATE_PIECE_POSITION"; payload: { index: number; x: number; y: number } }
+  | { type: "RESET_PIECE_TO_ORIGINAL"; payload: number }
+  | { type: "SHOW_HINT" }
+  | { type: "HIDE_HINT" }
+  | { type: "RESET_GAME" }
+  | { type: "SET_SHAPE_TYPE"; payload: ShapeType }
+  | { type: "SET_PENDING_SHAPE_TYPE"; payload: ShapeType | null }
+  | { type: "SET_CUT_TYPE"; payload: CutType }
+  | { type: "SET_CUT_COUNT"; payload: number }
+  | { type: "BATCH_UPDATE"; payload: { puzzle: PuzzlePiece[]; originalPositions: PuzzlePiece[] } }
+  | { type: "SYNC_ALL_POSITIONS"; payload: { originalShape: Point[]; puzzle: PuzzlePiece[]; originalPositions: PuzzlePiece[]; shapeOffset: { offsetX: number; offsetY: number } } }
+  | { type: "UPDATE_CANVAS_SIZE"; payload: { width: number; height: number } }
+  | { type: "UPDATE_ADAPTED_PUZZLE_STATE"; payload: { newPuzzleData: PuzzlePiece[]; newPreviousCanvasSize: { width: number; height: number } } }
+  | { type: "UPDATE_SHAPE_AND_PUZZLE"; payload: { originalShape: Point[]; puzzle: PuzzlePiece[] } } // Step3新增
+  | { type: "NO_CHANGE" }
+  | { type: "MOVE_PIECE"; payload: { pieceIndex: number; x: number; y: number } };
 
 // 删除本地GameState接口声明，全部使用types/puzzleTypes.ts导入的GameState类型
 // 更新GameContextProps接口
@@ -26,6 +59,7 @@ const initialState: GameState = {
   baseShape: [], // 基础形状（未经适配）
   baseCanvasSize: { width: 0, height: 0 }, // 基础形状对应的画布尺寸
   puzzle: null,
+  basePuzzle: null, // 基础拼图块（未经适配）- Step3新增
   draggingPiece: null,
   selectedPiece: null,
   completedPieces: [],
@@ -42,7 +76,7 @@ const initialState: GameState = {
   previousCanvasSize: { width: 0, height: 0 }, // 上一次画布尺寸
 }
 
-function gameReducer(state: GameState, action: GameActionType): GameState {
+function gameReducer(state: GameState, action: GameAction): GameState {
   // reducer 入口
   switch (action.type) {
     case "SET_ORIGINAL_SHAPE":
@@ -59,6 +93,12 @@ function gameReducer(state: GameState, action: GameActionType): GameState {
     case "SET_PUZZLE":
       // SET_PUZZLE
       return { ...state, puzzle: action.payload }
+    case "SET_BASE_PUZZLE":
+      // SET_BASE_PUZZLE - Step3新增，设置基础拼图块
+      console.log('🔧 [REDUCER] SET_BASE_PUZZLE 处理中，payload长度:', action.payload?.length || 0);
+      const newState = { ...state, basePuzzle: action.payload };
+      console.log('🔧 [REDUCER] SET_BASE_PUZZLE 处理完成，新状态basePuzzle长度:', newState.basePuzzle?.length || 0);
+      return newState;
     case "SET_DRAGGING_PIECE":
       return { ...state, draggingPiece: action.payload }
     case "SET_SELECTED_PIECE":
@@ -212,6 +252,13 @@ function gameReducer(state: GameState, action: GameActionType): GameState {
         previousCanvasSize: action.payload.newPreviousCanvasSize,
         // Note: canvasWidth and canvasHeight should already be the new size
         // when this action is dispatched after a resize.
+      };
+    case "UPDATE_SHAPE_AND_PUZZLE":
+      // Step3新增: 同时更新形状和拼图块（用于未散开拼图块的同步适配）
+      return {
+        ...state,
+        originalShape: action.payload.originalShape,
+        puzzle: action.payload.puzzle,
       };
     case "NO_CHANGE":
       // 不做任何改变
@@ -441,15 +488,40 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // 2. generatePuzzle 加日志
   const generatePuzzle = useCallback(() => {
-    if (!state.originalShape) return;
+    console.log('🧩 generatePuzzle 被调用');
+    if (!state.originalShape) {
+      console.log('❌ 没有原始形状，跳过拼图生成');
+      return;
+    }
+    
+    console.log('🧩 开始生成拼图:', {
+      shapePoints: state.originalShape.length,
+      cutType: state.cutType,
+      cutCount: state.cutCount
+    });
+    
     const { pieces, originalPositions } = PuzzleGenerator.generatePuzzle(
       state.originalShape,
       state.cutType,
       state.cutCount,
     );
+    
+    console.log('🧩 拼图生成结果:', {
+      piecesCount: pieces.length,
+      originalPositionsCount: originalPositions.length
+    });
+    
     // 拼图生成完成
     dispatch({ type: "SET_PUZZLE", payload: pieces });
+    console.log('🧩 已调用 SET_PUZZLE');
+    
+    dispatch({ type: "SET_BASE_PUZZLE", payload: pieces }); // Step3新增：保存原始拼图块状态
+    console.log('🧩 已调用 SET_BASE_PUZZLE，保存原始拼图块状态，pieces长度:', pieces?.length || 0);
+    
     dispatch({ type: "SET_ORIGINAL_POSITIONS", payload: originalPositions });
+    console.log('🧩 已调用 SET_ORIGINAL_POSITIONS');
+    
+    console.log(`✅ 拼图生成完成: ${pieces.length} 个拼图块，已保存原始状态`);
   }, [state.originalShape, state.cutType, state.cutCount, dispatch]);
 
   // 3. scatterPuzzle 加日志和 useRef 兜底
@@ -506,13 +578,19 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (typeof window !== 'undefined') {
       (window as any).__gameStateForTests__ = {
         puzzle: state.puzzle,
+        basePuzzle: state.basePuzzle, // Step3: 添加basePuzzle状态
         completedPieces: state.completedPieces,
         originalPositions: state.originalPositions,
         isCompleted: state.isCompleted,
+        isScattered: state.isScattered, // Step3: 添加isScattered状态
         originalShape: state.originalShape,
         baseShape: state.baseShape,
+        baseCanvasSize: state.baseCanvasSize, // Step3: 添加baseCanvasSize状态
         canvasWidth: state.canvasWidth,
         canvasHeight: state.canvasHeight,
+        shapeType: state.shapeType, // 添加shapeType状态
+        cutType: state.cutType, // 添加cutType状态
+        cutCount: state.cutCount, // 添加cutCount状态
       };
       
       // 为测试脚本暴露游戏状态 - 确保每次状态变化都更新
@@ -552,7 +630,16 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       (window as any).resetPiecePositionForTest = (pieceIndex: number) => dispatch({ type: 'RESET_PIECE_TO_ORIGINAL', payload: pieceIndex });
       // 其它 testAPI 保持原样
       window.testAPI = {
-        generateShape: (shapeType) => dispatch({ type: 'SET_SHAPE_TYPE', payload: shapeType }),
+        generateShape: (shapeType) => {
+          console.log('🔧 testAPI.generateShape 开始:', shapeType);
+          // 先设置形状类型
+          dispatch({ type: 'SET_SHAPE_TYPE', payload: shapeType });
+          // 然后调用实际的形状生成函数
+          setTimeout(() => {
+            console.log('🔧 testAPI.generateShape 调用 generateShape');
+            generateShape(shapeType);
+          }, 100); // 给一点时间让 dispatch 完成
+        },
         generatePuzzle: (cutCount) => {
           dispatch({ type: 'SET_CUT_TYPE', payload: 'straight' });
           dispatch({ type: 'SET_CUT_COUNT', payload: cutCount });
@@ -576,7 +663,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         },
       };
     }
-  }, [state, generatePuzzle, scatterPuzzle, dispatch, rotatePiece]);
+  }, [state, generatePuzzle, scatterPuzzle, generateShape, dispatch, rotatePiece]);
 
   const showHintOutline = useCallback(() => {
     dispatch({ type: "SHOW_HINT" })

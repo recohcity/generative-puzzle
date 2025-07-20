@@ -45,6 +45,9 @@ next-env.d.ts
 # VSCode settings
 .vscode/
 
+# Kiro IDE settings and specs
+.kiro/
+
 # Environment variables
 .env.local
 .env.development.local

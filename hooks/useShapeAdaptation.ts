@@ -3,6 +3,12 @@ import { useGame } from '@/contexts/GameContext';
 import { adaptShapeToCanvas, CanvasSize } from '@/utils/shape/shapeAdaptationUtils';
 import { MemoryManager } from '@/utils/memory/MemoryManager';
 import { Point } from '@/types/common';
+import { 
+  calculateShapeTransformation, 
+  adaptPuzzlePiecesToShape, 
+  safeAdaptPuzzlePieces,
+  adaptPuzzlePiecesAbsolute
+} from '@/utils/puzzlePieceAdaptationUtils';
 
 /**
  * useShapeAdaptation - 基于记忆适配系统的形状适配Hook
@@ -203,11 +209,71 @@ export const useShapeAdaptation = (canvasSize: { width: number; height: number }
         return;
       }
       
-      // 更新状态
-      dispatch({ 
-        type: "SET_ORIGINAL_SHAPE", 
-        payload: adaptedPoints 
-      });
+      // 检查是否需要同步适配拼图块
+      const shouldAdaptPuzzlePieces = (
+        state.puzzle && 
+        state.puzzle.length > 0 && 
+        !state.isScattered && // 只适配未散开的拼图块
+        shapeToAdapt && 
+        shapeToAdapt.length > 0
+      );
+
+      if (shouldAdaptPuzzlePieces) {
+        console.log('🧩 检测到未散开的拼图块，开始同步适配...');
+        
+        try {
+          // 获取原始画布尺寸
+          const effectiveBaseCanvasSize = (
+            baseCanvasSize && 
+            baseCanvasSize.width > 0 && 
+            baseCanvasSize.height > 0
+          ) ? baseCanvasSize : canvasSize;
+
+          // 使用绝对坐标适配方法，避免累积误差
+          console.log('🔍 拼图块适配调试信息:', {
+            hasBasePuzzle: !!state.basePuzzle,
+            basePuzzleLength: state.basePuzzle?.length || 0,
+            currentPuzzleLength: state.puzzle?.length || 0,
+            effectiveBaseCanvasSize,
+            currentCanvasSize: canvasSize
+          });
+          
+          const adaptedPieces = adaptPuzzlePiecesAbsolute(
+            state.basePuzzle || state.puzzle, // 使用原始拼图块状态
+            effectiveBaseCanvasSize,
+            canvasSize
+          );
+          
+          // 同时更新形状和拼图块
+          dispatch({ 
+            type: "UPDATE_SHAPE_AND_PUZZLE", 
+            payload: { 
+              originalShape: adaptedPoints,
+              puzzle: adaptedPieces
+            }
+          });
+          
+          console.log(`✅ 拼图块同步适配完成: ${adaptedPieces.length} 个拼图块`);
+          console.log(`🔍 适配详情: 原始画布=${effectiveBaseCanvasSize.width}x${effectiveBaseCanvasSize.height}, 当前画布=${canvasSize.width}x${canvasSize.height}`);
+        } catch (error) {
+          console.error('❌ 拼图块适配失败，仅更新形状:', error);
+          // 如果拼图块适配失败，至少更新形状
+          dispatch({ 
+            type: "SET_ORIGINAL_SHAPE", 
+            payload: adaptedPoints 
+          });
+        }
+      } else {
+        // 只更新形状
+        dispatch({ 
+          type: "SET_ORIGINAL_SHAPE", 
+          payload: adaptedPoints 
+        });
+        
+        if (state.puzzle && state.puzzle.length > 0) {
+          console.log('🧩 拼图块已散开，跳过同步适配');
+        }
+      }
       
       console.log(`✅ 形状适配完成: 耗时 ${(endTime - startTime).toFixed(2)}ms, 使用${adaptationMethod}, 结果点数=${adaptedPoints.length}`);
       

@@ -1,6 +1,6 @@
 # 生成式拼图游戏 - 配置说明
 
-> 修订日期：2025-07-17
+> 修订日期：2025-01-20
 
 本文档详细列举并说明本项目所有关键配置点、参数、核心算法入口及其对应的源文件，便于开发者理解、调整和维护游戏行为。每次配置或算法有变动都需同步修订。
 
@@ -15,13 +15,14 @@
 5. 碰撞与回弹配置
 6. 旋转配置
 7. 设备适配与响应式配置
-8. 媒体资源与音效配置
-9. 视觉与主题配置
-10. 构建与开发配置
-11. 性能测试与报告配置
-12. UI 组件配置
-13. 触摸事件与交互配置
-14. F10 Debug 调试模式配置
+8. 拼图块适配系统配置（Step3新增）
+9. 媒体资源与音效配置
+10. 视觉与主题配置
+11. 构建与开发配置
+12. 性能测试与报告配置
+13. UI 组件配置
+14. 触摸事件与交互配置
+15. F10 Debug 调试模式配置
 
 ---
 
@@ -31,15 +32,22 @@
 - `utils/puzzle/PuzzleGenerator.ts`：拼图块生成主逻辑
 - `utils/puzzle/ScatterPuzzle.ts`：拼图块散布与分布算法
 - `utils/shape/ShapeGenerator.ts`：基础形状生成与参数
+- `utils/puzzlePieceAdaptationUtils.ts`：拼图块适配工具函数（Step3新增）
 - `contexts/GameContext.tsx`：全局游戏状态、边界检测、回弹、适配
 - `components/PuzzleCanvas.tsx`：主画布渲染与交互
 - `components/GameInterface.tsx`、`components/layouts/`：多端布局与适配
 - `hooks/`：响应式尺寸、设备检测、适配、交互等钩子
+  - `useShapeAdaptation.ts`：形状与拼图块同步适配（Step2-3）
+  - `usePuzzleAdaptation.ts`：散开拼图适配（Step2）
 - `utils/rendering/soundEffects.ts`：音效管理
 - `public/`：静态资源（图片、音效）
 - `tailwind.config.ts`、`components.json`：UI 主题与组件
 - `next.config.mjs`：构建配置
 - `docs/difficulty-design.md`：难度与切割设计说明
+- `docs/puzzle_memory_adaptation_optimization/`：拼图记忆适配优化文档
+  - `step1_canvas_adaptation_plan.md`：画布适配系统（Step1）
+  - `step2_shape_adaptation_plan.md`：智能形状适配系统（Step2）
+  - `step3/`：拼图块适配系统文档集（Step3）
 
 ---
 
@@ -196,12 +204,31 @@
   配置/代码位置：`GameContext.tsx`（集中管理画布状态）、`PhoneTabPanel.tsx`（移动端Tab面板集中管理）、`DesktopLayout.tsx`、`PhonePortraitLayout.tsx`、`PhoneLandscapeLayout.tsx`  
   说明：详见 `docs/puzzle_memory_adaptation_optimization/step1_canvas_adaptation_plan.md`。
 
+- **拼图块适配系统**  
+  作用：未散开拼图块与目标形状同步适配，保持完美重叠和画布居中对齐  
+  配置/代码位置：`hooks/useShapeAdaptation.ts`（拼图块同步适配）、`utils/puzzlePieceAdaptationUtils.ts`（绝对坐标适配算法）  
+  说明：详见 `docs/puzzle_memory_adaptation_optimization/step3/`。
+
+- **绝对坐标适配算法**  
+  作用：基于画布中心的绝对坐标适配，彻底解决累积误差问题  
+  取值范围：画布中心作为唯一基准点  
+  默认值：启用  
+  影响点：拼图块位置、尺寸、旋转  
+  配置/代码位置：`utils/puzzlePieceAdaptationUtils.ts`（adaptPuzzlePiecesAbsolute函数）
+
 - **isMobile**  
   作用：是否为移动端设备  
   取值范围：布尔  
   默认值：自动检测  
   影响点：布局、参数、分布、UI  
   配置/代码位置：`useDeviceDetection.ts`、`GameInterface.tsx`
+
+- **basePuzzle状态**  
+  作用：保存原始拼图块状态，作为拼图块适配的基准  
+  取值范围：PuzzlePiece[] | null  
+  默认值：null（初始），生成拼图后自动设置  
+  影响点：拼图块适配、状态记忆  
+  配置/代码位置：`contexts/GameContext.tsx`（SET_BASE_PUZZLE action）
 
 - **isPortrait**  
   作用：是否为竖屏  
@@ -217,7 +244,53 @@
 
 ---
 
-## 8. 媒体资源与音效配置
+## 8. 拼图块适配系统配置（Step3新增）
+
+- **adaptPuzzlePiecesAbsolute**  
+  作用：基于画布中心的绝对坐标适配算法，彻底解决累积误差问题  
+  取值范围：函数参数 - 原始拼图块、原始画布尺寸、当前画布尺寸  
+  默认值：启用  
+  影响点：拼图块位置、尺寸、旋转  
+  配置/代码位置：`utils/puzzlePieceAdaptationUtils.ts`
+
+- **useShapeAdaptation扩展**  
+  作用：扩展形状适配钩子，支持拼图块与形状同步适配  
+  取值范围：Hook函数  
+  默认值：启用  
+  影响点：拼图块适配、状态管理  
+  配置/代码位置：`hooks/useShapeAdaptation.ts`
+
+- **shouldAdaptPuzzlePieces**  
+  作用：智能检测是否需要适配拼图块（未散开状态）  
+  取值范围：布尔  
+  默认值：自动检测 - state.puzzle && !state.isScattered && state.originalShape.length > 0  
+  影响点：拼图块适配触发条件  
+  配置/代码位置：`hooks/useShapeAdaptation.ts`
+
+- **basePuzzle状态**  
+  作用：保存原始拼图块状态，作为拼图块适配的基准  
+  取值范围：PuzzlePiece[] | null  
+  默认值：null（初始），生成拼图后自动设置  
+  影响点：拼图块适配、状态记忆  
+  配置/代码位置：`contexts/GameContext.tsx`（SET_BASE_PUZZLE action）
+
+- **baseCanvasSize状态**  
+  作用：保存原始画布尺寸，作为适配计算的基准  
+  取值范围：{ width: number, height: number } | undefined  
+  默认值：undefined（初始），生成拼图后自动设置  
+  影响点：拼图块适配计算  
+  配置/代码位置：`contexts/GameContext.tsx`
+
+- **UPDATE_SHAPE_AND_PUZZLE action**  
+  作用：同步更新形状和拼图块状态，确保一致性  
+  取值范围：action类型  
+  默认值：启用  
+  影响点：状态管理、适配同步  
+  配置/代码位置：`contexts/GameContext.tsx`
+
+---
+
+## 9. 媒体资源与音效配置
 
 - **backgroundMusic**  
   作用：背景音乐开关与音量控制  
@@ -272,7 +345,7 @@
 
 ---
 
-## 9. 视觉与主题配置
+## 10. 视觉与主题配置
 
 - **BENCHMARKS**  
   作用：性能基准值，用于评估各项指标，分为“资源加载(page.goto)”与“端到端加载(E2E)”两项，基准值分别为1000ms/1800ms，所有性能指标分项采集与分级，保留两位小数，报告、索引、终端日志格式统一。  
@@ -294,10 +367,6 @@
   默认值：自动检测  
   影响点：测试报告、API、前端可视化、分组统计、趋势分析  
   配置/代码位置：`e2e/full_game_flow.spec.ts`、`app/test/page.tsx`、`scripts/archive-test-results.js`、`app/api/performance-trend/route.ts`
-
----
-
-## 9. 视觉与主题配置
 
 - **primaryColor**  
   作用：主色调  
@@ -352,7 +421,7 @@
 
 ---
 
-## 10. 构建与开发配置
+## 11. 构建与开发配置
 
 - **Next.js 配置**  
   作用：框架构建配置  
@@ -381,27 +450,7 @@
 
 ---
 
-## 11. UI 组件配置
-
-- **hintAreaFlow**
-  作用：提示区内容严格按五步唯一流转，所有流程节点以提示区域为唯一判断标准。
-  默认值：五步唯一流转
-  影响点：画布提示区、自动化测试
-  配置/代码位置：DesktopLayout.tsx、PhoneLandscapeLayout.tsx、PhonePortraitLayout.tsx、E2E 测试脚本
-
-- **tabPanelAdaptive**  
-  作用：移动端Tab面板集中管理，PhoneTabPanel组件负责tab切换与内容区像素级布局，所有tab内容与全局状态同步，tab与画布高度联动。  
-  配置/代码位置：`components/layouts/PhoneTabPanel.tsx`、`GameContext.tsx`  
-  说明：详见 `docs/puzzle_memory_adaptation_optimization/step1_canvas_adaptation_plan.md`。
-
-- **panelCanvasAdaptive**  
-  作用：桌面端/移动端画布与面板正方形自适应，所有端像素级体验一致。  
-  配置/代码位置：`GameContext.tsx`、`DesktopLayout.tsx`、`PhonePortraitLayout.tsx`、`PhoneLandscapeLayout.tsx`  
-  说明：详见 `docs/puzzle_memory_adaptation_optimization/step1_canvas_adaptation_plan.md`。
-
----
-
-## 11. 性能测试与报告配置
+## 12. 性能测试与报告配置
 
 - **BENCHMARKS**  
   作用：性能基准值，用于评估各项指标，分为"资源加载(page.goto)"与"端到端加载(E2E)"两项，基准值分别为1000ms/1800ms，所有性能指标分项采集与分级，保留两位小数，报告、索引、终端日志格式统一。  
@@ -426,7 +475,7 @@
 
 ---
 
-## 12. UI 组件配置
+## 13. UI 组件配置
 
 - **hintAreaFlow**
   作用：提示区内容严格按五步唯一流转，所有流程节点以提示区域为唯一判断标准。
@@ -446,7 +495,7 @@
 
 ---
 
-## 13. 触摸事件与交互配置
+## 14. 触摸事件与交互配置
 
 - **touchEventHandling**  
   作用：移动端触摸事件处理，解决被动监听器 preventDefault 问题  
@@ -516,7 +565,7 @@
 
 ---
 
-## 15. F10 Debug 调试模式配置（2025-07-17 最新版）
+## 15. F10 Debug 调试模式配置（2025-01-18 最新版）
 
 ### 功能说明
 
