@@ -181,9 +181,9 @@ export function calculateMobileLandscapeCanvasSize(windowWidth: number, windowHe
 |------|----------|----------|----------|
 | 1    | 画布适配 | ✅ 完成 | iPhone16全系列+桌面端完美适配 |
 | 2    | 目标形状 | ✅ 完成 | 形状居中+30%直径规则+无限循环修复 |
-| 3    | 未散开拼图 | 🟡 待实现 | 基础架构已就绪 |
-| 4    | 散开拼图 | 🟡 待实现 | 记忆系统支持并发适配 |
-| 5    | 交互/完成 | 🟡 待实现 | 状态持久化机制已设计 |
+| 3    | 未散开拼图 | 🟡 规划完成 | 详细任务清单已制定，基础架构就绪 |
+| 4    | 散开拼图 | 🟡 待规划 | 记忆系统支持并发适配 |
+| 5    | 交互/完成 | 🟡 待规划 | 状态持久化机制已设计 |
 
 ---
 
@@ -203,9 +203,12 @@ export function calculateMobileLandscapeCanvasSize(windowWidth: number, windowHe
 │   ├── 规则引擎 (AdaptationRuleEngine)
 │   └── React集成 (useShapeAdaptation)
 ├── 拼图适配层 (Step3-5) 🟡
-│   ├── 未散开拼图适配
-│   ├── 散开拼图适配
-│   └── 交互状态适配
+│   ├── 未散开拼图适配 (Step3 - 规划完成)
+│   │   ├── PuzzlePieceAdaptationEngine
+│   │   ├── usePuzzlePieceAdaptation Hook
+│   │   └── 批量适配优化
+│   ├── 散开拼图适配 (Step4 - 待规划)
+│   └── 交互状态适配 (Step5 - 待规划)
 └── 性能优化层 ✅
     ├── 防抖机制
     ├── 依赖优化
@@ -243,17 +246,19 @@ export function calculateMobileLandscapeCanvasSize(windowWidth: number, windowHe
 ## 八、后续发展规划
 
 ### 🚀 短期计划 (Step 3-5)
-1. **Step 3: 未散开拼图适配**
-   - 基于现有记忆系统扩展
-   - 拼图块位置的归一化存储
-   - 批量适配优化
+1. **Step 3: 未散开拼图适配** ✅ 规划完成
+   - 详细实施方案: `step3_puzzle_pieces_adaptation_plan.md`
+   - 任务清单: `step3_task_checklist.md` (47个具体任务)
+   - 预计工期: 9-14天，5个阶段
+   - 核心特性: 拼图块相对位置记忆、批量适配优化、React Hook集成
 
-2. **Step 4: 散开拼图适配**
+2. **Step 4: 散开拼图适配** 🟡 待规划
+   - 基于Step3成果扩展
    - 利用并发适配能力
    - 随机分布算法优化
    - 边界约束增强
 
-3. **Step 5: 交互状态适配**
+3. **Step 5: 交互状态适配** 🟡 待规划
    - 旋转、拖拽状态记忆
    - 吸附、完成状态恢复
    - 实时状态同步

@@ -1,5 +1,5 @@
 # 项目结构（项目地图）
-> 修订日期：2025-07-17
+> 修订日期：2025-07-20
 
 本文件严格对照实际目录结构，分层列出每个目录和主要文件，并为每个文件写明一句简要用途。每次目录或功能有变动都需同步修订。
 
@@ -11,7 +11,7 @@
 - `.gitignore`：Git 忽略文件配置
 - `.DS_Store`：macOS 目录缓存文件（可忽略）
 - `README.md`：项目简介、安装、开发、测试、报告、贡献指南
-- `CHANGELOG.md`：版本历史与变更记录
+- `CHANGELOG.md`：版本历史与变更记录（已更新v1.3.29 Step2完成记录）
 - `package.json`：依赖、脚本和元数据配置
 - `package-lock.json`：依赖锁定文件，确保环境一致性
 - `next.config.mjs`：Next.js 框架配置
@@ -20,7 +20,6 @@
 - `tsconfig.json`：TypeScript 编译配置
 - `jest.config.js`：Jest 单元测试配置
 - `playwright.config.ts`：Playwright E2E 测试配置
-- `playwright.full.config.ts`：Playwright 完整测试配置
 - `components.json`：Shadcn UI 组件配置
 - `next-env.d.ts`：Next.js 环境类型声明
 
@@ -53,6 +52,8 @@
 - `node_modules/`：依赖包目录（npm/yarn 自动管理）
 - `.next/`：Next.js 构建输出目录（自动生成）
 - `.vscode/`：VS Code 编辑器配置目录
+- `.kiro/`：Kiro IDE 配置目录
+- `.git/`：Git 版本控制目录
 
 ---
 
@@ -134,9 +135,17 @@
 - `device_compatibility_analysis.md`：设备兼容性分析报告，涵盖iPhone 16全系列及主流Android设备
 - `mobile_background_static_adaptation.md`：移动端背景静态适配文档
 - `puzzle_memory_adaptation_optimization/`：拼图记忆适配优化专项目录
-  - `puzzle_memory_adaptation_optimization_plan.md`：总体优化计划
-  - `step1_canvas_adaptation_plan.md`：iPhone 16全系列Canvas适配完整方案（主文档）
-  - `step2_shape_adaptation_plan.md`：形状适配计划
+  - `puzzle_memory_adaptation_optimization_plan.md`：总体优化计划（已更新Step3规划）
+  - `step1_canvas_adaptation_plan.md`：iPhone 16全系列Canvas适配完整方案 ✅ 完成
+  - `step2_shape_adaptation_plan.md`：智能形状适配系统 ✅ 完成
+  - `step3_puzzle_pieces_adaptation_plan.md`：拼图块适配系统规划 🟡 规划完成
+  - `step3_task_checklist.md`：Step3详细任务清单（25个任务，5-7天）
+  - `README.md`：文档导航和使用指南
+  - `DOCUMENT_CONSOLIDATION_SUMMARY.md`：文档整合总结
+  - `final_project_summary.md`：项目完成总结
+  - `memory_system_implementation_summary.md`：记忆系统技术实现总结
+  - `archived_specs_shape_adaptation/`：早期形状适配优化文档归档
+  - `archived_specs_memory_system/`：记忆系统设计文档归档
 - `TDC/`：技术债务和问题分析目录
   - `canvas_puzzle_state_memory_summary.md`：画布拼图状态记忆总结
   - `mobile_portrait_cutcount_tab_width_issue.md`：移动端竖屏切割次数tab宽度问题
@@ -155,7 +164,8 @@
 - `usePuzzleInteractions.ts`：拼图交互逻辑钩子（拖拽、旋转、吸附、回弹、音效等）
 - `useResponsiveCanvasSizing.ts`：响应式画布尺寸管理钩子，监听resize/orientationchange/ResizeObserver，原子性更新状态，驱动下游适配
 - `useDeviceDetection.ts`：设备/方向检测钩子
-- `usePuzzleAdaptation.ts`：拼图状态适配钩子（随画布尺寸/方向变化）
+- `usePuzzleAdaptation.ts`：拼图状态适配钩子（随画布尺寸/方向变化，专门处理散开拼图）
+- `useShapeAdaptation.ts`：形状适配钩子（Step2新增，基于拓扑记忆系统的智能形状适配）
 - `useDebugToggle.ts`：调试模式切换钩子（F10）
 - `use-mobile.tsx`：移动端检测钩子
 - `use-toast.ts`：弹窗提示钩子
@@ -182,6 +192,8 @@
 ## types/
 - `global.d.ts`：全局类型声明
 - `puzzleTypes.ts`：核心业务类型定义（GameState、PuzzlePiece、CutType 等）
+- `common.ts`：通用类型定义（Point、CanvasSize、BoundingBox 等）
+- `memory.ts`：记忆系统类型定义（Step2新增，拓扑记忆相关类型）
 
 ---
 
@@ -192,6 +204,16 @@
   - `puzzleGeometry.ts`：拼图块吸附、对齐等几何计算函数
   - `__tests__/`：几何工具单元测试目录
     - `puzzleGeometry.test.ts`：几何工具测试脚本
+- `memory/`：拼图记忆适配系统目录（Step2新增）
+  - `MemoryManager.ts`：记忆管理器，系统协调器
+  - `AdaptationEngine.ts`：核心适配引擎，毫秒级高性能适配
+  - `AdaptationRuleEngine.ts`：规则执行引擎
+  - `AdaptationRules.ts`：智能适配规则集（30%直径规则、精确居中等）
+  - `MemoryStorage.ts`：记忆存储系统
+  - `TopologyExtractor.ts`：拓扑结构提取器，基于形状结构的记忆机制
+  - `CoordinateCleaner.ts`：坐标清理机制
+  - `memoryUtils.ts`：记忆系统工具函数集
+  - `__tests__/`：记忆系统单元测试目录
 - `puzzle/`：拼图生成与操作逻辑目录
   - `PuzzleGenerator.ts`：基础形状切割为拼图块的主逻辑
   - `cutGenerators.ts`：不同切割算法定义
@@ -206,6 +228,7 @@
 - `shape/`：基础图形生成与几何工具目录
   - `ShapeGenerator.ts`：生成多边形、曲线等基础形状
   - `geometryUtils.ts`：形状相关几何计算函数
+  - `shapeAdaptationUtils.ts`：形状适配工具函数（Step2新增）
 
 ---
 
@@ -229,7 +252,27 @@
   - `test-desktop-adaptation.html`：桌面端适配测试页面，专注于桌面端布局和响应式适配
   - `test-ultrawide-desktop.html`：超宽屏桌面适配测试页面，针对3000px+宽度的超宽屏显示器优化
 
+## 项目重要里程碑
+
+### ✅ Step1: 画布适配系统完成 (v1.3.27)
+- iPhone 16全系列精确适配，空间利用率92-95%
+- 桌面端超宽屏支持，移动端Tab面板优化
+- 三层检测机制，响应式布局系统完善
+
+### ✅ Step2: 智能形状适配系统完成 (v1.3.29)
+- **拓扑记忆机制**：基于形状结构而非坐标的创新记忆系统
+- **30%直径规则**：确保形状在任何画布上都有合适的大小比例
+- **无限循环修复**：从200+条日志减少到2条，彻底解决React依赖链循环
+- **高性能优化**：记忆创建0.1-6ms，适配执行0.02-3ms，并发处理50次/24ms
+- **核心组件**：MemoryManager、AdaptationEngine、TopologyExtractor等完整架构
+
+### 🟡 Step3: 拼图块适配系统规划完成
+- 详细技术方案和25个具体任务已制定
+- 预计工期5-7天，基于Step2成果的简化实现
+- 核心目标：未散开拼图块跟随目标形状同步适配
+
 ## 其它目录说明
-- 相关常量、布局、像素级体验、流程图文档已归档于 docs/puzzle_memory_adaptation_optimization/step1_canvas_adaptation_plan.md
-- 其它UI/交互细节持续优化，所有端体验高度统一
+- 相关常量、布局、像素级体验、流程图文档已归档于 docs/puzzle_memory_adaptation_optimization/
+- Step1-2的完整技术实现和性能数据已详细记录
+- 记忆系统架构为后续Step3-5提供了坚实的技术基础
 - 测试文件在开发过程中发挥了重要作用，为适配逻辑验证提供了可视化工具，确保了跨设备的一致性体验
