@@ -35,6 +35,7 @@ export interface GameState {
   baseCanvasSize?: { width: number; height: number } // 基础形状对应的画布尺寸
   puzzle: PuzzlePiece[] | null
   basePuzzle?: PuzzlePiece[] | null // 基础拼图块（未经适配的原始拼图块）- Step3新增
+  scatterCanvasSize?: { width: number; height: number } | null // 散开时的画布尺寸 - Step3散开适配新增
   draggingPiece: DraggingPiece | null
   selectedPiece: number | null
   completedPieces: number[]

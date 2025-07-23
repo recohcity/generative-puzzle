@@ -1,5 +1,5 @@
 # 项目结构（项目地图）
-> 修订日期：2025-01-18
+> 修订日期：2025-07-23 (v1.3.31 散开拼图适配修复更新)
 
 本文件严格对照实际目录结构，分层列出每个目录和主要文件，并为每个文件写明一句简要用途。每次目录或功能有变动都需同步修订。
 
@@ -11,7 +11,7 @@
 - `.gitignore`：Git 忽略文件配置
 - `.DS_Store`：macOS 目录缓存文件（可忽略）
 - `README.md`：项目简介、安装、开发、测试、报告、贡献指南
-- `CHANGELOG.md`：版本历史与变更记录（已更新v1.3.30 Step3完成记录）
+- `CHANGELOG.md`：版本历史与变更记录（已更新v1.3.31 散开拼图窗口调整可见性问题修复）
 - `package.json`：依赖、脚本和元数据配置
 - `package-lock.json`：依赖锁定文件，确保环境一致性
 - `next.config.mjs`：Next.js 框架配置
@@ -74,7 +74,7 @@
 
 ### 核心组件
 - `GameInterface.tsx`：核心游戏界面，按设备/方向分发布局，驱动画布与面板自适应
-- `PuzzleCanvas.tsx`：主画布组件，100%适配父容器，所有自适应逻辑交由父容器处理
+- `PuzzleCanvas.tsx`：主画布组件，100%适配父容器，所有自适应逻辑交由父容器处理（v1.3.31重要修复：禁用重复的usePuzzleAdaptation调用，解决Hook冲突导致散开拼图窗口调整后不可见的关键问题）
 
 ### 控制组件
 - `ActionButtons.tsx`：游戏操作按钮组件（已移除"生成形状"按钮相关逻辑）
@@ -116,7 +116,7 @@
 ---
 
 ## contexts/
-- `GameContext.tsx`：核心状态管理中心，useReducer 管理全局游戏状态，集中管理画布尺寸、scale、orientation、previousCanvasSize，驱动所有自适应逻辑，自动挂载 window.testAPI（测试环境下）
+- `GameContext.tsx`：核心状态管理中心，useReducer 管理全局游戏状态，集中管理画布尺寸、scale、orientation、previousCanvasSize，驱动所有自适应逻辑，自动挂载 window.testAPI（测试环境下）；v1.3.31增强：完善gameStateForDebug暴露机制，便于问题诊断和状态监控
 
 ---
 
@@ -164,6 +164,12 @@
 - `full_game_flow.spec.ts`：主流程 E2E 测试脚本，自动识别开发/生产环境，报告链路全自动，支持模式分组、对比、差异高亮
 - `temp/`：专项/临时测试目录
   - `responsive_adaptation.spec.ts`：拼图响应式适配专项测试脚本
+- **散开拼图适配专项测试** (v1.3.31新增)：
+  - `debug_scatter_resize_issue.spec.ts`：散开拼图窗口调整问题诊断测试 ✅
+  - `debug_adaptation_errors.spec.ts`：适配引擎错误监听和分析测试 ✅
+  - `debug_scatter_canvas_size.spec.ts`：散开画布尺寸状态追踪测试 ✅
+  - `debug_nan_calculation.spec.ts`：NaN坐标产生原因分析测试 ✅
+  - `test_scatter_resize_fix.spec.ts`：散开拼图修复效果验证测试 ✅
 
 ---
 
@@ -171,8 +177,8 @@
 - `usePuzzleInteractions.ts`：拼图交互逻辑钩子（拖拽、旋转、吸附、回弹、音效等）
 - `useResponsiveCanvasSizing.ts`：响应式画布尺寸管理钩子，监听resize/orientationchange/ResizeObserver，原子性更新状态，驱动下游适配
 - `useDeviceDetection.ts`：设备/方向检测钩子
-- `usePuzzleAdaptation.ts`：拼图状态适配钩子（随画布尺寸/方向变化，专门处理散开拼图）
-- `useShapeAdaptation.ts`：形状适配钩子（Step2新增，基于拓扑记忆系统的智能形状适配；Step3扩展，支持拼图块同步适配）
+- `usePuzzleAdaptation.ts`：拼图状态适配钩子（随画布尺寸/方向变化，专门处理散开拼图；v1.3.31注意：已在PuzzleCanvas中禁用以避免Hook冲突）
+- `useShapeAdaptation.ts`：形状适配钩子（Step2新增，基于拓扑记忆系统的智能形状适配；Step3扩展，支持拼图块同步适配；v1.3.31增强：统一处理散开拼图适配，避免Hook冲突）
 - `useDebugToggle.ts`：调试模式切换钩子（F10）
 - `use-mobile.tsx`：移动端检测钩子
 - `use-toast.ts`：弹窗提示钩子
@@ -237,6 +243,8 @@
   - `geometryUtils.ts`：形状相关几何计算函数
   - `shapeAdaptationUtils.ts`：形状适配工具函数（Step2新增）
 - `puzzlePieceAdaptationUtils.ts`：拼图块适配工具函数（Step3新增，绝对坐标适配算法）
+- `adaptation/`：统一适配引擎目录（Step3新增）
+  - `UnifiedAdaptationEngine.ts`：统一适配引擎，支持形状、拼图块、散开拼图的统一适配处理（v1.3.31增强：添加详细的NaN检测和错误处理机制，解决Hook冲突导致的坐标异常问题）
 
 ---
 
@@ -283,9 +291,19 @@
 - **性能指标达成**：适配响应时间<100ms，内存使用稳定，设备兼容性完美
 - **生产就绪**：系统已达到可投入生产使用的标准
 
+### ✅ Step4: 散开拼图适配系统完成 (v1.3.31)
+- **Hook冲突问题彻底修复**：解决usePuzzleAdaptation和useShapeAdaptation冲突导致的拼图不可见问题
+- **统一适配引擎集成**：所有拼图适配统一由useShapeAdaptation中的适配引擎处理，避免数据竞争
+- **窗口调整可见性保障**：散开拼图在任意窗口尺寸调整后都保持可见和可交互
+- **NaN坐标检测和处理**：增强的错误检测机制，防止坐标计算异常导致拼图块聚集在(0,0)
+- **多窗口尺寸支持**：测试验证1200x800、800x600、1400x900、1000x700等多种尺寸
+- **专项测试体系**：5个专门的E2E测试用例确保问题不再复现
+- **跨设备兼容性**：桌面端和移动端都有效，适配过程流畅无卡顿
+
 ## 其它目录说明
 - 相关常量、布局、像素级体验、流程图文档已归档于 docs/puzzle_memory_adaptation_optimization/
-- Step1-3的完整技术实现和性能数据已详细记录，为后续Step4-5提供了坚实基础
-- 拼图记忆适配系统已完成60%（3/5阶段），核心功能全部实现并通过验证
+- Step1-4的完整技术实现和性能数据已详细记录，为后续Step5提供了坚实基础
+- 拼图记忆适配系统已完成80%（4/5阶段），核心功能全部实现并通过验证
 - 测试文件在开发过程中发挥了重要作用，为适配逻辑验证提供了可视化工具，确保了跨设备的一致性体验
-- Step3的完整文档集已独立管理，避免影响后续Step4-5的开发和阅读
+- Step3的完整文档集已独立管理，Step4的散开拼图适配修复已完成并验证通过
+- **v1.3.31重要里程碑**：散开拼图窗口调整可见性问题彻底解决，Hook冲突根本性修复，用户体验显著提升

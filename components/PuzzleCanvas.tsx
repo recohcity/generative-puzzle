@@ -214,75 +214,15 @@ export default function PuzzleCanvas() {
     isMemorySystemAvailable 
   } = useShapeAdaptation(memoizedCanvasSize);
   
-  // 使用useRef跟踪上一次的尺寸和适配状态，避免不必要的重新渲染
-  const prevSizeRef = useRef({ width: 0, height: 0 });
-  const isAdaptingRef = useRef(false);
+  // Step3清理：完全移除重复的适配调用，统一使用useShapeAdaptation中的适配逻辑
+  // useShapeAdaptation钩子已经包含了完整的适配逻辑，包括防抖、条件检查和适配执行
+  // 这里不再需要额外的适配调用代码
   
-  // 在画布尺寸变化时手动触发适配，使用防抖机制避免频繁调用
-  useEffect(() => {
-    // 使用防抖来避免频繁调用
-    const debounceTimer = setTimeout(() => {
-      // 只有当尺寸真正变化且不在适配过程中时才触发适配
-      if (
-        state.canvasWidth > 0 && 
-        state.canvasHeight > 0 && 
-        typeof adaptShape === 'function' &&
-        !isAdaptingRef.current
-      ) {
-        // 检查尺寸是否有变化（降低阈值，确保更敏感的适配）
-        const sizeChanged = 
-          !prevSizeRef.current.width || 
-          !prevSizeRef.current.height ||
-          Math.abs(state.canvasWidth - prevSizeRef.current.width) > 1 || 
-          Math.abs(state.canvasHeight - prevSizeRef.current.height) > 1;
-        
-        // 只要有形状数据就触发适配，确保形状始终正确显示
-        const hasShapeData = state.originalShape && state.originalShape.length > 0;
-        
-        // 输出适配条件检查日志
-        console.log('🔍 适配条件检查:', {
-          sizeChanged,
-          hasShapeData,
-          originalShapeLength: state.originalShape?.length || 0,
-          canvasSize: `${state.canvasWidth}x${state.canvasHeight}`,
-          prevSize: `${prevSizeRef.current.width}x${prevSizeRef.current.height}`
-        });
-        
-        // 当尺寸变化且有形状数据时触发适配
-        if (sizeChanged && hasShapeData) {
-          // 标记正在适配中
-          isAdaptingRef.current = true;
-          
-          // 更新上一次的尺寸
-          prevSizeRef.current = { 
-            width: state.canvasWidth, 
-            height: state.canvasHeight 
-          };
-          
-          console.log(`🔄 触发形状适配: 尺寸=${state.canvasWidth}x${state.canvasHeight}, 原因=尺寸变化`);
-          
-          // 简单的同步调用
-          console.log('🎯 准备调用adaptShape');
-          if (typeof adaptShape === 'function') {
-            console.log('🔄 调用adaptShape函数');
-            adaptShape();
-            console.log('✅ adaptShape调用完成');
-          } else {
-            console.error('❌ adaptShape不是函数:', typeof adaptShape);
-          }
-          isAdaptingRef.current = false;
-        }
-      }
-    }, 100); // 100ms防抖延迟
-    
-    return () => clearTimeout(debounceTimer);
-  }, [state.canvasWidth, state.canvasHeight]); // 移除adaptShape依赖
-  
-  // 2. 拼图适配 - 确保拼图块随画布尺寸正确适配
-  usePuzzleAdaptation({ 
-    width: state.canvasWidth, 
-    height: state.canvasHeight
-  });
+  // 2. 拼图适配 - 已由useShapeAdaptation中的统一适配引擎处理，避免重复适配导致数据冲突
+  // usePuzzleAdaptation({ 
+  //   width: state.canvasWidth, 
+  //   height: state.canvasHeight
+  // });
 
   const {
     handleMouseDown,

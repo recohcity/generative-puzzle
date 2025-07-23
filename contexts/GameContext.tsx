@@ -19,6 +19,7 @@ type GameAction =
   | { type: "SET_PUZZLE"; payload: PuzzlePiece[] | null }
   | { type: "SET_BASE_PUZZLE"; payload: PuzzlePiece[] | null } // Step3新增
   | { type: "SET_ORIGINAL_POSITIONS"; payload: PuzzlePiece[] } // Step3新增
+  | { type: "SET_SCATTER_CANVAS_SIZE"; payload: { width: number; height: number } | null } // Step3散开适配新增
   | { type: "SET_DRAGGING_PIECE"; payload: DraggingPiece | null }
   | { type: "SET_SELECTED_PIECE"; payload: number | null }
   | { type: "SET_COMPLETED_PIECES"; payload: number[] }
@@ -60,6 +61,7 @@ const initialState: GameState = {
   baseCanvasSize: { width: 0, height: 0 }, // 基础形状对应的画布尺寸
   puzzle: null,
   basePuzzle: null, // 基础拼图块（未经适配）- Step3新增
+  scatterCanvasSize: null, // 散开时的画布尺寸 - Step3散开适配新增
   draggingPiece: null,
   selectedPiece: null,
   completedPieces: [],
@@ -99,6 +101,29 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const newState = { ...state, basePuzzle: action.payload };
       console.log('🔧 [REDUCER] SET_BASE_PUZZLE 处理完成，新状态basePuzzle长度:', newState.basePuzzle?.length || 0);
       return newState;
+    case "SET_SCATTER_CANVAS_SIZE":
+      // SET_SCATTER_CANVAS_SIZE - Step3散开适配新增，保存散开时的画布尺寸
+      console.log('🔧 [REDUCER] SET_SCATTER_CANVAS_SIZE 处理中，payload:', action.payload);
+      return { ...state, scatterCanvasSize: action.payload };
+    case "SCATTER_PUZZLE_COMPLETE":
+      // SCATTER_PUZZLE_COMPLETE - Step3散开适配修复：原子性地完成散开拼图的所有状态更新
+      console.log('🔧 [REDUCER] SCATTER_PUZZLE_COMPLETE 处理中，payload:', {
+        puzzleLength: action.payload.puzzle?.length || 0,
+        scatterCanvasSize: action.payload.scatterCanvasSize
+      });
+      const scatterCompleteState = { 
+        ...state, 
+        puzzle: action.payload.puzzle,
+        isScattered: true,
+        scatterCanvasSize: action.payload.scatterCanvasSize
+      };
+      console.log('🔧 [REDUCER] SCATTER_PUZZLE_COMPLETE 处理完成，新状态:', { 
+        puzzleLength: scatterCompleteState.puzzle?.length || 0,
+        isScattered: scatterCompleteState.isScattered,
+        hasScatterCanvasSize: !!scatterCompleteState.scatterCanvasSize,
+        scatterCanvasSize: scatterCompleteState.scatterCanvasSize
+      });
+      return scatterCompleteState;
     case "SET_DRAGGING_PIECE":
       return { ...state, draggingPiece: action.payload }
     case "SET_SELECTED_PIECE":
@@ -526,10 +551,39 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // 3. scatterPuzzle 加日志和 useRef 兜底
   const scatterPuzzle = useCallback(() => {
+    console.log('🔧 scatterPuzzle函数被调用');
     const puzzle = puzzleRef.current;
-    // 散开前 puzzle 长度
-    const canvasWidth = state.canvasWidth ?? 0;
-    const canvasHeight = state.canvasHeight ?? 0;
+    
+    // Step3散开适配修复：获取实际画布尺寸
+    let canvasWidth = state.canvasWidth ?? 0;
+    let canvasHeight = state.canvasHeight ?? 0;
+    
+    // 优先从canvas元素获取实际尺寸
+    if (canvasRef.current) {
+      const canvas = canvasRef.current;
+      const actualWidth = canvas.width || canvas.clientWidth;
+      const actualHeight = canvas.height || canvas.clientHeight;
+      
+      if (actualWidth > 0 && actualHeight > 0) {
+        canvasWidth = actualWidth;
+        canvasHeight = actualHeight;
+        console.log('🔧 从canvas元素获取实际尺寸:', { width: canvasWidth, height: canvasHeight });
+      }
+    }
+    
+    // 如果仍然无效，使用状态中的baseCanvasSize
+    if (canvasWidth <= 0 || canvasHeight <= 0) {
+      if (state.baseCanvasSize && state.baseCanvasSize.width > 0) {
+        canvasWidth = state.baseCanvasSize.width;
+        canvasHeight = state.baseCanvasSize.height;
+        console.log('🔧 使用baseCanvasSize:', { width: canvasWidth, height: canvasHeight });
+      } else {
+        // 最后使用默认尺寸
+        canvasWidth = 640;
+        canvasHeight = 640;
+        console.log('🔧 使用默认画布尺寸:', { width: canvasWidth, height: canvasHeight });
+      }
+    }
     // 散布拼图前的状态检查
     if (!puzzle) {
       console.warn("Cannot scatter puzzle: No puzzle pieces generated");
@@ -569,8 +623,16 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       console.error('scatterPuzzle failed, fallback to original puzzle');
       return;
     }
-    dispatch({ type: "SET_PUZZLE", payload: scatteredPuzzle });
-    dispatch({ type: "SET_IS_SCATTERED", payload: true });
+    // Step3散开适配修复：合并所有散开相关的状态更新为一个action
+    console.log('🔧 准备保存散开时的画布尺寸:', { width: canvasWidth, height: canvasHeight });
+    dispatch({ 
+      type: "SCATTER_PUZZLE_COMPLETE", 
+      payload: { 
+        puzzle: scatteredPuzzle,
+        scatterCanvasSize: { width: canvasWidth, height: canvasHeight }
+      } 
+    });
+    console.log('🔧 已调用SCATTER_PUZZLE_COMPLETE dispatch');
   }, [state.isScattered, state.canvasWidth, state.canvasHeight, state.originalShape, dispatch]);
 
   // Test API setup（无论开发、生产、测试环境都挂载只读状态）
@@ -586,6 +648,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         originalShape: state.originalShape,
         baseShape: state.baseShape,
         baseCanvasSize: state.baseCanvasSize, // Step3: 添加baseCanvasSize状态
+        scatterCanvasSize: state.scatterCanvasSize, // Step3散开适配: 添加scatterCanvasSize状态
         canvasWidth: state.canvasWidth,
         canvasHeight: state.canvasHeight,
         shapeType: state.shapeType, // 添加shapeType状态
@@ -611,15 +674,35 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
       };
       
+      // 添加专门用于调试的游戏状态暴露
+      (window as any).gameStateForDebug = {
+        puzzle: state.puzzle,
+        puzzlePieces: state.puzzle, // 别名，方便测试访问
+        basePuzzle: state.basePuzzle,
+        completedPieces: state.completedPieces,
+        originalPositions: state.originalPositions,
+        isCompleted: state.isCompleted,
+        isScattered: state.isScattered,
+        originalShape: state.originalShape,
+        baseShape: state.baseShape,
+        baseCanvasSize: state.baseCanvasSize,
+        scatterCanvasSize: state.scatterCanvasSize,
+        canvasWidth: state.canvasWidth,
+        canvasHeight: state.canvasHeight,
+        shapeType: state.shapeType,
+        cutType: state.cutType,
+        cutCount: state.cutCount,
+      };
+      
       // 在控制台输出状态更新信息，便于调试
-      console.log('__GAME_STATE__ 已更新:', {
-        originalShapeLength: state.originalShape?.length || 0,
-        baseShapeLength: state.baseShape?.length || 0,
+      console.log('游戏状态已更新:', {
+        puzzlePiecesCount: state.puzzle?.length || 0,
+        isScattered: state.isScattered,
         canvasSize: `${state.canvasWidth}x${state.canvasHeight}`,
         shapeType: state.shapeType
       });
     }
-  }, [state.puzzle, state.completedPieces, state.originalPositions, state.isCompleted, state.originalShape, state.baseShape, state.canvasWidth, state.canvasHeight]);
+  }, [state]);
 
   // 测试辅助函数：无论环境都挂载，保证 E2E 可用
   useEffect(() => {

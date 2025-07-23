@@ -82,23 +82,23 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   // 计算布局参数
   const { TOP_BOTTOM_MARGIN, LEFT_RIGHT_MARGIN, CANVAS_PANEL_GAP, MIN_PANEL_WIDTH } = DESKTOP_ADAPTATION;
   
-  // 添加调试信息（开发环境下）
-  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-    const contentWidth = actualPanelWidth + CANVAS_PANEL_GAP + canvasSizeFinal;
-    console.log('桌面端布局调试信息:', {
-      windowSize: `${windowWidth}x${windowHeight}`,
-      canvasSize: canvasSizeFinal,
-      margins: { 
-        top: TOP_BOTTOM_MARGIN, 
-        leftRight: actualLeftRightMargin,
-        original: LEFT_RIGHT_MARGIN 
-      },
-      contentWidth: contentWidth,
-      totalUsedWidth: actualLeftRightMargin * 2 + contentWidth,
-      isUltraWide: windowWidth > windowHeight * 2,
-      adaptationStrategy: '新安全边距模式',
-    });
-  }
+  // 调试信息已关闭 - 避免控制台日志过多
+  // if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+  //   const contentWidth = actualPanelWidth + CANVAS_PANEL_GAP + canvasSizeFinal;
+  //   console.log('桌面端布局调试信息:', {
+  //     windowSize: `${windowWidth}x${windowHeight}`,
+  //     canvasSize: canvasSizeFinal,
+  //     margins: { 
+  //       top: TOP_BOTTOM_MARGIN, 
+  //       leftRight: actualLeftRightMargin,
+  //       original: LEFT_RIGHT_MARGIN 
+  //     },
+  //     contentWidth: contentWidth,
+  //     totalUsedWidth: actualLeftRightMargin * 2 + contentWidth,
+  //     isUltraWide: windowWidth > windowHeight * 2,
+  //     adaptationStrategy: '新安全边距模式',
+  //   });
+  // }
   // 面板缩放比例
   // panelScale极限下限提升为0.4，保证内容极限压缩但不至于不可用
   const panelScale = Math.max(0.4, Math.min(canvasSizeFinal / 560, 1.0));

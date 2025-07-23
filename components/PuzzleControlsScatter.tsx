@@ -49,8 +49,11 @@ export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 34 }
   const disabledClass = "opacity-30 pointer-events-none";
 
   const handleScatterPuzzle = () => {
+    console.log('🔧 handleScatterPuzzle被调用');
     playButtonClickSound()
+    console.log('🔧 准备调用scatterPuzzle');
     scatterPuzzle()
+    console.log('🔧 scatterPuzzle调用完成');
     
     // 散开拼图后自动跳转到下一个tab
     if (goToNextTab) {

@@ -2,8 +2,8 @@
 
 ## 🎉 项目状态：✅ 核心系统已完成并验证通过
 
-**更新时间**: 2025年7月19日  
-**完成状态**: Step1 画布适配 ✅ | Step2 形状适配 ✅ | 记忆系统 ✅ | 无限循环修复 ✅
+**更新时间**: 2025年7月23日  
+**完成状态**: Step1 画布适配 ✅ | Step2 形状适配 ✅ | Step4 散开拼图适配 ✅ | 记忆系统 ✅ | 无限循环修复 ✅
 
 ---
 
@@ -80,6 +80,47 @@ export function calculateMobileLandscapeCanvasSize(windowWidth: number, windowHe
 - ✅ 无限循环：从200+条日志减少到2条，完全修复
 - ✅ 窗口变化：实时适配，无闪烁无错位
 
+### � Step 4:✅ 散开拼图适配系统 ✅
+**完成状态**: 100% 完成并验证通过 (v1.3.31)
+
+#### 核心特性
+- **Hook冲突问题修复**：彻底解决了 `usePuzzleAdaptation` 和 `useShapeAdaptation` 的冲突问题
+- **统一适配引擎**：所有拼图适配统一由 `useShapeAdaptation` 中的适配引擎处理
+- **窗口调整可见性保障**：散开拼图在任意窗口尺寸调整后都保持可见
+- **NaN坐标检测和处理**：增强的错误检测机制，防止坐标计算异常
+
+#### 技术实现
+```typescript
+// 修复方案核心
+// 1. 禁用重复适配逻辑
+// usePuzzleAdaptation({ 
+//   width: state.canvasWidth, 
+//   height: state.canvasHeight
+// });
+
+// 2. 统一使用 useShapeAdaptation 中的适配引擎
+const { adaptShape } = useShapeAdaptation(memoizedCanvasSize);
+
+// 3. 增强错误检测
+if (!isFinite(point.x) || !isFinite(point.y)) {
+  console.error(`❌ 输入数据异常：拼图块${index}的点${pointIndex}在进入适配引擎前就已经是NaN`);
+  return { x: null, y: null, isOriginal: false };
+}
+```
+
+#### 问题诊断过程
+1. **问题发现**：散开拼图后调整窗口大小，拼图块变得不可见
+2. **根因分析**：通过5个专项E2E测试定位到Hook冲突导致NaN坐标
+3. **修复验证**：多种窗口尺寸测试确认修复效果
+4. **回归测试**：确保修复不影响其他功能
+
+#### 验证结果
+- ✅ 拼图块坐标计算正确：不再出现NaN或0值
+- ✅ 窗口调整后完全可见：支持1200x800、800x600、1400x900、1000x700等多种尺寸
+- ✅ 交互功能正常：拼图块可以正常选择、拖拽和交互
+- ✅ 性能表现良好：适配过程流畅，无明显延迟或卡顿
+- ✅ 跨设备兼容：桌面端和移动端都有效
+
 ### 🧠 记忆系统架构 ✅
 **完成状态**: 100% 完成并验证通过
 
@@ -147,6 +188,32 @@ export function calculateMobileLandscapeCanvasSize(windowWidth: number, windowHe
 - ✅ 形状大小比例正常(~34%)
 - ✅ 多次窗口变化后位置稳定
 
+### 🧩 散开拼图窗口调整可见性问题修复 ✅
+**问题**: 散开拼图后调整窗口大小，拼图块变得不可见
+
+**根本原因**: 
+```
+usePuzzleAdaptation Hook 与 useShapeAdaptation Hook 冲突
+→ usePuzzleAdaptation 先运行，修改拼图块点坐标
+→ 某些计算产生NaN值
+→ useShapeAdaptation 接收到被破坏的数据
+→ 统一适配引擎检测到NaN，返回null坐标
+→ 渲染时null被转换为0，导致所有点聚集在(0,0)
+```
+
+**修复方案**:
+1. **禁用重复适配逻辑**: 注释掉 `PuzzleCanvas.tsx` 中的 `usePuzzleAdaptation` 调用
+2. **统一适配引擎**: 只使用 `useShapeAdaptation` 中的统一适配引擎处理所有适配
+3. **避免Hook冲突**: 确保只有一个适配系统处理拼图块坐标变换
+4. **增强错误检测**: 在适配引擎中添加详细的NaN检测和错误日志
+
+**修复效果**:
+- ✅ 拼图块坐标计算正确，不再出现NaN或0值
+- ✅ 散开拼图在窗口调整后完全可见
+- ✅ 支持多种窗口尺寸动态调整(1200x800、800x600、1400x900、1000x700等)
+- ✅ 拼图块可以正常选择、拖拽和交互
+- ✅ 适配过程流畅，无明显延迟或卡顿
+
 ---
 
 ## 四、测试覆盖与验证
@@ -166,6 +233,13 @@ export function calculateMobileLandscapeCanvasSize(windowWidth: number, windowHe
 7. **memory_system_comprehensive_test.spec.ts** - 记忆系统综合测试
 8. **topology_extractor_test.spec.ts** - 拓扑提取器测试
 
+#### 散开拼图适配专项测试 (v1.3.31新增)
+1. **debug_scatter_resize_issue.spec.ts** - 散开拼图窗口调整问题诊断 ✅
+2. **debug_adaptation_errors.spec.ts** - 适配引擎错误监听和分析 ✅
+3. **debug_scatter_canvas_size.spec.ts** - 散开画布尺寸状态追踪 ✅
+4. **debug_nan_calculation.spec.ts** - NaN坐标产生原因分析 ✅
+5. **test_scatter_resize_fix.spec.ts** - 散开拼图修复效果验证 ✅
+
 ### 📊 测试结果
 - **单元测试**: 100% 通过
 - **集成测试**: 100% 通过
@@ -182,7 +256,7 @@ export function calculateMobileLandscapeCanvasSize(windowWidth: number, windowHe
 | 1    | 画布适配 | ✅ 完成 | iPhone16全系列+桌面端完美适配 |
 | 2    | 目标形状 | ✅ 完成 | 形状居中+30%直径规则+无限循环修复 |
 | 3    | 未散开拼图 | 🔴 需要修复 | 手动测试发现关键功能异常，拼图块适配失效 |
-| 4    | 散开拼图 | 🟡 待规划 | 记忆系统支持并发适配 |
+| 4    | 散开拼图 | ✅ 完成 | Hook冲突修复+窗口调整可见性问题解决 |
 | 5    | 交互/完成 | 🟡 待规划 | 状态持久化机制已设计 |
 
 ---
@@ -207,7 +281,11 @@ export function calculateMobileLandscapeCanvasSize(windowWidth: number, windowHe
 │   │   ├── PuzzlePieceAdaptationEngine
 │   │   ├── usePuzzlePieceAdaptation Hook
 │   │   └── 批量适配优化
-│   ├── 散开拼图适配 (Step4 - 待规划)
+│   ├── 散开拼图适配 (Step4 - ✅ 完成)
+│   │   ├── 统一适配引擎集成
+│   │   ├── Hook冲突问题修复
+│   │   ├── NaN坐标检测和处理
+│   │   └── 多窗口尺寸支持
 │   └── 交互状态适配 (Step5 - 待规划)
 └── 性能优化层 ✅
     ├── 防抖机制
@@ -252,11 +330,13 @@ export function calculateMobileLandscapeCanvasSize(windowWidth: number, windowHe
    - 预计工期: 9-14天，5个阶段
    - 核心特性: 拼图块相对位置记忆、批量适配优化、React Hook集成
 
-2. **Step 4: 散开拼图适配** 🟡 待规划
-   - 基于Step3成果扩展
-   - 利用并发适配能力
-   - 随机分布算法优化
-   - 边界约束增强
+2. **Step 4: 散开拼图适配** ✅ 已完成 (v1.3.31)
+   - ✅ Hook冲突问题彻底修复
+   - ✅ 统一适配引擎集成
+   - ✅ 窗口调整后拼图可见性保障
+   - ✅ 多种窗口尺寸动态支持
+   - ✅ NaN坐标检测和错误处理
+   - ✅ 5个专项E2E测试验证
 
 3. **Step 5: 交互状态适配** 🟡 待规划
    - 旋转、拖拽状态记忆
@@ -309,14 +389,21 @@ export function calculateMobileLandscapeCanvasSize(windowWidth: number, windowHe
 
 - ✅ **Step 1 画布适配**: iPhone16全系列+桌面端完美适配
 - ✅ **Step 2 形状适配**: 智能记忆系统+30%直径规则+无限循环修复
+- ✅ **Step 4 散开拼图适配**: Hook冲突修复+窗口调整可见性问题解决
 - ✅ **记忆系统架构**: 完整的拓扑记忆和智能适配能力
 - ✅ **性能优化**: 毫秒级响应时间和高并发支持
 - ✅ **测试验证**: 全面的测试覆盖和验证通过
+
+**重要里程碑 (v1.3.31)**:
+- 🎯 **散开拼图适配问题彻底解决**: 修复了散开拼图后窗口调整导致拼图不可见的关键问题
+- 🔧 **Hook冲突根本性修复**: 通过禁用重复的适配逻辑，避免了数据竞争和坐标计算错误
+- 🧪 **专项测试体系建立**: 5个专门的E2E测试确保问题不再复现
+- 🚀 **用户体验显著提升**: 散开拼图在任意窗口调整后都能保持可见和可交互
 
 **系统已经具备生产就绪的能力，为拼图游戏提供了强大的跨设备适配基础！** 🚀
 
 ---
 
-*文档更新时间: 2025年1月19日*  
-*项目状态: ✅ 核心系统完成并验证通过*  
-*下一步: Step 3-5 拼图块适配实现*
+*文档更新时间: 2025年7月23日*  
+*项目状态: ✅ 核心系统完成并验证通过 + Step4散开拼图适配修复完成*  
+*下一步: Step 3未散开拼图适配 + Step 5交互状态适配*

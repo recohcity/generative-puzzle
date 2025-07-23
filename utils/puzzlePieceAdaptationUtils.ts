@@ -337,6 +337,82 @@ export function safeAdaptPuzzlePieces(
 
 /**
  * 基于绝对坐标的拼图块适配函数 - 新增
+ * 散开拼图块适配 - 基于散开时的画布尺寸进行适配
+ * 保持散开拼图块的相对位置关系，避免窗口调整后的严重偏移
+ */
+export function adaptScatteredPuzzlePieces(
+  scatteredPieces: PuzzlePiece[],
+  scatterCanvasSize: { width: number; height: number },
+  currentCanvasSize: { width: number; height: number }
+): PuzzlePiece[] {
+  if (!scatteredPieces || scatteredPieces.length === 0) {
+    console.warn('⚠️ 散开拼图适配: 拼图块数组为空');
+    return scatteredPieces;
+  }
+
+  if (!scatterCanvasSize || scatterCanvasSize.width <= 0 || scatterCanvasSize.height <= 0) {
+    console.warn('⚠️ 散开拼图适配: 散开画布尺寸无效', scatterCanvasSize);
+    return scatteredPieces;
+  }
+
+  try {
+    // 计算缩放比例 - 使用独立的X和Y缩放，保持拼图块的相对位置
+    const scaleX = currentCanvasSize.width / scatterCanvasSize.width;
+    const scaleY = currentCanvasSize.height / scatterCanvasSize.height;
+    
+    // 对于散开的拼图，我们使用简单的比例缩放，不需要居中偏移
+    // 因为散开的拼图块应该保持它们在画布中的相对位置关系
+
+    console.log(`🔧 散开拼图适配参数:`, {
+      原始画布: `${scatterCanvasSize.width}x${scatterCanvasSize.height}`,
+      当前画布: `${currentCanvasSize.width}x${currentCanvasSize.height}`,
+      缩放比例X: scaleX.toFixed(3),
+      缩放比例Y: scaleY.toFixed(3)
+    });
+
+    // 适配每个散开的拼图块
+    const adaptedPieces = scatteredPieces.map((piece, index) => {
+      // 适配拼图块中心位置 - 使用独立的X和Y缩放
+      const adaptedX = piece.x * scaleX;
+      const adaptedY = piece.y * scaleY;
+
+      // 适配所有点的坐标
+      const adaptedPoints = piece.points.map(point => {
+        return {
+          ...point,
+          x: point.x * scaleX,
+          y: point.y * scaleY
+        };
+      });
+
+      const adaptedPiece = {
+        ...piece,
+        x: adaptedX,
+        y: adaptedY,
+        points: adaptedPoints,
+        // 保持旋转角度不变
+        rotation: piece.rotation,
+        originalRotation: piece.originalRotation
+      };
+
+      // 调试信息：记录前几个拼图块的适配详情
+      if (index < 3) {
+        console.log(`🔧 拼图块${index}适配: (${piece.x.toFixed(1)}, ${piece.y.toFixed(1)}) → (${adaptedX.toFixed(1)}, ${adaptedY.toFixed(1)})`);
+      }
+
+      return adaptedPiece;
+    });
+
+    console.log(`✅ 散开拼图适配完成: ${adaptedPieces.length} 个拼图块`);
+    return adaptedPieces;
+
+  } catch (error) {
+    console.error('❌ 散开拼图适配失败:', error);
+    return scatteredPieces;
+  }
+}
+
+/**
  * 直接基于原始拼图块状态和当前画布尺寸计算，避免累积误差
  */
 export function adaptPuzzlePiecesAbsolute(
@@ -400,5 +476,73 @@ export function adaptPuzzlePiecesAbsolute(
   } catch (error) {
     console.error('Absolute puzzle piece adaptation failed:', error);
     return originalPieces;
+  }
+}
+
+/**
+ * 散开拼图块的绝对坐标适配函数
+ * 基于originalPositions作为基准，避免累积误差
+ */
+export function adaptScatteredPuzzlePiecesAbsolute(
+  currentPieces: PuzzlePiece[],
+  originalPositions: PuzzlePiece[],
+  originalCanvasSize: { width: number; height: number },
+  currentCanvasSize: { width: number; height: number }
+): PuzzlePiece[] {
+  if (!currentPieces || currentPieces.length === 0) {
+    return currentPieces;
+  }
+
+  if (!originalPositions || originalPositions.length === 0) {
+    console.warn('⚠️ originalPositions为空，无法进行散开拼图适配');
+    return currentPieces;
+  }
+
+  try {
+    // 计算缩放比例
+    const scaleX = currentCanvasSize.width / originalCanvasSize.width;
+    const scaleY = currentCanvasSize.height / originalCanvasSize.height;
+
+    console.log(`🔧 散开拼图适配: 缩放X=${scaleX.toFixed(3)}, 缩放Y=${scaleY.toFixed(3)}`);
+
+    // 适配每个拼图块
+    const adaptedPieces = currentPieces.map((piece, index) => {
+      const originalPos = originalPositions[index];
+      if (!originalPos) {
+        console.warn(`⚠️ 拼图块 ${index} 缺少原始位置信息`);
+        return piece;
+      }
+
+      // 计算适配后的中心位置
+      const adaptedX = originalPos.x * scaleX;
+      const adaptedY = originalPos.y * scaleY;
+
+      // 计算位置偏移量
+      const deltaX = adaptedX - piece.x;
+      const deltaY = adaptedY - piece.y;
+
+      // 适配所有点的坐标
+      const adaptedPoints = piece.points.map(point => ({
+        ...point,
+        x: point.x + deltaX,
+        y: point.y + deltaY
+      }));
+
+      return {
+        ...piece,
+        points: adaptedPoints,
+        x: adaptedX,
+        y: adaptedY,
+        // 保持旋转角度不变
+        rotation: piece.rotation,
+        originalRotation: piece.originalRotation
+      };
+    });
+
+    console.log(`✅ 散开拼图适配完成: ${adaptedPieces.length} 个拼图块`);
+    return adaptedPieces;
+  } catch (error) {
+    console.error('Scattered puzzle piece adaptation failed:', error);
+    return currentPieces;
   }
 }

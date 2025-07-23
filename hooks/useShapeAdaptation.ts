@@ -3,12 +3,18 @@ import { useGame } from '@/contexts/GameContext';
 import { adaptShapeToCanvas, CanvasSize } from '@/utils/shape/shapeAdaptationUtils';
 import { MemoryManager } from '@/utils/memory/MemoryManager';
 import { Point } from '@/types/common';
+// Step3清理：移除所有旧的适配方法导入，统一使用UnifiedAdaptationEngine
+// import { 
+//   calculateShapeTransformation, 
+//   adaptPuzzlePiecesToShape, 
+//   safeAdaptPuzzlePieces,
+//   adaptPuzzlePiecesAbsolute,
+//   adaptScatteredPuzzlePieces
+// } from '@/utils/puzzlePieceAdaptationUtils';
 import { 
-  calculateShapeTransformation, 
-  adaptPuzzlePiecesToShape, 
-  safeAdaptPuzzlePieces,
-  adaptPuzzlePiecesAbsolute
-} from '@/utils/puzzlePieceAdaptationUtils';
+  unifiedAdaptationEngine, 
+  UnifiedAdaptationConfig 
+} from '@/utils/adaptation/UnifiedAdaptationEngine';
 
 /**
  * useShapeAdaptation - 基于记忆适配系统的形状适配Hook
@@ -53,14 +59,17 @@ export const useShapeAdaptation = (canvasSize: { width: number; height: number }
   // 防抖定时器引用
   const debounceTimerRef = useRef<number | null>(null);
   
-  // 记忆系统是否可用
+  // 记忆系统是否可用 - 默认为可用，只有在多次尝试失败后才会设置为不可用
   const [isMemorySystemAvailable, setIsMemorySystemAvailable] = useState(true);
+  // 记录失败次数，用于判断是否需要禁用记忆系统
+  const memoryFailCountRef = useRef(0);
+  const MAX_MEMORY_FAILURES = 3; // 最大失败次数，超过此值将禁用记忆系统
   
   // 创建形状记忆
   const createShapeMemory = useCallback(async (points: Point[], canvasSize: { width: number; height: number }) => {
     try {
       if (!isMemorySystemAvailable) {
-        console.log('记忆系统不可用，跳过记忆创建');
+        console.log('记忆系统已被禁用，跳过记忆创建');
         return null;
       }
 
@@ -75,10 +84,24 @@ export const useShapeAdaptation = (canvasSize: { width: number; height: number }
       setShapeMemoryId(memoryId);
       console.log('✅ 形状记忆创建成功:', memoryId);
       
+      // 重置失败计数
+      memoryFailCountRef.current = 0;
+      
       return memoryId;
     } catch (error) {
       console.error('❌ 创建形状记忆失败:', error);
-      setIsMemorySystemAvailable(false);
+      
+      // 增加失败计数
+      memoryFailCountRef.current += 1;
+      
+      // 只有在多次失败后才禁用记忆系统
+      if (memoryFailCountRef.current >= MAX_MEMORY_FAILURES) {
+        console.warn(`⚠️ 记忆系统连续失败${MAX_MEMORY_FAILURES}次，暂时禁用记忆系统`);
+        setIsMemorySystemAvailable(false);
+      } else {
+        console.log(`⚠️ 记忆系统失败 (${memoryFailCountRef.current}/${MAX_MEMORY_FAILURES})，继续尝试`);
+      }
+      
       return null;
     }
   }, [memoryManager, isMemorySystemAvailable]);
@@ -87,7 +110,7 @@ export const useShapeAdaptation = (canvasSize: { width: number; height: number }
   const adaptShapeWithMemory = useCallback(async (targetCanvasSize: { width: number; height: number }) => {
     try {
       if (!shapeMemoryId || !isMemorySystemAvailable) {
-        console.log('记忆系统不可用或无记忆ID，回退到传统适配');
+        console.log('记忆系统不可用或无记忆ID，回退到统一适配引擎');
         return null;
       }
 
@@ -106,42 +129,29 @@ export const useShapeAdaptation = (canvasSize: { width: number; height: number }
       // 调试：输出前几个点的坐标
       console.log('🔍 记忆系统返回的前3个点:', adaptedShape.points.slice(0, 3));
       
+      // 重置失败计数
+      memoryFailCountRef.current = 0;
+      
       return adaptedShape.points;
     } catch (error) {
       console.error('❌ 记忆适配失败:', error);
-      setIsMemorySystemAvailable(false);
+      
+      // 增加失败计数
+      memoryFailCountRef.current += 1;
+      
+      // 只有在多次失败后才禁用记忆系统
+      if (memoryFailCountRef.current >= MAX_MEMORY_FAILURES) {
+        console.warn(`⚠️ 记忆系统连续失败${MAX_MEMORY_FAILURES}次，暂时禁用记忆系统`);
+        setIsMemorySystemAvailable(false);
+      } else {
+        console.log(`⚠️ 记忆系统失败 (${memoryFailCountRef.current}/${MAX_MEMORY_FAILURES})，继续尝试`);
+      }
+      
       return null;
     }
   }, [shapeMemoryId, memoryManager, isMemorySystemAvailable]);
 
-  // 传统适配函数（作为回退方案）
-  const adaptShapeTraditional = useCallback((shapeToAdapt: Point[], canvasSize: { width: number; height: number }) => {
-    console.log('🔄 使用传统方法适配形状');
-    
-    // 如果baseCanvasSize无效，使用当前canvasSize作为基准
-    const effectiveBaseCanvasSize = (
-      baseCanvasSize && 
-      baseCanvasSize.width > 0 && 
-      baseCanvasSize.height > 0
-    ) ? baseCanvasSize : canvasSize;
-    
-    const oldSize: CanvasSize = {
-      width: effectiveBaseCanvasSize.width,
-      height: effectiveBaseCanvasSize.height
-    };
-    
-    const newSize: CanvasSize = {
-      width: canvasSize.width,
-      height: canvasSize.height
-    };
-    
-    return adaptShapeToCanvas(shapeToAdapt, oldSize, newSize, {
-      debug: process.env.NODE_ENV === 'development',
-      enforceAspectRatio: true,
-      safetyMargin: 10,
-      forceAdapt: true
-    });
-  }, [baseCanvasSize]);
+  // Step3清理：移除传统适配函数，统一使用UnifiedAdaptationEngine
 
   // 主适配函数
   const adaptShape = useCallback(async () => {
@@ -194,11 +204,45 @@ export const useShapeAdaptation = (canvasSize: { width: number; height: number }
         }
       }
       
-      // 如果记忆系统失败，回退到传统方法
+      // 如果记忆系统失败，使用统一适配引擎
       if (!adaptedPoints) {
-        console.log('🔄 记忆系统不可用，使用传统适配方法');
-        adaptedPoints = adaptShapeTraditional(shapeToAdapt, canvasSize);
-        adaptationMethod = '传统方法';
+        console.log('🔄 记忆系统不可用，使用统一适配引擎');
+        
+        try {
+          // 获取有效的基础画布尺寸
+          const effectiveBaseCanvasSize = (
+            baseCanvasSize && 
+            baseCanvasSize.width > 0 && 
+            baseCanvasSize.height > 0
+          ) ? baseCanvasSize : canvasSize;
+
+          // 使用统一适配引擎进行形状适配
+          const shapeAdaptationConfig: UnifiedAdaptationConfig = {
+            type: 'shape',
+            originalData: shapeToAdapt,
+            originalCanvasSize: effectiveBaseCanvasSize,
+            targetCanvasSize: canvasSize,
+            options: {
+              debugMode: process.env.NODE_ENV === 'development'
+            }
+          };
+
+          const shapeResult = unifiedAdaptationEngine.adapt<Point[]>(shapeAdaptationConfig);
+          
+          if (shapeResult.success) {
+            adaptedPoints = shapeResult.adaptedData;
+            adaptationMethod = '统一适配引擎';
+          } else {
+            // Step3清理：统一适配引擎失败时，直接返回原始形状，不再回退到传统方法
+            console.error('❌ 统一适配引擎失败，返回原始形状');
+            adaptedPoints = shapeToAdapt;
+            adaptationMethod = '失败-返回原始形状';
+          }
+        } catch (error) {
+          console.error('❌ 统一适配引擎异常，返回原始形状:', error);
+          adaptedPoints = shapeToAdapt;
+          adaptationMethod = '异常-返回原始形状';
+        }
       }
       
       const endTime = performance.now();
@@ -219,7 +263,7 @@ export const useShapeAdaptation = (canvasSize: { width: number; height: number }
       );
 
       if (shouldAdaptPuzzlePieces) {
-        console.log('🧩 检测到未散开的拼图块，开始同步适配...');
+        console.log('🧩 检测到未散开的拼图块，开始统一适配...');
         
         try {
           // 获取原始画布尺寸
@@ -229,34 +273,35 @@ export const useShapeAdaptation = (canvasSize: { width: number; height: number }
             baseCanvasSize.height > 0
           ) ? baseCanvasSize : canvasSize;
 
-          // 使用绝对坐标适配方法，避免累积误差
-          console.log('🔍 拼图块适配调试信息:', {
-            hasBasePuzzle: !!state.basePuzzle,
-            basePuzzleLength: state.basePuzzle?.length || 0,
-            currentPuzzleLength: state.puzzle?.length || 0,
-            effectiveBaseCanvasSize,
-            currentCanvasSize: canvasSize
-          });
-          
-          const adaptedPieces = adaptPuzzlePiecesAbsolute(
-            state.basePuzzle || state.puzzle, // 使用原始拼图块状态
-            effectiveBaseCanvasSize,
-            canvasSize
-          );
-          
-          // 同时更新形状和拼图块
-          dispatch({ 
-            type: "UPDATE_SHAPE_AND_PUZZLE", 
-            payload: { 
-              originalShape: adaptedPoints,
-              puzzle: adaptedPieces
+          // 使用统一适配引擎进行拼图块适配
+          const puzzleAdaptationConfig: UnifiedAdaptationConfig = {
+            type: 'puzzle',
+            originalData: state.basePuzzle || state.puzzle,
+            originalCanvasSize: effectiveBaseCanvasSize,
+            targetCanvasSize: canvasSize,
+            options: {
+              debugMode: process.env.NODE_ENV === 'development'
             }
-          });
+          };
+
+          const puzzleResult = unifiedAdaptationEngine.adapt<PuzzlePiece[]>(puzzleAdaptationConfig);
           
-          console.log(`✅ 拼图块同步适配完成: ${adaptedPieces.length} 个拼图块`);
-          console.log(`🔍 适配详情: 原始画布=${effectiveBaseCanvasSize.width}x${effectiveBaseCanvasSize.height}, 当前画布=${canvasSize.width}x${canvasSize.height}`);
+          if (puzzleResult.success) {
+            // 同时更新形状和拼图块
+            dispatch({ 
+              type: "UPDATE_SHAPE_AND_PUZZLE", 
+              payload: { 
+                originalShape: adaptedPoints,
+                puzzle: puzzleResult.adaptedData
+              }
+            });
+            
+            console.log(`✅ 统一拼图块适配完成: ${puzzleResult.adaptedData.length} 个拼图块`);
+          } else {
+            throw new Error(puzzleResult.error || '统一适配引擎返回失败');
+          }
         } catch (error) {
-          console.error('❌ 拼图块适配失败，仅更新形状:', error);
+          console.error('❌ 统一拼图块适配失败，仅更新形状:', error);
           // 如果拼图块适配失败，至少更新形状
           dispatch({ 
             type: "SET_ORIGINAL_SHAPE", 
@@ -274,6 +319,81 @@ export const useShapeAdaptation = (canvasSize: { width: number; height: number }
           console.log('🧩 拼图块已散开，跳过同步适配');
         }
       }
+
+      // Step3散开适配新增：检查是否需要适配散开的拼图块
+      const shouldAdaptScatteredPuzzlePieces = (
+        state.puzzle && 
+        state.puzzle.length > 0 && 
+        state.isScattered // 只适配已散开的拼图块
+        // 移除对scatterCanvasSize的依赖，即使没有记录也进行适配
+      );
+
+      console.log('🔍 散开拼图适配条件检查:', {
+        hasPuzzle: !!state.puzzle,
+        puzzleLength: state.puzzle?.length || 0,
+        isScattered: state.isScattered,
+        hasScatterCanvasSize: !!state.scatterCanvasSize,
+        scatterCanvasSize: state.scatterCanvasSize,
+        shouldAdaptScatteredPuzzlePieces
+      });
+
+      if (shouldAdaptScatteredPuzzlePieces) {
+        console.log('🧩 检测到散开的拼图块，开始统一散开适配...');
+        
+        try {
+          // 在调用适配引擎前验证输入数据
+          console.log('🔍 散开拼图适配前数据验证:', {
+            puzzleLength: state.puzzle?.length || 0,
+            scatterCanvasSize: state.scatterCanvasSize,
+            targetCanvasSize: canvasSize
+          });
+          
+          // 检查第一个拼图块的点坐标
+          if (state.puzzle && state.puzzle.length > 0) {
+            const firstPiece = state.puzzle[0];
+            const firstPoint = firstPiece.points?.[0];
+            console.log('🔍 第一个拼图块的第一个点:', {
+              pieceX: firstPiece.x,
+              pieceY: firstPiece.y,
+              pointX: firstPoint?.x,
+              pointY: firstPoint?.y,
+              pointIsNaN: firstPoint ? (isNaN(firstPoint.x) || isNaN(firstPoint.y)) : 'no point'
+            });
+          }
+          
+          // 使用统一适配引擎进行散开拼图适配
+          const scatteredAdaptationConfig: UnifiedAdaptationConfig = {
+            type: 'scattered',
+            originalData: state.puzzle,
+            originalCanvasSize: canvasSize, // 这个参数在散开适配中不使用
+            targetCanvasSize: canvasSize,
+            // 如果没有scatterCanvasSize，使用当前canvasSize作为兜底
+            scatterCanvasSize: state.scatterCanvasSize || canvasSize,
+            options: {
+              debugMode: process.env.NODE_ENV === 'development'
+            }
+          };
+
+          const scatteredResult = unifiedAdaptationEngine.adapt<PuzzlePiece[]>(scatteredAdaptationConfig);
+          
+          if (scatteredResult.success) {
+            // 只更新拼图块，不更新形状（形状已经在上面更新过了）
+            dispatch({ 
+              type: "SET_PUZZLE", 
+              payload: scatteredResult.adaptedData 
+            });
+            
+            console.log(`✅ 统一散开拼图适配完成: ${scatteredResult.adaptedData.length} 个拼图块`);
+          } else {
+            throw new Error(scatteredResult.error || '统一散开适配引擎返回失败');
+          }
+        } catch (error) {
+          console.error('❌ 统一散开拼图适配失败:', error);
+        }
+      }
+
+      // Step3清理：移除旧的散开拼图适配逻辑，统一使用上面的统一适配引擎
+      console.log('🧩 拼图块已散开，跳过传统适配方法（已使用统一适配引擎）');
       
       console.log(`✅ 形状适配完成: 耗时 ${(endTime - startTime).toFixed(2)}ms, 使用${adaptationMethod}, 结果点数=${adaptedPoints.length}`);
       
@@ -318,7 +438,7 @@ export const useShapeAdaptation = (canvasSize: { width: number; height: number }
     isMemorySystemAvailable,
     createShapeMemory,
     adaptShapeWithMemory,
-    adaptShapeTraditional,
+    // adaptShapeTraditional, // Step3清理：移除对传统适配方法的依赖
     dispatch
   ]);
 
