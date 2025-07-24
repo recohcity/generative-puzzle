@@ -3,7 +3,7 @@
 import React, { useRef } from 'react';
 import PuzzleCanvas from "@/components/PuzzleCanvas";
 import PhoneTabPanel from "./PhoneTabPanel";
-import { MOBILE_ADAPTATION } from '@/constants/canvasAdaptation';
+import { MOBILE_ADAPTATION, calculateMobilePortraitCanvasSize } from '@/constants/canvasAdaptation';
 import { useCanvas, useDevice } from '@/providers/hooks';
 
 interface PhonePortraitLayoutProps {
@@ -33,17 +33,25 @@ const PhonePortraitLayout: React.FC<PhonePortraitLayoutProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const backgroundCanvasRef = useRef<HTMLCanvasElement>(null);
   
-  // 使用统一的画布管理系统
+  // 直接使用适配常量计算画布尺寸，不依赖useCanvas
+  const portraitResult = calculateMobilePortraitCanvasSize(device.screenWidth, device.screenHeight);
+  const canvasSizeValue = portraitResult.canvasSize;
+  const canvasWidth = canvasSizeValue;
+  const canvasHeight = canvasSizeValue;
+  const canvasMargin = MOBILE_ADAPTATION.PORTRAIT.CANVAS_MARGIN;
+  
+  console.log('📱 竖屏画布尺寸计算:', {
+    screenSize: `${device.screenWidth}x${device.screenHeight}`,
+    canvasSize: canvasSizeValue,
+    debug: portraitResult.debug
+  });
+  
+  // 仍然需要useCanvas来管理canvas元素
   const canvasSize = useCanvas({ 
     containerRef, 
     canvasRef, 
     backgroundCanvasRef 
   });
-  
-  // 使用统一画布管理系统的尺寸，如果没有则使用默认值
-  const canvasWidth = canvasSize?.width || 320;
-  const canvasHeight = canvasSize?.height || 320;
-  const canvasMargin = MOBILE_ADAPTATION.PORTRAIT.CANVAS_MARGIN;
 
   return (
     <div 

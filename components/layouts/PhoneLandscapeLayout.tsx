@@ -3,7 +3,7 @@
 import React, { useRef } from 'react';
 import PuzzleCanvas from "@/components/PuzzleCanvas";
 import PhoneTabPanel from "./PhoneTabPanel";
-import { MOBILE_ADAPTATION } from '@/constants/canvasAdaptation';
+import { MOBILE_ADAPTATION, calculateMobileLandscapeCanvasSize } from '@/constants/canvasAdaptation';
 import { useCanvas, useDevice } from '@/providers/hooks';
 
 interface PhoneLandscapeLayoutProps {
@@ -35,16 +35,40 @@ const PhoneLandscapeLayout: React.FC<PhoneLandscapeLayoutProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const backgroundCanvasRef = useRef<HTMLCanvasElement>(null);
   
-  // 使用统一的画布管理系统
+  // 直接使用适配常量计算画布尺寸，不依赖useCanvas
+  const landscapeResult = calculateMobileLandscapeCanvasSize(device.screenWidth, device.screenHeight);
+  const canvasSizeValue = landscapeResult.canvasSize;
+  const canvasMargin = MOBILE_ADAPTATION.LANDSCAPE.CANVAS_MARGIN;
+  
+  // 智能计算面板宽度：优先使用画布尺寸，如果空间不够则使用原始计算值
+  const idealPanelWidth = canvasSizeValue; // 理想情况下与画布尺寸一致
+  const totalRequiredWidth = idealPanelWidth + canvasSizeValue + canvasMargin * 3; // 面板 + 画布 + 3个边距
+  const availableWidth = device.screenWidth;
+  const hasEnoughSpace = availableWidth >= totalRequiredWidth;
+  
+  // 如果空间足够，使用理想宽度；否则使用原始计算的宽度
+  const panelWidth = hasEnoughSpace ? idealPanelWidth : landscapeResult.panelWidth;
+  
+  console.log('📱 横屏画布尺寸计算:', {
+    screenSize: `${device.screenWidth}x${device.screenHeight}`,
+    canvasSize: canvasSizeValue,
+    originalPanelWidth: landscapeResult.panelWidth,
+    idealPanelWidth,
+    actualPanelWidth: panelWidth,
+    totalRequiredWidth,
+    availableWidth,
+    hasEnoughSpace,
+    strategy: hasEnoughSpace ? '使用理想宽度(与画布一致)' : '使用原始计算宽度',
+    debug: landscapeResult.debug
+  });
+  
+  // 仍然需要useCanvas来管理canvas元素
   const canvasSize = useCanvas({ 
     containerRef, 
     canvasRef, 
     backgroundCanvasRef 
   });
-  
-  // 使用统一画布管理系统的尺寸，如果没有则使用默认值
-  const canvasSizeValue = canvasSize?.width || 375;
-  const canvasMargin = MOBILE_ADAPTATION.LANDSCAPE.CANVAS_MARGIN;
+
 
   return (
     <div style={{ 
@@ -59,13 +83,13 @@ const PhoneLandscapeLayout: React.FC<PhoneLandscapeLayoutProps> = ({
       paddingLeft: canvasMargin,
       paddingRight: canvasMargin,
     }}>
-      {/* 左侧tab面板 - 宽度与画布一致 */}
+      {/* 左侧tab面板 - 使用计算出的面板宽度 */}
       <div
         id="panel-container"
         style={{ 
-          width: canvasSizeValue, // 面板宽度与画布宽度一致
-          minWidth: canvasSizeValue, // 最小宽度也设为画布宽度
-          maxWidth: canvasSizeValue, // 最大宽度也设为画布宽度
+          width: panelWidth, // 使用计算出的面板宽度
+          minWidth: panelWidth, // 最小宽度
+          maxWidth: panelWidth, // 最大宽度
           height: canvasSizeValue, 
           display: 'flex', 
           alignItems: 'flex-start',

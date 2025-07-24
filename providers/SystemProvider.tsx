@@ -40,6 +40,9 @@ export const SystemProvider: React.FC<SystemProviderProps> = ({ children }) => {
   useEffect(() => {
     const { deviceManager, canvasManager, eventManager } = managers;
 
+    // 页面加载时强制更新设备状态 - 修复横屏刷新问题
+    deviceManager.forceUpdateState();
+
     // Coordinate device detection with canvas sizing
     const unsubscribeResize = eventManager.onResize(() => {
       deviceManager.updateState();
@@ -50,9 +53,22 @@ export const SystemProvider: React.FC<SystemProviderProps> = ({ children }) => {
       deviceManager.updateState();
     }, 10);
 
+    // 监听页面可见性变化
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('📄 页面重新可见，强制更新设备状态');
+        setTimeout(() => {
+          deviceManager.forceUpdateState();
+        }, 100);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     return () => {
       unsubscribeResize();
       unsubscribeOrientation();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [managers]);
 

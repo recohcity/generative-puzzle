@@ -1,6 +1,6 @@
 # 生成式拼图游戏 - 配置说明
 
-> 修订日期：2025-07-24 (v1.3.33 统一架构重构完成更新)
+> 修订日期：2025-07-24 (v1.3.34 移动端适配完善更新)
 
 本文档详细列举并说明本项目所有关键配置点、参数、核心算法入口及其对应的源文件，便于开发者理解、调整和维护游戏行为。每次配置或算法有变动都需同步修订。
 
@@ -10,20 +10,21 @@
 
 1. 主要配置文件与分工
 2. 统一架构管理器配置（v1.3.33新增）
-3. 难度与切割配置
-4. 形状生成配置
-5. 拼图散开与分布配置
-6. 碰撞与回弹配置
-7. 旋转配置
-8. 设备适配与响应式配置
-9. 拼图块适配系统配置（Step3新增）
-10. 媒体资源与音效配置
-11. 视觉与主题配置
-12. 构建与开发配置
-13. 性能测试与报告配置
-14. UI 组件配置
-15. 触摸事件与交互配置
-16. F10 Debug 调试模式配置
+3. 移动端适配配置（v1.3.34新增）
+4. 难度与切割配置
+5. 形状生成配置
+6. 拼图散开与分布配置
+7. 碰撞与回弹配置
+8. 旋转配置
+9. 设备适配与响应式配置
+10. 拼图块适配系统配置（Step3新增）
+11. 媒体资源与音效配置
+12. 视觉与主题配置
+13. 构建与开发配置
+14. 性能测试与报告配置
+15. UI 组件配置
+16. 触摸事件与交互配置
+17. F10 Debug 调试模式配置
 
 ---
 
@@ -47,9 +48,9 @@
 - `components/PuzzleCanvas.tsx`：主画布渲染与交互（v1.3.33重构：使用统一管理器）
 - `components/GameInterface.tsx`、`components/layouts/`：多端布局与适配（v1.3.33重构：迁移到统一系统）
 
-### 统一架构Hooks（v1.3.33新增）
-- `hooks/useDevice.ts`：统一设备检测Hook，替代分散的设备检测逻辑
-- `hooks/useCanvas.ts`：统一画布管理Hook，替代分散的画布状态管理
+### 统一架构Hooks（v1.3.33新增，v1.3.34增强）
+- `hooks/useDevice.ts`：统一设备检测Hook，替代分散的设备检测逻辑（v1.3.34增强：优化移动端设备检测，优先使用用户代理检测）
+- `hooks/useCanvas.ts`：统一画布管理Hook，替代分散的画布状态管理（v1.3.34优化：移动端使用容器尺寸策略）
 - `hooks/useEventManager.ts`：统一事件管理Hook，替代分散的事件监听器
 
 ### 传统Hooks（保持兼容）
@@ -175,7 +176,158 @@
 
 ---
 
-## 3. 难度与切割配置
+## 3. 移动端适配配置（v1.3.34新增）
+
+### 跨平台统一管理配置
+
+- **deviceDetectionPriority**  
+  作用：设备检测优先级顺序，确保移动设备准确识别  
+  取值范围：1. 用户代理检测 → 2. iPhone 16系列检测 → 3. 触摸设备检测 → 4. 屏幕尺寸检测  
+  默认值：按优先级顺序执行  
+  影响点：设备类型判断准确性，避免移动设备被误识别为桌面端  
+  配置/代码位置：`core/DeviceManager.ts`
+
+- **userAgentDetection**  
+  作用：优先使用用户代理检测移动设备，最高优先级  
+  取值范围：isIOS || isAndroid 检测  
+  默认值：启用  
+  影响点：横屏刷新时正确识别移动设备  
+  配置/代码位置：`core/DeviceManager.ts` (detectDevice方法)
+
+- **touchDeviceDetection**  
+  作用：触摸设备检测增强，辅助移动设备识别  
+  取值范围：'ontouchstart' in window || navigator.maxTouchPoints > 0  
+  默认值：启用  
+  影响点：综合设备检测准确性  
+  配置/代码位置：`core/DeviceManager.ts`
+
+### iPhone 16系列精确适配配置
+
+- **iPhone16SeriesDetection**  
+  作用：iPhone 16全系列精确检测和优化  
+  取值范围：5个机型的精确尺寸检测  
+  机型列表：  
+    - iPhone 16e: 390×844 / 844×390  
+    - iPhone 16: 393×852 / 852×393  
+    - iPhone 16 Plus: 430×932 / 932×430  
+    - iPhone 16 Pro: 402×874 / 874×402  
+    - iPhone 16 Pro Max: 440×956 / 956×440  
+  默认值：启用精确检测  
+  影响点：iPhone 16系列的画布尺寸和面板宽度优化  
+  配置/代码位置：`constants/canvasAdaptation.ts` (detectiPhone16Series函数)
+
+- **iPhone16CanvasOptimization**  
+  作用：iPhone 16系列画布尺寸针对性优化  
+  取值范围：根据机型设置不同的最大画布尺寸  
+  优化参数：  
+    - iPhone 16 Pro Max: maxCanvasSize = 420px  
+    - iPhone 16 Plus: maxCanvasSize = 410px  
+    - iPhone 16 Pro: maxCanvasSize = 380px  
+    - iPhone 16: maxCanvasSize = 360px  
+    - iPhone 16e: maxCanvasSize = 350px  
+  默认值：按机型自动优化  
+  影响点：画布显示效果和空间利用率  
+  配置/代码位置：`constants/canvasAdaptation.ts`
+
+### 移动端画布尺寸计算配置
+
+- **portraitCanvasCalculation**  
+  作用：竖屏模式画布尺寸计算策略  
+  计算公式：`Math.min(screenWidth - CANVAS_MARGIN * 2, screenHeight - PANEL_HEIGHT - SAFE_AREAS)`  
+  取值范围：240px ~ 420px（根据设备动态调整）  
+  默认值：动态计算  
+  影响点：竖屏画布按屏幕宽度适配，保持正方形  
+  配置/代码位置：`constants/canvasAdaptation.ts` (calculateMobilePortraitCanvasSize函数)
+
+- **landscapeCanvasCalculation**  
+  作用：横屏模式画布尺寸计算策略  
+  计算公式：`Math.min(screenHeight - CANVAS_MARGIN * 2 - SAFE_AREA_TOP, maxCanvasSize)`  
+  取值范围：240px ~ 420px（根据设备动态调整）  
+  默认值：动态计算  
+  影响点：横屏画布按屏幕高度适配，保持正方形  
+  配置/代码位置：`constants/canvasAdaptation.ts` (calculateMobileLandscapeCanvasSize函数)
+
+### 智能面板宽度配置
+
+- **landscapePanelWidthStrategy**  
+  作用：横屏模式面板宽度智能计算策略  
+  计算逻辑：优先使用画布尺寸作为面板宽度，空间不够则降级使用原始计算宽度  
+  取值范围：idealPanelWidth = canvasSizeValue，fallback = landscapeResult.panelWidth  
+  默认值：智能选择  
+  影响点：横屏面板显示完整，避免内容被截断  
+  配置/代码位置：`components/layouts/PhoneLandscapeLayout.tsx`
+
+- **panelWidthSpaceCheck**  
+  作用：面板宽度空间检查机制  
+  检查公式：`availableWidth >= (idealPanelWidth + canvasSize + margins)`  
+  取值范围：布尔值  
+  默认值：自动检查  
+  影响点：确保布局不会溢出屏幕  
+  配置/代码位置：`components/layouts/PhoneLandscapeLayout.tsx`
+
+### 移动端画布管理策略配置
+
+- **mobileCanvasStrategy**  
+  作用：移动端画布管理策略，让布局组件控制画布大小  
+  策略：移动端使用容器实际尺寸，桌面端使用动态计算  
+  取值范围：'container-based' (移动端) | 'dynamic-calculation' (桌面端)  
+  默认值：根据设备类型自动选择  
+  影响点：移动端画布尺寸控制权交给布局组件  
+  配置/代码位置：`providers/hooks/useCanvas.ts`
+
+- **canvasSizeCalculationMode**  
+  作用：画布尺寸计算模式选择  
+  模式：布局组件直接计算 vs useCanvas返回值  
+  取值范围：'layout-component-direct' | 'useCanvas-return'  
+  默认值：'layout-component-direct'（v1.3.34修复）  
+  影响点：解决竖屏大缩小动态显示问题  
+  配置/代码位置：`components/layouts/PhonePortraitLayout.tsx`, `components/layouts/PhoneLandscapeLayout.tsx`
+
+### 移动端适配常量配置
+
+- **MOBILE_ADAPTATION.PORTRAIT**  
+  作用：移动端竖屏模式适配参数  
+  参数配置：  
+    - CANVAS_MARGIN: 10px（画布边距）  
+    - SAFE_AREA_TOP: 10px（顶部安全区）  
+    - SAFE_AREA_BOTTOM: 30px（底部安全区）  
+    - PANEL_HEIGHT: 180px（面板高度）  
+  默认值：如上所示  
+  影响点：竖屏布局间距和安全区域  
+  配置/代码位置：`constants/canvasAdaptation.ts`
+
+- **MOBILE_ADAPTATION.LANDSCAPE**  
+  作用：移动端横屏模式适配参数  
+  参数配置：  
+    - CANVAS_MARGIN: 6px（画布边距）  
+    - SAFE_AREA_TOP: 6px（顶部安全区）  
+    - MIN_PANEL_WIDTH: 240px（面板最小宽度）  
+    - MAX_PANEL_WIDTH: 350px（面板最大宽度）  
+  默认值：如上所示  
+  影响点：横屏布局间距和面板宽度范围  
+  配置/代码位置：`constants/canvasAdaptation.ts`
+
+### 移动端性能优化配置
+
+- **mobileEventOptimization**  
+  作用：移动端事件监听器优化配置  
+  优化策略：从分散的resize监听器整合到3个全局监听器  
+  取值范围：resize, orientationchange, visibilitychange  
+  默认值：启用全局监听器  
+  影响点：减少内存使用，提升性能  
+  配置/代码位置：`providers/hooks/useCanvas.ts`, `providers/SystemProvider.tsx`
+
+- **mobileMemoryOptimization**  
+  作用：移动端内存使用优化配置  
+  优化策略：设备状态缓存、画布尺寸缓存、事件防抖  
+  取值范围：缓存机制 + 防抖延迟100-300ms  
+  默认值：启用所有优化  
+  影响点：内存使用稳定，避免内存泄漏  
+  配置/代码位置：`core/DeviceManager.ts`, `core/CanvasManager.ts`
+
+---
+
+## 4. 难度与切割配置
 
 - **cutCount**（切割次数）  
   作用：用户选择的拼图切割难度，决定实际切割线数和拼图块数  
@@ -207,7 +359,7 @@
 
 ---
 
-## 3. 形状生成配置
+## 5. 形状生成配置
 
 - **shapeType**  
   作用：决定基础形状类型  
@@ -246,7 +398,7 @@
 
 ---
 
-## 4. 拼图散开与分布配置
+## 6. 拼图散开与分布配置
 
 - **distributionType**  
   作用：决定拼图块散布算法  
@@ -271,7 +423,7 @@
 
 ---
 
-## 5. 碰撞与回弹配置
+## 7. 碰撞与回弹配置
 
 - **bounceBackFactor**  
   作用：控制拼图块碰撞边界后的回弹强度  
@@ -296,7 +448,7 @@
 
 ---
 
-## 6. 旋转配置
+## 8. 旋转配置
 
 - **rotationStep**  
   作用：每次旋转的角度增量  
@@ -314,7 +466,7 @@
 
 ---
 
-## 8. 设备适配与响应式配置
+## 9. 设备适配与响应式配置
 
 ### 统一设备检测系统（v1.3.33重构）
 
@@ -348,6 +500,31 @@
   影响点：画布状态一致性、性能优化  
   配置/代码位置：`utils/managers/CanvasManager.ts`
 
+### 移动端适配增强配置（v1.3.34新增）
+
+- **mobileDeviceDetectionEnhancement**  
+  作用：移动端设备检测增强，优先使用用户代理检测  
+  取值范围：用户代理检测 > iPhone16检测 > 触摸设备检测 > 屏幕尺寸检测  
+  默认值：启用优先级检测  
+  影响点：解决横屏刷新时设备误识别问题  
+  配置/代码位置：`core/DeviceManager.ts`（v1.3.34增强）
+
+- **mobileCanvasCalculationStrategy**  
+  作用：移动端画布尺寸计算策略优化  
+  策略：布局组件直接使用适配常量计算，useCanvas使用容器尺寸管理  
+  取值范围：'direct-calculation' (布局组件) + 'container-based' (useCanvas)  
+  默认值：双重策略结合  
+  影响点：解决竖屏大缩小动态显示问题  
+  配置/代码位置：`providers/hooks/useCanvas.ts`、布局组件（v1.3.34修复）
+
+- **landscapePanelWidthIntelligent**  
+  作用：横屏面板宽度智能计算，优先使用画布尺寸  
+  计算逻辑：idealPanelWidth = canvasSize，空间检查后决定是否降级  
+  取值范围：画布尺寸 ~ 原始计算宽度  
+  默认值：智能选择最佳宽度  
+  影响点：解决横屏面板显示不完整问题  
+  配置/代码位置：`components/layouts/PhoneLandscapeLayout.tsx`（v1.3.34新增）
+
 ### 传统配置（保持兼容）
 
 - **canvasMaxSize**  
@@ -355,7 +532,7 @@
   取值范围：320~1024（像素，随设备/窗口动态调整）  
   默认值：桌面 800，移动端 360  
   影响点：画布、拼图缩放、适配  
-  配置/代码位置：`useResponsiveCanvasSizing.ts`、`PuzzleCanvas.tsx`（v1.3.33：通过统一管理器管理）
+  配置/代码位置：`useResponsiveCanvasSizing.ts`、`PuzzleCanvas.tsx`（v1.3.33：通过统一管理器管理；v1.3.34：移动端策略优化）
   
 - **全局画布与面板自适应**  
   作用：桌面端/移动端竖屏/横屏下，画布始终正方形最大化利用空间，面板与画布高度联动，所有自适应逻辑由父容器驱动，PuzzleCanvas 只需100%适配父容器。  
@@ -400,7 +577,7 @@
 
 ---
 
-## 9. 拼图块适配系统配置（Step3新增）
+## 10. 拼图块适配系统配置（Step3新增）
 
 - **adaptPuzzlePiecesAbsolute**  
   作用：基于画布中心的绝对坐标适配算法，彻底解决累积误差问题  
@@ -446,7 +623,7 @@
 
 ---
 
-## 10. 媒体资源与音效配置
+## 11. 媒体资源与音效配置
 
 - **backgroundMusic**  
   作用：背景音乐开关与音量控制  
@@ -501,7 +678,7 @@
 
 ---
 
-## 11. 视觉与主题配置
+## 12. 视觉与主题配置
 
 - **BENCHMARKS**  
   作用：性能基准值，用于评估各项指标，分为“资源加载(page.goto)”与“端到端加载(E2E)”两项，基准值分别为1000ms/1800ms，所有性能指标分项采集与分级，保留两位小数，报告、索引、终端日志格式统一。  
@@ -577,7 +754,7 @@
 
 ---
 
-## 12. 构建与开发配置
+## 13. 构建与开发配置
 
 - **Next.js 配置**  
   作用：框架构建配置  
@@ -606,7 +783,7 @@
 
 ---
 
-## 13. 性能测试与报告配置
+## 14. 性能测试与报告配置
 
 - **BENCHMARKS**  
   作用：性能基准值，用于评估各项指标，分为"资源加载(page.goto)"与"端到端加载(E2E)"两项，基准值分别为1000ms/1800ms，所有性能指标分项采集与分级，保留两位小数，报告、索引、终端日志格式统一。  
@@ -631,23 +808,32 @@
 
 ---
 
-## 14. UI 组件配置
+## 15. UI 组件配置
 
-### 统一架构组件配置（v1.3.33重构）
+### 统一架构组件配置（v1.3.33重构，v1.3.34增强）
 
 - **统一设备检测组件**  
   作用：所有控制组件使用统一的useDevice()Hook，替代本地设备检测  
   组件列表：ActionButtons、ShapeControls、PuzzleControlsCutCount、PuzzleControlsCutType、PuzzleControlsGamepad、PuzzleControlsScatter  
   默认值：useDevice()自动检测  
   影响点：设备检测一致性、代码重复度降低  
-  配置/代码位置：各控制组件（v1.3.33迁移完成）
+  配置/代码位置：各控制组件（v1.3.33迁移完成；v1.3.34：移动端检测增强）
 
 - **统一画布管理组件**  
   作用：所有布局组件使用统一的useCanvas()Hook，替代本地画布管理  
   组件列表：DesktopLayout、PhoneLandscapeLayout、PhonePortraitLayout  
   默认值：useCanvas()自动管理  
   影响点：画布状态一致性、性能优化  
-  配置/代码位置：各布局组件（v1.3.33迁移完成）
+  配置/代码位置：各布局组件（v1.3.33迁移完成；v1.3.34：移动端画布策略优化）
+
+- **移动端布局组件优化**（v1.3.34新增）  
+  作用：移动端布局组件的画布尺寸计算优化  
+  优化策略：  
+    - PhonePortraitLayout：直接使用calculateMobilePortraitCanvasSize计算  
+    - PhoneLandscapeLayout：直接使用calculateMobileLandscapeCanvasSize计算 + 智能面板宽度  
+  默认值：启用直接计算策略  
+  影响点：解决移动端适配问题，提升用户体验  
+  配置/代码位置：`components/layouts/PhonePortraitLayout.tsx`, `components/layouts/PhoneLandscapeLayout.tsx`
 
 - **统一事件管理组件**  
   作用：核心组件使用统一的useEventManager()Hook，避免重复事件监听  
@@ -692,7 +878,7 @@
 
 ---
 
-## 15. 触摸事件与交互配置
+## 16. 触摸事件与交互配置
 
 - **touchEventHandling**  
   作用：移动端触摸事件处理，解决被动监听器 preventDefault 问题  
@@ -738,31 +924,7 @@
 
 ---
 
-## 12. 构建与开发配置
-
-- **Next.js 配置**  
-  作用：框架构建配置  
-  配置文件：`next.config.mjs`  
-  主要配置：静态资源、图片优化、构建输出
-
-- **Tailwind CSS 配置**  
-  作用：样式框架配置  
-  配置文件：`tailwind.config.ts`  
-  主要配置：主题色彩、响应式断点、自定义样式
-
-- **TypeScript 配置**  
-  作用：类型检查配置  
-  配置文件：`tsconfig.json`  
-  主要配置：编译选项、路径映射、严格模式
-
-- **Playwright 配置**  
-  作用：E2E 测试配置  
-  配置文件：`playwright.config.ts`、`playwright.full.config.ts`  
-  主要配置：浏览器、超时、报告生成
-
----
-
-## 16. F10 Debug 调试模式配置（2025-01-18 最新版）
+## 17. F10 Debug 调试模式配置（2025-01-18 最新版）
 
 ### 功能说明
 
