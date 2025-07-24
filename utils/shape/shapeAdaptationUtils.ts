@@ -106,28 +106,22 @@ export function adaptShapeToCanvas(
       return originalShape;
     }
     
-    // 使用统一适配引擎
+    // 使用新的全局统一适配引擎
     try {
-      const { unifiedAdaptationEngine } = require('../adaptation/UnifiedAdaptationEngine');
+      const { AdaptationEngine } = require('../../core/AdaptationEngine');
+      const adaptationEngine = AdaptationEngine.getInstance();
       
-      const adaptationConfig = {
-        type: 'shape',
-        originalData: originalShape,
-        originalCanvasSize: oldSize,
-        targetCanvasSize: newSize,
-        options: {
-          debugMode: debug,
-          ...options
-        }
-      };
+      const result = adaptationEngine.adaptShape(
+        originalShape,
+        oldSize,
+        newSize
+      );
       
-      const result = unifiedAdaptationEngine.adapt(adaptationConfig);
-      
-      if (result.success) {
+      if (result.success && result.data) {
         if (debug) {
-          console.log('[adaptShapeToCanvas] 统一适配引擎适配成功');
+          console.log('[adaptShapeToCanvas] 全局适配引擎适配成功');
         }
-        return result.adaptedData;
+        return result.data;
       } else {
         console.error('[adaptShapeToCanvas] 统一适配引擎适配失败:', result.error);
         return originalShape;
@@ -397,7 +391,7 @@ export async function adaptShapeUnified(
           if (debug) {
             console.log('[统一适配] 创建记忆失败，使用统一适配引擎:', createError);
           }
-          currentMemoryId = null; // 重置ID，使用统一适配引擎
+          currentMemoryId = undefined; // 重置ID，使用统一适配引擎
         }
       }
       

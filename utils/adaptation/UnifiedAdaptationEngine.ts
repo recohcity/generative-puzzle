@@ -15,17 +15,26 @@ import { PuzzlePiece } from '@/types/puzzleTypes';
 export interface UnifiedAdaptationConfig {
   // 适配类型
   type: 'shape' | 'puzzle' | 'scattered';
-  
+
   // 原始状态
   originalData: Point[] | PuzzlePiece[];
   originalCanvasSize: { width: number; height: number };
-  
+
   // 目标状态
   targetCanvasSize: { width: number; height: number };
-  
+
+  // 🎯 目标形状数据（用于已完成拼图的精确锁定）
+  targetShapeData?: Point[];
+
+  // 🎯 目标位置数据（originalPositions，用于已完成拼图锁定）
+  targetPositions?: PuzzlePiece[];
+
   // 散开拼图特有的原始画布尺寸
   scatterCanvasSize?: { width: number; height: number };
-  
+
+  // 已完成拼图的索引数组（用于散开拼图适配）
+  completedPieces?: number[];
+
   // 适配选项
   options?: {
     preserveAspectRatio?: boolean;
@@ -51,7 +60,7 @@ export interface UnifiedAdaptationResult<T> {
 const DEFAULT_OPTIONS = {
   preserveAspectRatio: true,
   centerAlign: true,
-  scaleMethod: 'minEdge' as const,
+  scaleMethod: 'minEdge' as 'minEdge' | 'maxEdge' | 'independent',
   debugMode: false
 };
 
@@ -70,14 +79,14 @@ export class UnifiedAdaptationEngine {
    */
   adapt<T>(config: UnifiedAdaptationConfig): UnifiedAdaptationResult<T> {
     const startTime = performance.now();
-    
+
     try {
       // 验证输入参数
       this.validateConfig(config);
-      
+
       // 合并默认选项
       const options = { ...DEFAULT_OPTIONS, ...config.options };
-      
+
       if (this.debugMode || options.debugMode) {
         console.log(`🔧 [统一适配引擎] 开始${config.type}适配:`, {
           原始画布: `${config.originalCanvasSize.width}x${config.originalCanvasSize.height}`,
@@ -87,7 +96,7 @@ export class UnifiedAdaptationEngine {
       }
 
       let result: any;
-      
+
       switch (config.type) {
         case 'shape':
           result = this.adaptShape(config, options);
@@ -96,6 +105,7 @@ export class UnifiedAdaptationEngine {
           result = this.adaptPuzzlePieces(config, options);
           break;
         case 'scattered':
+          // 🎯 基于目标形状的散开拼图适配
           result = this.adaptScatteredPieces(config, options);
           break;
         default:
@@ -121,9 +131,9 @@ export class UnifiedAdaptationEngine {
     } catch (error) {
       const endTime = performance.now();
       const processingTime = endTime - startTime;
-      
+
       console.error(`❌ [统一适配引擎] ${config.type}适配失败:`, error);
-      
+
       return {
         adaptedData: config.originalData as T,
         metrics: {
@@ -141,11 +151,11 @@ export class UnifiedAdaptationEngine {
    * 形状适配 - 基于Step3方法
    */
   private adaptShape(
-    config: UnifiedAdaptationConfig, 
-    options: typeof DEFAULT_OPTIONS
+    config: UnifiedAdaptationConfig,
+    options: { preserveAspectRatio: boolean; centerAlign: boolean; scaleMethod: 'minEdge' | 'maxEdge' | 'independent'; debugMode: boolean }
   ): { adaptedData: Point[]; metrics: any } {
     const points = config.originalData as Point[];
-    
+
     // 计算缩放比例
     const scaleFactor = this.calculateScaleFactor(
       config.originalCanvasSize,
@@ -167,7 +177,7 @@ export class UnifiedAdaptationEngine {
         x: config.originalCanvasSize.width / 2,
         y: config.originalCanvasSize.height / 2
       };
-      
+
       const targetCenter = {
         x: config.targetCanvasSize.width / 2,
         y: config.targetCanvasSize.height / 2
@@ -178,11 +188,11 @@ export class UnifiedAdaptationEngine {
       const relativeY = point.y - originalCenter.y;
 
       // 应用缩放
-      const scaledX = typeof scaleFactor === 'number' 
-        ? relativeX * scaleFactor 
+      const scaledX = typeof scaleFactor === 'number'
+        ? relativeX * scaleFactor
         : relativeX * scaleFactor.x;
-      const scaledY = typeof scaleFactor === 'number' 
-        ? relativeY * scaleFactor 
+      const scaledY = typeof scaleFactor === 'number'
+        ? relativeY * scaleFactor
         : relativeY * scaleFactor.y;
 
       // 转换回绝对坐标
@@ -207,10 +217,10 @@ export class UnifiedAdaptationEngine {
    */
   private adaptPuzzlePieces(
     config: UnifiedAdaptationConfig,
-    options: typeof DEFAULT_OPTIONS
+    options: { preserveAspectRatio: boolean; centerAlign: boolean; scaleMethod: 'minEdge' | 'maxEdge' | 'independent'; debugMode: boolean }
   ): { adaptedData: PuzzlePiece[]; metrics: any } {
     const pieces = config.originalData as PuzzlePiece[];
-    
+
     // 计算缩放比例
     const scaleFactor = this.calculateScaleFactor(
       config.originalCanvasSize,
@@ -223,7 +233,7 @@ export class UnifiedAdaptationEngine {
       x: config.originalCanvasSize.width / 2,
       y: config.originalCanvasSize.height / 2
     };
-    
+
     const targetCenter = {
       x: config.targetCanvasSize.width / 2,
       y: config.targetCanvasSize.height / 2
@@ -234,14 +244,14 @@ export class UnifiedAdaptationEngine {
       // 适配拼图块中心位置
       const relativeX = piece.x - originalCenter.x;
       const relativeY = piece.y - originalCenter.y;
-      
-      const scaledX = typeof scaleFactor === 'number' 
-        ? relativeX * scaleFactor 
+
+      const scaledX = typeof scaleFactor === 'number'
+        ? relativeX * scaleFactor
         : relativeX * scaleFactor.x;
-      const scaledY = typeof scaleFactor === 'number' 
-        ? relativeY * scaleFactor 
+      const scaledY = typeof scaleFactor === 'number'
+        ? relativeY * scaleFactor
         : relativeY * scaleFactor.y;
-      
+
       const adaptedX = targetCenter.x + scaledX;
       const adaptedY = targetCenter.y + scaledY;
 
@@ -249,12 +259,12 @@ export class UnifiedAdaptationEngine {
       const adaptedPoints = piece.points.map(point => {
         const pointRelativeX = point.x - originalCenter.x;
         const pointRelativeY = point.y - originalCenter.y;
-        
-        const pointScaledX = typeof scaleFactor === 'number' 
-          ? pointRelativeX * scaleFactor 
+
+        const pointScaledX = typeof scaleFactor === 'number'
+          ? pointRelativeX * scaleFactor
           : pointRelativeX * scaleFactor.x;
-        const pointScaledY = typeof scaleFactor === 'number' 
-          ? pointRelativeY * scaleFactor 
+        const pointScaledY = typeof scaleFactor === 'number'
+          ? pointRelativeY * scaleFactor
           : pointRelativeY * scaleFactor.y;
 
         return {
@@ -273,7 +283,10 @@ export class UnifiedAdaptationEngine {
         ...piece,
         x: adaptedX,
         y: adaptedY,
-        points: adaptedPoints
+        points: adaptedPoints,
+        // 🔧 重要修复：保持原始旋转角度不变
+        rotation: piece.rotation,
+        originalRotation: piece.originalRotation
       };
     });
 
@@ -290,255 +303,333 @@ export class UnifiedAdaptationEngine {
   }
 
   /**
-   * 散开拼图适配 - 基于Step3方法
+   * 🎯 基于目标形状的散开拼图适配
+   * 
+   * 核心原则：所有元素都以目标形状为基准
+   * 1. 使用与目标形状完全一致的缩放比例
+   * 2. 已完成拼图：100%锁定到目标形状的对应位置
+   * 3. 未完成拼图：保持与目标形状一致的缩放变化
+   * 4. 确保所有拼图的适配都跟随目标形状的变化
+   * 5. 目标形状是唯一的适配基准，其他元素都跟随变化
    */
   private adaptScatteredPieces(
     config: UnifiedAdaptationConfig,
-    options: typeof DEFAULT_OPTIONS
+    options: { preserveAspectRatio: boolean; centerAlign: boolean; scaleMethod: 'minEdge' | 'maxEdge' | 'independent'; debugMode: boolean }
   ): { adaptedData: PuzzlePiece[]; metrics: any } {
     const pieces = config.originalData as PuzzlePiece[];
-    
+
     // 如果没有scatterCanvasSize，使用targetCanvasSize作为兜底
     if (!config.scatterCanvasSize) {
       console.warn('散开拼图适配没有提供scatterCanvasSize参数，使用targetCanvasSize作为兜底');
       config.scatterCanvasSize = config.targetCanvasSize;
     }
 
-    // 计算缩放比例 - 散开拼图使用独立的X和Y缩放
-    // 添加安全检查，防止除以0
-    if (config.scatterCanvasSize.width <= 0 || config.scatterCanvasSize.height <= 0) {
-      throw new Error(`散开画布尺寸无效: ${config.scatterCanvasSize.width}x${config.scatterCanvasSize.height}`);
-    }
-    
-    if (config.targetCanvasSize.width <= 0 || config.targetCanvasSize.height <= 0) {
-      throw new Error(`目标画布尺寸无效: ${config.targetCanvasSize.width}x${config.targetCanvasSize.height}`);
-    }
-    
-    const scaleX = config.targetCanvasSize.width / config.scatterCanvasSize.width;
-    const scaleY = config.targetCanvasSize.height / config.scatterCanvasSize.height;
-    
-    // 验证缩放比例是否有效
-    if (!isFinite(scaleX) || !isFinite(scaleY)) {
-      throw new Error(`缩放比例无效: scaleX=${scaleX}, scaleY=${scaleY}`);
+    // 安全检查 - 使用更宽松的验证，避免resize过程中的瞬间无效值导致白屏
+    if (!config.scatterCanvasSize || config.scatterCanvasSize.width <= 0 || config.scatterCanvasSize.height <= 0) {
+      console.warn(`[UnifiedAdaptationEngine] 散开画布尺寸无效，使用默认值: ${config.scatterCanvasSize?.width}x${config.scatterCanvasSize?.height}`);
+      // 使用默认尺寸而不是抛出错误
+      config.scatterCanvasSize = { width: 1280, height: 720 };
     }
 
-    // 计算画布中心点偏移
-    const centerOffsetX = (config.targetCanvasSize.width / 2) - (config.scatterCanvasSize.width / 2) * scaleX;
-    const centerOffsetY = (config.targetCanvasSize.height / 2) - (config.scatterCanvasSize.height / 2) * scaleY;
+    if (!config.targetCanvasSize || config.targetCanvasSize.width <= 0 || config.targetCanvasSize.height <= 0) {
+      console.warn(`[UnifiedAdaptationEngine] 目标画布尺寸无效，使用默认值: ${config.targetCanvasSize?.width}x${config.targetCanvasSize?.height}`);
+      // 使用默认尺寸而不是抛出错误
+      config.targetCanvasSize = { width: 1280, height: 720 };
+    }
+
+    // 🎯 关键改进：使用与目标形状完全一致的缩放比例
+    // 这确保了拼图与目标形状保持100%一致的比例关系
+    // 🔑 重要：使用与目标形状适配相同的算法（30%直径规则）
+    const originalMinEdge = Math.min(config.scatterCanvasSize.width, config.scatterCanvasSize.height);
+    const targetMinEdge = Math.min(config.targetCanvasSize.width, config.targetCanvasSize.height);
+    let uniformScale = targetMinEdge / originalMinEdge;
 
     if (this.debugMode || options.debugMode) {
-      console.log(`🔧 散开拼图适配参数:`, {
+      console.log(`🎯 [缩放计算] 原始最小边=${originalMinEdge}, 目标最小边=${targetMinEdge}, 统一缩放比例=${uniformScale.toFixed(4)}`);
+    }
+
+    // 验证缩放比例是否有效 - 使用默认值而不是抛出错误
+    if (!isFinite(uniformScale) || uniformScale <= 0) {
+      console.warn(`[UnifiedAdaptationEngine] 统一缩放比例无效，使用默认值1: ${uniformScale}`);
+      uniformScale = 1; // 使用默认缩放比例
+    }
+
+    // 🎯 计算画布中心点（快照整体缩放的基准点）
+    // 使用画布中心作为缩放基准，确保整体缩放的一致性
+    const originalCenter = {
+      x: config.scatterCanvasSize.width / 2,
+      y: config.scatterCanvasSize.height / 2
+    };
+
+    const targetCenter = {
+      x: config.targetCanvasSize.width / 2,
+      y: config.targetCanvasSize.height / 2
+    };
+
+    if (this.debugMode || options.debugMode) {
+      console.log(`🔧 [快照缩放] 散开拼图适配参数:`, {
         散开画布: `${config.scatterCanvasSize.width}x${config.scatterCanvasSize.height}`,
         目标画布: `${config.targetCanvasSize.width}x${config.targetCanvasSize.height}`,
-        缩放比例X: scaleX.toFixed(3),
-        缩放比例Y: scaleY.toFixed(3),
-        中心偏移X: centerOffsetX.toFixed(3),
-        中心偏移Y: centerOffsetY.toFixed(3)
+        统一缩放比例: uniformScale.toFixed(3),
+        原始中心: `(${originalCenter.x}, ${originalCenter.y})`,
+        目标中心: `(${targetCenter.x}, ${targetCenter.y})`
       });
     }
-    
-    // 添加画布尺寸验证
-    if (config.targetCanvasSize.width <= 0 || config.targetCanvasSize.height <= 0) {
-      console.error(`[UnifiedAdaptationEngine] 目标画布尺寸无效:`, config.targetCanvasSize);
-      throw new Error(`目标画布尺寸无效: ${config.targetCanvasSize.width}x${config.targetCanvasSize.height}`);
-    }
 
-    // 适配每个散开的拼图块
+    // 添加画布尺寸验证 - 这里已经在上面处理过了，移除重复检查
+
+    // 🎯 快照整体缩放：适配每个拼图块
     const adaptedPieces = pieces.map((piece, index) => {
-      // 适配拼图块中心位置 - 使用相对于中心的坐标计算
-      const originalCenterX = config.scatterCanvasSize.width / 2;
-      const originalCenterY = config.scatterCanvasSize.height / 2;
-      
-      // 验证中心点坐标是否有效
-      if (!isFinite(originalCenterX) || !isFinite(originalCenterY)) {
-        throw new Error(`原始中心点坐标无效: (${originalCenterX}, ${originalCenterY})`);
-      }
-      
-      const relativeX = piece.x - originalCenterX;
-      const relativeY = piece.y - originalCenterY;
-      
-      const scaledRelativeX = relativeX * scaleX;
-      const scaledRelativeY = relativeY * scaleY;
-      
-      const targetCenterX = config.targetCanvasSize.width / 2;
-      const targetCenterY = config.targetCanvasSize.height / 2;
-      
-      const scaledX = targetCenterX + scaledRelativeX;
-      const scaledY = targetCenterY + scaledRelativeY;
+      // 🔑 关键：检查是否为已完成的拼图块
+      // 已完成的拼图块需要特殊处理，确保它们锁定在目标形状的正确位置
+      const isCompletedPiece = piece.isCompleted || (config.completedPieces && config.completedPieces.includes(index)) || false;
 
-      // 适配所有点的坐标 - 使用相同的相对中心计算方法
-      const scaledPoints = piece.points.map((point, pointIndex) => {
-        // 详细验证点对象的结构
-        if (!point) {
-          console.error(`[UnifiedAdaptationEngine] 拼图块${index}的点${pointIndex}为null/undefined:`, point);
-          return { x: null, y: null, isOriginal: false }; // 返回安全的默认值
-        }
-        
-        if (typeof point !== 'object') {
-          console.error(`[UnifiedAdaptationEngine] 拼图块${index}的点${pointIndex}不是对象:`, typeof point, point);
-          return { x: null, y: null, isOriginal: false };
-        }
-        
-        if (typeof point.x !== 'number' || typeof point.y !== 'number') {
-          console.error(`[UnifiedAdaptationEngine] 拼图块${index}的点${pointIndex}坐标类型错误:`, {
-            x: point.x,
-            y: point.y,
-            xType: typeof point.x,
-            yType: typeof point.y
-          });
-          return { x: null, y: null, isOriginal: false };
-        }
-        
-        if (!isFinite(point.x) || !isFinite(point.y)) {
-          console.error(`[UnifiedAdaptationEngine] 拼图块${index}的点${pointIndex}坐标不是有限数:`, {
-            x: point.x,
-            y: point.y,
-            xIsFinite: isFinite(point.x),
-            yIsFinite: isFinite(point.y)
-          });
-          // 输入数据本身就有问题，这说明问题出现在适配引擎之前
-          console.error(`❌ 输入数据异常：拼图块${index}的点${pointIndex}在进入适配引擎前就已经是NaN`);
-          return { x: null, y: null, isOriginal: false };
-        }
-        
-        const pointRelativeX = point.x - originalCenterX;
-        const pointRelativeY = point.y - originalCenterY;
-        
-        const newX = targetCenterX + pointRelativeX * scaleX;
-        const newY = targetCenterY + pointRelativeY * scaleY;
-        
-        // 验证计算结果
-        if (!isFinite(newX) || !isFinite(newY)) {
-          console.error(`[UnifiedAdaptationEngine] 拼图块${index}点${pointIndex}坐标计算结果无效:`, {
-            original: { x: point.x, y: point.y },
-            relative: { x: pointRelativeX, y: pointRelativeY },
-            scale: { x: scaleX, y: scaleY },
-            result: { x: newX, y: newY },
-            centers: { originalCenterX, originalCenterY, targetCenterX, targetCenterY },
-            // 添加详细的中间计算步骤
-            calculations: {
-              'point.x': point.x,
-              'originalCenterX': originalCenterX,
-              'pointRelativeX': pointRelativeX,
-              'targetCenterX': targetCenterX,
-              'scaleX': scaleX,
-              'pointRelativeX * scaleX': pointRelativeX * scaleX,
-              'targetCenterX + pointRelativeX * scaleX': targetCenterX + pointRelativeX * scaleX
-            }
-          });
-          return { x: null, y: null, isOriginal: false };
-        }
-        
-        // 成功计算，返回新坐标
-        if ((this.debugMode || options.debugMode) && index < 2 && pointIndex < 2) {
-          console.log(`[UnifiedAdaptationEngine] 拼图块${index}点${pointIndex}适配: (${point.x.toFixed(1)}, ${point.y.toFixed(1)}) → (${newX.toFixed(1)}, ${newY.toFixed(1)})`);
-        }
-        
-        return {
-          ...point,
-          x: newX,
-          y: newY
-        };
-      });
-
-      // 计算拼图块的边界（考虑旋转）
-      const bounds = this.calculatePieceBounds({ ...piece, points: scaledPoints });
-      
-      // 边界约束 - 确保拼图块不会离开画布
-      const SAFE_MARGIN = 10; // 安全边距
-      let constrainedX = scaledX;
-      let constrainedY = scaledY;
-      let correctionX = 0;
-      let correctionY = 0;
-
-      // 检查水平边界
-      if (bounds.minX < SAFE_MARGIN) {
-        correctionX = SAFE_MARGIN - bounds.minX;
-        constrainedX = scaledX + correctionX;
-      } else if (bounds.maxX > config.targetCanvasSize.width - SAFE_MARGIN) {
-        correctionX = (config.targetCanvasSize.width - SAFE_MARGIN) - bounds.maxX;
-        constrainedX = scaledX + correctionX;
+      if (this.debugMode || options.debugMode) {
+        console.log(`🔍 [拼图块${index}] 完成状态检查:`, {
+          isCompleted: piece.isCompleted,
+          inCompletedList: config.completedPieces?.includes(index),
+          completedPieces: config.completedPieces,
+          isCompletedPiece,
+          hasTargetPositions: !!config.targetPositions,
+          targetPositionsLength: config.targetPositions?.length
+        });
       }
 
-      // 检查垂直边界
-      if (bounds.minY < SAFE_MARGIN) {
-        correctionY = SAFE_MARGIN - bounds.minY;
-        constrainedY = scaledY + correctionY;
-      } else if (bounds.maxY > config.targetCanvasSize.height - SAFE_MARGIN) {
-        correctionY = (config.targetCanvasSize.height - SAFE_MARGIN) - bounds.maxY;
-        constrainedY = scaledY + correctionY;
+      let scaledX: number;
+      let scaledY: number;
+      let scaledPoints: Point[];
+
+      if (isCompletedPiece) {
+        // 🔒 已完成拼图的特殊处理：100%锁定到目标形状位置
+
+        // 🎯 第一优先级：使用目标位置数据（originalPositions）- 100%精确锁定
+        if (config.targetPositions && config.targetPositions[index]) {
+          const targetPosition = config.targetPositions[index];
+
+          // 🔑 关键：100%精确锁定，不进行任何缩放变换
+          scaledX = targetPosition.x;
+          scaledY = targetPosition.y;
+
+          // 🔑 关键：使用目标位置的精确点数据
+          scaledPoints = targetPosition.points.map(point => ({ ...point }));
+
+          if (this.debugMode || options.debugMode) {
+            console.log(`🔒 [已完成拼图-100%锁定] 拼图块${index}: (${scaledX.toFixed(1)}, ${scaledY.toFixed(1)}) 角度=${targetPosition.rotation}°`);
+          }
+
+          // 🔑 直接返回完全锁定的拼图块，不进行任何变换
+          return {
+            ...piece,
+            x: scaledX,
+            y: scaledY,
+            points: scaledPoints,
+            // 🔑 100%锁定角度到目标形状
+            rotation: targetPosition.rotation || 0,
+            originalRotation: targetPosition.originalRotation || 0,
+            // 🔑 标记为已完成并锁定
+            isCompleted: true,
+            originalX: targetPosition.originalX,
+            originalY: targetPosition.originalY
+          };
+        }
+        // 如果有原始目标位置信息，使用它
+        else if (piece.originalX !== undefined && piece.originalY !== undefined) {
+          // 对原始目标位置也应用相同的缩放变换
+          const originalTargetRelativeX = piece.originalX - originalCenter.x;
+          const originalTargetRelativeY = piece.originalY - originalCenter.y;
+
+          scaledX = targetCenter.x + originalTargetRelativeX * uniformScale;
+          scaledY = targetCenter.y + originalTargetRelativeY * uniformScale;
+
+          if (this.debugMode || options.debugMode) {
+            console.log(`🔒 [已完成拼图] 拼图块${index}使用原始目标位置: (${piece.originalX}, ${piece.originalY}) → (${scaledX.toFixed(1)}, ${scaledY.toFixed(1)})`);
+          }
+        } else {
+          // 如果没有原始目标位置，按正常方式缩放但标记为需要锁定
+          const relativeX = piece.x - originalCenter.x;
+          const relativeY = piece.y - originalCenter.y;
+
+          scaledX = targetCenter.x + relativeX * uniformScale;
+          scaledY = targetCenter.y + relativeY * uniformScale;
+
+          console.warn(`⚠️ [已完成拼图] 拼图块${index}缺少原始目标位置信息，使用当前位置缩放`);
+        }
+
+        // 对已完成拼图的点也要特殊处理
+        scaledPoints = piece.points.map((point, pointIndex) => {
+          if (!point || typeof point.x !== 'number' || typeof point.y !== 'number') {
+            console.error(`[已完成拼图] 拼图块${index}的点${pointIndex}数据无效:`, point);
+            return { x: 0, y: 0, isOriginal: false };
+          }
+
+          // 对于已完成拼图的点，也需要基于目标位置进行缩放
+          const pointRelativeX = point.x - originalCenter.x;
+          const pointRelativeY = point.y - originalCenter.y;
+
+          const newX = targetCenter.x + pointRelativeX * uniformScale;
+          const newY = targetCenter.y + pointRelativeY * uniformScale;
+
+          if (!isFinite(newX) || !isFinite(newY)) {
+            console.error(`[已完成拼图] 拼图块${index}点${pointIndex}计算结果无效:`, {
+              original: { x: point.x, y: point.y },
+              result: { x: newX, y: newY }
+            });
+            return { x: 0, y: 0, isOriginal: false };
+          }
+
+          return {
+            ...point,
+            x: newX,
+            y: newY
+          };
+        });
+
+      } else {
+        // 🧩 未完成拼图的正常处理：快照整体缩放
+        const relativeX = piece.x - originalCenter.x;
+        const relativeY = piece.y - originalCenter.y;
+
+        scaledX = targetCenter.x + relativeX * uniformScale;
+        scaledY = targetCenter.y + relativeY * uniformScale;
+
+        // 🎯 快照整体缩放：适配所有点的坐标
+        scaledPoints = piece.points.map((point, pointIndex) => {
+          // 基本验证
+          if (!point || typeof point.x !== 'number' || typeof point.y !== 'number') {
+            console.error(`[快照缩放] 拼图块${index}的点${pointIndex}数据无效:`, point);
+            return { x: 0, y: 0, isOriginal: false };
+          }
+
+          if (!isFinite(point.x) || !isFinite(point.y)) {
+            console.error(`[快照缩放] 拼图块${index}的点${pointIndex}坐标不是有限数:`, point);
+            return { x: 0, y: 0, isOriginal: false };
+          }
+
+          // 计算点相对于原始中心的位置
+          const pointRelativeX = point.x - originalCenter.x;
+          const pointRelativeY = point.y - originalCenter.y;
+
+          // 应用统一缩放
+          const newX = targetCenter.x + pointRelativeX * uniformScale;
+          const newY = targetCenter.y + pointRelativeY * uniformScale;
+
+          // 验证结果
+          if (!isFinite(newX) || !isFinite(newY)) {
+            console.error(`[快照缩放] 拼图块${index}点${pointIndex}计算结果无效:`, {
+              original: { x: point.x, y: point.y },
+              result: { x: newX, y: newY }
+            });
+            return { x: 0, y: 0, isOriginal: false };
+          }
+
+          return {
+            ...point,
+            x: newX,
+            y: newY
+          };
+        });
       }
 
-      // 应用边界约束到所有点
-      const constrainedPoints = scaledPoints.map(point => ({
-        ...point,
-        x: point.x + correctionX,
-        y: point.y + correctionY
-      }));
-
-      // 调试信息
+      // 🎯 快照整体缩放：调试信息
       if ((this.debugMode || options.debugMode) && index < 3) {
-        const hasCorrection = correctionX !== 0 || correctionY !== 0;
-        console.log(`🔧 散开拼图块${index}适配: (${piece.x.toFixed(1)}, ${piece.y.toFixed(1)}) → (${scaledX.toFixed(1)}, ${scaledY.toFixed(1)})${hasCorrection ? ` → 边界约束(${constrainedX.toFixed(1)}, ${constrainedY.toFixed(1)})` : ''}`);
-        if (hasCorrection) {
-          console.log(`   边界修正: (${correctionX.toFixed(1)}, ${correctionY.toFixed(1)})`);
-        }
+        const statusLabel = isCompletedPiece ? '[已完成]' : '[未完成]';
+        console.log(`🔧 ${statusLabel} 拼图块${index}适配: (${piece.x.toFixed(1)}, ${piece.y.toFixed(1)}) → (${scaledX.toFixed(1)}, ${scaledY.toFixed(1)}), 角度保持: ${piece.rotation}°`);
       }
 
+      // 🎯 快照整体缩放：返回适配后的拼图块
       return {
         ...piece,
-        x: constrainedX,
-        y: constrainedY,
-        points: constrainedPoints
+        x: scaledX,
+        y: scaledY,
+        points: scaledPoints,
+        // 🔑 核心：已完成拼图锁定到目标角度，未完成拼图保持当前角度
+        rotation: isCompletedPiece ? (piece.originalRotation || 0) : piece.rotation,
+        originalRotation: piece.originalRotation,
+        // 保持完成状态
+        isCompleted: isCompletedPiece
       };
     });
 
     return {
       adaptedData: adaptedPieces,
       metrics: {
-        scaleFactor: { x: scaleX, y: scaleY },
-        centerOffset: { x: centerOffsetX, y: centerOffsetY }
+        scaleFactor: uniformScale,
+        centerOffset: {
+          x: targetCenter.x - originalCenter.x,
+          y: targetCenter.y - originalCenter.y
+        }
       }
     };
   }
 
   /**
-   * 计算拼图块边界（考虑旋转）
+   * 适配目标位置（originalPositions）- 确保提示位置正确
+   * 
+   * 这个方法专门用于适配拼图的目标位置，确保提示功能显示在正确的位置
    */
-  private calculatePieceBounds(piece: PuzzlePiece): { minX: number; maxX: number; minY: number; maxY: number } {
-    if (piece.rotation !== 0) {
-      // 如果有旋转，需要计算旋转后的边界
-      const center = { x: piece.x, y: piece.y };
-      const radians = (piece.rotation * Math.PI) / 180;
-      
-      const rotatedPoints = piece.points.map(point => {
-        const dx = point.x - center.x;
-        const dy = point.y - center.y;
-        
-        const rotatedDx = dx * Math.cos(radians) - dy * Math.sin(radians);
-        const rotatedDy = dx * Math.sin(radians) + dy * Math.cos(radians);
-        
+  adaptOriginalPositions(
+    originalPositions: PuzzlePiece[],
+    originalCanvasSize: { width: number; height: number },
+    targetCanvasSize: { width: number; height: number }
+  ): PuzzlePiece[] {
+    try {
+      // 使用与散开拼图相同的缩放逻辑，确保一致性
+      const originalMinEdge = Math.min(originalCanvasSize.width, originalCanvasSize.height);
+      const targetMinEdge = Math.min(targetCanvasSize.width, targetCanvasSize.height);
+      const uniformScale = targetMinEdge / originalMinEdge;
+
+      const originalCenter = {
+        x: originalCanvasSize.width / 2,
+        y: originalCanvasSize.height / 2
+      };
+
+      const targetCenter = {
+        x: targetCanvasSize.width / 2,
+        y: targetCanvasSize.height / 2
+      };
+
+      if (this.debugMode) {
+        console.log(`🎯 [目标位置适配] 缩放比例: ${uniformScale.toFixed(3)}, 原始中心: (${originalCenter.x}, ${originalCenter.y}), 目标中心: (${targetCenter.x}, ${targetCenter.y})`);
+      }
+
+      return originalPositions.map((position, index) => {
+        // 适配位置
+        const relativeX = position.x - originalCenter.x;
+        const relativeY = position.y - originalCenter.y;
+
+        const scaledX = targetCenter.x + relativeX * uniformScale;
+        const scaledY = targetCenter.y + relativeY * uniformScale;
+
+        // 适配所有点
+        const scaledPoints = position.points.map(point => {
+          const pointRelativeX = point.x - originalCenter.x;
+          const pointRelativeY = point.y - originalCenter.y;
+
+          return {
+            ...point,
+            x: targetCenter.x + pointRelativeX * uniformScale,
+            y: targetCenter.y + pointRelativeY * uniformScale
+          };
+        });
+
+        if (this.debugMode && index < 3) {
+          console.log(`🎯 [目标位置] 拼图块${index}: (${position.x.toFixed(1)}, ${position.y.toFixed(1)}) → (${scaledX.toFixed(1)}, ${scaledY.toFixed(1)})`);
+        }
+
         return {
-          x: center.x + rotatedDx,
-          y: center.y + rotatedDy
+          ...position,
+          x: scaledX,
+          y: scaledY,
+          points: scaledPoints,
+          // 保持原始角度
+          rotation: position.rotation,
+          originalRotation: position.originalRotation
         };
       });
-      
-      return {
-        minX: Math.min(...rotatedPoints.map(p => p.x)),
-        maxX: Math.max(...rotatedPoints.map(p => p.x)),
-        minY: Math.min(...rotatedPoints.map(p => p.y)),
-        maxY: Math.max(...rotatedPoints.map(p => p.y))
-      };
+    } catch (error) {
+      console.error('❌ 目标位置适配失败:', error);
+      return originalPositions;
     }
-    
-    // 没有旋转，直接使用点的坐标
-    return {
-      minX: Math.min(...piece.points.map(p => p.x)),
-      maxX: Math.max(...piece.points.map(p => p.x)),
-      minY: Math.min(...piece.points.map(p => p.y)),
-      maxY: Math.max(...piece.points.map(p => p.y))
-    };
   }
 
   /**
@@ -554,18 +645,18 @@ export class UnifiedAdaptationEngine {
         const originalMinEdge = Math.min(originalSize.width, originalSize.height);
         const targetMinEdge = Math.min(targetSize.width, targetSize.height);
         return targetMinEdge / originalMinEdge;
-        
+
       case 'maxEdge':
         const originalMaxEdge = Math.max(originalSize.width, originalSize.height);
         const targetMaxEdge = Math.max(targetSize.width, targetSize.height);
         return targetMaxEdge / originalMaxEdge;
-        
+
       case 'independent':
         return {
           x: targetSize.width / originalSize.width,
           y: targetSize.height / originalSize.height
         };
-        
+
       default:
         throw new Error(`不支持的缩放方法: ${scaleMethod}`);
     }
@@ -588,7 +679,7 @@ export class UnifiedAdaptationEngine {
       x: originalSize.width / 2,
       y: originalSize.height / 2
     };
-    
+
     const targetCenter = {
       x: targetSize.width / 2,
       y: targetSize.height / 2
@@ -608,20 +699,26 @@ export class UnifiedAdaptationEngine {
       throw new Error('originalData必须是有效的数组');
     }
 
-    if (!config.originalCanvasSize || 
-        config.originalCanvasSize.width <= 0 || 
-        config.originalCanvasSize.height <= 0) {
-      throw new Error('originalCanvasSize必须是有效的尺寸');
+    // 对画布尺寸使用更宽松的验证，在resize过程中可能出现瞬间的无效值
+    if (!config.originalCanvasSize) {
+      console.warn('[UnifiedAdaptationEngine] originalCanvasSize缺失，使用默认值');
+      config.originalCanvasSize = { width: 1280, height: 720 };
+    } else if (config.originalCanvasSize.width <= 0 || config.originalCanvasSize.height <= 0) {
+      console.warn('[UnifiedAdaptationEngine] originalCanvasSize无效，使用默认值');
+      config.originalCanvasSize = { width: 1280, height: 720 };
     }
 
-    if (!config.targetCanvasSize || 
-        config.targetCanvasSize.width <= 0 || 
-        config.targetCanvasSize.height <= 0) {
-      throw new Error('targetCanvasSize必须是有效的尺寸');
+    if (!config.targetCanvasSize) {
+      console.warn('[UnifiedAdaptationEngine] targetCanvasSize缺失，使用默认值');
+      config.targetCanvasSize = { width: 1280, height: 720 };
+    } else if (config.targetCanvasSize.width <= 0 || config.targetCanvasSize.height <= 0) {
+      console.warn('[UnifiedAdaptationEngine] targetCanvasSize无效，使用默认值');
+      config.targetCanvasSize = { width: 1280, height: 720 };
     }
 
     if (config.type === 'scattered' && !config.scatterCanvasSize) {
-      throw new Error('散开拼图适配需要提供scatterCanvasSize参数');
+      console.warn('[UnifiedAdaptationEngine] 散开拼图适配缺少scatterCanvasSize，使用targetCanvasSize');
+      config.scatterCanvasSize = config.targetCanvasSize;
     }
   }
 

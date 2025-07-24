@@ -36,7 +36,8 @@ import ResponsiveBackground from "@/components/ResponsiveBackground";
 import DesktopLayout from "./layouts/DesktopLayout";
 import PhonePortraitLayout from "./layouts/PhonePortraitLayout";
 import PhoneLandscapeLayout from "./layouts/PhoneLandscapeLayout";
-import { getDeviceLayoutMode, DEVICE_THRESHOLDS } from '@/constants/canvasAdaptation';
+// 使用统一的设备检测系统
+import { useDevice } from '@/providers/hooks';
 
 export default function CurveTestOptimized() {
   // --- Remove useGame hook call from top level --- 
@@ -52,58 +53,26 @@ export default function CurveTestOptimized() {
   const [fullscreenClickCount, setFullscreenClickCount] = useState(0);
   // 添加ref用于全屏元素
   const gameContainerRef = useRef<HTMLDivElement>(null);
-  // 添加设备类型检测状态
-  const [deviceType, setDeviceType] = useState<'desktop' | 'tablet' | 'phone'>('desktop');
-  // 添加手机模式状态，用于区分横竖屏
-  const [phoneMode, setPhoneMode] = useState<'portrait' | 'landscape'>('portrait');
+  // 使用统一的设备检测系统
+  const device = useDevice();
+  const deviceType = device.deviceType;
+  const phoneMode = device.layoutMode as 'portrait' | 'landscape';
+  
   // 添加控制面板选项卡状态（仅用于手机模式）
   const [activeTab, setActiveTab] = useState<'shape' | 'puzzle' | 'cut' | 'scatter' | 'controls'>('shape');
 
-  // 使用统一的设备检测逻辑
+  // 监听设备状态变化进行调试输出
   useEffect(() => {
-    const detectDevice = () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      
-      // 使用统一的设备检测函数
-      const deviceLayoutInfo = getDeviceLayoutMode(width, height);
-      
-      // 更新设备类型状态
-      setDeviceType(deviceLayoutInfo.deviceType);
-      
-      // 更新手机模式状态
-      if (deviceLayoutInfo.deviceType === 'phone') {
-        setPhoneMode(deviceLayoutInfo.layoutMode as 'portrait' | 'landscape');
-        console.log(`手机方向: ${deviceLayoutInfo.layoutMode === 'portrait' ? '竖屏' : '横屏'}`);
-      }
-      
-      console.log(`设备检测结果:`, {
-        deviceType: deviceLayoutInfo.deviceType,
-        layoutMode: deviceLayoutInfo.layoutMode,
-        screenSize: `${width}x${height}`,
-        forceReason: deviceLayoutInfo.forceReason || 'normal',
-        threshold: DEVICE_THRESHOLDS.DESKTOP_MOBILE_HEIGHT
-      });
-    };
-    
-    // 初始化检测
-    detectDevice();
-    
-    // 在窗口大小变化时重新检测
-    window.addEventListener('resize', detectDevice);
-    
-    // 特别监听方向变化事件
-    window.addEventListener('orientationchange', () => {
-      console.log("方向变化检测到");
-      setTimeout(detectDevice, 300); // 延迟检测，确保浏览器已完成方向变化
+    console.log(`设备检测结果 (统一系统):`, {
+      deviceType: device.deviceType,
+      layoutMode: device.layoutMode,
+      screenSize: `${device.screenWidth}x${device.screenHeight}`,
+      isMobile: device.isMobile,
+      isTablet: device.isTablet,
+      isDesktop: device.isDesktop,
+      isPortrait: device.isPortrait
     });
-    
-    // 清理函数
-    return () => {
-      window.removeEventListener('resize', detectDevice);
-      window.removeEventListener('orientationchange', detectDevice);
-    };
-  }, [deviceType, phoneMode]);
+  }, [device]);
 
   // 初始化背景音乐
   useEffect(() => {

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { ScatterChart } from "lucide-react"
 import { playButtonClickSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
+import { useDevice } from "@/providers/hooks"
 
 interface PuzzleControlsScatterProps {
   goToNextTab?: () => void;
@@ -16,31 +17,10 @@ export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 34 }
     scatterPuzzle 
   } = useGame()
   
-  // 检测设备类型
-  const [isPhone, setIsPhone] = useState(false);
-  const [isLandscape, setIsLandscape] = useState(false);
-  
-  // 设备检测
-  useEffect(() => {
-    const checkDevice = () => {
-      const ua = navigator.userAgent;
-      const isMobile = /iPhone|Android/i.test(ua);
-      const isPortrait = window.innerHeight > window.innerWidth;
-      setIsPhone(isMobile);
-      setIsLandscape(isMobile && !isPortrait);
-    };
-    
-    checkDevice();
-    window.addEventListener('resize', checkDevice);
-    window.addEventListener('orientationchange', () => {
-      setTimeout(checkDevice, 300);
-    });
-    
-    return () => {
-      window.removeEventListener('resize', checkDevice);
-      window.removeEventListener('orientationchange', checkDevice);
-    };
-  }, []);
+  // 使用统一设备检测系统
+  const device = useDevice();
+  const isPhone = device.deviceType === 'phone';
+  const isLandscape = device.layoutMode === 'landscape';
   
   // 检查是否已生成拼图
   const isPuzzleGenerated = state.puzzle !== null

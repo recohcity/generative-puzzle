@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useRef } from 'react';
 import PuzzleCanvas from "@/components/PuzzleCanvas";
 import PhoneTabPanel from "./PhoneTabPanel";
-import { MOBILE_ADAPTATION, calculateMobileLandscapeCanvasSize } from '@/constants/canvasAdaptation';
+import { MOBILE_ADAPTATION } from '@/constants/canvasAdaptation';
+import { useCanvas, useDevice } from '@/providers/hooks';
 
 interface PhoneLandscapeLayoutProps {
   isMusicPlaying: boolean;
@@ -16,16 +17,7 @@ interface PhoneLandscapeLayoutProps {
   goToFirstTab: () => void;
 }
 
-const getCanvasSize = () => {
-  if (typeof window === 'undefined') return { canvasSize: 375, panelWidth: 375, canvasMargin: MOBILE_ADAPTATION.LANDSCAPE.CANVAS_MARGIN };
-  
-  const { canvasSize, panelWidth, canvasMargin } = calculateMobileLandscapeCanvasSize(
-    window.innerWidth, 
-    window.innerHeight
-  );
-  
-  return { canvasSize, panelWidth, canvasMargin };
-};
+
 
 const PhoneLandscapeLayout: React.FC<PhoneLandscapeLayoutProps> = ({
   isMusicPlaying,
@@ -37,14 +29,22 @@ const PhoneLandscapeLayout: React.FC<PhoneLandscapeLayoutProps> = ({
   goToNextTab,
   goToFirstTab,
 }) => {
-  // 响应式画布尺寸，类似竖屏布局
-  const [canvasData, setCanvasData] = useState(() => getCanvasSize());
-  useEffect(() => {
-    const handleResize = () => setCanvasData(getCanvasSize());
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-  const { canvasSize, panelWidth, canvasMargin } = canvasData;
+  // 使用统一的设备检测和画布管理系统
+  const device = useDevice();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const backgroundCanvasRef = useRef<HTMLCanvasElement>(null);
+  
+  // 使用统一的画布管理系统
+  const canvasSize = useCanvas({ 
+    containerRef, 
+    canvasRef, 
+    backgroundCanvasRef 
+  });
+  
+  // 使用统一画布管理系统的尺寸，如果没有则使用默认值
+  const canvasSizeValue = canvasSize?.width || 375;
+  const canvasMargin = MOBILE_ADAPTATION.LANDSCAPE.CANVAS_MARGIN;
 
   return (
     <div style={{ 
@@ -63,10 +63,10 @@ const PhoneLandscapeLayout: React.FC<PhoneLandscapeLayoutProps> = ({
       <div
         id="panel-container"
         style={{ 
-          width: canvasSize, // 面板宽度与画布宽度一致
-          minWidth: canvasSize, // 最小宽度也设为画布宽度
-          maxWidth: canvasSize, // 最大宽度也设为画布宽度
-          height: canvasSize, 
+          width: canvasSizeValue, // 面板宽度与画布宽度一致
+          minWidth: canvasSizeValue, // 最小宽度也设为画布宽度
+          maxWidth: canvasSizeValue, // 最大宽度也设为画布宽度
+          height: canvasSizeValue, 
           display: 'flex', 
           alignItems: 'flex-start',
           marginTop: canvasMargin,
@@ -87,9 +87,10 @@ const PhoneLandscapeLayout: React.FC<PhoneLandscapeLayoutProps> = ({
       </div>
       {/* 右侧画布区域 */}
       <div
+        ref={containerRef}
         style={{
-          width: canvasSize,
-          height: canvasSize,
+          width: canvasSizeValue,
+          height: canvasSizeValue,
           marginLeft: canvasMargin,
           marginTop: canvasMargin,
           background: 'rgba(255,255,255,0.12)',

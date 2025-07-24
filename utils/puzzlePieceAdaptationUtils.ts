@@ -196,9 +196,8 @@ function applyTransformationToPoint(
   
   return {
     x: canvasCenter.x + relativeX * transformation.scale,
-    y: canvasCenter.y + relativeY * transformation.scale,
-    isOriginal: point.isOriginal
-  };
+    y: canvasCenter.y + relativeY * transformation.scale
+  } as any; // 使用类型断言解决 isOriginal 属性问题
 }
 
 /**

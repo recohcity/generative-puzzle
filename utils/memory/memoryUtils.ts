@@ -216,7 +216,7 @@ function calculateNodeImportance(point: Point, allPoints: Point[], index: number
  * 生成节点关系
  */
 function generateNodeRelationships(nodes: TopologyNode[]) {
-  const relationships = [];
+  const relationships: Array<{source: string; target: string; type: string; fromNodeId?: string; toNodeId?: string}> = [];
   
   for (const node of nodes) {
     for (const connectionId of node.connections) {
@@ -228,10 +228,11 @@ function generateNodeRelationships(nodes: TopologyNode[]) {
       
       if (!existingRel) {
         relationships.push({
+          source: node.id,
+          target: connectionId,
+          type: 'edge',
           fromNodeId: node.id,
-          toNodeId: connectionId,
-          type: 'edge' as const,
-          strength: 1.0
+          toNodeId: connectionId
         });
       }
     }

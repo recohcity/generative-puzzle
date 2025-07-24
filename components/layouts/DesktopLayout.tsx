@@ -14,6 +14,7 @@ import { RefreshCw } from "lucide-react";
 import { useGame } from "@/contexts/GameContext";
 import { playButtonClickSound } from "@/utils/rendering/soundEffects";
 import { DESKTOP_ADAPTATION, calculateDesktopCanvasSize } from '@/constants/canvasAdaptation';
+import { useSystem } from '@/providers/SystemProvider';
 
 interface DesktopLayoutProps {
   isMusicPlaying: boolean;
@@ -108,7 +109,9 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   const panelContentPadding = panelScale <= 0.5 ? 10 : 10;
   const panelContentGap = panelScale <= 0.5 ? 10 : Math.max(2, Math.min(6, 16 * panelScale));
 
-  // 监听resize
+  // 使用统一的事件管理系统监听resize
+  const { eventManager } = useSystem();
+  
   useEffect(() => {
     function updateLayout() {
       // 触发重渲染
@@ -118,10 +121,14 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
         leftPanelRef.current.style.width = actualPanelWidth + 'px';
       }
     }
+    
     updateLayout();
-    window.addEventListener('resize', updateLayout);
-    return () => window.removeEventListener('resize', updateLayout);
-  }, [canvasSizeFinal, actualPanelWidth, panelHeight]);
+    
+    // 使用统一的事件管理系统
+    const unsubscribe = eventManager.onResize(updateLayout, 5, 200); // 中等优先级，200ms防抖
+    
+    return unsubscribe;
+  }, [canvasSizeFinal, actualPanelWidth, panelHeight, eventManager]);
 
 
 

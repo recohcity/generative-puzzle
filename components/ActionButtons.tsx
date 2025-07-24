@@ -3,7 +3,8 @@ import { useGame } from "@/contexts/GameContext"
 import { Button } from "@/components/ui/button"
 import { Lightbulb, RotateCcw, RotateCw } from "lucide-react"
 import { playButtonClickSound, playRotateSound } from "@/utils/rendering/soundEffects"
-import { useState, useEffect } from "react" // Keep useEffect for potential future use or context dependencies
+import { useState, useEffect } from "react"
+import { useDevice } from "@/providers/hooks"
 
 interface ActionButtonsProps {
   layout?: 'mobile' | 'desktop'; // Prop to differentiate layout styles if needed
@@ -17,41 +18,10 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
     showHintOutline,
   } = useGame()
 
-  // You might still need device detection if styles differ significantly, 
-  // or adjust styles based on the 'layout' prop.
-  const [isPhone, setIsPhone] = useState(false);
-  const [isLandscape, setIsLandscape] = useState(false);
-  
-  // Simplified device detection (or remove if 'layout' prop is sufficient)
-  useEffect(() => {
-    const checkDevice = () => {
-      const ua = navigator.userAgent;
-      const isMobile = /iPhone|Android/i.test(ua);
-      const isPortrait = window.innerHeight > window.innerWidth;
-      // Set state based on actual device or rely on layout prop
-      if (layout === 'mobile') {
-          setIsPhone(isMobile);
-          setIsLandscape(isMobile && !isPortrait);
-      } else {
-          setIsPhone(false);
-          setIsLandscape(false);
-      }
-    };
-    
-    checkDevice(); // Initial check
-    window.addEventListener('resize', checkDevice);
-    // Consider if orientation change matters for desktop layout
-    if (layout === 'mobile') {
-        window.addEventListener('orientationchange', () => setTimeout(checkDevice, 300));
-    }
-    
-    return () => {
-      window.removeEventListener('resize', checkDevice);
-      if (layout === 'mobile') {
-          window.removeEventListener('orientationchange', checkDevice);
-      }
-    };
-  }, [layout]); // Rerun effect if layout prop changes
+  // 使用统一设备检测系统
+  const device = useDevice();
+  const isPhone = layout === 'mobile' ? device.deviceType === 'phone' : false;
+  const isLandscape = layout === 'mobile' ? device.layoutMode === 'landscape' : false;
 
 
   // Common disabled style

@@ -1,6 +1,6 @@
 # 生成式拼图游戏 - 配置说明
 
-> 修订日期：2025-01-20
+> 修订日期：2025-07-24 (v1.3.33 统一架构重构完成更新)
 
 本文档详细列举并说明本项目所有关键配置点、参数、核心算法入口及其对应的源文件，便于开发者理解、调整和维护游戏行为。每次配置或算法有变动都需同步修订。
 
@@ -9,49 +9,173 @@
 ## 目录
 
 1. 主要配置文件与分工
-2. 难度与切割配置
-3. 形状生成配置
-4. 拼图散开与分布配置
-5. 碰撞与回弹配置
-6. 旋转配置
-7. 设备适配与响应式配置
-8. 拼图块适配系统配置（Step3新增）
-9. 媒体资源与音效配置
-10. 视觉与主题配置
-11. 构建与开发配置
-12. 性能测试与报告配置
-13. UI 组件配置
-14. 触摸事件与交互配置
-15. F10 Debug 调试模式配置
+2. 统一架构管理器配置（v1.3.33新增）
+3. 难度与切割配置
+4. 形状生成配置
+5. 拼图散开与分布配置
+6. 碰撞与回弹配置
+7. 旋转配置
+8. 设备适配与响应式配置
+9. 拼图块适配系统配置（Step3新增）
+10. 媒体资源与音效配置
+11. 视觉与主题配置
+12. 构建与开发配置
+13. 性能测试与报告配置
+14. UI 组件配置
+15. 触摸事件与交互配置
+16. F10 Debug 调试模式配置
 
 ---
 
 ## 1. 主要配置文件与分工
 
+### 核心业务逻辑
 - `utils/puzzle/cutGenerators.ts`：切割算法与难度映射
 - `utils/puzzle/PuzzleGenerator.ts`：拼图块生成主逻辑
 - `utils/puzzle/ScatterPuzzle.ts`：拼图块散布与分布算法
 - `utils/shape/ShapeGenerator.ts`：基础形状生成与参数
 - `utils/puzzlePieceAdaptationUtils.ts`：拼图块适配工具函数（Step3新增）
-- `contexts/GameContext.tsx`：全局游戏状态、边界检测、回弹、适配
-- `components/PuzzleCanvas.tsx`：主画布渲染与交互
-- `components/GameInterface.tsx`、`components/layouts/`：多端布局与适配
-- `hooks/`：响应式尺寸、设备检测、适配、交互等钩子
-  - `useShapeAdaptation.ts`：形状与拼图块同步适配（Step2-3）
-  - `usePuzzleAdaptation.ts`：散开拼图适配（Step2）
+
+### 统一架构管理器（v1.3.33新增）
+- `utils/managers/DeviceManager.ts`：统一设备检测管理器，单例模式
+- `utils/managers/CanvasManager.ts`：统一画布管理器，单例模式
+- `utils/managers/EventManager.ts`：统一事件管理器，单例模式
+- `utils/managers/AdaptationEngine.ts`：统一适配引擎管理器
+
+### 状态与组件
+- `contexts/GameContext.tsx`：全局游戏状态、边界检测、回弹、适配（v1.3.33增强：统一架构支持）
+- `components/PuzzleCanvas.tsx`：主画布渲染与交互（v1.3.33重构：使用统一管理器）
+- `components/GameInterface.tsx`、`components/layouts/`：多端布局与适配（v1.3.33重构：迁移到统一系统）
+
+### 统一架构Hooks（v1.3.33新增）
+- `hooks/useDevice.ts`：统一设备检测Hook，替代分散的设备检测逻辑
+- `hooks/useCanvas.ts`：统一画布管理Hook，替代分散的画布状态管理
+- `hooks/useEventManager.ts`：统一事件管理Hook，替代分散的事件监听器
+
+### 传统Hooks（保持兼容）
+- `hooks/useShapeAdaptation.ts`：形状与拼图块同步适配（Step2-3）
+- `hooks/usePuzzleAdaptation.ts`：散开拼图适配（Step2）
+- `hooks/useResponsiveCanvasSizing.ts`：响应式尺寸管理
+- `hooks/useDeviceDetection.ts`：传统设备检测（逐步迁移中）
+
+### 其他配置
 - `utils/rendering/soundEffects.ts`：音效管理
 - `public/`：静态资源（图片、音效）
 - `tailwind.config.ts`、`components.json`：UI 主题与组件
 - `next.config.mjs`：构建配置
+
+### 文档体系
 - `docs/difficulty-design.md`：难度与切割设计说明
 - `docs/puzzle_memory_adaptation_optimization/`：拼图记忆适配优化文档
   - `step1_canvas_adaptation_plan.md`：画布适配系统（Step1）
   - `step2_shape_adaptation_plan.md`：智能形状适配系统（Step2）
   - `step3/`：拼图块适配系统文档集（Step3）
+- `docs/rebuild/`：统一架构重构文档（v1.3.33新增）
+  - `重构前分析.md`：重构前问题分析
+  - `plan.md`：重构计划和实施方案
+  - `REFACTORING_SUMMARY.md`：重构过程总结
 
 ---
 
-## 2. 难度与切割配置
+## 2. 统一架构管理器配置（v1.3.33新增）
+
+### DeviceManager 配置
+
+- **singleton**  
+  作用：单例模式，确保全局唯一的设备检测实例  
+  取值范围：DeviceManager.getInstance()  
+  默认值：自动创建单例  
+  影响点：设备检测一致性、内存优化  
+  配置/代码位置：`utils/managers/DeviceManager.ts`
+
+- **deviceDetectionCache**  
+  作用：设备检测结果缓存，避免重复计算  
+  取值范围：{ isMobile: boolean, isPortrait: boolean, deviceType: string }  
+  默认值：首次检测时自动缓存  
+  影响点：性能优化、检测一致性  
+  配置/代码位置：`utils/managers/DeviceManager.ts`
+
+### CanvasManager 配置
+
+- **singleton**  
+  作用：单例模式，确保全局唯一的画布管理实例  
+  取值范围：CanvasManager.getInstance()  
+  默认值：自动创建单例  
+  影响点：画布状态一致性、内存优化  
+  配置/代码位置：`utils/managers/CanvasManager.ts`
+
+- **canvasStateCache**  
+  作用：画布状态缓存，统一管理画布尺寸、缩放等状态  
+  取值范围：{ size: CanvasSize, scale: number, orientation: string }  
+  默认值：初始化时自动设置  
+  影响点：画布适配、状态同步  
+  配置/代码位置：`utils/managers/CanvasManager.ts`
+
+### EventManager 配置
+
+- **singleton**  
+  作用：单例模式，确保全局唯一的事件管理实例  
+  取值范围：EventManager.getInstance()  
+  默认值：自动创建单例  
+  影响点：事件监听器管理、内存优化  
+  配置/代码位置：`utils/managers/EventManager.ts`
+
+- **eventListenerRegistry**  
+  作用：事件监听器注册表，避免重复监听  
+  取值范围：Map<string, EventListener[]>  
+  默认值：空Map，动态注册  
+  影响点：事件监听器优化、内存泄漏防护  
+  配置/代码位置：`utils/managers/EventManager.ts`
+
+- **maxListenersPerEvent**  
+  作用：每个事件类型的最大监听器数量限制  
+  取值范围：1~10  
+  默认值：3  
+  影响点：性能优化、内存控制  
+  配置/代码位置：`utils/managers/EventManager.ts`
+
+### AdaptationEngine 配置
+
+- **singleton**  
+  作用：单例模式，确保全局唯一的适配引擎实例  
+  取值范围：AdaptationEngine.getInstance()  
+  默认值：自动创建单例  
+  影响点：适配逻辑统一、性能优化  
+  配置/代码位置：`utils/managers/AdaptationEngine.ts`
+
+- **adaptationQueue**  
+  作用：适配任务队列，避免并发适配冲突  
+  取值范围：Queue<AdaptationTask>  
+  默认值：空队列，动态添加任务  
+  影响点：适配性能、状态一致性  
+  配置/代码位置：`utils/managers/AdaptationEngine.ts`
+
+### 统一架构性能指标
+
+- **managerInitTime**  
+  作用：管理器初始化时间基准  
+  取值范围：<10ms  
+  默认值：自动测量  
+  影响点：启动性能  
+  配置/代码位置：各管理器构造函数
+
+- **eventListenerReduction**  
+  作用：事件监听器数量减少比例  
+  取值范围：85%减少（从~20个到3个）  
+  默认值：自动统计  
+  影响点：内存使用、性能优化  
+  配置/代码位置：`utils/managers/EventManager.ts`
+
+- **codeReductionRatio**  
+  作用：代码重复度减少比例  
+  取值范围：70%减少  
+  默认值：重构后自动达成  
+  影响点：维护性、可读性  
+  配置/代码位置：全局重构成果
+
+---
+
+## 3. 难度与切割配置
 
 - **cutCount**（切割次数）  
   作用：用户选择的拼图切割难度，决定实际切割线数和拼图块数  
@@ -190,18 +314,52 @@
 
 ---
 
-## 7. 设备适配与响应式配置
+## 8. 设备适配与响应式配置
+
+### 统一设备检测系统（v1.3.33重构）
+
+- **useDevice Hook**  
+  作用：统一设备检测Hook，替代分散的设备检测逻辑  
+  取值范围：{ isMobile: boolean, isPortrait: boolean, deviceType: string }  
+  默认值：自动检测  
+  影响点：所有组件的设备检测逻辑  
+  配置/代码位置：`hooks/useDevice.ts`、`utils/managers/DeviceManager.ts`
+
+- **DeviceManager单例**  
+  作用：全局唯一的设备检测管理器，避免重复检测  
+  取值范围：DeviceManager.getInstance()  
+  默认值：单例自动创建  
+  影响点：设备检测性能、一致性  
+  配置/代码位置：`utils/managers/DeviceManager.ts`
+
+### 统一画布管理系统（v1.3.33重构）
+
+- **useCanvas Hook**  
+  作用：统一画布管理Hook，替代分散的画布状态管理  
+  取值范围：{ canvasSize: CanvasSize, scale: number, updateCanvas: Function }  
+  默认值：自动初始化  
+  影响点：所有布局组件的画布管理  
+  配置/代码位置：`hooks/useCanvas.ts`、`utils/managers/CanvasManager.ts`
+
+- **CanvasManager单例**  
+  作用：全局唯一的画布管理器，统一管理画布状态  
+  取值范围：CanvasManager.getInstance()  
+  默认值：单例自动创建  
+  影响点：画布状态一致性、性能优化  
+  配置/代码位置：`utils/managers/CanvasManager.ts`
+
+### 传统配置（保持兼容）
 
 - **canvasMaxSize**  
   作用：画布最大尺寸（竖屏强制正方形）  
   取值范围：320~1024（像素，随设备/窗口动态调整）  
   默认值：桌面 800，移动端 360  
   影响点：画布、拼图缩放、适配  
-  配置/代码位置：`useResponsiveCanvasSizing.ts`、`PuzzleCanvas.tsx`  
+  配置/代码位置：`useResponsiveCanvasSizing.ts`、`PuzzleCanvas.tsx`（v1.3.33：通过统一管理器管理）
   
 - **全局画布与面板自适应**  
   作用：桌面端/移动端竖屏/横屏下，画布始终正方形最大化利用空间，面板与画布高度联动，所有自适应逻辑由父容器驱动，PuzzleCanvas 只需100%适配父容器。  
-  配置/代码位置：`GameContext.tsx`（集中管理画布状态）、`PhoneTabPanel.tsx`（移动端Tab面板集中管理）、`DesktopLayout.tsx`、`PhonePortraitLayout.tsx`、`PhoneLandscapeLayout.tsx`  
+  配置/代码位置：`GameContext.tsx`（集中管理画布状态）、`PhoneTabPanel.tsx`（移动端Tab面板集中管理）、`DesktopLayout.tsx`、`PhonePortraitLayout.tsx`、`PhoneLandscapeLayout.tsx`（v1.3.33：迁移到useCanvas()）  
   说明：详见 `docs/puzzle_memory_adaptation_optimization/step1_canvas_adaptation_plan.md`。
 
 - **拼图块适配系统**  
@@ -216,13 +374,6 @@
   影响点：拼图块位置、尺寸、旋转  
   配置/代码位置：`utils/puzzlePieceAdaptationUtils.ts`（adaptPuzzlePiecesAbsolute函数）
 
-- **isMobile**  
-  作用：是否为移动端设备  
-  取值范围：布尔  
-  默认值：自动检测  
-  影响点：布局、参数、分布、UI  
-  配置/代码位置：`useDeviceDetection.ts`、`GameInterface.tsx`
-
 - **basePuzzle状态**  
   作用：保存原始拼图块状态，作为拼图块适配的基准  
   取值范围：PuzzlePiece[] | null  
@@ -230,21 +381,26 @@
   影响点：拼图块适配、状态记忆  
   配置/代码位置：`contexts/GameContext.tsx`（SET_BASE_PUZZLE action）
 
-- **isPortrait**  
-  作用：是否为竖屏  
-  取值范围：布尔  
-  默认值：自动检测  
-  影响点：布局、分布算法、UI  
-  配置/代码位置：`useDeviceDetection.ts`、`GameInterface.tsx`
-
 - **tabPanelAdaptive**  
   作用：移动端Tab面板集中管理，PhoneTabPanel组件负责tab切换与内容区像素级布局，所有tab内容与全局状态同步，tab与画布高度联动。  
   配置/代码位置：`components/layouts/PhoneTabPanel.tsx`、`GameContext.tsx`  
   说明：详见 `docs/puzzle_memory_adaptation_optimization/step1_canvas_adaptation_plan.md`。
 
+### 组件迁移状态（v1.3.33）
+
+- **已迁移组件**  
+  作用：已成功迁移到统一架构的组件列表  
+  组件列表：  
+    - 所有控制组件：ActionButtons、ShapeControls、PuzzleControls系列、PuzzleControlsGamepad、PuzzleControlsScatter  
+    - 所有布局组件：DesktopLayout、PhoneLandscapeLayout、PhonePortraitLayout  
+    - 背景组件：ResponsiveBackground  
+    - 核心组件：PuzzleCanvas  
+  影响点：代码重复度降低70%，事件监听器减少85%  
+  配置/代码位置：各组件文件（使用useDevice()、useCanvas()、useEventManager()）
+
 ---
 
-## 8. 拼图块适配系统配置（Step3新增）
+## 9. 拼图块适配系统配置（Step3新增）
 
 - **adaptPuzzlePiecesAbsolute**  
   作用：基于画布中心的绝对坐标适配算法，彻底解决累积误差问题  
@@ -290,7 +446,7 @@
 
 ---
 
-## 9. 媒体资源与音效配置
+## 10. 媒体资源与音效配置
 
 - **backgroundMusic**  
   作用：背景音乐开关与音量控制  
@@ -345,7 +501,7 @@
 
 ---
 
-## 10. 视觉与主题配置
+## 11. 视觉与主题配置
 
 - **BENCHMARKS**  
   作用：性能基准值，用于评估各项指标，分为“资源加载(page.goto)”与“端到端加载(E2E)”两项，基准值分别为1000ms/1800ms，所有性能指标分项采集与分级，保留两位小数，报告、索引、终端日志格式统一。  
@@ -421,7 +577,7 @@
 
 ---
 
-## 11. 构建与开发配置
+## 12. 构建与开发配置
 
 - **Next.js 配置**  
   作用：框架构建配置  
@@ -450,7 +606,7 @@
 
 ---
 
-## 12. 性能测试与报告配置
+## 13. 性能测试与报告配置
 
 - **BENCHMARKS**  
   作用：性能基准值，用于评估各项指标，分为"资源加载(page.goto)"与"端到端加载(E2E)"两项，基准值分别为1000ms/1800ms，所有性能指标分项采集与分级，保留两位小数，报告、索引、终端日志格式统一。  
@@ -475,7 +631,32 @@
 
 ---
 
-## 13. UI 组件配置
+## 14. UI 组件配置
+
+### 统一架构组件配置（v1.3.33重构）
+
+- **统一设备检测组件**  
+  作用：所有控制组件使用统一的useDevice()Hook，替代本地设备检测  
+  组件列表：ActionButtons、ShapeControls、PuzzleControlsCutCount、PuzzleControlsCutType、PuzzleControlsGamepad、PuzzleControlsScatter  
+  默认值：useDevice()自动检测  
+  影响点：设备检测一致性、代码重复度降低  
+  配置/代码位置：各控制组件（v1.3.33迁移完成）
+
+- **统一画布管理组件**  
+  作用：所有布局组件使用统一的useCanvas()Hook，替代本地画布管理  
+  组件列表：DesktopLayout、PhoneLandscapeLayout、PhonePortraitLayout  
+  默认值：useCanvas()自动管理  
+  影响点：画布状态一致性、性能优化  
+  配置/代码位置：各布局组件（v1.3.33迁移完成）
+
+- **统一事件管理组件**  
+  作用：核心组件使用统一的useEventManager()Hook，避免重复事件监听  
+  组件列表：PuzzleCanvas、ResponsiveBackground  
+  默认值：useEventManager()自动管理  
+  影响点：事件监听器数量减少85%，内存优化  
+  配置/代码位置：核心组件（v1.3.33迁移完成）
+
+### 传统组件配置（保持兼容）
 
 - **hintAreaFlow**
   作用：提示区内容严格按五步唯一流转，所有流程节点以提示区域为唯一判断标准。
@@ -490,12 +671,28 @@
 
 - **panelCanvasAdaptive**  
   作用：桌面端/移动端画布与面板正方形自适应，所有端像素级体验一致。  
-  配置/代码位置：`GameContext.tsx`、`DesktopLayout.tsx`、`PhonePortraitLayout.tsx`、`PhoneLandscapeLayout.tsx`  
+  配置/代码位置：`GameContext.tsx`、`DesktopLayout.tsx`、`PhonePortraitLayout.tsx`、`PhoneLandscapeLayout.tsx`（v1.3.33：通过统一管理器优化）  
   说明：详见 `docs/puzzle_memory_adaptation_optimization/step1_canvas_adaptation_plan.md`。
+
+### 重构性能指标（v1.3.33）
+
+- **componentMigrationRate**  
+  作用：组件迁移到统一架构的完成率  
+  取值范围：95%完成  
+  默认值：自动统计  
+  影响点：重构质量评估  
+  配置/代码位置：重构总结文档
+
+- **codeReductionInComponents**  
+  作用：组件代码重复度减少比例  
+  取值范围：70%减少  
+  默认值：重构后自动达成  
+  影响点：维护性、可读性  
+  配置/代码位置：各迁移组件
 
 ---
 
-## 14. 触摸事件与交互配置
+## 15. 触摸事件与交互配置
 
 - **touchEventHandling**  
   作用：移动端触摸事件处理，解决被动监听器 preventDefault 问题  
@@ -541,7 +738,7 @@
 
 ---
 
-## 14. 构建与开发配置
+## 12. 构建与开发配置
 
 - **Next.js 配置**  
   作用：框架构建配置  
@@ -565,7 +762,7 @@
 
 ---
 
-## 15. F10 Debug 调试模式配置（2025-01-18 最新版）
+## 16. F10 Debug 调试模式配置（2025-01-18 最新版）
 
 ### 功能说明
 

@@ -10,8 +10,8 @@ let audioUnlocked = false;
 // This function will be exposed to Playwright's Node.js context.
 // When called from the browser, it notifies the test.
 export const soundPlayedForTest = (soundName: string) => {
-  if (typeof window !== 'undefined' && window.__SOUND_PLAY_LISTENER__) {
-    window.__SOUND_PLAY_LISTENER__({ soundName });
+  if (typeof window !== 'undefined' && (window as any).__SOUND_PLAY_LISTENER__) {
+    (window as any).__SOUND_PLAY_LISTENER__({ soundName });
   }
 };
 

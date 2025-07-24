@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label"
 import { CutType } from "@/types/puzzleTypes"
 import { playButtonClickSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
+import { useDevice } from "@/providers/hooks"
 
 interface PuzzleControlsCutTypeProps {
   goToNextTab?: () => void;
@@ -15,14 +16,14 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
   const { state, dispatch } = useGame()
   // 添加本地状态，初始值为空字符串，表示未选择
   const [localCutType, setLocalCutType] = useState<string>("")
-  
+
   // 同步全局状态到本地状态，但仅当本地状态为空且全局状态有值时才同步
   useEffect(() => {
     if (state.cutType && localCutType === "") {
       setLocalCutType(state.cutType);
     }
   }, [state.cutType, localCutType]);
-  
+
   // 监听游戏重置事件，当原始形状被清空（即游戏重置）时，清除本地选择状态
   useEffect(() => {
     if (state.originalShape.length === 0 && localCutType !== "") {
@@ -30,40 +31,18 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
       setLocalCutType("");
     }
   }, [state.originalShape.length, localCutType]);
-  
-  // 检测设备类型
-  const [isPhone, setIsPhone] = useState(false);
-  const [isLandscape, setIsLandscape] = useState(false);
-  
-  // 设备检测
-  useEffect(() => {
-    const checkDevice = () => {
-      const ua = navigator.userAgent;
-      const isMobile = /iPhone|Android/i.test(ua);
-      const isPortrait = window.innerHeight > window.innerWidth;
-      setIsPhone(isMobile);
-      setIsLandscape(isMobile && !isPortrait);
-    };
-    
-    checkDevice();
-    window.addEventListener('resize', checkDevice);
-    window.addEventListener('orientationchange', () => {
-      setTimeout(checkDevice, 300);
-    });
-    
-    return () => {
-      window.removeEventListener('resize', checkDevice);
-      window.removeEventListener('orientationchange', checkDevice);
-    };
-  }, []);
-  
+
+  // 使用统一设备检测系统
+  const device = useDevice();
+  const isPhone = device.deviceType === 'phone';
+  const isLandscape = device.layoutMode === 'landscape';
+
   // 检查是否已生成形状
   const isShapeGenerated = state.originalShape.length > 0
   // 检查是否可以修改拼图设置
   const canModifySettings = isShapeGenerated && !state.isScattered
-  // 是否已选择切割类型
-  const hasSelectedCutType = localCutType !== ""
-  
+
+
   // 所有按钮共用的禁用样式类
   const disabledClass = "opacity-30 pointer-events-none";
 
@@ -77,7 +56,7 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
       type: "SET_CUT_TYPE",
       payload: value as CutType.Straight | CutType.Diagonal,
     })
-    
+
     // 自动跳转到下一个Tab
     if (goToNextTab) {
       setTimeout(() => {
@@ -95,9 +74,9 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
         </div>
       )}
       <div>
-        <RadioGroup 
-          value={localCutType} 
-          onValueChange={canModifySettings ? handleCutTypeChange : undefined} 
+        <RadioGroup
+          value={localCutType}
+          onValueChange={canModifySettings ? handleCutTypeChange : undefined}
           style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'calc(var(--panel-scale, 1) * 8px)' }}
           disabled={!canModifySettings}
         >
@@ -111,9 +90,9 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
             <Label
               htmlFor="straight"
               className={`flex items-center justify-center transition-all shadow-sm \
-                ${localCutType === CutType.Straight 
-                ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]" 
-                : "bg-[#1E1A2A] text-white hover:bg-[#2A283E] active:bg-[#2A283E]"}
+                ${localCutType === CutType.Straight
+                  ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]"
+                  : "bg-[#1E1A2A] text-white hover:bg-[#2A283E] active:bg-[#2A283E]"}
                 ${!canModifySettings ? disabledClass : "cursor-pointer"}
               `}
               style={{
@@ -140,9 +119,9 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
             <Label
               htmlFor="diagonal"
               className={`flex items-center justify-center transition-all shadow-sm \
-                ${localCutType === CutType.Diagonal 
-                ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]" 
-                : "bg-[#1E1A2A] text-white hover:bg-[#2A283E] active:bg-[#2A283E]"}
+                ${localCutType === CutType.Diagonal
+                  ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]"
+                  : "bg-[#1E1A2A] text-white hover:bg-[#2A283E] active:bg-[#2A283E]"}
                 ${!canModifySettings ? disabledClass : "cursor-pointer"}
               `}
               style={{

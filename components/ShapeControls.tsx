@@ -5,6 +5,7 @@ import { Check, Hexagon, Circle, CloudyIcon as BlobIcon } from "lucide-react"
 import { ShapeType } from "@/types/puzzleTypes"
 import { playButtonClickSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
+import { useDevice } from "@/providers/hooks"
 
 interface ShapeControlsProps {
   goToNextTab?: () => void;
@@ -15,35 +16,13 @@ interface ShapeControlsProps {
 export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize = 14 }: ShapeControlsProps) {
   const { state, dispatch, generateShape, resetGame } = useGame()
 
-  // 检测设备类型
-  const [isPhone, setIsPhone] = useState(false);
-  const [isLandscape, setIsLandscape] = useState(false);
-
-  // 移除本地 selectedShape 状态
-  // const [selectedShape, setSelectedShape] = useState<ShapeType | null>(null);
+  // 使用统一设备检测系统
+  const device = useDevice();
+  const isPhone = device.deviceType === 'phone';
+  const isLandscape = device.layoutMode === 'landscape';
 
   // 首次生成形状自动重置逻辑
   const [hasGeneratedShape, setHasGeneratedShape] = useState(false);
-
-  // 设备检测
-  useEffect(() => {
-    const checkDevice = () => {
-      const ua = navigator.userAgent;
-      const isMobile = /iPhone|Android/i.test(ua);
-      const isPortrait = window.innerHeight > window.innerWidth;
-      setIsPhone(isMobile);
-      setIsLandscape(isMobile && !isPortrait);
-    };
-    checkDevice();
-    window.addEventListener('resize', checkDevice);
-    window.addEventListener('orientationchange', () => {
-      setTimeout(checkDevice, 300);
-    });
-    return () => {
-      window.removeEventListener('resize', checkDevice);
-      window.removeEventListener('orientationchange', checkDevice);
-    };
-  }, []);
 
   // 切割后禁用形状按钮
   const isShapeButtonDisabled = state.cutType !== "";

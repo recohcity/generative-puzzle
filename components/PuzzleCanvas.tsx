@@ -15,16 +15,14 @@ import {
 // 导入从 types/puzzleTypes.ts 迁移的类型
 import { PuzzlePiece } from "@/types/puzzleTypes";
 
-// 导入新的响应式画布尺寸管理 Hook
-import { useResponsiveCanvasSizing } from "@/hooks/useResponsiveCanvasSizing";
+// 导入统一系统的 Hooks
+import { useDevice, useCanvas, usePuzzleAdaptation } from '@/providers/hooks';
+import { useSystem } from '@/providers/SystemProvider';
 // 导入新的拼图交互处理 Hook
 import { usePuzzleInteractions } from "@/hooks/usePuzzleInteractions";
-// 修正：usePuzzleAdaptation为具名导出，需用花括号导入
-import { usePuzzleAdaptation } from '@/hooks/usePuzzleAdaptation';
 // 导入形状适配Hook
 import { useShapeAdaptation } from '@/hooks/useShapeAdaptation';
 import { useDebugToggle } from '@/hooks/useDebugToggle';
-import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 
 // ========================
 // 画布适配核心流程说明
@@ -51,9 +49,11 @@ const MIN_CANVAS_HEIGHT = DESKTOP_ADAPTATION.MIN_CANVAS_SIZE; // 画布最小高
 const MAX_CANVAS_WIDTH = DESKTOP_ADAPTATION.MAX_CANVAS_SIZE; // 画布最大宽度，防止内容溢出
 const MAX_CANVAS_HEIGHT = DESKTOP_ADAPTATION.MAX_CANVAS_SIZE; // 画布最大高度
 
-// 画布自适应监听与节流实现
+// 画布自适应监听与节流实现 - 使用统一事件管理系统
 function useCanvasResizeObserver(onResize: (width: number, height: number) => void) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { eventManager } = useSystem();
+  
   useEffect(() => {
     let frameId: number | null = null;
     const handleResize = () => {
@@ -66,24 +66,29 @@ function useCanvasResizeObserver(onResize: (width: number, height: number) => vo
         }
       });
     };
-    // 监听window resize和orientationchange
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleResize);
+    
+    // 使用统一的事件管理系统替代本地事件监听器
+    const unsubscribeResize = eventManager.onResize(handleResize, 5); // 中等优先级
+    const unsubscribeOrientation = eventManager.onOrientationChange(handleResize, 5);
+    
     // 可选：使用ResizeObserver监听容器变化
     let observer: ResizeObserver | null = null;
     if (containerRef.current && 'ResizeObserver' in window) {
       observer = new ResizeObserver(() => handleResize());
       observer.observe(containerRef.current);
     }
+    
     // 初始化时触发一次
     handleResize();
+    
     return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleResize);
+      unsubscribeResize();
+      unsubscribeOrientation();
       if (observer && containerRef.current) observer.disconnect();
       if (frameId) window.cancelAnimationFrame(frameId);
     };
-  }, [onResize]);
+  }, [onResize, eventManager]);
+  
   return containerRef;
 }
 
@@ -121,17 +126,91 @@ export default function PuzzleCanvas() {
   const [showDebugElements] = useDebugToggle();
   const [isShaking, setIsShaking] = useState(false);
   const debugLogRef = useRef<any[]>([]);
-  const device = useDeviceDetection(); // { isMobile, isTablet, isDesktop }
+  const debugSegmentsRef = useRef<{
+    segments: Array<{
+      id: string;
+      startTime: string;
+      endTime?: string;
+      screenResolution: { width: number; height: number };
+      canvasSize: { width: number; height: number };
+      events: any[];
+    }>;
+    currentSegmentId: string | null;
+    lastScreenSize: { width: number; height: number } | null;
+    lastCanvasSize: { width: number; height: number } | null;
+  }>({
+    segments: [],
+    currentSegmentId: null,
+    lastScreenSize: null,
+    lastCanvasSize: null
+  });
+  const device = useDevice(); // 使用统一的设备检测系统
+
+  // 检查是否需要创建新的分段
+  function checkAndCreateNewSegment(currentScreenSize: { width: number; height: number }, currentCanvasSize: { width: number; height: number }) {
+    const segments = debugSegmentsRef.current;
+    
+    // 检查屏幕分辨率或画布尺寸是否发生变化
+    const screenChanged = !segments.lastScreenSize || 
+      segments.lastScreenSize.width !== currentScreenSize.width || 
+      segments.lastScreenSize.height !== currentScreenSize.height;
+    
+    const canvasChanged = !segments.lastCanvasSize || 
+      segments.lastCanvasSize.width !== currentCanvasSize.width || 
+      segments.lastCanvasSize.height !== currentCanvasSize.height;
+    
+    if (screenChanged || canvasChanged || !segments.currentSegmentId) {
+      // 结束当前分段
+      if (segments.currentSegmentId) {
+        const currentSegment = segments.segments.find(s => s.id === segments.currentSegmentId);
+        if (currentSegment) {
+          currentSegment.endTime = new Date().toISOString();
+        }
+      }
+      
+      // 创建新分段
+      const newSegmentId = `segment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const newSegment = {
+        id: newSegmentId,
+        startTime: new Date().toISOString(),
+        screenResolution: { ...currentScreenSize },
+        canvasSize: { ...currentCanvasSize },
+        events: []
+      };
+      
+      segments.segments.push(newSegment);
+      segments.currentSegmentId = newSegmentId;
+      segments.lastScreenSize = { ...currentScreenSize };
+      segments.lastCanvasSize = { ...currentCanvasSize };
+      
+      console.log(`🔄 [DebugLog] 创建新分段: ${newSegmentId}`, {
+        reason: screenChanged ? '屏幕分辨率变化' : '画布尺寸变化',
+        screenSize: currentScreenSize,
+        canvasSize: currentCanvasSize
+      });
+    }
+  }
 
   // 统一 debug 日志收集方法
   function logDebugEvent(eventType: string, actionDesc: string, extra: any = {}) {
     if (!showDebugElements) return;
+    
     const canvasWidth = canvasSize?.width || 0;
     const canvasHeight = canvasSize?.height || 0;
     const logicalWidth = canvasRef.current?.width || 0;
     const logicalHeight = canvasRef.current?.height || 0;
     const scale = (canvasWidth && logicalWidth) ? (canvasWidth / logicalWidth) : 1;
-    debugLogRef.current.push({
+    
+    const currentScreenSize = { 
+      width: device?.screenWidth || window.screen.width, 
+      height: device?.screenHeight || window.screen.height 
+    };
+    const currentCanvasSize = { width: canvasWidth, height: canvasHeight };
+    
+    // 检查并创建新分段
+    checkAndCreateNewSegment(currentScreenSize, currentCanvasSize);
+    
+    const logEntry = {
       time: new Date().toISOString(),
       event: eventType,
       action: actionDesc,
@@ -142,7 +221,7 @@ export default function PuzzleCanvas() {
         isPortrait: device?.isPortrait,
         isAndroid: device?.isAndroid,
         isIOS: device?.isIOS,
-        screen: { width: device?.screenWidth, height: device?.screenHeight }
+        screen: currentScreenSize
       },
       canvas: {
         width: canvasWidth,
@@ -172,7 +251,15 @@ export default function PuzzleCanvas() {
         };
       }),
       ...extra
-    });
+    };
+    
+    // 添加到当前分段和全局日志
+    debugLogRef.current.push(logEntry);
+    
+    const currentSegment = debugSegmentsRef.current.segments.find(s => s.id === debugSegmentsRef.current.currentSegmentId);
+    if (currentSegment) {
+      currentSegment.events.push(logEntry);
+    }
   }
 
   // 导出 debuglog 的函数
@@ -189,40 +276,66 @@ export default function PuzzleCanvas() {
     URL.revokeObjectURL(url);
   }
 
-  const canvasSize = useResponsiveCanvasSizing({
+  const canvasSize = useCanvas({
     containerRef,
     canvasRef,
     backgroundCanvasRef,
+  });
+
+  // 🚨 测试：确保useEffect能够被触发
+  useEffect(() => {
+    console.log('🚨🚨🚨 [测试] PuzzleCanvas useEffect 被触发了！', {
+      timestamp: Date.now(),
+      canvasSize,
+      memoizedCanvasSize,
+      stateCanvasWidth: state.canvasWidth,
+      stateCanvasHeight: state.canvasHeight
+    });
   });
   
   // 顶层直接调用适配Hooks，确保每次渲染都响应最新画布状态
   // 1. 形状适配 - 确保目标形状随画布尺寸正确适配（使用新的记忆适配系统）
   // 使用useMemo来避免每次渲染都创建新的画布尺寸对象
   const memoizedCanvasSize = useMemo(() => {
+    console.log('🔍 [PuzzleCanvas] memoizedCanvasSize计算:', {
+      stateCanvasWidth: state.canvasWidth,
+      stateCanvasHeight: state.canvasHeight,
+      canvasSize,
+      hasValidStateCanvas: !!(state.canvasWidth && state.canvasHeight && state.canvasWidth > 0 && state.canvasHeight > 0),
+      hasValidCanvasSize: !!(canvasSize && canvasSize.width > 0 && canvasSize.height > 0)
+    });
+
     if (state.canvasWidth && state.canvasHeight && state.canvasWidth > 0 && state.canvasHeight > 0) {
-      return { width: state.canvasWidth, height: state.canvasHeight };
+      const result = { width: state.canvasWidth, height: state.canvasHeight };
+      console.log('🔍 [PuzzleCanvas] 使用state画布尺寸:', result);
+      return result;
     } else if (canvasSize && canvasSize.width > 0 && canvasSize.height > 0) {
-      return { width: canvasSize.width, height: canvasSize.height };
+      const result = { width: canvasSize.width, height: canvasSize.height };
+      console.log('🔍 [PuzzleCanvas] 使用props画布尺寸:', result);
+      return result;
     }
+    console.log('🔍 [PuzzleCanvas] 画布尺寸为null');
     return null;
   }, [state.canvasWidth, state.canvasHeight, canvasSize?.width, canvasSize?.height]);
 
-  const { 
-    adaptShape, 
-    memoryManager, 
-    shapeMemoryId, 
-    isMemorySystemAvailable 
-  } = useShapeAdaptation(memoizedCanvasSize);
-  
-  // Step3清理：完全移除重复的适配调用，统一使用useShapeAdaptation中的适配逻辑
-  // useShapeAdaptation钩子已经包含了完整的适配逻辑，包括防抖、条件检查和适配执行
-  // 这里不再需要额外的适配调用代码
-  
-  // 2. 拼图适配 - 已由useShapeAdaptation中的统一适配引擎处理，避免重复适配导致数据冲突
-  // usePuzzleAdaptation({ 
-  //   width: state.canvasWidth, 
-  //   height: state.canvasHeight
-  // });
+  // 🎯 使用新的统一拼图适配系统
+  usePuzzleAdaptation(
+    memoizedCanvasSize,                                                    // canvasSize
+    state.puzzle,                                                          // puzzle
+    state.originalPositions || [],                                         // originalPositions
+    state.completedPieces || [],                                          // completedPieces
+    state.previousCanvasSize || { width: 1280, height: 720 },            // previousCanvasSize
+    (adaptedPieces) => {                                                  // onAdapted
+      console.log(`✅ [统一适配系统] 拼图适配完成: ${adaptedPieces.length} 个拼图块`);
+      dispatch({
+        type: 'UPDATE_ADAPTED_PUZZLE_STATE',
+        payload: { 
+          newPuzzleData: adaptedPieces,
+          newPreviousCanvasSize: memoizedCanvasSize || { width: 1280, height: 720 }
+        }
+      });
+    }
+  );
 
   const {
     handleMouseDown,
@@ -263,7 +376,7 @@ export default function PuzzleCanvas() {
           clientX: touch.clientX,
           clientY: touch.clientY
         }))
-      } as React.TouchEvent<HTMLCanvasElement>;
+      } as unknown as React.TouchEvent<HTMLCanvasElement>;
       handleTouchStart(syntheticEvent);
     };
 
@@ -275,7 +388,7 @@ export default function PuzzleCanvas() {
           clientX: touch.clientX,
           clientY: touch.clientY
         }))
-      } as React.TouchEvent<HTMLCanvasElement>;
+      } as unknown as React.TouchEvent<HTMLCanvasElement>;
       handleTouchMove(syntheticEvent);
     };
 
@@ -289,7 +402,7 @@ export default function PuzzleCanvas() {
           clientX: touch.clientX,
           clientY: touch.clientY
         }))
-      } as React.TouchEvent<HTMLCanvasElement>;
+      } as unknown as React.TouchEvent<HTMLCanvasElement>;
       handleTouchEnd(syntheticEvent);
     };
 

@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label"
 import { PuzzleIcon } from "lucide-react"
 import { playButtonClickSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
+import { useDevice } from "@/providers/hooks"
 
 interface PuzzleControlsCutCountProps {
   goToNextTab?: () => void;
@@ -29,37 +30,11 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
     }
   }, [state.cutCount]);
   
-  // 检测设备类型
-  const [isPhone, setIsPhone] = useState(false);
-  const [isLandscape, setIsLandscape] = useState(false);
-  const [isSmallScreen, setIsSmallScreen] = useState(false);
-  
-  // 设备检测
-  useEffect(() => {
-    const checkDevice = () => {
-      const ua = navigator.userAgent;
-      const isMobile = /iPhone|Android/i.test(ua);
-      const isPortrait = window.innerHeight > window.innerWidth;
-      setIsPhone(isMobile);
-      setIsLandscape(isMobile && !isPortrait);
-      
-      // 检测小屏幕设备
-      setIsSmallScreen(window.innerWidth < 600);
-      
-      console.log(`设备检测: 移动=${isMobile}, 竖屏=${isPortrait}, 小屏幕=${window.innerWidth < 600}`);
-    };
-    
-    checkDevice();
-    window.addEventListener('resize', checkDevice);
-    window.addEventListener('orientationchange', () => {
-      setTimeout(checkDevice, 300);
-    });
-    
-    return () => {
-      window.removeEventListener('resize', checkDevice);
-      window.removeEventListener('orientationchange', checkDevice);
-    };
-  }, []);
+  // 使用统一设备检测系统
+  const device = useDevice();
+  const isPhone = device.deviceType === 'phone';
+  const isLandscape = device.layoutMode === 'landscape';
+  const isSmallScreen = device.screenWidth < 600;
   
   // 检查是否已生成形状
   const isShapeGenerated = state.originalShape.length > 0

@@ -147,7 +147,7 @@ export class MemoryManager extends EventEmitter {
       const topology = this.topologyExtractor.extractTopology(points, canvasSize);
 
       // 2. 存储记忆
-      this.memoryStorage.store(memoryId, topology, canvasSize);
+      this.memoryStorage.store(memoryId, topology, canvasSize, { type: 'auto' } as any); // 添加缺失的metadata参数
 
       // 3. 更新性能指标
       if (this.config.enablePerformanceMonitoring) {

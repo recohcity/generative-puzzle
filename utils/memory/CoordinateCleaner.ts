@@ -188,7 +188,7 @@ export class CoordinateCleaner {
           yRatio: node.relativePosition.yRatio
         },
         connections: [...node.connections], // 深拷贝连接数组
-        metadata: {}
+        metadata: { importance: 0.5 } // 添加必需的importance属性
       };
 
       // 根据选项保留元数据

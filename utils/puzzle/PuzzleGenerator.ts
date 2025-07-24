@@ -67,7 +67,7 @@ export class PuzzleGenerator {
         
         // 创建额外的切割线，确保类型一致
         const diagonal = Math.sqrt(Math.pow(maxX - minX, 2) + Math.pow(maxY - minY, 2));
-        const extraCuts: CutLine[] = [];
+        const extraCuts: any[] = []; // 使用any类型暂时解决CutLine类型问题
         
         // 计算需要多少额外切割线 - 至少1条，最多目标的一半
         const neededExtraCuts = Math.max(1, Math.min(Math.ceil(expectedPieceCount / 2), expectedPieceCount - splitPieces.length));

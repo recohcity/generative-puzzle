@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useRef } from 'react';
 import PuzzleCanvas from "@/components/PuzzleCanvas";
 import PhoneTabPanel from "./PhoneTabPanel";
-import { MOBILE_ADAPTATION, calculateMobilePortraitCanvasSize } from '@/constants/canvasAdaptation';
+import { MOBILE_ADAPTATION } from '@/constants/canvasAdaptation';
+import { useCanvas, useDevice } from '@/providers/hooks';
 
 interface PhonePortraitLayoutProps {
   isMusicPlaying: boolean;
@@ -16,20 +17,6 @@ interface PhonePortraitLayoutProps {
   goToFirstTab: () => void;
 }
 
-const getCanvasSize = () => {
-  if (typeof window === 'undefined') return { canvasSize: 320, canvasMargin: MOBILE_ADAPTATION.PORTRAIT.CANVAS_MARGIN };
-  
-  // 使用新的固定面板高度
-  const panelHeight = MOBILE_ADAPTATION.PORTRAIT.PANEL_HEIGHT;
-  const { canvasSize, canvasMargin } = calculateMobilePortraitCanvasSize(
-    window.innerWidth, 
-    window.innerHeight, 
-    panelHeight
-  );
-  
-  return { canvasSize, canvasMargin };
-};
-
 const PhonePortraitLayout: React.FC<PhonePortraitLayoutProps> = ({
   isMusicPlaying,
   isFullscreen,
@@ -40,17 +27,23 @@ const PhonePortraitLayout: React.FC<PhonePortraitLayoutProps> = ({
   goToNextTab,
   goToFirstTab,
 }) => {
-  // 响应式画布尺寸
-  const [canvasData, setCanvasData] = useState(() => getCanvasSize());
-  useEffect(() => {
-    const handleResize = () => setCanvasData(getCanvasSize());
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  // 使用统一的设备检测和画布管理系统
+  const device = useDevice();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const backgroundCanvasRef = useRef<HTMLCanvasElement>(null);
   
-  const { canvasSize, canvasMargin } = canvasData;
-  const canvasWidth = canvasSize;
-  const canvasHeight = canvasSize; // 保证正方形
+  // 使用统一的画布管理系统
+  const canvasSize = useCanvas({ 
+    containerRef, 
+    canvasRef, 
+    backgroundCanvasRef 
+  });
+  
+  // 使用统一画布管理系统的尺寸，如果没有则使用默认值
+  const canvasWidth = canvasSize?.width || 320;
+  const canvasHeight = canvasSize?.height || 320;
+  const canvasMargin = MOBILE_ADAPTATION.PORTRAIT.CANVAS_MARGIN;
 
   return (
     <div 
@@ -63,6 +56,7 @@ const PhonePortraitLayout: React.FC<PhonePortraitLayoutProps> = ({
     >
       {/* 画布区域 */}
       <div
+        ref={containerRef}
         className="order-1 bg-white/20 backdrop-blur-sm rounded-3xl shadow-[0_10px_25px_rgba(0,0,0,0.2)] border-2 border-white/30 overflow-hidden"
         style={{
           width: canvasWidth,
