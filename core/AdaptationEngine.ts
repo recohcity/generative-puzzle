@@ -295,27 +295,31 @@ export class AdaptationEngine {
         目标画布: `${toCanvasSize.width}x${toCanvasSize.height}`
       });
 
+      // 🔑 强制重新计算：即使缩放比例接近1，也要重新计算位置以消除累积误差
+      const forceRecalculation = Math.abs(scale - 1.0) < 0.001;
+      if (forceRecalculation) {
+        console.log('🔧 [AdaptationEngine] 缩放比例接近1.0，但强制重新计算位置以消除累积误差');
+      }
+
       const adaptedPieces = originalPieces.map((piece, index) => {
-        if (completedPieces.includes(index) && originalPositions[index]) {
-          // 🔒 已完成拼图的特殊处理：100%锁定到目标形状位置
-          const originalPiece = originalPositions[index];
-          const scaledPiece = this.scalePuzzlePiece(originalPiece, scale, toCanvasSize);
-          
+        if (completedPieces.includes(index)) {
+          // 🔒 已完成拼图的特殊处理：完全跳过适配，保持当前锁定状态
+          console.log(`🔒 [AdaptationEngine] 跳过已完成拼图${index}的适配，保持锁定状态`);
           return {
-            ...scaledPiece,
-            // 🔑 关键：已完成拼图必须锁定到目标形状的精确位置和角度
-            x: scaledPiece.x,
-            y: scaledPiece.y,
-            points: scaledPiece.points,
-            rotation: originalPiece.rotation || 0, // 锁定到目标角度
-            originalRotation: originalPiece.originalRotation || 0,
-            isCompleted: true, // 确保标记为已完成
-            originalX: originalPiece.x,
-            originalY: originalPiece.y
+            ...piece,
+            // 确保标记为已完成
+            isCompleted: true
           };
         } else {
-          // 🧩 未完成拼图：保持当前状态，只进行尺寸缩放
-          const scaledPiece = this.scalePuzzlePiece(piece, scale, toCanvasSize);
+          // 🧩 未完成拼图：使用画布中心基准进行正确适配
+          const scaledPiece = this.scalePuzzlePiece(piece, scale, toCanvasSize, fromCanvasSize);
+          
+          console.log(`🧩 [AdaptationEngine] 适配未完成拼图${index}:`, {
+            原始位置: `(${piece.x.toFixed(1)}, ${piece.y.toFixed(1)})`,
+            适配位置: `(${scaledPiece.x.toFixed(1)}, ${scaledPiece.y.toFixed(1)})`,
+            位置变化: `(${(scaledPiece.x - piece.x).toFixed(1)}, ${(scaledPiece.y - piece.y).toFixed(1)})`,
+            缩放比例: scale.toFixed(3)
+          });
           
           return {
             ...scaledPiece,
@@ -359,28 +363,71 @@ export class AdaptationEngine {
   private scalePuzzlePiece(
     piece: PuzzlePiece, 
     scale: number, 
-    canvasSize: { width: number; height: number }
+    toCanvasSize: { width: number; height: number },
+    fromCanvasSize?: { width: number; height: number }
   ): PuzzlePiece {
-    // Calculate piece center
-    const centerX = piece.points.reduce((sum, p) => sum + p.x, 0) / piece.points.length;
-    const centerY = piece.points.reduce((sum, p) => sum + p.y, 0) / piece.points.length;
+    // 如果没有提供原始画布尺寸，使用简单缩放
+    if (!fromCanvasSize) {
+      const centerX = piece.points.reduce((sum, p) => sum + p.x, 0) / piece.points.length;
+      const centerY = piece.points.reduce((sum, p) => sum + p.y, 0) / piece.points.length;
 
-    // Scale points relative to piece center
-    const scaledPoints = piece.points.map(point => ({
-      ...point,
-      x: (point.x - centerX) * scale + centerX * scale,
-      y: (point.y - centerY) * scale + centerY * scale
-    }));
+      const scaledPoints = piece.points.map(point => ({
+        ...point,
+        x: (point.x - centerX) * scale + centerX * scale,
+        y: (point.y - centerY) * scale + centerY * scale
+      }));
+
+      return {
+        ...piece,
+        points: scaledPoints,
+        x: piece.x * scale,
+        y: piece.y * scale,
+        rotation: piece.rotation,
+        originalRotation: piece.originalRotation,
+        isCompleted: piece.isCompleted,
+        originalX: piece.originalX,
+        originalY: piece.originalY
+      };
+    }
+
+    // 🔑 关键修复：使用画布中心作为基准点进行适配
+    const fromCenter = {
+      x: fromCanvasSize.width / 2,
+      y: fromCanvasSize.height / 2
+    };
+    
+    const toCenter = {
+      x: toCanvasSize.width / 2,
+      y: toCanvasSize.height / 2
+    };
+
+    // 计算拼图中心相对于原始画布中心的位置
+    const relativeX = piece.x - fromCenter.x;
+    const relativeY = piece.y - fromCenter.y;
+
+    // 缩放并重新定位到新画布中心
+    const scaledX = toCenter.x + relativeX * scale;
+    const scaledY = toCenter.y + relativeY * scale;
+
+    // 适配所有点
+    const scaledPoints = piece.points.map(point => {
+      const pointRelativeX = point.x - fromCenter.x;
+      const pointRelativeY = point.y - fromCenter.y;
+      
+      return {
+        ...point,
+        x: toCenter.x + pointRelativeX * scale,
+        y: toCenter.y + pointRelativeY * scale
+      };
+    });
 
     return {
       ...piece,
       points: scaledPoints,
-      x: piece.x * scale,
-      y: piece.y * scale,
-      // 🔑 关键修复：保持拼图的角度信息，避免窗口调整时角度随机变化
+      x: scaledX,
+      y: scaledY,
       rotation: piece.rotation,
       originalRotation: piece.originalRotation,
-      // 🔑 保持完成状态和其他重要属性
       isCompleted: piece.isCompleted,
       originalX: piece.originalX,
       originalY: piece.originalY

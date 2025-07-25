@@ -19,10 +19,10 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
 
   // 同步全局状态到本地状态，但仅当本地状态为空且全局状态有值时才同步
   useEffect(() => {
-    if (state.cutType && localCutType === "") {
+    if (state.cutType && localCutType === "" && state.cutType !== localCutType) {
       setLocalCutType(state.cutType);
     }
-  }, [state.cutType, localCutType]);
+  }, [state.cutType]); // 移除localCutType依赖，避免循环
 
   // 监听游戏重置事件，当原始形状被清空（即游戏重置）时，清除本地选择状态
   useEffect(() => {
@@ -30,7 +30,7 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
       console.log("游戏已重置，清除切割类型选择");
       setLocalCutType("");
     }
-  }, [state.originalShape.length, localCutType]);
+  }, [state.originalShape.length]); // 移除localCutType依赖，避免循环
 
   // 使用统一设备检测系统
   const device = useDevice();

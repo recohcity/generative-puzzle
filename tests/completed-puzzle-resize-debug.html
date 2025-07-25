@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>已完成拼图窗口调整调试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f0f0f0;
+        }
+        .debug-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .debug-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .debug-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .debug-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .status-good {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .status-bad {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .status-warning {
+            color: #ffc107;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1>已完成拼图窗口调整调试工具</h1>
+        <p><strong>用途:</strong> 调试和验证已完成拼图在窗口调整时的锁定状态</p>
+
+        <div class="debug-section">
+            <div class="debug-title">🎮 测试操作</div>
+            <button class="test-button" onclick="openGamePage()">打开游戏页面</button>
+            <button class="test-button" onclick="resizeWindow(1200, 800)">调整到 1200x800</button>
+            <button class="test-button" onclick="resizeWindow(1000, 600)">调整到 1000x600</button>
+            <button class="test-button" onclick="resizeWindow(1400, 900)">调整到 1400x900</button>
+            <button class="test-button" onclick="clearDebugLog()">清空调试日志</button>
+        </div>
+
+        <div class="debug-section">
+            <div class="debug-title">🔍 关键调试信息监听</div>
+            <div class="debug-info" id="debug-log">等待调试信息...</div>
+        </div>
+
+        <div class="debug-section">
+            <div class="debug-title">📊 修复状态检查</div>
+            <div id="fix-status">
+                <p>请先打开游戏页面，完成一些拼图块，然后调整窗口大小</p>
+            </div>
+        </div>
+
+        <div class="debug-section">
+            <div class="debug-title">📋 预期的调试信息</div>
+            <div class="debug-info">
+修复正常工作时应该看到：
+
+1. 画布尺寸变化检测：
+🔧 [修复检测] 画布尺寸变化: 800x600 → 1200x800
+🔧 [修复检测] 已完成拼图: [0, 2]
+
+2. originalPositions更新：
+✅ [修复成功] 同步更新originalPositions: 6 个目标位置
+🎯 [已完成拼图0] 目标位置: (300.0, 250.0) → (450.0, 375.0)
+
+3. GameContext状态更新：
+🔧 [GameContext] 更新originalPositions: 6 个目标位置
+
+4. 避免重新散开：
+🔧 [GameContext] 检测到已完成拼图，跳过重新散开，交由适配系统处理
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let gameWindow = null;
+        let debugLog = [];
+
+        function openGamePage() {
+            if (gameWindow && !gameWindow.closed) {
+                gameWindow.focus();
+                return;
+            }
+            
+            gameWindow = window.open('/', 'game', 'width=1200,height=800');
+            
+            // 监听游戏窗口的控制台消息
+            if (gameWindow) {
+                // 注入调试监听器
+                gameWindow.addEventListener('load', () => {
+                    // 重写console.log来捕获调试信息
+                    const originalLog = gameWindow.console.log;
+                    gameWindow.console.log = function(...args) {
+                        originalLog.apply(gameWindow.console, args);
+                        
+                        const message = args.join(' ');
+                        if (message.includes('[修复') || 
+                            message.includes('originalPositions') || 
+                            message.includes('[GameContext]') ||
+                            message.includes('画布尺寸变化') ||
+                            message.includes('已完成拼图') ||
+                            message.includes('跳过重新散开')) {
+                            
+                            addDebugLog(message);
+                        }
+                    };
+                    
+                    updateFixStatus();
+                });
+            }
+        }
+
+        function resizeWindow(width, height) {
+            if (!gameWindow || gameWindow.closed) {
+                alert('请先打开游戏页面');
+                return;
+            }
+            
+            gameWindow.resizeTo(width, height);
+            addDebugLog(`🔧 [调试工具] 窗口调整到: ${width}x${height}`);
+            
+            // 延迟检查状态
+            setTimeout(updateFixStatus, 1000);
+        }
+
+        function addDebugLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            debugLog.push(`[${timestamp}] ${message}`);
+            
+            // 保持最新的50条记录
+            if (debugLog.length > 50) {
+                debugLog = debugLog.slice(-50);
+            }
+            
+            updateDebugDisplay();
+        }
+
+        function updateDebugDisplay() {
+            const logElement = document.getElementById('debug-log');
+            logElement.textContent = debugLog.join('\n');
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function clearDebugLog() {
+            debugLog = [];
+            updateDebugDisplay();
+        }
+
+        function updateFixStatus() {
+            if (!gameWindow || gameWindow.closed) {
+                return;
+            }
+            
+            try {
+                const gameState = gameWindow.__gameStateForTests__;
+                if (!gameState) {
+                    document.getElementById('fix-status').innerHTML = 
+                        '<p class="status-warning">游戏状态未就绪</p>';
+                    return;
+                }
+                
+                const hasCompletedPieces = gameState.completedPieces && gameState.completedPieces.length > 0;
+                const hasOriginalPositions = gameState.originalPositions && gameState.originalPositions.length > 0;
+                
+                let statusHtml = '<div>';
+                statusHtml += `<p>拼图总数: ${gameState.puzzle ? gameState.puzzle.length : 0}</p>`;
+                statusHtml += `<p>已完成拼图: ${gameState.completedPieces ? gameState.completedPieces.length : 0} [${gameState.completedPieces ? gameState.completedPieces.join(', ') : ''}]</p>`;
+                statusHtml += `<p>目标位置数据: ${hasOriginalPositions ? '✅ 存在' : '❌ 缺失'}</p>`;
+                statusHtml += `<p>画布尺寸: ${gameState.canvasWidth}x${gameState.canvasHeight}</p>`;
+                
+                if (hasCompletedPieces) {
+                    statusHtml += '<p class="status-good">✅ 有已完成拼图，可以测试修复效果</p>';
+                    statusHtml += '<p>请调整窗口大小，观察调试信息和拼图位置</p>';
+                } else {
+                    statusHtml += '<p class="status-warning">⚠️ 请先完成一些拼图块</p>';
+                }
+                
+                statusHtml += '</div>';
+                document.getElementById('fix-status').innerHTML = statusHtml;
+                
+            } catch (error) {
+                document.getElementById('fix-status').innerHTML = 
+                    `<p class="status-bad">❌ 无法获取游戏状态: ${error.message}</p>`;
+            }
+        }
+
+        // 定期更新状态
+        setInterval(updateFixStatus, 2000);
+        
+        console.log('🔧 已完成拼图窗口调整调试工具已加载');
+        console.log('📋 使用步骤:');
+        console.log('1. 点击"打开游戏页面"');
+        console.log('2. 在游戏中生成拼图并完成一些拼图块');
+        console.log('3. 使用调整窗口按钮测试修复效果');
+        console.log('4. 观察调试信息和拼图位置变化');
+    </script>
+</body>
+</html>

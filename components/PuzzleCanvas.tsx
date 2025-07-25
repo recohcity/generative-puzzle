@@ -16,12 +16,12 @@ import {
 import { PuzzlePiece } from "@/types/puzzleTypes";
 
 // 导入统一系统的 Hooks
-import { useDevice, useCanvas, usePuzzleAdaptation } from '@/providers/hooks';
+import { useDevice, useCanvas, useAdaptation } from '@/providers/hooks';
 import { useSystem } from '@/providers/SystemProvider';
+// 导入适配引擎用于修复originalPositions同步问题
+import { UnifiedAdaptationEngine } from '@/utils/adaptation/UnifiedAdaptationEngine';
 // 导入新的拼图交互处理 Hook
 import { usePuzzleInteractions } from "@/hooks/usePuzzleInteractions";
-// 导入形状适配Hook
-import { useShapeAdaptation } from '@/hooks/useShapeAdaptation';
 import { useDebugToggle } from '@/hooks/useDebugToggle';
 
 // ========================
@@ -318,24 +318,7 @@ export default function PuzzleCanvas() {
     return null;
   }, [state.canvasWidth, state.canvasHeight, canvasSize?.width, canvasSize?.height]);
 
-  // 🎯 使用新的统一拼图适配系统
-  usePuzzleAdaptation(
-    memoizedCanvasSize,                                                    // canvasSize
-    state.puzzle,                                                          // puzzle
-    state.originalPositions || [],                                         // originalPositions
-    state.completedPieces || [],                                          // completedPieces
-    state.previousCanvasSize || { width: 1280, height: 720 },            // previousCanvasSize
-    (adaptedPieces) => {                                                  // onAdapted
-      console.log(`✅ [统一适配系统] 拼图适配完成: ${adaptedPieces.length} 个拼图块`);
-      dispatch({
-        type: 'UPDATE_ADAPTED_PUZZLE_STATE',
-        payload: { 
-          newPuzzleData: adaptedPieces,
-          newPreviousCanvasSize: memoizedCanvasSize || { width: 1280, height: 720 }
-        }
-      });
-    }
-  );
+  // 🎯 统一适配系统已经处理了所有适配需求，无需额外的适配Hook
 
   const {
     handleMouseDown,
@@ -466,6 +449,8 @@ export default function PuzzleCanvas() {
       );
 
       if (state.showHint && state.selectedPiece !== null && state.originalPositions.length > 0) {
+        // 🔑 关键修复：提示区域显示选中拼图块在目标形状中的正确位置
+        // 这是拼图散开前的位置，告诉玩家应该把拼图拖拽到这里
         const hintPiece = state.originalPositions[state.selectedPiece];
         if (hintPiece) {
           drawHintOutline(ctx, hintPiece);

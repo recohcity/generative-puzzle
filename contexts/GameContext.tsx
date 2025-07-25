@@ -46,7 +46,7 @@ type GameAction =
   | { type: "BATCH_UPDATE"; payload: { puzzle: PuzzlePiece[]; originalPositions: PuzzlePiece[] } }
   | { type: "SYNC_ALL_POSITIONS"; payload: { originalShape: Point[]; puzzle: PuzzlePiece[]; originalPositions: PuzzlePiece[]; shapeOffset: { offsetX: number; offsetY: number } } }
   | { type: "UPDATE_CANVAS_SIZE"; payload: { canvasWidth: number; canvasHeight: number; scale: number; orientation: string; previousCanvasSize: { width: number; height: number } } }
-  | { type: "UPDATE_ADAPTED_PUZZLE_STATE"; payload: { newPuzzleData: PuzzlePiece[]; newPreviousCanvasSize: { width: number; height: number } } }
+  | { type: "UPDATE_ADAPTED_PUZZLE_STATE"; payload: { newPuzzleData: PuzzlePiece[]; newPreviousCanvasSize: { width: number; height: number }; updatedOriginalPositions?: PuzzlePiece[]; updatedOriginalShape?: Point[] } }
   | { type: "UPDATE_SHAPE_AND_PUZZLE"; payload: { originalShape: Point[]; puzzle: PuzzlePiece[] } } // Step3新增
   | { type: "SCATTER_PUZZLE_COMPLETE"; payload: { puzzle: PuzzlePiece[]; scatterCanvasSize: { width: number; height: number } } } // Step3散开适配新增
   | { type: "NO_CHANGE" }
@@ -325,10 +325,27 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       }
     case "UPDATE_ADAPTED_PUZZLE_STATE":
       // 更新适配后的拼图数据和上一次画布尺寸
+      // 🔑 关键修复：同时更新originalPositions和originalShape，确保已完成拼图锁定基准正确
+      const hasUpdatedOriginalPositions = action.payload.updatedOriginalPositions && 
+                                         action.payload.updatedOriginalPositions.length > 0;
+      const hasUpdatedOriginalShape = action.payload.updatedOriginalShape && 
+                                     action.payload.updatedOriginalShape.length > 0;
+      
+      if (hasUpdatedOriginalPositions) {
+        console.log(`🔧 [GameContext] 更新originalPositions: ${action.payload.updatedOriginalPositions!.length} 个目标位置`);
+      }
+      if (hasUpdatedOriginalShape) {
+        console.log(`🔧 [GameContext] 更新originalShape: ${action.payload.updatedOriginalShape!.length} 个形状点`);
+      }
+      
       return {
         ...state,
         puzzle: action.payload.newPuzzleData,
         previousCanvasSize: action.payload.newPreviousCanvasSize,
+        // 🔧 修复：如果提供了updatedOriginalPositions，则更新它
+        originalPositions: action.payload.updatedOriginalPositions || state.originalPositions,
+        // 🔧 修复：如果提供了updatedOriginalShape，则更新它
+        originalShape: action.payload.updatedOriginalShape || state.originalShape,
         // Note: canvasWidth and canvasHeight should already be the new size
         // when this action is dispatched after a resize.
       };
@@ -398,11 +415,36 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     // 获取实际画布尺寸以确保形状居中
     if (canvasRef.current) {
-      const canvasWidth = canvasRef.current.width;
-      const canvasHeight = canvasRef.current.height;
-      if (canvasWidth <= 0 || canvasHeight <= 0) {
-        // 画布尺寸无效，使用默认值
+      // 🎯 统一适配基准：优先使用Canvas元素的实际尺寸，与Canvas元素保持一致
+      let canvasWidth = 0;
+      let canvasHeight = 0;
+      
+      // 优先从Canvas元素获取实际尺寸（与Canvas元素渲染使用相同基准）
+      if (canvasRef.current) {
+        canvasWidth = canvasRef.current.width;
+        canvasHeight = canvasRef.current.height;
+        console.log('🎯 [generateShape] 使用Canvas元素实际尺寸:', { width: canvasWidth, height: canvasHeight });
       }
+      
+      // 如果Canvas元素尺寸无效，使用状态中的尺寸作为降级
+      if (canvasWidth <= 0 || canvasHeight <= 0) {
+        canvasWidth = state.canvasWidth || 0;
+        canvasHeight = state.canvasHeight || 0;
+        console.log('🔧 [generateShape] 降级使用状态尺寸:', { width: canvasWidth, height: canvasHeight });
+      }
+      
+      // 最后的兜底方案
+      if (canvasWidth <= 0 || canvasHeight <= 0) {
+        canvasWidth = 640;
+        canvasHeight = 640;
+        console.log('🔧 [generateShape] 使用默认尺寸:', { width: canvasWidth, height: canvasHeight });
+      }
+      
+      console.log('🎯 [generateShape] 最终画布尺寸基准:', { 
+        width: canvasWidth, 
+        height: canvasHeight,
+        来源: canvasRef.current ? 'Canvas元素' : (state.canvasWidth ? '状态' : '默认')
+      });
       try {
         const shape = ShapeGenerator.generateShape(currentShapeType);
         if (shape.length === 0) {
@@ -1177,6 +1219,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [isCanvasReady, state.originalShape, state.cutType, state.cutCount]);
 
   // 画布尺寸变化时自动重新分布拼图，保证resize后拼图不会消失
+  // 🔧 修复：避免覆盖已完成拼图的锁定状态
   useEffect(() => {
     // 添加画布尺寸有效性检查，避免在resize过程中传递无效尺寸
     if (state.isScattered && 
@@ -1186,6 +1229,15 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         state.canvasHeight &&
         state.canvasWidth > 0 && 
         state.canvasHeight > 0) {
+      
+      console.log('🔧 [GameContext] 画布尺寸变化，检查是否需要重新散开拼图');
+      console.log('🔧 [GameContext] 已完成拼图:', state.completedPieces);
+      
+      // 🔑 关键修复：如果有已完成的拼图，不要重新散开，让usePuzzleAdaptation处理适配
+      if (state.completedPieces && state.completedPieces.length > 0) {
+        console.log('🔧 [GameContext] 检测到已完成拼图，跳过重新散开，交由适配系统处理');
+        return;
+      }
       
       // 重新分布拼图，基于最新canvas尺寸
       let targetShape = null;
@@ -1209,6 +1261,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       
       try {
+        console.log('🔧 [GameContext] 重新散开拼图（无已完成拼图）');
         const scatteredPuzzle = ScatterPuzzle.scatterPuzzle(state.puzzle, {
           canvasWidth: state.canvasWidth,
           canvasHeight: state.canvasHeight,
