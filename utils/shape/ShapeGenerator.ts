@@ -31,7 +31,7 @@ export class ShapeGenerator {
       minRadius: baseRadius * 0.8,
       maxRadius: baseRadius,
       amplitude: 0.08,
-      detail: 200,
+      detail: 30, // 进一步优化到30个点，平衡质量和性能
     };
     
     console.log(`标准形状参数: 中心点(${centerX}, ${centerY}), 半径=${shapeParams.minRadius}-${shapeParams.maxRadius}`);

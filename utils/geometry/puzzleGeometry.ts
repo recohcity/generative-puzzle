@@ -15,6 +15,21 @@ export const calculateCenter = (points: Point[]) => {
 }
 
 export function isPointInPolygon(x: number, y: number, polygon: Point[]): boolean {
+  // 快速边界框预检查 - 大幅提升性能
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (let i = 0; i < polygon.length; i++) {
+    const point = polygon[i];
+    if (point.x < minX) minX = point.x;
+    if (point.x > maxX) maxX = point.x;
+    if (point.y < minY) minY = point.y;
+    if (point.y > maxY) maxY = point.y;
+  }
+  
+  // 如果点在边界框外，直接返回false
+  if (x < minX || x > maxX || y < minY || y > maxY) {
+    return false;
+  }
+
   // Helper function to check if a point is on a line segment
   const onSegment = (px: number, py: number, qx: number, qy: number, rx: number, ry: number) => {
     // Check if r is collinear with p and q

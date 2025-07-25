@@ -12,6 +12,8 @@ import { calculateCenter } from "@/utils/geometry/puzzleGeometry"
 // 导入从 puzzleTypes.ts 迁移的类型
 import { Point, PuzzlePiece, DraggingPiece, PieceBounds, GameState, GameContextProps, ShapeType, CutType } from "@/types/puzzleTypes";
 import { statePreservationEngine } from '@/utils/adaptation/StatePreservationEngine';
+import { memoryManager } from "@/utils/performance/MemoryManager";
+import { renderOptimizer } from "@/utils/rendering/RenderOptimizer";
 
 // Step3: 定义GameAction类型，包含新的UPDATE_SHAPE_AND_PUZZLE action
 type GameAction = 
@@ -803,13 +805,13 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         cutCount: state.cutCount,
       };
       
-      // 在控制台输出状态更新信息，便于调试
-      console.log('游戏状态已更新:', {
-        puzzlePiecesCount: state.puzzle?.length || 0,
-        isScattered: state.isScattered,
-        canvasSize: `${state.canvasWidth}x${state.canvasHeight}`,
-        shapeType: state.shapeType
-      });
+      // 🚨 临时禁用状态更新日志，避免无限循环
+      // console.log('游戏状态已更新:', {
+      //   puzzlePiecesCount: state.puzzle?.length || 0,
+      //   isScattered: state.isScattered,
+      //   canvasSize: `${state.canvasWidth}x${state.canvasHeight}`,
+      //   shapeType: state.shapeType
+      // });
     }
   }, [state]);
 

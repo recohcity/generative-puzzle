@@ -425,7 +425,7 @@ export async function adaptShapeUnified(
     
     // 使用统一适配引擎
     const adaptationConfig = {
-      type: 'shape',
+      type: 'shape' as const,
       originalData: originalShape,
       originalCanvasSize: oldSize,
       targetCanvasSize: newSize,
@@ -437,8 +437,8 @@ export async function adaptShapeUnified(
     
     try {
       // 导入统一适配引擎
-      const { unifiedAdaptationEngine } = require('../adaptation/UnifiedAdaptationEngine');
-      const result = unifiedAdaptationEngine.adapt(adaptationConfig);
+      const { unifiedAdaptationEngine } = await import('../adaptation/UnifiedAdaptationEngine');
+      const result = unifiedAdaptationEngine.adapt<Point[]>(adaptationConfig);
       
       if (result.success) {
         return result.adaptedData;

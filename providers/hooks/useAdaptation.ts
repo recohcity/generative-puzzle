@@ -3,7 +3,7 @@
  * Replaces usePuzzleAdaptation.ts and consolidates adaptation logic
  */
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useSystem } from '../SystemProvider';
 import { useDevice } from './useDevice';
 import { Point, PuzzlePiece } from '@/types/puzzleTypes';
@@ -32,6 +32,10 @@ export const useAdaptation = ({
   const { adaptationEngine } = useSystem();
   const deviceState = useDevice();
 
+  // 🔧 修复: 使用useRef保存onShapeAdapted，避免依赖变化
+  const onShapeAdaptedRef = useRef(onShapeAdapted);
+  onShapeAdaptedRef.current = onShapeAdapted;
+  
   const adaptShape = useCallback((
     originalShape: Point[],
     fromSize: { width: number; height: number },
@@ -40,13 +44,13 @@ export const useAdaptation = ({
     const result = adaptationEngine.adaptShape(originalShape, fromSize, toSize);
     
     if (result.success && result.data) {
-      onShapeAdapted?.(result.data);
+      onShapeAdaptedRef.current?.(result.data);
       return result.data;
     } else {
       console.error('Shape adaptation failed:', result.error);
       return originalShape;
     }
-  }, [adaptationEngine, onShapeAdapted]);
+  }, [adaptationEngine]); // 移除onShapeAdapted依赖
 
   const adaptPuzzlePieces = useCallback((
     originalPieces: PuzzlePiece[],
@@ -172,20 +176,63 @@ export const useShapeAdaptation = (
   baseCanvasSize: { width: number; height: number } | null,
   onAdapted: (adaptedShape: Point[]) => void
 ) => {
+  const lastParamsRef = useRef<{
+    canvasSize: { width: number; height: number } | null;
+    baseCanvasSize: { width: number; height: number } | null;
+    baseShape: Point[];
+  } | null>(null);
+  
+  // 🔧 修复: 使用useCallback稳定化onAdapted，避免adaptShape依赖变化
+  const stableOnAdapted = useCallback(onAdapted, []);
+  
   const { adaptShape } = useAdaptation({
     canvasSize,
-    onShapeAdapted: onAdapted
+    onShapeAdapted: stableOnAdapted
   });
 
   useEffect(() => {
+    // 🔧 修复: 更严格的条件检查
     if (!canvasSize || 
         !baseCanvasSize || 
         !baseShape || 
         baseShape.length === 0 ||
+        canvasSize.width <= 0 ||
+        canvasSize.height <= 0 ||
+        baseCanvasSize.width <= 0 ||
+        baseCanvasSize.height <= 0 ||
         (canvasSize.width === baseCanvasSize.width && canvasSize.height === baseCanvasSize.height)) {
       return;
     }
-
-    adaptShape(baseShape, baseCanvasSize, canvasSize);
+    
+    // 🔧 修复: 检查参数是否与上次相同，避免重复适配
+    const lastParams = lastParamsRef.current;
+    if (lastParams &&
+        lastParams.canvasSize?.width === canvasSize.width &&
+        lastParams.canvasSize?.height === canvasSize.height &&
+        lastParams.baseCanvasSize?.width === baseCanvasSize.width &&
+        lastParams.baseCanvasSize?.height === baseCanvasSize.height &&
+        lastParams.baseShape.length === baseShape.length) {
+      return;
+    }
+    
+    console.log('🔧 [providers/useShapeAdaptation] 执行适配:', {
+      from: baseCanvasSize,
+      to: canvasSize,
+      shapePoints: baseShape.length
+    });
+    
+    // 记录当前参数
+    lastParamsRef.current = {
+      canvasSize: { ...canvasSize },
+      baseCanvasSize: { ...baseCanvasSize },
+      baseShape: [...baseShape]
+    };
+    
+    // 🔧 修复: 使用防抖机制，避免频繁调用
+    const timeoutId = setTimeout(() => {
+      adaptShape(baseShape, baseCanvasSize, canvasSize);
+    }, 100); // 100ms防抖
+    
+    return () => clearTimeout(timeoutId);
   }, [canvasSize, baseCanvasSize, baseShape, adaptShape]);
 };

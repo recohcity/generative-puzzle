@@ -4,7 +4,7 @@ import type React from "react"
 import { useEffect, useRef, useState, useMemo } from "react"
 import { useGame } from "@/contexts/GameContext"
 import { playPieceSelectSound, playPieceSnapSound, playPuzzleCompletedSound, playRotateSound } from "@/utils/rendering/soundEffects"
-import { calculatePieceBounds } from "@/utils/geometry/puzzleGeometry";
+
 import { 
   drawPuzzle, 
   drawHintOutline, 
@@ -16,13 +16,13 @@ import {
 import { PuzzlePiece } from "@/types/puzzleTypes";
 
 // 导入统一系统的 Hooks
-import { useDevice, useCanvas, useAdaptation } from '@/providers/hooks';
+import { useDevice, useCanvas } from '@/providers/hooks';
 import { useSystem } from '@/providers/SystemProvider';
-// 导入适配引擎用于修复originalPositions同步问题
-import { UnifiedAdaptationEngine } from '@/utils/adaptation/UnifiedAdaptationEngine';
+
 // 导入新的拼图交互处理 Hook
 import { usePuzzleInteractions } from "@/hooks/usePuzzleInteractions";
 import { useDebugToggle } from '@/hooks/useDebugToggle';
+// import { useShapeAdaptation } from '@/hooks/useShapeAdaptation'; // 临时禁用
 
 // ========================
 // 画布适配核心流程说明
@@ -41,7 +41,7 @@ import { useDebugToggle } from '@/hooks/useDebugToggle';
 // 以上流程和参数均有详细注释，便于团队理解、维护和后续扩展。
 // ========================
 
-import { DESKTOP_ADAPTATION, MOBILE_ADAPTATION } from '@/constants/canvasAdaptation';
+import { DESKTOP_ADAPTATION } from '@/constants/canvasAdaptation';
 
 // 画布尺寸边界常量（使用统一适配参数）
 const MIN_CANVAS_WIDTH = DESKTOP_ADAPTATION.MIN_CANVAS_SIZE; // 画布最小宽度，防止内容过小或消失
@@ -169,7 +169,7 @@ export default function PuzzleCanvas() {
       }
       
       // 创建新分段
-      const newSegmentId = `segment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const newSegmentId = `segment_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
       const newSegment = {
         id: newSegmentId,
         startTime: new Date().toISOString(),
@@ -232,7 +232,7 @@ export default function PuzzleCanvas() {
       },
       game: {
         totalPieces: state.puzzle?.length,
-        completed: state.completedPieces?.length,
+        completed: (state.completedPieces as number[])?.length,
         isScattered: state.isScattered,
         isCompleted: state.isCompleted,
         difficulty: state.difficulty || null
@@ -246,7 +246,7 @@ export default function PuzzleCanvas() {
           center,
           points: piece.points,
           rotation: piece.rotation,
-          completed: state.completedPieces.includes(idx),
+          completed: (state.completedPieces as number[]).includes(idx),
           selected: state.selectedPiece === idx
         };
       }),
@@ -282,43 +282,167 @@ export default function PuzzleCanvas() {
     backgroundCanvasRef,
   });
 
-  // 🚨 测试：确保useEffect能够被触发
-  useEffect(() => {
-    console.log('🚨🚨🚨 [测试] PuzzleCanvas useEffect 被触发了！', {
-      timestamp: Date.now(),
-      canvasSize,
-      memoizedCanvasSize,
-      stateCanvasWidth: state.canvasWidth,
-      stateCanvasHeight: state.canvasHeight
-    });
-  });
+  // 🚨 临时禁用测试useEffect
+  // useEffect(() => {
+  //   console.log('🚨🚨🚨 [测试] PuzzleCanvas useEffect 被触发了！', {
+  //     timestamp: Date.now(),
+  //     canvasSize,
+  //     memoizedCanvasSize,
+  //     stateCanvasWidth: state.canvasWidth,
+  //     stateCanvasHeight: state.canvasHeight
+  //   });
+  // });
   
   // 顶层直接调用适配Hooks，确保每次渲染都响应最新画布状态
   // 1. 形状适配 - 确保目标形状随画布尺寸正确适配（使用新的记忆适配系统）
   // 使用useMemo来避免每次渲染都创建新的画布尺寸对象
   const memoizedCanvasSize = useMemo(() => {
-    console.log('🔍 [PuzzleCanvas] memoizedCanvasSize计算:', {
-      stateCanvasWidth: state.canvasWidth,
-      stateCanvasHeight: state.canvasHeight,
-      canvasSize,
-      hasValidStateCanvas: !!(state.canvasWidth && state.canvasHeight && state.canvasWidth > 0 && state.canvasHeight > 0),
-      hasValidCanvasSize: !!(canvasSize && canvasSize.width > 0 && canvasSize.height > 0)
-    });
+    // 🚨 临时禁用日志输出，避免无限循环
+    // console.log('🔍 [PuzzleCanvas] memoizedCanvasSize计算:', {
+    //   stateCanvasWidth: state.canvasWidth,
+    //   stateCanvasHeight: state.canvasHeight,
+    //   canvasSize,
+    //   hasValidStateCanvas: !!(state.canvasWidth && state.canvasHeight && state.canvasWidth > 0 && state.canvasHeight > 0),
+    //   hasValidCanvasSize: !!(canvasSize && canvasSize.width > 0 && canvasSize.height > 0)
+    // });
 
     if (state.canvasWidth && state.canvasHeight && state.canvasWidth > 0 && state.canvasHeight > 0) {
       const result = { width: state.canvasWidth, height: state.canvasHeight };
-      console.log('🔍 [PuzzleCanvas] 使用state画布尺寸:', result);
+      // console.log('🔍 [PuzzleCanvas] 使用state画布尺寸:', result);
       return result;
     } else if (canvasSize && canvasSize.width > 0 && canvasSize.height > 0) {
       const result = { width: canvasSize.width, height: canvasSize.height };
-      console.log('🔍 [PuzzleCanvas] 使用props画布尺寸:', result);
+      // console.log('🔍 [PuzzleCanvas] 使用props画布尺寸:', result);
       return result;
     }
-    console.log('🔍 [PuzzleCanvas] 画布尺寸为null');
+    // console.log('🔍 [PuzzleCanvas] 画布尺寸为null');
     return null;
   }, [state.canvasWidth, state.canvasHeight, canvasSize?.width, canvasSize?.height]);
 
-  // 🎯 统一适配系统已经处理了所有适配需求，无需额外的适配Hook
+  // 🎯 手动适配系统：直接调用UnifiedAdaptationEngine，避免Hook循环依赖
+  // 使用useRef记录上一次的画布尺寸，避免累积缩放错误
+  const lastCanvasSizeRef = useRef<{ width: number; height: number } | null>(null);
+  
+  useEffect(() => {
+    // 检查是否需要进行形状适配
+    if (!memoizedCanvasSize || 
+        !state.baseShape || 
+        !state.baseCanvasSize ||
+        state.baseShape.length === 0) {
+      return;
+    }
+    
+    // 🔧 关键修复：使用当前画布尺寸作为适配起点，而不是baseCanvasSize
+    const currentCanvasSize = lastCanvasSizeRef.current || state.baseCanvasSize;
+    
+    // 检查画布尺寸是否真的发生了变化
+    if (memoizedCanvasSize.width === currentCanvasSize.width && 
+        memoizedCanvasSize.height === currentCanvasSize.height) {
+      return;
+    }
+    
+    console.log('🎯 [PuzzleCanvas] 开始手动形状适配:', {
+      from: currentCanvasSize,
+      to: memoizedCanvasSize,
+      shapePoints: state.baseShape.length,
+      isFirstTime: !lastCanvasSizeRef.current
+    });
+    
+    // 使用防抖机制，避免频繁调用
+    const timeoutId = setTimeout(async () => {
+      try {
+        // 动态导入UnifiedAdaptationEngine
+        const { unifiedAdaptationEngine } = await import('@/utils/adaptation/UnifiedAdaptationEngine');
+        
+        // 🔧 关键修复：如果是第一次适配，使用baseShape；否则使用当前的originalShape
+        const sourceShape = lastCanvasSizeRef.current ? state.originalShape : state.baseShape;
+        
+        // 适配目标形状
+        const shapeResult = unifiedAdaptationEngine.adapt<{ x: number; y: number }[]>({
+          type: 'shape',
+          originalData: sourceShape,
+          originalCanvasSize: currentCanvasSize,
+          targetCanvasSize: memoizedCanvasSize,
+          options: {
+            preserveAspectRatio: true,
+            centerAlign: true,
+            scaleMethod: 'minEdge'
+          }
+        });
+        
+        if (shapeResult.success && shapeResult.adaptedData) {
+          console.log('✅ [PuzzleCanvas] 形状适配完成:', shapeResult.adaptedData.length, '个点');
+          
+          // 更新目标形状
+          dispatch({
+            type: 'SET_ORIGINAL_SHAPE',
+            payload: shapeResult.adaptedData
+          });
+          
+          // 🎯 同步适配拼图块（如果存在）
+          if (state.puzzle && state.puzzle.length > 0) {
+            const puzzleResult = unifiedAdaptationEngine.adapt<PuzzlePiece[]>({
+              type: 'puzzle',
+              originalData: state.puzzle,
+              originalCanvasSize: currentCanvasSize,
+              targetCanvasSize: memoizedCanvasSize,
+              options: {
+                preserveAspectRatio: true,
+                centerAlign: true,
+                scaleMethod: 'minEdge'
+              }
+            });
+            
+            if (puzzleResult.success && puzzleResult.adaptedData) {
+              console.log('✅ [PuzzleCanvas] 拼图块同步适配完成:', puzzleResult.adaptedData.length, '个拼图块');
+              dispatch({
+                type: 'SET_PUZZLE',
+                payload: puzzleResult.adaptedData
+              });
+            }
+          }
+          
+          // 🎯 同步适配originalPositions（提示区域）
+          if (state.originalPositions && (state.originalPositions as PuzzlePiece[]).length > 0) {
+            const originalPositionsResult = unifiedAdaptationEngine.adaptOriginalPositions(
+              state.originalPositions as PuzzlePiece[],
+              currentCanvasSize,
+              memoizedCanvasSize
+            );
+            
+            console.log('✅ [PuzzleCanvas] originalPositions同步适配完成:', originalPositionsResult.length, '个位置');
+            dispatch({
+              type: 'SET_ORIGINAL_POSITIONS',
+              payload: originalPositionsResult
+            });
+          }
+          
+          // 🔧 关键修复：更新记录的画布尺寸
+          lastCanvasSizeRef.current = { ...memoizedCanvasSize };
+        } else {
+          console.error('❌ [PuzzleCanvas] 形状适配失败:', shapeResult.error);
+        }
+      } catch (error) {
+        console.error('❌ [PuzzleCanvas] 适配引擎导入失败:', error);
+      }
+    }, 150); // 150ms防抖
+    
+    return () => clearTimeout(timeoutId);
+  }, [memoizedCanvasSize, state.baseShape, state.originalShape, state.baseCanvasSize, state.puzzle, state.originalPositions, dispatch]);
+  
+  // 🚨 临时禁用适配状态监控
+  // useEffect(() => {
+  //   if (memoizedCanvasSize && state.baseShape && state.baseCanvasSize) {
+  //     console.log('🔍 [PuzzleCanvas] 适配状态监控:', {
+  //       当前画布: memoizedCanvasSize,
+  //       基础画布: state.baseCanvasSize,
+  //       基础形状点数: state.baseShape.length,
+  //       当前形状点数: state.originalShape.length,
+  //       需要适配: memoizedCanvasSize.width !== state.baseCanvasSize.width || 
+  //               memoizedCanvasSize.height !== state.baseCanvasSize.height
+  //     });
+  //   }
+  // }, [memoizedCanvasSize, state.baseShape, state.baseCanvasSize, state.originalShape]);
 
   const {
     handleMouseDown,
@@ -441,14 +565,14 @@ export default function PuzzleCanvas() {
       drawPuzzle(
         ctx,
         state.puzzle,
-        state.completedPieces,
+        state.completedPieces as number[],
         state.selectedPiece,
         state.shapeType,
         state.originalShape,
         state.isScattered
       );
 
-      if (state.showHint && state.selectedPiece !== null && state.originalPositions.length > 0) {
+      if (state.showHint && state.selectedPiece !== null && (state.originalPositions as PuzzlePiece[]).length > 0) {
         // 🔑 关键修复：提示区域显示选中拼图块在目标形状中的正确位置
         // 这是拼图散开前的位置，告诉玩家应该把拼图拖拽到这里
         const hintPiece = state.originalPositions[state.selectedPiece];
