@@ -220,16 +220,6 @@ npm run test:report
 
 ---
 
-## 🤝 参与贡献
-
-我们欢迎所有形式的贡献！
-
-### 🎯 贡献方式
-- 🐛 **[报告Bug](https://github.com/recohcity/generative-puzzle/issues/new?template=bug_report.md)**
-- 💡 **[功能建议](https://github.com/recohcity/generative-puzzle/issues/new?template=feature_request.md)**
-- 📚 **[改进文档](https://github.com/recohcity/generative-puzzle/issues/new?template=docs_improvement.md)**
-- 🔧 **[提交代码](./docs/CONTRIBUTING.md)**
-
 ### 📊 项目统计
 - 🎮 **190个API接口** - 完整的游戏开发工具集
 - 🧪 **100%测试覆盖** - 稳定可靠的代码质量
@@ -272,18 +262,10 @@ npm run test:report        # 查看测试报告
 
 ---
 
-## 🌟 社区与支持
-
-### 💬 交流渠道
-- 💬 **[GitHub讨论区](https://github.com/recohcity/generative-puzzle/discussions)** - 技术讨论和问答
-- 🐛 **[Issue跟踪](https://github.com/recohcity/generative-puzzle/issues)** - Bug报告和功能请求
-- 📧 **[邮件联系](mailto:contact@citylivpark.com)** - 商务合作和技术咨询
-
 ### 📈 项目状态
 - ✅ **活跃维护** - 定期更新和Bug修复
 - 🔄 **持续集成** - 自动化测试和部署
 - 📊 **性能监控** - 实时性能指标追踪
-- 🌍 **开源友好** - 欢迎社区贡献
 
 ### 🏆 致谢
 感谢所有贡献者和社区成员的支持！
