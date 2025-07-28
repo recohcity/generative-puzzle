@@ -62,12 +62,15 @@ export class ScatterPuzzle {
     } catch (e) {
       // SSR安全
     }
-    // 设备检测
-    const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
-    const isIPhone = /iPhone/i.test(ua);
-    const isAndroid = /Android/i.test(ua);
-    const isMobile = isIPhone || isAndroid;
-    const isPortrait = typeof window !== 'undefined' ? window.innerHeight > window.innerWidth : false;
+    // 使用统一设备检测系统
+    const { DeviceManager } = require('../../core/DeviceManager');
+    const deviceManager = DeviceManager.getInstance();
+    const deviceState = deviceManager.getState();
+    
+    const isIPhone = deviceState.isIOS;
+    const isAndroid = deviceState.isAndroid;
+    const isMobile = deviceState.isMobile;
+    const isPortrait = deviceState.isPortrait;
     const isSmallScreen = canvasWidth < 400 || canvasHeight < 400;
     // === 安全边距重构 ===
     // 统一安全边距为10px，仅用于拼图自动分布/回弹兜底，不影响拼图区大小

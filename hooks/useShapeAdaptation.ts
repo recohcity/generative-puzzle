@@ -14,8 +14,6 @@ import { PuzzlePiece } from '@/types/puzzleTypes';
  * 4. 添加适配结果比较，避免不必要的状态更新
  */
 export const useShapeAdaptation = (canvasSize: { width: number; height: number } | null) => {
-  // console.log('🔧 [useShapeAdaptation] 使用修复版本的适配系统');
-  
   const { state, dispatch } = useGame();
   const isMountedRef = useRef(true);
   const lastAdaptationRef = useRef<{
@@ -49,12 +47,9 @@ export const useShapeAdaptation = (canvasSize: { width: number; height: number }
       });
       
       if (isSame) {
-        console.log('🔧 [useShapeAdaptation] 适配结果未变化，跳过状态更新');
         return;
       }
     }
-    
-    console.log('✅ [useShapeAdaptation] 形状适配完成:', adaptedShape.length, '个点');
     
     // 🔧 关键修复：先更新记录，再dispatch，避免循环
     lastAdaptationRef.current = {
@@ -77,9 +72,7 @@ export const useShapeAdaptation = (canvasSize: { width: number; height: number }
         canvasSize && 
         state.baseCanvasSize) {
       
-      console.log('🧩 [useShapeAdaptation] 开始同步适配拼图块:', {
-        basePuzzleCount: state.basePuzzle.length,
-        isScattered: state.isScattered,
+      // 开始同步适配拼图块
         from: state.baseCanvasSize,
         to: canvasSize
       });
@@ -99,7 +92,6 @@ export const useShapeAdaptation = (canvasSize: { width: number; height: number }
         });
         
         if (adaptationResult.success) {
-          console.log('✅ [useShapeAdaptation] 拼图块同步适配完成:', adaptationResult.adaptedData.length, '个拼图块');
           dispatch({
             type: 'SET_PUZZLE',
             payload: adaptationResult.adaptedData

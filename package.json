@@ -1,6 +1,6 @@
 {
   "name": "generative-puzzle-game",
-  "version": "1.3.36",
+  "version": "1.3.37",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -12,7 +12,14 @@
     "test:report": "playwright show-report",
     "test:unit": "jest",
     "format": "prettier --write .",
-    "check-format": "prettier --check ."
+    "check-format": "prettier --check .",
+    "generate-structure": "node scripts/generate-project-structure-clean.js",
+    "scan-api-changes": "node scripts/scan-api-changes.js",
+    "docs:structure": "npm run generate-structure",
+    "docs:scan": "npm run scan-api-changes",
+    "docs:check": "npm run scan-api-changes && echo '\\n💡 请根据扫描结果更新 docs/API_DOCUMENTATION.md'",
+    "classify-apis": "node scripts/classify-apis.js",
+    "organize-docs": "node scripts/organize-docs.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

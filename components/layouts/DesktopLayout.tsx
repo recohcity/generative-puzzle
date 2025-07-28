@@ -13,8 +13,10 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { useGame } from "@/contexts/GameContext";
 import { playButtonClickSound } from "@/utils/rendering/soundEffects";
-import { DESKTOP_ADAPTATION, calculateDesktopCanvasSize } from '@/constants/canvasAdaptation';
+import { DESKTOP_ADAPTATION } from '@/src/config/adaptationConfig';
+import { calculateDesktopCanvasSize } from '@/constants/canvasAdaptation';
 import { useSystem } from '@/providers/SystemProvider';
+import { useDevice } from '@/providers/hooks';
 
 interface DesktopLayoutProps {
   isMusicPlaying: boolean;
@@ -72,9 +74,10 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   const [canvasSize, setCanvasSize] = useState(560); // 默认560
   const leftPanelRef = useRef<HTMLDivElement>(null);
   
-  // 使用统一适配参数
-  const windowWidth = typeof window !== 'undefined' ? window.innerWidth : 1920;
-  const windowHeight = typeof window !== 'undefined' ? window.innerHeight : 1080;
+  // 使用统一设备检测系统获取屏幕尺寸
+  const device = useDevice();
+  const windowWidth = device.screenWidth;
+  const windowHeight = device.screenHeight;
   
   // 使用统一计算函数（现在返回计算好的边距）
   const calculationResult = calculateDesktopCanvasSize(windowWidth, windowHeight);

@@ -10,7 +10,7 @@
 
 ## �  配置文档统计
 
-- **📁 总文档数**: 20个（包含索引）
+- **📁 总文档数**: 21个（包含索引）
 - **🏗️ 核心架构**: 5个文档
 - **🎮 游戏核心**: 5个文档  
 - **📱 设备响应式**: 2个文档
@@ -22,6 +22,9 @@
 ---
 
 ## 📋 配置文档目录
+
+### 📊 配置管理工具
+- [`00-configuration-impact-matrix.md`](./00-configuration-impact-matrix.md) - 配置变更影响分析矩阵 (v1.3.37+)
 
 ### 🏗️ 核心架构配置
 - [`01-core-architecture.md`](./01-core-architecture.md) - 主要配置文件与分工
@@ -74,6 +77,37 @@
 - **🎮 游戏体验**: [06](./06-difficulty-cutting.md), [07](./07-shape-generation.md), [13](./13-media-sound.md)
 - **🔧 开发调试**: [16](./16-performance-test.md), [19](./19-debug-mode.md)
 
+### 按开发场景查看配置
+- **🚀 新项目搭建**: [01](./01-core-architecture.md) → [15](./15-build-dev.md) → [17](./17-ui-components.md)
+- **🐛 Bug修复**: [19](./19-debug-mode.md) → [16](./16-performance-test.md) → [01](./01-core-architecture.md)
+- **📱 移动端适配**: [03](./03-mobile-adaptation.md) → [11](./11-device-responsive.md) → [12](./12-puzzle-piece-adaptation.md)
+- **🎨 UI/UX优化**: [14](./14-visual-theme.md) → [17](./17-ui-components.md) → [13](./13-media-sound.md)
+- **⚡ 性能优化**: [16](./16-performance-test.md) → [02](./02-unified-managers.md) → [04](./04-unified-adaptation.md)
+- **🎮 游戏逻辑调整**: [06](./06-difficulty-cutting.md) → [07](./07-shape-generation.md) → [08](./08-puzzle-scatter.md)
+
+---
+
+## ⚡ 配置速查表
+
+### 常用配置快速定位
+| 配置需求 | 主要文件 | 配置文档 | 关键参数 |
+|---------|---------|---------|---------|
+| 画布尺寸调整 | `constants/canvasAdaptation.ts` | [03](./03-mobile-adaptation.md), [05](./05-desktop-centering.md) | `CANVAS_SIZE`, `MOBILE_ADAPTATION` |
+| 设备检测问题 | `core/DeviceManager.ts` | [02](./02-unified-managers.md), [11](./11-device-responsive.md) | `deviceDetectionMethods` |
+| 拼图难度调整 | `utils/puzzle/cutGenerators.ts` | [06](./06-difficulty-cutting.md) | `DIFFICULTY_CONFIGS` |
+| 主题颜色修改 | `tailwind.config.ts` | [14](./14-visual-theme.md), [17](./17-ui-components.md) | `theme.colors` |
+| 性能监控配置 | `app/test/page.tsx` | [16](./16-performance-test.md) | `performanceConfig` |
+| 音效开关 | `utils/rendering/soundEffects.ts` | [13](./13-media-sound.md) | `soundEnabled` |
+| 调试模式 | `components/EnvModeClient.tsx` | [19](./19-debug-mode.md) | `DEBUG_MODE` |
+
+### 环境配置快速检查
+| 环境 | 检查项 | 配置文档 | 验证方法 |
+|------|-------|---------|---------|
+| 开发环境 | 代码检查 | [15](./15-build-dev.md) | `npm run lint` |
+| 测试环境 | E2E测试运行 | [16](./16-performance-test.md) | `npm run test:e2e` |
+| 生产环境 | 构建优化 | [15](./15-build-dev.md) | `npm run build` |
+| 移动端 | 适配测试 | [03](./03-mobile-adaptation.md) | 设备调试工具 |
+
 ---
 
 ## 📝 使用说明
@@ -103,6 +137,19 @@
 - 🏷️ **版本标记**: 新增配置需标明引入版本
 - 📝 **影响说明**: 每个配置都要说明其影响范围和默认值
 - 📍 **代码位置**: 必须提供准确的文件路径和函数名
+
+## 🔧 故障排除索引
+
+### 常见问题快速定位
+| 问题症状 | 可能原因 | 相关配置文档 | 解决步骤 |
+|---------|---------|-------------|---------|
+| 移动端画布显示异常 | 适配参数错误 | [03](./03-mobile-adaptation.md), [12](./12-puzzle-piece-adaptation.md) | 检查`MOBILE_ADAPTATION`配置 |
+| 桌面端画布不居中 | 居中算法问题 | [05](./05-desktop-centering.md) | 验证`centeringStrategy`配置 |
+| 拼图块大小不合适 | 难度配置问题 | [06](./06-difficulty-cutting.md) | 调整`DIFFICULTY_CONFIGS` |
+| 设备检测不准确 | 检测逻辑问题 | [02](./02-unified-managers.md), [11](./11-device-responsive.md) | 检查`DeviceManager`配置 |
+| 性能问题 | 渲染优化问题 | [16](./16-performance-test.md), [04](./04-unified-adaptation.md) | 启用性能监控分析 |
+| 音效无法播放 | 音频配置问题 | [13](./13-media-sound.md) | 检查音频上下文和权限 |
+| 构建失败 | 依赖或配置问题 | [15](./15-build-dev.md) | 检查TypeScript和构建配置 |
 
 ---
 

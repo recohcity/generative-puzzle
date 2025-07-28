@@ -3,7 +3,8 @@
 import React, { useRef } from 'react';
 import PuzzleCanvas from "@/components/PuzzleCanvas";
 import PhoneTabPanel from "./PhoneTabPanel";
-import { MOBILE_ADAPTATION, calculateMobilePortraitCanvasSize } from '@/constants/canvasAdaptation';
+import { MOBILE_ADAPTATION } from '@/src/config/adaptationConfig';
+import { calculateMobilePortraitCanvasSize } from '@/constants/canvasAdaptation';
 import { useCanvas, useDevice } from '@/providers/hooks';
 
 interface PhonePortraitLayoutProps {

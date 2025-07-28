@@ -7,6 +7,7 @@ import { useEffect, useCallback, useRef } from 'react';
 import { useSystem } from '../SystemProvider';
 import { useDevice } from './useDevice';
 import { Point, PuzzlePiece } from '@/types/puzzleTypes';
+import { adaptationLogger, puzzleLogger, canvasLogger } from '../../utils/logger';
 
 interface AdaptationOptions {
   preserveCompletedPieces?: boolean;
@@ -47,7 +48,7 @@ export const useAdaptation = ({
       onShapeAdaptedRef.current?.(result.data);
       return result.data;
     } else {
-      console.error('Shape adaptation failed:', result.error);
+      adaptationLogger.error('Shape adaptation failed', new Error(result.error));
       return originalShape;
     }
   }, [adaptationEngine]); // 移除onShapeAdapted依赖
@@ -71,7 +72,7 @@ export const useAdaptation = ({
       onPuzzleAdapted?.(result.data);
       return result.data;
     } else {
-      console.error('Puzzle adaptation failed:', result.error);
+      puzzleLogger.error('Puzzle adaptation failed', new Error(result.error));
       return originalPieces;
     }
   }, [adaptationEngine, onPuzzleAdapted, options.preserveCompletedPieces]);
@@ -92,7 +93,7 @@ export const useAdaptation = ({
     if (result.success && result.data) {
       return result.data;
     } else {
-      console.error('Canvas size calculation failed:', result.error);
+      canvasLogger.error('Canvas size calculation failed', new Error(result.error));
       return { width: windowWidth, height: windowHeight };
     }
   }, [adaptationEngine, deviceState]);
@@ -156,7 +157,7 @@ export const usePuzzleAdaptation = (
     try {
       adaptPuzzlePieces(puzzle, previousCanvasSize, canvasSize, completedPieces, originalPositions);
     } catch (error) {
-      console.error('❌ [usePuzzleAdaptation] 拼图适配失败:', error);
+      puzzleLogger.error('拼图适配失败', error as Error, { component: 'usePuzzleAdaptation' });
       // 不抛出错误，避免白屏
     }
   }, [
@@ -215,7 +216,8 @@ export const useShapeAdaptation = (
       return;
     }
     
-    console.log('🔧 [providers/useShapeAdaptation] 执行适配:', {
+    adaptationLogger.debug('执行形状适配', {
+      component: 'useShapeAdaptation',
       from: baseCanvasSize,
       to: canvasSize,
       shapePoints: baseShape.length

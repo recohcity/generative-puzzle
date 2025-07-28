@@ -25,8 +25,6 @@ export function useResponsiveCanvasSizing({
   canvasRef,
   backgroundCanvasRef,
 }: UseResponsiveCanvasSizingProps): CanvasSize {
-  console.log('✅ [useResponsiveCanvasSizing] 使用统一画布管理系统');
-  
   // 使用统一的画布管理系统
   const canvasSize = useCanvas({
     containerRef,

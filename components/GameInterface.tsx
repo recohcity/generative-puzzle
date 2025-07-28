@@ -150,7 +150,7 @@ export default function CurveTestOptimized() {
       }
       
       // 阻止iOS上可能导致退出全屏的触摸开始行为
-      if (/(iPad|iPhone|iPod)/i.test(navigator.userAgent)) {
+      if (device.isIOS) {
         e.preventDefault();
       }
     };
@@ -185,7 +185,7 @@ export default function CurveTestOptimized() {
           e.stopPropagation();
           
           // 适用于Safari，防止iOS退出全屏的手势被触发
-          if (/(iPad|iPhone|iPod)/i.test(navigator.userAgent)) {
+          if (device.isIOS) {
             // 重置touch位置，避免累积滑动效果
             touchStartY = currentTouchY;
           }
@@ -199,7 +199,7 @@ export default function CurveTestOptimized() {
       touchStartY = 0;
       
       // 阻止某些可能触发退出全屏的结束事件
-      if (/(iPad|iPhone|iPod)/i.test(navigator.userAgent)) {
+      if (device.isIOS) {
         e.preventDefault();
       }
     };
@@ -211,7 +211,7 @@ export default function CurveTestOptimized() {
     
     // 锁定屏幕方向（如果支持）
     if (window.screen.orientation && 'lock' in window.screen.orientation) {
-      const orientation = window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
+      const orientation = device.screenWidth > device.screenHeight ? 'landscape' : 'portrait';
       console.log(`尝试锁定屏幕方向为: ${orientation}`);
       
       (window.screen.orientation as any).lock(orientation)
@@ -256,11 +256,11 @@ export default function CurveTestOptimized() {
     const newClickCount = fullscreenClickCount + 1;
     setFullscreenClickCount(newClickCount);
     
-    // 检测设备类型
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-    const isAndroid = /android/i.test(navigator.userAgent);
-    const isMobile = isIOS || isAndroid;
-    const isInWebView = /(.*WebView|.*FBIOS|.*Twitter)/.test(navigator.userAgent);
+    // 使用统一设备检测系统
+    const isIOS = device.isIOS;
+    const isAndroid = device.isAndroid;
+    const isMobile = device.isMobile;
+    const isInWebView = typeof navigator !== 'undefined' && /(.*WebView|.*FBIOS|.*Twitter)/.test(navigator.userAgent);
     
     console.log(`全屏操作: 点击次数=${newClickCount}, 当前状态=${isFullscreen}, 设备检测: iOS=${isIOS}, Android=${isAndroid}, 移动=${isMobile}`);
     
@@ -325,7 +325,7 @@ export default function CurveTestOptimized() {
         
         // 6. 尝试锁定屏幕方向（这在iOS上可能不起作用，但在某些情况下可能有用）
         try {
-          if (window.innerWidth > window.innerHeight) {
+          if (device.screenWidth > device.screenHeight) {
             // 请求横屏锁定
             if (window.screen.orientation && 'lock' in window.screen.orientation) {
               (window.screen.orientation as any).lock('landscape').catch((err: any) => {
@@ -341,7 +341,7 @@ export default function CurveTestOptimized() {
       else if (isAndroid) {
         // 先尝试锁定方向，然后请求全屏
         try {
-          if (window.innerWidth > window.innerHeight) {
+          if (device.screenWidth > device.screenHeight) {
             if (window.screen.orientation && 'lock' in window.screen.orientation) {
               (window.screen.orientation as any).lock('landscape').catch((err: any) => {
                 console.log("Android设备无法锁定横屏:", err);

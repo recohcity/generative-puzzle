@@ -74,6 +74,45 @@
 
 ---
 
+## 🚀 API快速预览
+
+### 核心API一览
+```typescript
+import { 
+  UNIFIED_CONFIG,
+  useDevice, 
+  useCanvas, 
+  useAdaptation 
+} from 'generative-puzzle';
+
+// 🎯 设备适配
+const deviceState = useDevice();
+console.log(deviceState.isMobile); // true/false
+console.log(deviceState.deviceType); // 'desktop' | 'tablet' | 'phone'
+
+// 🎨 画布管理
+const canvasSize = useCanvas({ 
+  containerRef, 
+  canvasRef, 
+  backgroundCanvasRef 
+});
+console.log(`画布尺寸: ${canvasSize.width}x${canvasSize.height}`);
+
+// ⚙️ 统一配置
+const mobileConfig = UNIFIED_CONFIG.adaptation.mobile;
+const desktopConfig = UNIFIED_CONFIG.adaptation.desktop;
+```
+
+### 主要API分类
+- 🔧 **[配置管理API](./docs/API_DOCUMENTATION.md#配置管理api)** - 设备配置、适配参数、性能设置
+- 🏗️ **[核心管理器API](./docs/API_DOCUMENTATION.md#核心管理器api)** - 设备管理、画布管理、事件管理
+- ⚛️ **[React Hooks API](./docs/API_DOCUMENTATION.md#react-hooks-api)** - 响应式适配、交互处理
+- 🛠️ **[工具函数API](./docs/API_DOCUMENTATION.md#工具函数api)** - 几何计算、拼图适配、渲染优化
+
+📖 **[完整API文档](./docs/API_DOCUMENTATION.md)** | 🚀 **[快速开始指南](./docs/GETTING_STARTED.md)** | 📚 **[文档中心](./docs/README.md)**
+
+---
+
 ## 目录结构与模块分工
 
 - `app/`：Next.js 路由、布局、API、性能仪表盘
@@ -181,15 +220,45 @@ npm run test:report
 
 ---
 
-## 贡献指南
+## 🤝 参与贡献
 
-欢迎提交 Issue 和 Pull Request。请确保：
+我们欢迎所有形式的贡献！
 
+### 🎯 贡献方式
+- 🐛 **[报告Bug](https://github.com/recohcity/generative-puzzle/issues/new?template=bug_report.md)**
+- 💡 **[功能建议](https://github.com/recohcity/generative-puzzle/issues/new?template=feature_request.md)**
+- 📚 **[改进文档](https://github.com/recohcity/generative-puzzle/issues/new?template=docs_improvement.md)**
+- 🔧 **[提交代码](./docs/CONTRIBUTING.md)**
+
+### 📊 项目统计
+- 🎮 **190个API接口** - 完整的游戏开发工具集
+- 🧪 **100%测试覆盖** - 稳定可靠的代码质量
+- 📱 **跨平台支持** - 桌面端、移动端完美适配
+- ⚡ **高性能渲染** - 60fps流畅游戏体验
+
+### 🛠️ 开发者工具
+```bash
+# API文档维护
+npm run scan-api-changes    # 扫描API变更
+npm run classify-apis       # API分类分析
+npm run docs:check         # 文档完整性检查
+
+# 项目结构
+npm run generate-structure  # 生成项目结构文档
+
+# 测试和性能
+npm run test:e2e           # 端到端测试
+npm run test:report        # 查看测试报告
+```
+
+### ✅ 贡献检查清单
 1. **代码规范**：代码符合项目编码规范
 2. **测试通过**：所有单元测试和 E2E 测试通过
 3. **性能验证**：运行 `npm run test:e2e` 确保性能指标无回归
 4. **文档更新**：相关文档已更新
 5. **依赖管理**：如需更新依赖，请先进行性能基准测试
+
+📖 **[详细贡献指南](./CONTRIBUTING.md)** | 🏗️ **[架构文档](./docs/project_structure.md)** | 📚 **[文档中心](./docs/README.md)**
 
 ### 依赖更新流程
 
@@ -203,6 +272,36 @@ npm run test:report
 
 ---
 
-## 许可证
+## 🌟 社区与支持
+
+### 💬 交流渠道
+- 💬 **[GitHub讨论区](https://github.com/recohcity/generative-puzzle/discussions)** - 技术讨论和问答
+- 🐛 **[Issue跟踪](https://github.com/recohcity/generative-puzzle/issues)** - Bug报告和功能请求
+- 📧 **[邮件联系](mailto:contact@citylivpark.com)** - 商务合作和技术咨询
+
+### 📈 项目状态
+- ✅ **活跃维护** - 定期更新和Bug修复
+- 🔄 **持续集成** - 自动化测试和部署
+- 📊 **性能监控** - 实时性能指标追踪
+- 🌍 **开源友好** - 欢迎社区贡献
+
+### 🏆 致谢
+感谢所有贡献者和社区成员的支持！
+
+[![Contributors](https://contrib.rocks/image?repo=recohcity/generative-puzzle)](https://github.com/recohcity/generative-puzzle/graphs/contributors)
+
+---
+
+## 📄 许可证
 
 MIT License
+
+---
+
+<div align="center">
+
+**⭐ 如果这个项目对你有帮助，请给我们一个Star！ ⭐**
+
+[🌟 Star项目](https://github.com/recohcity/generative-puzzle) | [🍴 Fork项目](https://github.com/recohcity/generative-puzzle/fork) | [📢 分享项目](https://twitter.com/intent/tweet?text=Check%20out%20this%20amazing%20puzzle%20game%20project!)
+
+</div>

@@ -16,8 +16,6 @@ interface DeviceDetectionState {
  * 这个Hook现在是useDevice的包装器，保持API兼容性
  */
 export function useDeviceDetection(): DeviceDetectionState {
-  console.log('✅ [useDeviceDetection] 使用统一设备检测系统');
-  
   const device = useDevice();
   
   // 转换为旧的API格式，保持向后兼容

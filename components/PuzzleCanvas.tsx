@@ -41,7 +41,7 @@ import { useDebugToggle } from '@/hooks/useDebugToggle';
 // 以上流程和参数均有详细注释，便于团队理解、维护和后续扩展。
 // ========================
 
-import { DESKTOP_ADAPTATION } from '@/constants/canvasAdaptation';
+import { DESKTOP_ADAPTATION } from '@/src/config/adaptationConfig';
 
 // 画布尺寸边界常量（使用统一适配参数）
 const MIN_CANVAS_WIDTH = DESKTOP_ADAPTATION.MIN_CANVAS_SIZE; // 画布最小宽度，防止内容过小或消失
@@ -202,8 +202,8 @@ export default function PuzzleCanvas() {
     const scale = (canvasWidth && logicalWidth) ? (canvasWidth / logicalWidth) : 1;
     
     const currentScreenSize = { 
-      width: device?.screenWidth || window.screen.width, 
-      height: device?.screenHeight || window.screen.height 
+      width: device.screenWidth, 
+      height: device.screenHeight 
     };
     const currentCanvasSize = { width: canvasWidth, height: canvasHeight };
     

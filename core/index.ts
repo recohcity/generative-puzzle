@@ -6,7 +6,7 @@
 export { DeviceManager } from './DeviceManager';
 export { CanvasManager } from './CanvasManager';
 export { EventManager } from './EventManager';
-export { AdaptationEngine, ADAPTATION_CONFIG } from './AdaptationEngine';
+export { AdaptationEngine } from './AdaptationEngine';
 
 // Re-export types for convenience
 export type { Point, PuzzlePiece } from '@/types/puzzleTypes';
