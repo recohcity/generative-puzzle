@@ -268,7 +268,7 @@ npm run test:report        # 查看测试报告
 - 📊 **性能监控** - 实时性能指标追踪
 
 ### 🏆 致谢
-感谢所有贡献者和社区成员的支持！
+感谢大家关注！
 
 [![Contributors](https://contrib.rocks/image?repo=recohcity/generative-puzzle)](https://github.com/recohcity/generative-puzzle/graphs/contributors)
 

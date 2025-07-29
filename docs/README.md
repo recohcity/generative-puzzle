@@ -77,18 +77,7 @@ npm run generate-structure
 npm run docs:check
 ```
 
-## 📞 文档反馈
-
-如果你发现文档问题或有改进建议：
-1. 创建 [文档改进Issue](https://github.com/recohcity/generative-puzzle/issues/new?template=docs_improvement.md)
-2. 在 [讨论区](https://github.com/recohcity/generative-puzzle/discussions) 提出建议
-3. 直接提交PR改进文档
-
-## 🏆 文档贡献者
-
-感谢所有为项目文档做出贡献的开发者！
-
 ---
 
-*📝 最后更新: 2025年1月*  
+*📝 最后更新: 2025年7月28日*  
 *🔄 本文档会随着项目发展持续更新*

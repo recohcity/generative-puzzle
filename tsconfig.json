@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@/quality-system": ["./src/quality-system"]
     },
     "types": ["@playwright/test", "node", "jest"]
   },

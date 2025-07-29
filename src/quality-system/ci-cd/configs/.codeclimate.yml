@@ -1,0 +1,117 @@
+# Code Climate Configuration for Quality System Integration
+# This file configures Code Climate analysis for the quality improvement system
+
+version: "2"
+
+# Exclude patterns
+exclude_patterns:
+  - "node_modules/"
+  - "dist/"
+  - "coverage/"
+  - "**/*.d.ts"
+  - "**/*.test.ts"
+  - "**/*.spec.ts"
+  - "**/examples/"
+  - "**/demo/"
+
+# Plugin configuration
+plugins:
+  # TypeScript/JavaScript analysis
+  eslint:
+    enabled: true
+    config:
+      config: .eslintrc.js
+    channel: "eslint-8"
+  
+  # Duplication detection
+  duplication:
+    enabled: true
+    config:
+      languages:
+        - typescript
+        - javascript
+      count_threshold: 3
+      mass_threshold: 50
+
+  # Complexity analysis
+  sonar-typescript:
+    enabled: true
+    config:
+      minimum_severity: minor
+
+# Prepare commands (run before analysis)
+prepare:
+  fetch:
+    - url: "https://raw.githubusercontent.com/codeclimate/codeclimate-eslint/master/Dockerfile"
+      path: ".codeclimate/eslint/Dockerfile"
+
+# Check configuration
+checks:
+  # Argument count
+  argument-count:
+    enabled: true
+    config:
+      threshold: 5
+  
+  # Complex logic
+  complex-logic:
+    enabled: true
+    config:
+      threshold: 4
+  
+  # File lines
+  file-lines:
+    enabled: true
+    config:
+      threshold: 500
+  
+  # Method complexity
+  method-complexity:
+    enabled: true
+    config:
+      threshold: 10
+  
+  # Method count
+  method-count:
+    enabled: true
+    config:
+      threshold: 20
+  
+  # Method lines
+  method-lines:
+    enabled: true
+    config:
+      threshold: 50
+  
+  # Nested control flow
+  nested-control-flow:
+    enabled: true
+    config:
+      threshold: 4
+  
+  # Return statements
+  return-statements:
+    enabled: true
+    config:
+      threshold: 4
+  
+  # Similar code
+  similar-code:
+    enabled: true
+    config:
+      threshold: 70
+  
+  # Identical code
+  identical-code:
+    enabled: true
+    config:
+      threshold: 50
+
+# Ratings configuration
+ratings:
+  paths:
+    - "src/**"
+  
+# Test coverage configuration
+test_reporter:
+  enabled: true
