@@ -1,6 +1,6 @@
 # API扫描报告
 
-> 生成时间: 2025/7/28 22:34:25
+> 生成时间: 2025/7/30 12:59:35
 > 扫描工具: API变更扫描器 v1.0
 
 ## 📊 统计概览
@@ -2115,7 +2115,7 @@ export const drawPiece = (
 #### drawHintOutline
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:295`
+- **文件**: `utils/rendering/puzzleDrawing.ts:286`
 - **签名**: `export const drawHintOutline = (`
 
 **建议文档结构**:
@@ -2138,7 +2138,7 @@ export const drawHintOutline = (
 #### drawCompletionEffect
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:361`
+- **文件**: `utils/rendering/puzzleDrawing.ts:352`
 - **签名**: `export const drawCompletionEffect = (`
 
 **建议文档结构**:
@@ -2161,7 +2161,7 @@ export const drawCompletionEffect = (
 #### drawCanvasBorderLine
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:425`
+- **文件**: `utils/rendering/puzzleDrawing.ts:416`
 - **签名**: `export const drawCanvasBorderLine = (`
 
 **建议文档结构**:
@@ -2184,7 +2184,7 @@ export const drawCanvasBorderLine = (
 #### drawDistributionArea
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:451`
+- **文件**: `utils/rendering/puzzleDrawing.ts:442`
 - **签名**: `export const drawDistributionArea = (`
 
 **建议文档结构**:
@@ -2207,7 +2207,7 @@ export const drawDistributionArea = (
 #### drawPuzzle
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:490`
+- **文件**: `utils/rendering/puzzleDrawing.ts:481`
 - **签名**: `export const drawPuzzle = (`
 
 **建议文档结构**:

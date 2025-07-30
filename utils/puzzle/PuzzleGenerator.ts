@@ -20,8 +20,10 @@ export class PuzzleGenerator {
     shape: Point[],
     cutType: CutType,
     cutCount: number,
+    shapeType?: string,
   ): { pieces: PuzzlePiece[]; originalPositions: PuzzlePiece[] } {
-    console.log(`生成拼图，切割类型: ${cutType}，切割次数: ${cutCount}`);
+    console.log(`生成拼图，切割类型: ${cutType}，切割次数: ${cutCount}，形状类型: ${shapeType}`);
+    console.log(`🔍 shapeType详细信息: 值="${shapeType}", 类型=${typeof shapeType}, 是否为curve=${shapeType === 'curve'}`);
     
     // 生成切割线，确保类型正确
     const cutTypeString = cutType === CutType.Straight ? "straight" : "diagonal";
@@ -35,8 +37,9 @@ export class PuzzleGenerator {
       console.log(`切割线 ${index + 1} 类型: ${cut.type}`);
     });
 
-    // 拆分形状 - 确保只得到预期数量的片段
-    let splitPieces = splitPolygon(shape, cuts);
+    // 使用多边形分割算法
+    console.log('📐 使用多边形分割算法');
+    let splitPieces: Point[][] = splitPolygon(shape, cuts);
     
     // 计算期望的拼图数量（切割线数量+1）
     const expectedPieceCount = cuts.length + 1;

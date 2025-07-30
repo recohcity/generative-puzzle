@@ -577,7 +577,7 @@ export default function PuzzleCanvas() {
         // 这是拼图散开前的位置，告诉玩家应该把拼图拖拽到这里
         const hintPiece = state.originalPositions[state.selectedPiece];
         if (hintPiece) {
-          drawHintOutline(ctx, hintPiece);
+          drawHintOutline(ctx, hintPiece, state.shapeType);
         }
       }
 

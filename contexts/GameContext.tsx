@@ -16,7 +16,7 @@ import { memoryManager } from "@/utils/performance/MemoryManager";
 import { renderOptimizer } from "@/utils/rendering/RenderOptimizer";
 
 // Step3: 定义GameAction类型，包含新的UPDATE_SHAPE_AND_PUZZLE action
-type GameAction = 
+type GameAction =
   | { type: "SET_ORIGINAL_SHAPE"; payload: Point[] }
   | { type: "SET_BASE_SHAPE"; payload: { baseShape: Point[]; canvasSize: { width: number; height: number } } }
   | { type: "SET_PUZZLE"; payload: PuzzlePiece[] | null }
@@ -95,8 +95,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case "SET_BASE_SHAPE":
       // SET_BASE_SHAPE - 设置基础形状和对应的画布尺寸
       // 注意：只设置基础形状，不更新originalShape，让useShapeAdaptation负责适配
-      return { 
-        ...state, 
+      return {
+        ...state,
         baseShape: action.payload.baseShape,
         baseCanvasSize: action.payload.canvasSize
       }
@@ -119,13 +119,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         puzzleLength: action.payload.puzzle?.length || 0,
         scatterCanvasSize: action.payload.scatterCanvasSize
       });
-      const scatterCompleteState = { 
-        ...state, 
+      const scatterCompleteState = {
+        ...state,
         puzzle: action.payload.puzzle,
         isScattered: true,
         scatterCanvasSize: action.payload.scatterCanvasSize
       };
-      console.log('🔧 [REDUCER] SCATTER_PUZZLE_COMPLETE 处理完成，新状态:', { 
+      console.log('🔧 [REDUCER] SCATTER_PUZZLE_COMPLETE 处理完成，新状态:', {
         puzzleLength: scatterCompleteState.puzzle?.length || 0,
         isScattered: scatterCompleteState.isScattered,
         hasScatterCanvasSize: !!scatterCompleteState.scatterCanvasSize,
@@ -137,8 +137,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case "SET_SELECTED_PIECE":
       // 当选择一个新的拼图片段时，自动隐藏提示
       // 这样当玩家点击新拼图时，之前的提示会消失，只有再次点击提示按钮才会显示新拼图的提示
-      return { 
-        ...state, 
+      return {
+        ...state,
         selectedPiece: action.payload,
         // 当选择新拼图时，强制关闭提示显示
         showHint: false
@@ -146,8 +146,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case "SET_COMPLETED_PIECES":
       // 检查拼图是否完成
       const isNowCompleted = action.payload.length > 0 && action.payload.length === state.puzzle?.length;
-      return { 
-        ...state, 
+      return {
+        ...state,
         completedPieces: action.payload,
         isCompleted: isNowCompleted
       };
@@ -159,7 +159,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const newCompletedPieces = [...state.completedPieces, action.payload];
       // 添加后，立刻检查是否所有拼图都已完成
       const isGameFinished = state.puzzle ? newCompletedPieces.length === state.puzzle.length : false;
-      
+
       // 🔑 更新拼图块的完成状态
       let updatedPuzzle = state.puzzle;
       if (state.puzzle && state.puzzle[action.payload]) {
@@ -169,7 +169,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           isCompleted: true
         };
       }
-      
+
       // 🚫 禁用StatePreservationEngine，避免与UnifiedAdaptationEngine冲突
       // try {
       //   statePreservationEngine.updateAbsoluteState(
@@ -182,9 +182,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       // } catch (error) {
       //   console.error('❌ 更新拼图块完成状态失败:', error);
       // }
-      
-      return { 
-        ...state, 
+
+      return {
+        ...state,
         puzzle: updatedPuzzle,
         completedPieces: newCompletedPieces,
         isCompleted: isGameFinished // 直接在这里更新完成状态
@@ -215,7 +215,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const piece = newPuzzle[state.selectedPiece]
       const oldRotation = piece.rotation;
       piece.rotation = (piece.rotation + (action.payload.clockwise ? 15 : -15) + 360) % 360
-      
+
       // 🚫 禁用StatePreservationEngine，避免与UnifiedAdaptationEngine冲突
       // try {
       //   statePreservationEngine.updateAbsoluteState(
@@ -227,7 +227,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       // } catch (error) {
       //   console.error('❌ 更新拼图块绝对角度状态失败:', error);
       // }
-      
+
       return { ...state, puzzle: newPuzzle }
     case "UPDATE_PIECE_POSITION":
       if (!state.puzzle) return state
@@ -278,7 +278,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       } catch (error) {
         console.error('❌ 清除状态保存引擎状态失败:', error);
       }
-      
+
       // RESET_GAME
       return {
         ...initialState,
@@ -287,7 +287,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         // shapeType: state.shapeType, // 保留当前形状类型设置
         // cutType: state.cutType, // 保留当前切割类型设置
         // cutCount: state.cutCount, // 保留当前切割次数设置
-        
+
         // 只保留画布尺寸信息
         canvasWidth: state.canvasWidth,
         canvasHeight: state.canvasHeight
@@ -295,10 +295,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case "SET_ORIGINAL_POSITIONS":
       return { ...state, originalPositions: action.payload }
     case "SET_SHAPE_OFFSET":
-      return { 
-        ...state, 
-        lastShapeOffsetX: action.payload.offsetX, 
-        lastShapeOffsetY: action.payload.offsetY 
+      return {
+        ...state,
+        lastShapeOffsetX: action.payload.offsetX,
+        lastShapeOffsetY: action.payload.offsetY
       }
     case "BATCH_UPDATE":
       // BATCH_UPDATE
@@ -319,27 +319,27 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       }
     case "UPDATE_CANVAS_SIZE":
       // 同时更新当前画布尺寸和上一次画布尺寸
-      return { 
-        ...state, 
+      return {
+        ...state,
         previousCanvasSize: { width: state.canvasWidth || action.payload.canvasWidth || 0, height: state.canvasHeight || action.payload.canvasHeight || 0 }, // 记录更新前的尺寸作为 previous
-        canvasWidth: action.payload.canvasWidth || (action.payload as any).width || 0, 
-        canvasHeight: action.payload.canvasHeight || (action.payload as any).height || 0 
+        canvasWidth: action.payload.canvasWidth || (action.payload as any).width || 0,
+        canvasHeight: action.payload.canvasHeight || (action.payload as any).height || 0
       }
     case "UPDATE_ADAPTED_PUZZLE_STATE":
       // 更新适配后的拼图数据和上一次画布尺寸
       // 🔑 关键修复：同时更新originalPositions和originalShape，确保已完成拼图锁定基准正确
-      const hasUpdatedOriginalPositions = action.payload.updatedOriginalPositions && 
-                                         action.payload.updatedOriginalPositions.length > 0;
-      const hasUpdatedOriginalShape = action.payload.updatedOriginalShape && 
-                                     action.payload.updatedOriginalShape.length > 0;
-      
+      const hasUpdatedOriginalPositions = action.payload.updatedOriginalPositions &&
+        action.payload.updatedOriginalPositions.length > 0;
+      const hasUpdatedOriginalShape = action.payload.updatedOriginalShape &&
+        action.payload.updatedOriginalShape.length > 0;
+
       if (hasUpdatedOriginalPositions) {
         console.log(`🔧 [GameContext] 更新originalPositions: ${action.payload.updatedOriginalPositions!.length} 个目标位置`);
       }
       if (hasUpdatedOriginalShape) {
         console.log(`🔧 [GameContext] 更新originalShape: ${action.payload.updatedOriginalShape!.length} 个形状点`);
       }
-      
+
       return {
         ...state,
         puzzle: action.payload.newPuzzleData,
@@ -414,36 +414,36 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const generateShape = useCallback((shapeType?: ShapeType) => {
     // 如果传入 shapeType，则强制使用该类型
     const currentShapeType = shapeType || state.pendingShapeType || state.shapeType;
-    
+
     // 获取实际画布尺寸以确保形状居中
     if (canvasRef.current) {
       // 🎯 统一适配基准：优先使用Canvas元素的实际尺寸，与Canvas元素保持一致
       let canvasWidth = 0;
       let canvasHeight = 0;
-      
+
       // 优先从Canvas元素获取实际尺寸（与Canvas元素渲染使用相同基准）
       if (canvasRef.current) {
         canvasWidth = canvasRef.current.width;
         canvasHeight = canvasRef.current.height;
         console.log('🎯 [generateShape] 使用Canvas元素实际尺寸:', { width: canvasWidth, height: canvasHeight });
       }
-      
+
       // 如果Canvas元素尺寸无效，使用状态中的尺寸作为降级
       if (canvasWidth <= 0 || canvasHeight <= 0) {
         canvasWidth = state.canvasWidth || 0;
         canvasHeight = state.canvasHeight || 0;
         console.log('🔧 [generateShape] 降级使用状态尺寸:', { width: canvasWidth, height: canvasHeight });
       }
-      
+
       // 最后的兜底方案
       if (canvasWidth <= 0 || canvasHeight <= 0) {
         canvasWidth = 640;
         canvasHeight = 640;
         console.log('🔧 [generateShape] 使用默认尺寸:', { width: canvasWidth, height: canvasHeight });
       }
-      
-      console.log('🎯 [generateShape] 最终画布尺寸基准:', { 
-        width: canvasWidth, 
+
+      console.log('🎯 [generateShape] 最终画布尺寸基准:', {
+        width: canvasWidth,
         height: canvasHeight,
         来源: canvasRef.current ? 'Canvas元素' : (state.canvasWidth ? '状态' : '默认')
       });
@@ -454,10 +454,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           return;
         }
         // 直接根据画布尺寸适配形状
-        // 形状直径应该是画布较小边的30%
+        // 🎯 形状直径应该是画布较小边的40%
         const canvasMinDimension = Math.min(canvasWidth, canvasHeight);
-        const targetDiameter = canvasMinDimension * 0.3;
-        
+        const targetDiameter = canvasMinDimension * 0.4;
+
         // 计算当前形状的大致直径
         const bounds = shape.reduce(
           (acc, point) => ({
@@ -468,31 +468,31 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           }),
           { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
         );
-        
+
         const currentDiameter = Math.max(
           bounds.maxX - bounds.minX,
           bounds.maxY - bounds.minY
         );
-        
+
         // 计算缩放比例
         const scaleRatio = currentDiameter > 0 ? targetDiameter / currentDiameter : 0.3;
-        
+
         // 计算形状中心
         const shapeCenterX = (bounds.minX + bounds.maxX) / 2;
         const shapeCenterY = (bounds.minY + bounds.maxY) / 2;
         const canvasCenterX = canvasWidth / 2;
         const canvasCenterY = canvasHeight / 2;
-        
+
         // 缩放并居中形状
         const adaptedShape = shape.map(point => {
           // 相对于形状中心的坐标
           const relativeX = point.x - shapeCenterX;
           const relativeY = point.y - shapeCenterY;
-          
+
           // 应用缩放
           const scaledX = relativeX * scaleRatio;
           const scaledY = relativeY * scaleRatio;
-          
+
           // 重新定位到画布中心
           return {
             ...point,
@@ -500,24 +500,24 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             y: canvasCenterY + scaledY,
           };
         });
-        
+
         console.log(`形状生成适配: 画布=${canvasWidth}x${canvasHeight}, 目标直径=${targetDiameter.toFixed(1)}, 当前直径=${currentDiameter.toFixed(1)}, 缩放比例=${scaleRatio.toFixed(3)}`);
         // 设置基础形状
-        dispatch({ 
-          type: "SET_BASE_SHAPE", 
-          payload: { 
-            baseShape: adaptedShape, 
-            canvasSize: { width: canvasWidth, height: canvasHeight } 
-          } 
+        dispatch({
+          type: "SET_BASE_SHAPE",
+          payload: {
+            baseShape: adaptedShape,
+            canvasSize: { width: canvasWidth, height: canvasHeight }
+          }
         });
-        
+
         // 同时设置当前显示形状，确保立即显示
         // 这样即使适配Hook有延迟，形状也能立即显示
-        dispatch({ 
-          type: "SET_ORIGINAL_SHAPE", 
-          payload: adaptedShape 
+        dispatch({
+          type: "SET_ORIGINAL_SHAPE",
+          payload: adaptedShape
         });
-        
+
         // 强制更新 shapeType
         dispatch({ type: "SET_SHAPE_TYPE", payload: currentShapeType });
       } catch (error) {
@@ -533,11 +533,11 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
         // 设置基础形状（使用默认画布尺寸）
         const defaultCanvasSize = { width: 800, height: 600 };
-        
+
         // 即使没有画布引用，也要根据默认尺寸适配形状
         const canvasMinDimension = Math.min(defaultCanvasSize.width, defaultCanvasSize.height);
-        const targetDiameter = canvasMinDimension * 0.3;
-        
+        const targetDiameter = canvasMinDimension * 0.5;
+
         // 计算当前形状的大致直径
         const bounds = shape.reduce(
           (acc, point) => ({
@@ -548,31 +548,31 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           }),
           { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
         );
-        
+
         const currentDiameter = Math.max(
           bounds.maxX - bounds.minX,
           bounds.maxY - bounds.minY
         );
-        
+
         // 计算缩放比例
         const scaleRatio = currentDiameter > 0 ? targetDiameter / currentDiameter : 0.3;
-        
+
         // 计算形状中心
         const shapeCenterX = (bounds.minX + bounds.maxX) / 2;
         const shapeCenterY = (bounds.minY + bounds.maxY) / 2;
         const canvasCenterX = defaultCanvasSize.width / 2;
         const canvasCenterY = defaultCanvasSize.height / 2;
-        
+
         // 缩放并居中形状
         const adaptedShape = shape.map(point => {
           // 相对于形状中心的坐标
           const relativeX = point.x - shapeCenterX;
           const relativeY = point.y - shapeCenterY;
-          
+
           // 应用缩放
           const scaledX = relativeX * scaleRatio;
           const scaledY = relativeY * scaleRatio;
-          
+
           // 重新定位到画布中心
           return {
             ...point,
@@ -580,21 +580,21 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             y: canvasCenterY + scaledY,
           };
         });
-        
-        dispatch({ 
-          type: "SET_BASE_SHAPE", 
-          payload: { 
-            baseShape: adaptedShape, 
+
+        dispatch({
+          type: "SET_BASE_SHAPE",
+          payload: {
+            baseShape: adaptedShape,
             canvasSize: defaultCanvasSize // 默认尺寸
-          } 
+          }
         });
-        
+
         // 同时设置当前显示形状，确保立即显示
-        dispatch({ 
-          type: "SET_ORIGINAL_SHAPE", 
-          payload: adaptedShape 
+        dispatch({
+          type: "SET_ORIGINAL_SHAPE",
+          payload: adaptedShape
         });
-        
+
         dispatch({ type: "SET_SHAPE_TYPE", payload: currentShapeType });
       } catch (error) {
         console.error("默认形状生成失败:", error);
@@ -616,34 +616,35 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       console.log('❌ 没有原始形状，跳过拼图生成');
       return;
     }
-    
+
     console.log('🧩 开始生成拼图:', {
       shapePoints: state.originalShape.length,
       cutType: state.cutType,
       cutCount: state.cutCount
     });
-    
+
     const { pieces, originalPositions } = PuzzleGenerator.generatePuzzle(
       state.originalShape,
       state.cutType,
       state.cutCount,
+      state.shapeType,
     );
-    
+
     console.log('🧩 拼图生成结果:', {
       piecesCount: pieces.length,
       originalPositionsCount: originalPositions.length
     });
-    
+
     // 拼图生成完成
     dispatch({ type: "SET_PUZZLE", payload: pieces as any });
     console.log('🧩 已调用 SET_PUZZLE');
-    
+
     dispatch({ type: "SET_BASE_PUZZLE", payload: pieces as any }); // Step3新增：保存原始拼图块状态
     console.log('🧩 已调用 SET_BASE_PUZZLE，保存原始拼图块状态，pieces长度:', pieces?.length || 0);
-    
+
     dispatch({ type: "SET_ORIGINAL_POSITIONS", payload: originalPositions as any });
     console.log('🧩 已调用 SET_ORIGINAL_POSITIONS');
-    
+
     console.log(`✅ 拼图生成完成: ${pieces.length} 个拼图块，已保存原始状态`);
   }, [state.originalShape, state.cutType, state.cutCount, dispatch]);
 
@@ -651,24 +652,24 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const scatterPuzzle = useCallback(() => {
     console.log('🔧 scatterPuzzle函数被调用');
     const puzzle = puzzleRef.current;
-    
+
     // Step3散开适配修复：获取实际画布尺寸
     let canvasWidth = state.canvasWidth ?? 0;
     let canvasHeight = state.canvasHeight ?? 0;
-    
+
     // 优先从canvas元素获取实际尺寸
     if (canvasRef.current) {
       const canvas = canvasRef.current;
       const actualWidth = canvas.width || canvas.clientWidth;
       const actualHeight = canvas.height || canvas.clientHeight;
-      
+
       if (actualWidth > 0 && actualHeight > 0) {
         canvasWidth = actualWidth;
         canvasHeight = actualHeight;
         console.log('🔧 从canvas元素获取实际尺寸:', { width: canvasWidth, height: canvasHeight });
       }
     }
-    
+
     // 如果仍然无效，使用状态中的baseCanvasSize
     if (canvasWidth <= 0 || canvasHeight <= 0) {
       if (state.baseCanvasSize && state.baseCanvasSize.width > 0) {
@@ -723,7 +724,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
     // Step3散开适配修复：合并所有散开相关的状态更新为一个action
     console.log('🔧 准备保存散开时的画布尺寸:', { width: canvasWidth, height: canvasHeight });
-    
+
     // 🚫 禁用StatePreservationEngine，避免与UnifiedAdaptationEngine冲突
     // try {
     //   statePreservationEngine.saveAbsoluteStates(
@@ -735,13 +736,13 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // } catch (error) {
     //   console.error('❌ 保存拼图块绝对状态失败:', error);
     // }
-    
-    dispatch({ 
-      type: "SCATTER_PUZZLE_COMPLETE", 
-      payload: { 
+
+    dispatch({
+      type: "SCATTER_PUZZLE_COMPLETE",
+      payload: {
         puzzle: scatteredPuzzle as any,
         scatterCanvasSize: { width: canvasWidth, height: canvasHeight }
-      } 
+      }
     });
     console.log('🔧 已调用SCATTER_PUZZLE_COMPLETE dispatch');
   }, [state.isScattered, state.canvasWidth, state.canvasHeight, state.originalShape, dispatch]);
@@ -766,7 +767,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         cutType: state.cutType, // 添加cutType状态
         cutCount: state.cutCount, // 添加cutCount状态
       };
-      
+
       // 为测试脚本暴露游戏状态 - 确保每次状态变化都更新
       (window as any).__GAME_STATE__ = {
         originalShape: state.originalShape,
@@ -784,7 +785,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           timestamp: Date.now()
         }
       };
-      
+
       // 添加专门用于调试的游戏状态暴露
       (window as any).gameStateForDebug = {
         puzzle: state.puzzle,
@@ -804,7 +805,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         cutType: state.cutType,
         cutCount: state.cutCount,
       };
-      
+
       // 🚨 临时禁用状态更新日志，避免无限循环
       // console.log('游戏状态已更新:', {
       //   puzzlePiecesCount: state.puzzle?.length || 0,
@@ -842,18 +843,18 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         scatterPuzzle: () => scatterPuzzle(),
         movePiece: (pieceIndex, x, y) => dispatch({ type: 'MOVE_PIECE', payload: { pieceIndex, x, y } }),
         snapPiece: (pieceIndex) => {
-            dispatch({ type: 'RESET_PIECE_TO_ORIGINAL', payload: pieceIndex });
-            dispatch({ type: 'ADD_COMPLETED_PIECE', payload: pieceIndex });
+          dispatch({ type: 'RESET_PIECE_TO_ORIGINAL', payload: pieceIndex });
+          dispatch({ type: 'ADD_COMPLETED_PIECE', payload: pieceIndex });
         },
         getPieceCenter: (pieceIndex) => {
-            if (!state.puzzle) return { x: 0, y: 0 };
-            const piece = state.puzzle[pieceIndex];
-            return piece ? calculateCenter(piece.points) : { x: 0, y: 0 };
+          if (!state.puzzle) return { x: 0, y: 0 };
+          const piece = state.puzzle[pieceIndex];
+          return piece ? calculateCenter(piece.points) : { x: 0, y: 0 };
         },
         getPieceTargetCenter: (pieceIndex) => {
-            if (!state.originalPositions) return { x: 0, y: 0 };
-            const piece = state.originalPositions[pieceIndex];
-            return piece ? calculateCenter(piece.points) : { x: 0, y: 0 };
+          if (!state.originalPositions) return { x: 0, y: 0 };
+          const piece = state.originalPositions[pieceIndex];
+          return piece ? calculateCenter(piece.points) : { x: 0, y: 0 };
         },
       };
     }
@@ -939,13 +940,13 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         width: 0, height: 0, centerX: 0, centerY: 0
       };
     }
-    
+
     // 计算拼图当前的中心点（用于旋转参考）
     const center = {
       x: piece.points.reduce((sum, p) => sum + p.x, 0) / piece.points.length,
       y: piece.points.reduce((sum, p) => sum + p.y, 0) / piece.points.length
     };
-    
+
     // 如果拼图有旋转，则需要考虑旋转后的实际边界
     if (piece.rotation !== 0) {
       // 计算每个点旋转后的坐标
@@ -953,54 +954,54 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // 计算点到中心的向量
         const dx = point.x - center.x;
         const dy = point.y - center.y;
-        
+
         // 计算旋转角度（弧度）
         const angleRadians = piece.rotation * Math.PI / 180;
-        
+
         // 旋转向量
         const rotatedDx = dx * Math.cos(angleRadians) - dy * Math.sin(angleRadians);
         const rotatedDy = dx * Math.sin(angleRadians) + dy * Math.cos(angleRadians);
-        
+
         // 返回旋转后的坐标
         return {
           x: center.x + rotatedDx,
           y: center.y + rotatedDy
         };
       });
-      
+
       // 使用旋转后的点计算边界框
       const minX = Math.min(...rotatedPoints.map(p => p.x));
       const maxX = Math.max(...rotatedPoints.map(p => p.x));
       const minY = Math.min(...rotatedPoints.map(p => p.y));
       const maxY = Math.max(...rotatedPoints.map(p => p.y));
-      
+
       // 计算尺寸和中心点
       const width = maxX - minX;
       const height = maxY - minY;
-      
-      return { 
-        minX, maxX, minY, maxY, 
-        width, height, 
-        centerX: center.x, 
-        centerY: center.y 
+
+      return {
+        minX, maxX, minY, maxY,
+        width, height,
+        centerX: center.x,
+        centerY: center.y
       };
     }
-    
+
     // 如果没有旋转，直接使用原始点计算边界框
     const minX = Math.min(...piece.points.map(p => p.x));
     const maxX = Math.max(...piece.points.map(p => p.x));
     const minY = Math.min(...piece.points.map(p => p.y));
     const maxY = Math.max(...piece.points.map(p => p.y));
-    
+
     // 计算尺寸和中心点
     const width = maxX - minX;
     const height = maxY - minY;
     const centerX = (minX + maxX) / 2;
     const centerY = (minY + maxY) / 2;
-    
+
     return { minX, maxX, minY, maxY, width, height, centerX, centerY };
   }, []);
-  
+
   // 添加边界约束函数
   const ensurePieceInBounds = useCallback((piece: PuzzlePiece, dx: number, dy: number, safeMargin: number = 1) => {
     // 修正：强制以 canvasRef.current.width/height 为主判据
@@ -1029,10 +1030,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     let constrainedDx = dx;
     let constrainedDy = dy;
     let hitBoundary = false; // 标记是否触碰边界
-    
+
     // 增加回弹因子，使拼图回弹更明显
-    const bounceBackFactor = 0.4; 
-    
+    const bounceBackFactor = 0.4;
+
     // 使用拼图尺寸的30%作为回弹距离基准
     const pieceSizeBasedBounce = Math.max(currentBounds.width, currentBounds.height) * 0.3;
     // 最大回弹距离限制(像素) - 确保回弹效果明显但不过度
@@ -1044,145 +1045,145 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     // 检查水平边界 - 使用画布真实边缘，仅保留1像素的缓冲防止渲染问题
     if (potentialMinX < safeMargin) {
-        // 精确检测是否确实超出边界
-        const boundaryViolation = safeMargin - potentialMinX;
-        // 只有当确实超出边界时才标记为碰撞
-        if (boundaryViolation > 0.1) {
-            correctionX = boundaryViolation; // 需要向右修正
-            hitBoundary = true;
+      // 精确检测是否确实超出边界
+      const boundaryViolation = safeMargin - potentialMinX;
+      // 只有当确实超出边界时才标记为碰撞
+      if (boundaryViolation > 0.1) {
+        correctionX = boundaryViolation; // 需要向右修正
+        hitBoundary = true;
 
-        }
+      }
     } else if (potentialMaxX > canvasW - safeMargin) {
-        // 精确检测是否确实超出边界
-        const boundaryViolation = potentialMaxX - (canvasW - safeMargin);
-        // 只有当确实超出边界时才标记为碰撞
-        if (boundaryViolation > 0.1) {
-            correctionX = -(boundaryViolation); // 需要向左修正
-            hitBoundary = true;
+      // 精确检测是否确实超出边界
+      const boundaryViolation = potentialMaxX - (canvasW - safeMargin);
+      // 只有当确实超出边界时才标记为碰撞
+      if (boundaryViolation > 0.1) {
+        correctionX = -(boundaryViolation); // 需要向左修正
+        hitBoundary = true;
 
-        }
+      }
     }
 
     // 检查垂直边界 - 使用画布真实边缘，仅保留1像素的缓冲防止渲染问题
     if (potentialMinY < safeMargin) {
-        // 精确检测是否确实超出边界
-        const boundaryViolation = safeMargin - potentialMinY;
-        // 只有当确实超出边界时才标记为碰撞
-        if (boundaryViolation > 0.1) {
-            correctionY = boundaryViolation; // 需要向下修正
-            hitBoundary = true;
+      // 精确检测是否确实超出边界
+      const boundaryViolation = safeMargin - potentialMinY;
+      // 只有当确实超出边界时才标记为碰撞
+      if (boundaryViolation > 0.1) {
+        correctionY = boundaryViolation; // 需要向下修正
+        hitBoundary = true;
 
-        }
+      }
     } else if (potentialMaxY > canvasH - safeMargin) {
-        // 精确检测是否确实超出边界
-        const boundaryViolation = potentialMaxY - (canvasH - safeMargin);
-        // 只有当确实超出边界时才标记为碰撞
-        if (boundaryViolation > 0.1) {
-            correctionY = -(boundaryViolation); // 需要向上修正
-            hitBoundary = true;
+      // 精确检测是否确实超出边界
+      const boundaryViolation = potentialMaxY - (canvasH - safeMargin);
+      // 只有当确实超出边界时才标记为碰撞
+      if (boundaryViolation > 0.1) {
+        correctionY = -(boundaryViolation); // 需要向上修正
+        hitBoundary = true;
 
-        }
+      }
     }
 
     // 应用修正和回弹
     if (hitBoundary) {
-        // 应用修正量，将拼图带回画布边缘
-        constrainedDx = dx + correctionX;
-        constrainedDy = dy + correctionY;
-        
+      // 应用修正量，将拼图带回画布边缘
+      constrainedDx = dx + correctionX;
+      constrainedDy = dy + correctionY;
 
 
-        // 计算回弹距离，与修正方向相反，但距离有限制
-        // 使用Math.sign确保回弹方向正确，Math.min限制最大回弹距离
-        const bounceX = Math.abs(correctionX) > 0 ? 
-                       -Math.sign(correctionX) * Math.min(Math.abs(correctionX) * bounceBackFactor, maxBounceDistance) : 0;
-        const bounceY = Math.abs(correctionY) > 0 ? 
-                       -Math.sign(correctionY) * Math.min(Math.abs(correctionY) * bounceBackFactor, maxBounceDistance) : 0;
 
-        // 应用回弹偏移
-        constrainedDx += bounceX;
-        constrainedDy += bounceY;
-        
+      // 计算回弹距离，与修正方向相反，但距离有限制
+      // 使用Math.sign确保回弹方向正确，Math.min限制最大回弹距离
+      const bounceX = Math.abs(correctionX) > 0 ?
+        -Math.sign(correctionX) * Math.min(Math.abs(correctionX) * bounceBackFactor, maxBounceDistance) : 0;
+      const bounceY = Math.abs(correctionY) > 0 ?
+        -Math.sign(correctionY) * Math.min(Math.abs(correctionY) * bounceBackFactor, maxBounceDistance) : 0;
+
+      // 应用回弹偏移
+      constrainedDx += bounceX;
+      constrainedDy += bounceY;
 
 
-        // 再次进行边界检查，确保回弹没有导致再次超出边界
-        const finalMinX = currentBounds.minX + constrainedDx;
-        const finalMaxX = currentBounds.maxX + constrainedDx;
-        const finalMinY = currentBounds.minY + constrainedDy;
-        const finalMaxY = currentBounds.maxY + constrainedDy;
-        
-        let secondCorrection = false;
 
-        if (finalMinX < safeMargin) {
-          constrainedDx = safeMargin - currentBounds.minX;
-          secondCorrection = true;
+      // 再次进行边界检查，确保回弹没有导致再次超出边界
+      const finalMinX = currentBounds.minX + constrainedDx;
+      const finalMaxX = currentBounds.maxX + constrainedDx;
+      const finalMinY = currentBounds.minY + constrainedDy;
+      const finalMaxY = currentBounds.maxY + constrainedDy;
 
-        }
-        if (finalMaxX > canvasW - safeMargin) {
-          constrainedDx = (canvasW - safeMargin) - currentBounds.maxX;
-          secondCorrection = true;
+      let secondCorrection = false;
 
-        }
-        if (finalMinY < safeMargin) {
-          constrainedDy = safeMargin - currentBounds.minY;
-          secondCorrection = true;
+      if (finalMinX < safeMargin) {
+        constrainedDx = safeMargin - currentBounds.minX;
+        secondCorrection = true;
 
-        }
-        if (finalMaxY > canvasH - safeMargin) {
-          constrainedDy = (canvasH - safeMargin) - currentBounds.maxY;
-          secondCorrection = true;
+      }
+      if (finalMaxX > canvasW - safeMargin) {
+        constrainedDx = (canvasW - safeMargin) - currentBounds.maxX;
+        secondCorrection = true;
 
-        }
-        
-        if (secondCorrection) {
+      }
+      if (finalMinY < safeMargin) {
+        constrainedDy = safeMargin - currentBounds.minY;
+        secondCorrection = true;
 
-        }
+      }
+      if (finalMaxY > canvasH - safeMargin) {
+        constrainedDy = (canvasH - safeMargin) - currentBounds.maxY;
+        secondCorrection = true;
 
-        // 播放碰撞音效 - 仅在触碰边界时
-        try {
-          const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-          
-          // 创建主音频振荡器 - 低音碰撞声
-          const oscillator1 = audioContext.createOscillator();
-          const gainNode1 = audioContext.createGain();
-          
-          oscillator1.type = "sine";
-          oscillator1.frequency.setValueAtTime(120, audioContext.currentTime); // 更低的音调
-          gainNode1.gain.setValueAtTime(0.4, audioContext.currentTime);
-          gainNode1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15); // 更快衰减
-          
-          oscillator1.connect(gainNode1);
-          gainNode1.connect(audioContext.destination);
-          
-          // 创建次要振荡器 - 高音碰撞声
-          const oscillator2 = audioContext.createOscillator();
-          const gainNode2 = audioContext.createGain();
-          
-          oscillator2.type = "sine";
-          oscillator2.frequency.setValueAtTime(240, audioContext.currentTime); // 高一倍的音调
-          gainNode2.gain.setValueAtTime(0.2, audioContext.currentTime);
-          gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1); // 更快衰减
-          
-          oscillator2.connect(gainNode2);
-          gainNode2.connect(audioContext.destination);
-          
-          // 启动并停止振荡器
-          oscillator1.start();
-          oscillator2.start();
-          oscillator1.stop(audioContext.currentTime + 0.15);
-          oscillator2.stop(audioContext.currentTime + 0.1);
-        } catch (e) {
-          console.log("Audio not supported");
+      }
+
+      if (secondCorrection) {
+
+      }
+
+      // 播放碰撞音效 - 仅在触碰边界时
+      try {
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+
+        // 创建主音频振荡器 - 低音碰撞声
+        const oscillator1 = audioContext.createOscillator();
+        const gainNode1 = audioContext.createGain();
+
+        oscillator1.type = "sine";
+        oscillator1.frequency.setValueAtTime(120, audioContext.currentTime); // 更低的音调
+        gainNode1.gain.setValueAtTime(0.4, audioContext.currentTime);
+        gainNode1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15); // 更快衰减
+
+        oscillator1.connect(gainNode1);
+        gainNode1.connect(audioContext.destination);
+
+        // 创建次要振荡器 - 高音碰撞声
+        const oscillator2 = audioContext.createOscillator();
+        const gainNode2 = audioContext.createGain();
+
+        oscillator2.type = "sine";
+        oscillator2.frequency.setValueAtTime(240, audioContext.currentTime); // 高一倍的音调
+        gainNode2.gain.setValueAtTime(0.2, audioContext.currentTime);
+        gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1); // 更快衰减
+
+        oscillator2.connect(gainNode2);
+        gainNode2.connect(audioContext.destination);
+
+        // 启动并停止振荡器
+        oscillator1.start();
+        oscillator2.start();
+        oscillator1.stop(audioContext.currentTime + 0.15);
+        oscillator2.stop(audioContext.currentTime + 0.1);
+      } catch (e) {
+        console.log("Audio not supported");
       }
     } else {
-        // 如果没有触碰边界，移动距离不受约束
-        constrainedDx = dx;
-        constrainedDy = dy;
+      // 如果没有触碰边界，移动距离不受约束
+      constrainedDx = dx;
+      constrainedDy = dy;
     }
 
     return { constrainedDx, constrainedDy, hitBoundary };
   }, [state.canvasWidth, state.canvasHeight, calculatePieceBounds, state.puzzle, canvasRef]);
-  
+
   // updateCanvasSize 函数
   // 仅更新画布尺寸，不重置 puzzle 状态。会将当前尺寸存入 previousCanvasSize，
   // 新尺寸存入 canvasWidth/canvasHeight，供适配逻辑使用。
@@ -1224,23 +1225,23 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // 🔧 修复：避免覆盖已完成拼图的锁定状态
   useEffect(() => {
     // 添加画布尺寸有效性检查，避免在resize过程中传递无效尺寸
-    if (state.isScattered && 
-        state.puzzle && 
-        state.puzzle.length > 0 &&
-        state.canvasWidth && 
-        state.canvasHeight &&
-        state.canvasWidth > 0 && 
-        state.canvasHeight > 0) {
-      
+    if (state.isScattered &&
+      state.puzzle &&
+      state.puzzle.length > 0 &&
+      state.canvasWidth &&
+      state.canvasHeight &&
+      state.canvasWidth > 0 &&
+      state.canvasHeight > 0) {
+
       console.log('🔧 [GameContext] 画布尺寸变化，检查是否需要重新散开拼图');
       console.log('🔧 [GameContext] 已完成拼图:', state.completedPieces);
-      
+
       // 🔑 关键修复：如果有已完成的拼图，不要重新散开，让usePuzzleAdaptation处理适配
       if (state.completedPieces && state.completedPieces.length > 0) {
         console.log('🔧 [GameContext] 检测到已完成拼图，跳过重新散开，交由适配系统处理');
         return;
       }
-      
+
       // 重新分布拼图，基于最新canvas尺寸
       let targetShape = null;
       if (state.originalShape && state.originalShape.length > 0) {
@@ -1261,7 +1262,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           radius: radius
         };
       }
-      
+
       try {
         console.log('🔧 [GameContext] 重新散开拼图（无已完成拼图）');
         const scatteredPuzzle = ScatterPuzzle.scatterPuzzle(state.puzzle, {

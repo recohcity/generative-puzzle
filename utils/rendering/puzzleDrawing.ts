@@ -121,8 +121,9 @@ export const drawPiece = (
   ctx.rotate((piece.rotation * Math.PI) / 180);
   ctx.translate(-center.x, -center.y);
 
-  // 仅当拼图已散开且未完成时绘制阴影，已完成的拼图永远不显示阴影
-  if (isScattered && !isCompleted) {
+  // 🎯 优化触控体验：只有被选中的拼图才显示阴影，未点击的拼图默认无阴影
+  // 仅当拼图已散开、未完成且被选中时才绘制阴影，增强触控反馈
+  if (isScattered && !isCompleted && isSelected) {
     ctx.save(); // 保存当前状态，用于绘制阴影形状
     ctx.beginPath(); // 开始新的路径
     ctx.moveTo(piece.points[0].x, piece.points[0].y);
@@ -133,8 +134,9 @@ export const drawPiece = (
       const current = piece.points[i];
       const next = piece.points[(i + 1) % piece.points.length];
 
-      if (shapeType !== "polygon" && prev.isOriginal && current.isOriginal) {
-        // 对于曲线形状，使用二次贝塞尔曲线
+      // 🔧 修复阴影绘制的曲线逻辑：只要当前点是原始点，就使用曲线
+      if (shapeType !== "polygon" && current.isOriginal !== false) {
+        // 🎯 对于曲线形状，只要当前点是原始点（或未定义），就使用贝塞尔曲线
         const midX = (prev.x + current.x) / 2;
         const midY = (prev.y + current.y) / 2;
         const nextMidX = (current.x + next.x) / 2;
@@ -142,33 +144,22 @@ export const drawPiece = (
 
         ctx.quadraticCurveTo(current.x, current.y, nextMidX, nextMidY);
       } else {
-        // 对于多边形和切割线，使用直线
+        // 对于多边形和切割线（isOriginal: false），使用直线
         ctx.lineTo(current.x, current.y);
       }
     }
 
     ctx.closePath();
     
-    // 设置阴影样式：为被选中的拼图绘制更明显的阴影，未选中的拼图绘制较小的阴影
-    if (isSelected) {
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.7)'; // 选中状态阴影颜色
-      ctx.shadowBlur = 15; // 选中状态阴影模糊半径
-      ctx.shadowOffsetX = 5; // 选中状态阴影水平偏移
-      ctx.shadowOffsetY = 5; // 选中状态阴影垂直偏移
-    } 
-    // 为未完成且未选中的拼图绘制较小的阴影
-    else {
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.5)'; // 未选中状态阴影颜色
-      ctx.shadowBlur = 10; // 未选中状态阴影模糊半径
-      ctx.shadowOffsetX = 3; // 未选中状态阴影水平偏移
-      ctx.shadowOffsetY = 3; // 未选中状态阴影垂直偏移
-    }
+    // 🎯 增强选中状态的阴影效果，让触控反馈更强烈
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)'; // 更深的阴影颜色，增强视觉反馈
+    ctx.shadowBlur = 20; // 更大的阴影模糊半径，让选中效果更明显
+    ctx.shadowOffsetX = 8; // 增大水平偏移，增强立体感
+    ctx.shadowOffsetY = 8; // 增大垂直偏移，增强立体感
     
     // 填充形状以显示阴影效果（阴影是绘制在填充形状下方的）
-    // 使用拼图的颜色属性设置填充颜色（带透明度），已完成拼图使用特定颜色
-    ctx.fillStyle = isCompleted 
-      ? "rgba(255, 211, 101, 0.8)" // 已完成拼图使用特定的半透明黄色
-      : (piece.color ? appendAlpha(piece.color, 0.8) : "rgba(204, 204, 204, 0.8)"); // 使用安全的颜色透明度函数
+    // 🎯 使用不透明的纯色填充，取消透明度
+    ctx.fillStyle = piece.color || "#CCCCCC";
 
     ctx.fill(); // 填充当前路径
     ctx.restore(); // 恢复之前保存的绘图状态，取消阴影设置
@@ -183,8 +174,11 @@ export const drawPiece = (
     const current = piece.points[i];
     const next = piece.points[(i + 1) % piece.points.length];
 
-    if (shapeType !== "polygon" && prev.isOriginal && current.isOriginal) {
-      // 对于曲线形状，使用二次贝塞尔曲线
+    // 🔧 修复曲线渲染逻辑：只要当前点是原始点，就尝试使用曲线
+    // 这样可以确保原始轮廓保持曲线，而切割线保持直线
+    if (shapeType !== "polygon" && current.isOriginal !== false) {
+      // 🎯 对于曲线形状，只要当前点是原始点（或未定义），就使用贝塞尔曲线
+      // 这样可以保持原始形状轮廓的曲线特性
       const midX = (prev.x + current.x) / 2;
       const midY = (prev.y + current.y) / 2;
       const nextMidX = (current.x + next.x) / 2;
@@ -192,18 +186,18 @@ export const drawPiece = (
 
       ctx.quadraticCurveTo(current.x, current.y, nextMidX, nextMidY);
     } else {
-      // 对于多边形和切割线，使用直线
+      // 对于多边形和切割线（isOriginal: false），使用直线
       ctx.lineTo(current.x, current.y);
     }
   }
 
   ctx.closePath();
 
-  // 填充颜色
+  // 🎯 填充颜色：使用不透明的纯色，取消透明度
   // 根据是否已完成和是否有颜色属性设置填充颜色
   ctx.fillStyle = isCompleted 
-    ? "rgba(255, 211, 101, 0.8)" // 已完成拼图使用特定的半透明黄色
-    : (piece.color ? appendAlpha(piece.color, 0.8) : "rgba(204, 204, 204, 0.8)"); // 使用安全的颜色透明度函数
+    ? "#B8A9E8" // 🎯 已完成拼图使用浅蓝紫色，与背景冷色调同色系，更和谐美观
+    : (piece.color || "#CCCCCC"); // 使用拼图的原始颜色，无透明度
 
   ctx.fill(); // 填充当前路径
 
@@ -229,7 +223,8 @@ export const drawPiece = (
           const prev = piece.points[i - 1];
           const current = piece.points[i];
           const next = piece.points[(i + 1) % piece.points.length];
-          if (shapeType !== "polygon" && prev.isOriginal && current.isOriginal) {
+          // 🎯 使用与主体绘制相同的逻辑
+          if (shapeType !== "polygon" && current.isOriginal !== false) {
             const midX = (prev.x + current.x) / 2;
             const midY = (prev.y + current.y) / 2;
             const nextMidX = (current.x + next.x) / 2;
@@ -249,33 +244,20 @@ export const drawPiece = (
   } catch (e) { /* ignore */ }
   // --------- END 材质纹理 ---------
 
-  // 绘制边框 - 只为未完成的拼图绘制边框，完成的拼图不绘制边框
+  // 🎯 优化边框绘制：去掉选中拼图的橙色外轮廓，保持简洁
   if (!isCompleted) {
-    // 散开状态下未选中拼图不画轮廓线
-    if (isScattered && !isSelected) {
-      // 不画轮廓线
-    } else if (isSelected) {
-      // 选中拼图块，阴影极强烈，拾取感更强
-      ctx.shadowColor = 'rgba(255, 140, 0, 1)';
-      ctx.shadowBlur = 48;
-      ctx.shadowOffsetX = 24;
-      ctx.shadowOffsetY = 24;
-      ctx.setLineDash([]);
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = 'rgba(0,0,0,0)'; // 不画描边
-      ctx.stroke();
-      ctx.shadowColor = 'transparent';
-      ctx.shadowBlur = 0;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 0;
+    if (isSelected) {
+      // 🎯 选中拼图块：不绘制任何边框，只通过阴影来表示选中状态
+      // 完全去掉橙色外轮廓边框
+    } else if (isScattered) {
+      // 🎯 散开状态下未选中拼图：完全不绘制轮廓线，保持简洁
+      // 不画任何轮廓线，让未选中的拼图看起来更平整
     } else {
-      // 其它情况（如未散开时）保持原有白色半透明轮廓
-      ctx.strokeStyle = "rgba(255,255,255,0.3)";
+      // 其它情况（如未散开时）保持原有轻微轮廓，但进一步减弱
+      ctx.strokeStyle = "rgba(255,255,255,0.2)"; // 进一步降低透明度
       ctx.setLineDash([]);
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 1; // 减小线宽
       ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.lineWidth = 1;
     }
   }
 
@@ -285,7 +267,8 @@ export const drawPiece = (
 // 改进提示轮廓显示
 export const drawHintOutline = (
   ctx: CanvasRenderingContext2D, 
-  piece: PuzzlePiece // Changed to take the puzzle piece object
+  piece: PuzzlePiece, // Changed to take the puzzle piece object
+  shapeType?: string // 🔧 添加形状类型参数，确保提示轮廓与拼图形状一致
   ) => {
   if (!piece) return;
 
@@ -302,8 +285,25 @@ export const drawHintOutline = (
   ctx.beginPath();
   ctx.moveTo(piece.points[0].x, piece.points[0].y);
 
+  // 🔧 修复：根据形状类型绘制正确的轮廓，确保与拼图形状一致
   for (let i = 1; i < piece.points.length; i++) {
-    ctx.lineTo(piece.points[i].x, piece.points[i].y);
+    const prev = piece.points[i - 1];
+    const current = piece.points[i];
+    const next = piece.points[(i + 1) % piece.points.length];
+
+    // 🎯 使用与拼图绘制完全相同的逻辑：只要当前点是原始点，就使用曲线
+    if (shapeType !== "polygon" && current.isOriginal !== false) {
+      // 🔧 对于曲线形状，只要当前点是原始点（或未定义），就使用贝塞尔曲线
+      const midX = (prev.x + current.x) / 2;
+      const midY = (prev.y + current.y) / 2;
+      const nextMidX = (current.x + next.x) / 2;
+      const nextMidY = (current.y + next.y) / 2;
+
+      ctx.quadraticCurveTo(current.x, current.y, nextMidX, nextMidY);
+    } else {
+      // 对于多边形和切割线（isOriginal: false），使用直线
+      ctx.lineTo(current.x, current.y);
+    }
   }
 
   ctx.closePath();
@@ -551,7 +551,8 @@ export const drawPuzzle = (
             const prev = originalShape[i - 1];
             const current = originalShape[i];
             const next = originalShape[(i + 1) % originalShape.length];
-            if (shapeType !== "polygon" && prev.isOriginal && current.isOriginal) {
+            // 🎯 使用与主体绘制相同的逻辑
+            if (shapeType !== "polygon" && current.isOriginal !== false) {
               const midX = (prev.x + current.x) / 2;
               const midY = (prev.y + current.y) / 2;
               const nextMidX = (current.x + next.x) / 2;

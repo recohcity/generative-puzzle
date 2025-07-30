@@ -165,7 +165,7 @@ export const splitPieceWithLine = (piece: Point[], cut: CutLine, recursionDepth:
         point: { 
           x: intersection.x + offsetX, 
           y: intersection.y + offsetY, 
-          isOriginal: false 
+          isOriginal: false // 切割产生的交点不是原始点，应该用直线连接
         },
         index: i,
       })
