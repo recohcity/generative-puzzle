@@ -1,4 +1,3 @@
-import type { ReactNode } from "react"
 // Re-export ShapeType and CutType from ./types
 // export { ShapeType, CutType } from "./types"
 
@@ -64,7 +63,7 @@ export type GameAction = any; // 请根据实际定义替换 any
 export enum ShapeType {
   Polygon = "polygon",
   Curve = "curve",
-  Circle = "irregular",
+  Irregular = "irregular",
 }
 
 export enum CutType {

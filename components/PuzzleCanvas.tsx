@@ -379,13 +379,48 @@ export default function PuzzleCanvas() {
             payload: shapeResult.adaptedData
           });
           
-          // 🎯 同步适配拼图块（如果存在）
-          if (state.puzzle && state.puzzle.length > 0) {
+          // 🎯 同步适配拼图块（如果存在且未散开）
+          if (state.puzzle && state.puzzle.length > 0 && !state.isScattered) {
+            console.log('🔧 [PuzzleCanvas] 检测到未散开拼图，进行同步适配');
+            
             const puzzleResult = unifiedAdaptationEngine.adapt<PuzzlePiece[]>({
               type: 'puzzle',
               originalData: state.puzzle,
               originalCanvasSize: currentCanvasSize,
               targetCanvasSize: memoizedCanvasSize,
+              // 🔑 关键：传递目标位置数据，用于锁定完成拼图
+              targetPositions: state.originalPositions,
+              // 🔑 关键：传递已完成拼图索引，确保正确锁定
+              completedPieces: state.completedPieces,
+              options: {
+                preserveAspectRatio: true,
+                centerAlign: true,
+                scaleMethod: 'minEdge'
+              }
+            });
+            
+            if (puzzleResult.success && puzzleResult.adaptedData) {
+              console.log('✅ [PuzzleCanvas] 拼图块同步适配完成:', puzzleResult.adaptedData.length, '个拼图块');
+              dispatch({
+                type: 'SET_PUZZLE',
+                payload: puzzleResult.adaptedData
+              });
+            }
+          }
+          
+          // 🎯 同步适配拼图块（如果存在）- 1.3.38版本的正确做法：无论是否散开都进行适配
+          if (state.puzzle && state.puzzle.length > 0) {
+            console.log('🔧 [PuzzleCanvas] 进行拼图块同步适配（包括散开拼图的比例缩放）');
+            
+            const puzzleResult = unifiedAdaptationEngine.adapt<PuzzlePiece[]>({
+              type: 'puzzle',
+              originalData: state.puzzle,
+              originalCanvasSize: currentCanvasSize,
+              targetCanvasSize: memoizedCanvasSize,
+              // 🔑 关键：传递目标位置数据，用于锁定完成拼图
+              targetPositions: state.originalPositions,
+              // 🔑 关键：传递已完成拼图索引，确保正确锁定
+              completedPieces: state.completedPieces,
               options: {
                 preserveAspectRatio: true,
                 centerAlign: true,
@@ -428,7 +463,7 @@ export default function PuzzleCanvas() {
     }, 150); // 150ms防抖
     
     return () => clearTimeout(timeoutId);
-  }, [memoizedCanvasSize, state.baseShape, state.originalShape, state.baseCanvasSize, state.puzzle, state.originalPositions, dispatch]);
+  }, [memoizedCanvasSize, state.baseShape, state.originalShape, state.baseCanvasSize, state.puzzle, state.originalPositions, state.isScattered, dispatch]);
   
   // 🚨 临时禁用适配状态监控
   // useEffect(() => {

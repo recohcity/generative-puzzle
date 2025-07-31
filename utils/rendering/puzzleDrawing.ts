@@ -65,7 +65,7 @@ export const drawShape = (ctx: CanvasRenderingContext2D, shape: Point[], shapeTy
         // 闭合路径
         ctx.lineTo(shape[0].x, shape[0].y);
       } else {
-        // 曲线形状使用贝塞尔曲线
+        // 曲线形状和锯齿形状都使用贝塞尔曲线
         for (let i = 1; i < shape.length; i++) {
           const prev = shape[i - 1];
           const current = shape[i];
@@ -134,9 +134,8 @@ export const drawPiece = (
       const current = piece.points[i];
       const next = piece.points[(i + 1) % piece.points.length];
 
-      // 🔧 修复阴影绘制的曲线逻辑：只要当前点是原始点，就使用曲线
       if (shapeType !== "polygon" && current.isOriginal !== false) {
-        // 🎯 对于曲线形状，只要当前点是原始点（或未定义），就使用贝塞尔曲线
+        // 对于曲线形状和锯齿形状，使用二次贝塞尔曲线保持平滑
         const midX = (prev.x + current.x) / 2;
         const midY = (prev.y + current.y) / 2;
         const nextMidX = (current.x + next.x) / 2;
@@ -144,7 +143,7 @@ export const drawPiece = (
 
         ctx.quadraticCurveTo(current.x, current.y, nextMidX, nextMidY);
       } else {
-        // 对于多边形和切割线（isOriginal: false），使用直线
+        // 对于多边形和切割线，使用直线
         ctx.lineTo(current.x, current.y);
       }
     }
@@ -174,11 +173,8 @@ export const drawPiece = (
     const current = piece.points[i];
     const next = piece.points[(i + 1) % piece.points.length];
 
-    // 🔧 修复曲线渲染逻辑：只要当前点是原始点，就尝试使用曲线
-    // 这样可以确保原始轮廓保持曲线，而切割线保持直线
     if (shapeType !== "polygon" && current.isOriginal !== false) {
-      // 🎯 对于曲线形状，只要当前点是原始点（或未定义），就使用贝塞尔曲线
-      // 这样可以保持原始形状轮廓的曲线特性
+      // 对于曲线形状和锯齿形状，使用二次贝塞尔曲线
       const midX = (prev.x + current.x) / 2;
       const midY = (prev.y + current.y) / 2;
       const nextMidX = (current.x + next.x) / 2;
@@ -186,7 +182,7 @@ export const drawPiece = (
 
       ctx.quadraticCurveTo(current.x, current.y, nextMidX, nextMidY);
     } else {
-      // 对于多边形和切割线（isOriginal: false），使用直线
+      // 对于多边形和切割线，使用直线
       ctx.lineTo(current.x, current.y);
     }
   }
@@ -223,7 +219,6 @@ export const drawPiece = (
           const prev = piece.points[i - 1];
           const current = piece.points[i];
           const next = piece.points[(i + 1) % piece.points.length];
-          // 🎯 使用与主体绘制相同的逻辑
           if (shapeType !== "polygon" && current.isOriginal !== false) {
             const midX = (prev.x + current.x) / 2;
             const midY = (prev.y + current.y) / 2;
@@ -504,7 +499,7 @@ export const drawPuzzle = (
         ctx.lineTo(point.x, point.y);
       });
     } else {
-      // 曲线形状使用贝塞尔曲线
+      // 曲线形状和锯齿形状都使用贝塞尔曲线
       for (let i = 1; i < originalShape.length; i++) {
         const prev = originalShape[i - 1];
         const current = originalShape[i];
@@ -551,7 +546,6 @@ export const drawPuzzle = (
             const prev = originalShape[i - 1];
             const current = originalShape[i];
             const next = originalShape[(i + 1) % originalShape.length];
-            // 🎯 使用与主体绘制相同的逻辑
             if (shapeType !== "polygon" && current.isOriginal !== false) {
               const midX = (prev.x + current.x) / 2;
               const midY = (prev.y + current.y) / 2;
@@ -648,6 +642,7 @@ export const drawPuzzle = (
           ctx.lineTo(point.x, point.y);
         });
       } else {
+        // 曲线形状和锯齿形状都使用贝塞尔曲线
         for (let i = 1; i < originalShape.length; i++) {
           const prev = originalShape[i - 1];
           const current = originalShape[i];

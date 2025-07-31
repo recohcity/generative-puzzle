@@ -135,15 +135,15 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
               className="text-white"
               strokeWidth={2}
             />
-            <span style={labelStyle}>曲凸形状</span>
+            <span style={labelStyle}>云朵形状</span>
           </Button>
           <Button
             variant="ghost"
-            className={getButtonClass(ShapeType.Circle) + " flex flex-col items-center justify-center"}
+            className={getButtonClass(ShapeType.Irregular) + " flex flex-col items-center justify-center"}
             style={{ ...buttonStyle, flex: 1, minWidth: 0, width: 'auto', maxWidth: '240px' }}
             onClick={() => {
               if (isShapeButtonDisabled) return;
-              handleShapeButtonClick(ShapeType.Circle);
+              handleShapeButtonClick(ShapeType.Irregular);
             }}
           >
             <BlobIcon 
@@ -151,7 +151,7 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
               className="text-white"
               strokeWidth={2}
             />
-            <span style={labelStyle}>云朵形状</span>
+            <span style={labelStyle}>锯齿形状</span>
           </Button>
         </div>
       </div>

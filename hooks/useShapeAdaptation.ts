@@ -73,6 +73,7 @@ export const useShapeAdaptation = (canvasSize: { width: number; height: number }
         state.baseCanvasSize) {
       
       // 开始同步适配拼图块
+      console.log('🔄 [useShapeAdaptation] 开始同步适配拼图块', {
         from: state.baseCanvasSize,
         to: canvasSize
       });

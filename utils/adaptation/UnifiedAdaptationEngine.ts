@@ -41,6 +41,8 @@ export interface UnifiedAdaptationConfig {
     centerAlign?: boolean;
     scaleMethod?: 'minEdge' | 'maxEdge' | 'independent';
     debugMode?: boolean;
+    // 🔑 新增：是否只适配完成的拼图（用于散开状态）
+    onlyAdaptCompleted?: boolean;
   };
 }
 

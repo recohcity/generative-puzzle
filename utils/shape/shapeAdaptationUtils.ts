@@ -46,20 +46,20 @@ export async function adaptShapeWithMemory(
 ): Promise<Point[]> {
   try {
     const { debug = false } = options;
-    
+
     if (debug) {
       console.log(`[记忆适配] 开始适配形状: ${shapeMemoryId} -> ${targetSize.width}x${targetSize.height}`);
     }
-    
+
     const adaptedShape = await memoryManager.adaptShapeToCanvas(shapeMemoryId, targetSize);
-    
+
     if (debug) {
       console.log(`[记忆适配] 适配完成:`, {
         pointsCount: adaptedShape.points.length,
         metrics: adaptedShape.adaptationMetrics
       });
     }
-    
+
     return adaptedShape.points;
   } catch (error) {
     console.error('[记忆适配] 适配失败:', error);
@@ -81,42 +81,42 @@ export async function adaptShapeWithMemory(
  * @deprecated 使用 adaptShapeUnified 替代
  */
 export function adaptShapeToCanvas(
-  originalShape: Point[], 
-  oldSize: CanvasSize, 
+  originalShape: Point[],
+  oldSize: CanvasSize,
   newSize: CanvasSize,
   options: AdaptationOptions = {}
 ): Point[] {
   try {
     const { debug = false } = options;
-    
+
     if (debug) {
       console.log('[adaptShapeToCanvas] 此函数已被弃用，正在使用统一适配引擎替代');
     }
-    
+
     // 基本输入验证
     if (!originalShape || !Array.isArray(originalShape) || originalShape.length === 0) {
       console.warn('adaptShapeToCanvas: 形状数据无效');
       return [];
     }
-    
-    if (!oldSize || !newSize || 
-        oldSize.width <= 0 || oldSize.height <= 0 || 
-        newSize.width <= 0 || newSize.height <= 0) {
+
+    if (!oldSize || !newSize ||
+      oldSize.width <= 0 || oldSize.height <= 0 ||
+      newSize.width <= 0 || newSize.height <= 0) {
       console.warn('adaptShapeToCanvas: 画布尺寸无效');
       return originalShape;
     }
-    
+
     // 使用新的全局统一适配引擎
     try {
       const { AdaptationEngine } = require('../../core/AdaptationEngine');
       const adaptationEngine = AdaptationEngine.getInstance();
-      
+
       const result = adaptationEngine.adaptShape(
         originalShape,
         oldSize,
         newSize
       );
-      
+
       if (result.success && result.data) {
         if (debug) {
           console.log('[adaptShapeToCanvas] 全局适配引擎适配成功');
@@ -144,7 +144,7 @@ export function adaptShapeToCanvas(
  * @returns 居中后的形状点集
  */
 export function centerShapeInCanvas(
-  shape: Point[], 
+  shape: Point[],
   canvasSize: CanvasSize,
   options: { debug?: boolean, forceExactCenter?: boolean } = {}
 ): Point[] {
@@ -154,7 +154,7 @@ export function centerShapeInCanvas(
 
   try {
     const { debug = false, forceExactCenter = true } = options;
-    
+
     // 计算形状的边界框
     const bounds = shape.reduce(
       (acc, point) => ({
@@ -177,13 +177,13 @@ export function centerShapeInCanvas(
     // 计算偏移量
     const offsetX = canvasCenterX - shapeCenterX;
     const offsetY = canvasCenterY - shapeCenterY;
-    
+
     if (debug) {
       console.log(`居中计算: 画布尺寸=${canvasSize.width}x${canvasSize.height}, 画布中心=(${canvasCenterX}, ${canvasCenterY})`);
       console.log(`居中计算: 形状边界=(${bounds.minX}, ${bounds.minY}, ${bounds.maxX}, ${bounds.maxY}), 形状中心=(${shapeCenterX}, ${shapeCenterY})`);
       console.log(`居中计算: 偏移量=(${offsetX}, ${offsetY})`);
     }
-    
+
     // 确保偏移量是整数，避免小数点导致的不精确居中
     const finalOffsetX = forceExactCenter ? Math.round(offsetX) : offsetX;
     const finalOffsetY = forceExactCenter ? Math.round(offsetY) : offsetY;
@@ -209,8 +209,8 @@ export function centerShapeInCanvas(
  * @returns 缩放并居中后的形状点集
  */
 export function scaleShapeToSize(
-  shape: Point[], 
-  targetSize: number, 
+  shape: Point[],
+  targetSize: number,
   canvasSize: CanvasSize
 ): Point[] {
   if (!shape || shape.length === 0) {
@@ -281,8 +281,8 @@ export function scaleShapeToSize(
  * @returns 是否在边界内
  */
 export function isShapeInBounds(
-  shape: Point[], 
-  canvasSize: CanvasSize, 
+  shape: Point[],
+  canvasSize: CanvasSize,
   margin: number = 0
 ): boolean {
   if (!shape || shape.length === 0) {
@@ -301,9 +301,9 @@ export function isShapeInBounds(
     );
 
     return bounds.minX >= margin &&
-           bounds.maxX <= canvasSize.width - margin &&
-           bounds.minY >= margin &&
-           bounds.maxY <= canvasSize.height - margin;
+      bounds.maxX <= canvasSize.width - margin &&
+      bounds.minY >= margin &&
+      bounds.maxY <= canvasSize.height - margin;
 
   } catch (error) {
     console.error('isShapeInBounds: 边界检查失败:', error);
@@ -341,14 +341,14 @@ export async function adaptShapeUnified(
     // 尝试使用记忆系统
     if (memoryManager) {
       let currentMemoryId = shapeMemoryId;
-      
+
       // 如果没有记忆ID但需要创建，先创建记忆
       if (!currentMemoryId && createMemoryIfNeeded && originalShape.length > 0) {
         try {
           if (debug) {
             console.log('[统一适配] 创建形状记忆');
           }
-          
+
           // 使用提供的ID或生成新的ID
           const memoryId = shapeMemoryId || `unified_${Date.now()}`;
           currentMemoryId = await memoryManager.createShapeMemory(
@@ -356,7 +356,7 @@ export async function adaptShapeUnified(
             oldSize,
             memoryId
           );
-          
+
           if (debug) {
             console.log('[统一适配] 形状记忆创建成功:', currentMemoryId);
           }
@@ -366,7 +366,7 @@ export async function adaptShapeUnified(
           }
         }
       }
-      
+
       // 如果提供了记忆ID但记忆不存在，且允许创建，则创建记忆
       if (currentMemoryId && createMemoryIfNeeded && originalShape.length > 0) {
         try {
@@ -376,13 +376,13 @@ export async function adaptShapeUnified(
             if (debug) {
               console.log('[统一适配] 记忆不存在，创建新记忆:', currentMemoryId);
             }
-            
+
             await memoryManager.createShapeMemory(
               originalShape,
               oldSize,
               currentMemoryId
             );
-            
+
             if (debug) {
               console.log('[统一适配] 记忆创建成功:', currentMemoryId);
             }
@@ -394,7 +394,7 @@ export async function adaptShapeUnified(
           currentMemoryId = undefined; // 重置ID，使用统一适配引擎
         }
       }
-      
+
       // 如果有记忆ID，尝试使用记忆适配
       if (currentMemoryId) {
         try {
@@ -404,11 +404,11 @@ export async function adaptShapeUnified(
             newSize,
             { debug, ...restOptions }
           );
-          
+
           if (debug) {
             console.log('[统一适配] 记忆适配成功');
           }
-          
+
           return adaptedPoints;
         } catch (memoryError) {
           if (debug) {
@@ -417,12 +417,12 @@ export async function adaptShapeUnified(
         }
       }
     }
-    
+
     // Step3清理：移除对传统适配方法的回退，直接使用统一适配引擎
     if (debug) {
       console.log('[统一适配] 传统适配方法已被移除，使用统一适配引擎');
     }
-    
+
     // 使用统一适配引擎
     const adaptationConfig = {
       type: 'shape' as const,
@@ -434,12 +434,12 @@ export async function adaptShapeUnified(
         ...restOptions
       }
     };
-    
+
     try {
       // 导入统一适配引擎
       const { unifiedAdaptationEngine } = await import('../adaptation/UnifiedAdaptationEngine');
       const result = unifiedAdaptationEngine.adapt<Point[]>(adaptationConfig);
-      
+
       if (result.success) {
         return result.adaptedData;
       } else {
@@ -450,7 +450,7 @@ export async function adaptShapeUnified(
       console.error('[统一适配] 统一适配引擎异常:', error);
       return originalShape; // 异常时返回原始形状
     }
-    
+
   } catch (error) {
     console.error('[统一适配] 适配失败:', error);
     throw error;

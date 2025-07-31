@@ -1,6 +1,6 @@
 # 项目结构（Project Structure）
 
-> 自动生成时间：2025/7/30 20:20:05  
+> 自动生成时间：2025/7/31 19:49:19  
 > 生成工具：项目结构文档生成器 v3.1.0 - 开发导航版
 
 **开发者导航工具** - 快速理解项目架构，精准定位代码位置，提升开发效率。
@@ -14,9 +14,9 @@
 
 | 统计项 | 数量 | 说明 |
 |--------|------|------|
-| 总目录数 | 97 | 项目目录结构层次 |
-| 总文件数 | 347 | 代码文件和资源文件总数 |
-| 项目容量 | 6.91 MB | 不包含node_modules的项目大小 |
+| 总目录数 | 67 | 项目目录结构层次 |
+| 总文件数 | 295 | 代码文件和资源文件总数 |
+| 项目容量 | 6.47 MB | 不包含node_modules的项目大小 |
 
 ---
 
@@ -234,43 +234,13 @@ npm run lint                   # 代码检查
 - src/
   - config/
   - quality-system/
-    - __tests__/
     - ci-cd/
       - configs/
       - examples/
       - tests/
-    - cli/
-    - components/
-      - ErrorBoundary/
-        - __tests__/
-        - examples/
-    - config/
-    - core/
-    - database/
-      - __tests__/
-      - config/
-      - dao/
-      - examples/
-      - migrations/
-      - seeds/
-    - error-handling/
-      - __tests__/
-      - examples/
-    - examples/
-    - interfaces/
     - quality-detection/
       - __tests__/
       - analyzers/
-      - examples/
-    - scripts/
-    - services/
-    - task-management/
-      - __tests__/
-      - examples/
-    - types/
-    - utils/
-    - validation/
-      - __tests__/
       - examples/
 - test-results/
 - tests/
@@ -426,7 +396,10 @@ npm run lint                   # 代码检查
       📄 `README.md` - 项目说明文档
       📄 `touch_interaction.md`
     📄 `ADAPTATION_GUIDE.md`
+    📄 `ADAPTATION_KNOWLEDGE_INHERITANCE.md`
+    📄 `fix.md`
     📄 `README.md` - 项目说明文档
+    📄 `V1_3_39_GOLDEN_STANDARD.md`
   📁 **code-review/**
     📁 **v1.3.37/**
       📄 `code-review-report.md`
@@ -504,8 +477,8 @@ npm run lint                   # 代码检查
   📄 `GETTING_STARTED.md`
   📄 `GITHUB_ACTIONS_SETUP_GUIDE.md`
   📄 `PRE_PUSH_CHECKLIST.md`
-  📄 `PROJECT_STATUS_V1.3.38.md`
   📄 `project_structure.md`
+  📄 `QUICK_ADAPTATION_GUIDE.md`
   📄 `README.md` - 项目说明文档
 📁 **e2e/**
   📁 **temp/**
@@ -560,8 +533,6 @@ npm run lint                   # 代码检查
     📄 `index.ts`
     📄 `performanceConfig.ts`
   📁 **quality-system/**
-    📁 **__tests__/**
-      📄 `integration.test.ts`
     📁 **ci-cd/**
       📁 **configs/**
         📄 `external-tools.config.js`
@@ -571,58 +542,6 @@ npm run lint                   # 代码检查
       📁 **tests/**
         📄 `external-tools-integration.test.ts`
       📄 `CICDIntegrationService.ts`
-    📁 **cli/**
-      📄 `compatibility-check.ts`
-      📄 `quality-cli.ts`
-    📁 **components/**
-      📁 **ErrorBoundary/**
-        📁 **__tests__/**
-          📄 `ErrorBoundary.test.tsx`
-        📁 **examples/**
-          📄 `error-boundary-demo-script.ts`
-          📄 `ErrorBoundaryDemo.tsx`
-        📄 `ErrorFallbackUI.tsx`
-        📄 `index.ts`
-        📄 `QualitySystemErrorBoundary.tsx`
-        📄 `SpecializedErrorBoundaries.tsx`
-        📄 `useErrorBoundary.ts`
-    📁 **config/**
-      📄 `development.ts`
-      📄 `index.ts`
-    📁 **core/**
-      📄 `ServiceFactory.ts`
-    📁 **database/**
-      📁 **__tests__/**
-        📄 `DatabaseManager.test.ts`
-      📁 **config/**
-        📄 `database.config.ts`
-      📁 **dao/**
-        📄 `TaskDAO.ts`
-      📁 **examples/**
-        📄 `database-demo.ts`
-      📁 **migrations/**
-        📄 `001_initial_schema.sql`
-        📄 `002_create_views.sql`
-      📁 **seeds/**
-        📄 `001_sample_data.sql`
-      📄 `DatabaseManager.ts`
-      📄 `schema.sql`
-    📁 **error-handling/**
-      📁 **__tests__/**
-        📄 `basic-error-handling.test.ts`
-        📄 `error-handling.test.ts`
-      📁 **examples/**
-        📄 `error-handling-demo.ts`
-      📄 `AdvancedErrorHandlingService.ts`
-      📄 `ERROR_HANDLING_COMPLETE.md`
-      📄 `ErrorTypes.ts`
-      📄 `index.ts`
-      📄 `NotificationManager.ts`
-      📄 `RecoveryManager.ts`
-    📁 **examples/**
-      📄 `basic-usage.ts`
-    📁 **interfaces/**
-      📄 `index.ts`
     📁 **quality-detection/**
       📁 **__tests__/**
         📄 `AdvancedQualityMetrics.test.ts`
@@ -640,38 +559,7 @@ npm run lint                   # 代码检查
       📄 `QualityDetectionEngine.ts`
       📄 `QualityScoreCalculator.ts`
       📄 `QualityTrendAnalyzer.ts`
-    📁 **scripts/**
-      📄 `init.ts`
-    📁 **services/**
-      📄 `DatabaseStorageService.ts`
-      📄 `ErrorHandlingService.ts`
-      📄 `Logger.ts`
-      📄 `MockDataStorageService.ts`
-      📄 `QualityDetectionEngine.ts`
-      📄 `TaskManagementService.ts`
-    📁 **task-management/**
-      📁 **__tests__/**
-        📄 `EnhancedTaskManagementService.test.ts`
-      📁 **examples/**
-        📄 `task-management-demo.ts`
-      📄 `EnhancedTaskManagementService.ts`
-      📄 `TaskTypes.ts`
-    📁 **types/**
-      📄 `index.ts`
-    📁 **utils/**
-      📄 `compatibility.ts`
-    📁 **validation/**
-      📁 **__tests__/**
-        📄 `AcceptanceCriteriaValidator.test.ts`
-      📁 **examples/**
-        📄 `validation-demo.ts`
-      📄 `AcceptanceCriteriaValidator.ts`
-      📄 `ScriptExecutionEngine.ts`
-      📄 `ValidationReportGenerator.ts`
-    📄 `index.ts`
-    📄 `QualitySystem.ts`
     📄 `README.md` - 项目说明文档
-    📄 `SETUP_COMPLETE.md`
 📁 **test-results/**
 📁 **tests/**
   📄 `test-performance-benchmark.js`
@@ -778,4 +666,4 @@ npm run generate-structure  # 一键更新项目结构文档
 
 ---
 
-*📅 生成时间：2025/7/30 20:20:05 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*
+*📅 生成时间：2025/7/31 19:49:19 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*

@@ -41,16 +41,8 @@ jobs:
       run: npm run test:unit -- --coverage --coverageReporters=json --coverageReporters=lcov
       continue-on-error: true
     
-    - name: Run quality detection engine
-      run: npm run quality:detection-demo
-      continue-on-error: true
-    
-    - name: Run advanced quality metrics
-      run: npm run quality:advanced-metrics-demo
-      continue-on-error: true
-    
-    - name: Run CI/CD integration demo
-      run: npm run quality:cicd-demo
+    - name: Run project quality check
+      run: npm run quality:check
       continue-on-error: true
     
     - name: Upload coverage to Codecov
@@ -64,9 +56,7 @@ jobs:
     - name: Generate quality report
       run: |
         mkdir -p quality-reports
-        npm run quality:detection-demo > quality-reports/detection-report.txt 2>&1 || true
-        npm run quality:advanced-metrics-demo > quality-reports/metrics-report.txt 2>&1 || true
-        npm run quality:cicd-demo > quality-reports/cicd-report.txt 2>&1 || true
+        npm run quality:report > quality-reports/quality-report.txt 2>&1 || true
     
     - name: Upload quality reports
       uses: actions/upload-artifact@v4
@@ -86,17 +76,19 @@ jobs:
           
           try {
             // Read quality reports if they exist
-            if (fs.existsSync('quality-reports/detection-report.txt')) {
-              const detectionReport = fs.readFileSync('quality-reports/detection-report.txt', 'utf8');
-              const lines = detectionReport.split('\n');
+            if (fs.existsSync('quality-reports/quality-report.txt')) {
+              const qualityReport = fs.readFileSync('quality-reports/quality-report.txt', 'utf8');
+              const lines = qualityReport.split('\n');
               const summaryLines = lines.filter(line => 
-                line.includes('Overall Quality Score') || 
-                line.includes('Successfully analyzed') ||
-                line.includes('Found') && line.includes('issues')
+                line.includes('总体评分:') || 
+                line.includes('总体状态:') ||
+                line.includes('TypeScript:') ||
+                line.includes('ESLint:') ||
+                line.includes('测试覆盖率:')
               );
               
               if (summaryLines.length > 0) {
-                comment += '### Quality Detection Results\n';
+                comment += '### 质量检查结果\n';
                 summaryLines.forEach(line => {
                   comment += `- ${line.trim()}\n`;
                 });
@@ -159,11 +151,11 @@ jobs:
       run: |
         echo "🚪 Running Quality Gate Check..."
         
-        # Run quality detection and capture output
-        npm run quality:detection-demo > quality-output.txt 2>&1 || true
+        # Run quality check and capture output
+        npm run quality:check > quality-output.txt 2>&1 || true
         
         # Extract quality score
-        QUALITY_SCORE=$(grep -o "Overall Quality Score: [0-9.]*" quality-output.txt | grep -o "[0-9.]*" | head -1)
+        QUALITY_SCORE=$(grep -o "总体评分: [0-9.]*" quality-output.txt | grep -o "[0-9.]*" | head -1)
         
         echo "Quality Score: $QUALITY_SCORE"
         
