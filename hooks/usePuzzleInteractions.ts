@@ -610,6 +610,7 @@ export function usePuzzleInteractions({
         const dy = touchY - lastTouchRef.current.y
 
         // 获取当前拖动的拼图
+        if (!state.puzzle) return;
         const piece = state.puzzle[state.draggingPiece.index];
         
         // 使用GameContext提供的统一边界处理函数，确保所有拼图使用完全相同的边界设置
@@ -685,7 +686,7 @@ export function usePuzzleInteractions({
           lastTouchRef.current = { x: touchX, y: touchY };
           
           // 更新磁吸感应
-          if (state.selectedPiece !== null && state.originalPositions) {
+          if (state.selectedPiece !== null && state.originalPositions && state.puzzle) {
             const pieceIndex = state.selectedPiece;
             const piece = state.puzzle[pieceIndex];
             const originalPiece = state.originalPositions[pieceIndex];
