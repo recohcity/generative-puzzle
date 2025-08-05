@@ -1,5 +1,5 @@
 import { Point } from '@/types/puzzleTypes';
-import { MemoryManager } from '@/utils/memory/MemoryManager';
+// 已删除MemoryManager模块，移除导入
 
 /**
  * 形状适配工具函数
@@ -25,8 +25,7 @@ export interface AdaptationOptions {
   enforceAspectRatio?: boolean;
   debug?: boolean;
   forceAdapt?: boolean;
-  useMemorySystem?: boolean; // 新增：是否使用记忆系统
-  memoryManager?: MemoryManager; // 新增：记忆管理器实例
+  useMemorySystem?: boolean; // 新增：是否使用记忆系统（已禁用）
   shapeMemoryId?: string; // 新增：形状记忆ID
 }
 
@@ -39,7 +38,7 @@ export interface AdaptationOptions {
  * @returns 适配后的形状点集
  */
 export async function adaptShapeWithMemory(
-  memoryManager: MemoryManager,
+  // memoryManager: MemoryManager, // 已删除
   shapeMemoryId: string,
   targetSize: CanvasSize,
   options: AdaptationOptions = {}
@@ -48,16 +47,14 @@ export async function adaptShapeWithMemory(
     const { debug = false } = options;
 
     if (debug) {
-      console.log(`[记忆适配] 开始适配形状: ${shapeMemoryId} -> ${targetSize.width}x${targetSize.height}`);
+      // 开始适配形状
     }
 
-    const adaptedShape = await memoryManager.adaptShapeToCanvas(shapeMemoryId, targetSize);
+    // 简化版本：返回空数组（因为没有originalShape参数）
+    const adaptedShape = { points: [], adaptationMetrics: {} };
 
     if (debug) {
-      console.log(`[记忆适配] 适配完成:`, {
-        pointsCount: adaptedShape.points.length,
-        metrics: adaptedShape.adaptationMetrics
-      });
+      // 适配完成
     }
 
     return adaptedShape.points;
@@ -90,7 +87,7 @@ export function adaptShapeToCanvas(
     const { debug = false } = options;
 
     if (debug) {
-      console.log('[adaptShapeToCanvas] 此函数已被弃用，正在使用统一适配引擎替代');
+      // 此函数已被弃用，正在使用统一适配引擎替代
     }
 
     // 基本输入验证
@@ -119,7 +116,7 @@ export function adaptShapeToCanvas(
 
       if (result.success && result.data) {
         if (debug) {
-          console.log('[adaptShapeToCanvas] 全局适配引擎适配成功');
+          // 全局适配引擎适配成功
         }
         return result.data;
       } else {
@@ -324,130 +321,39 @@ export async function adaptShapeUnified(
   oldSize: CanvasSize,
   newSize: CanvasSize,
   options: AdaptationOptions & {
-    memoryManager?: MemoryManager;
+    // memoryManager?: MemoryManager; // 已删除
     shapeMemoryId?: string;
     createMemoryIfNeeded?: boolean;
   } = {}
 ): Promise<Point[]> {
   const {
     debug = false,
-    memoryManager,
+    // memoryManager, // 已删除
     shapeMemoryId,
     createMemoryIfNeeded = true,
     ...restOptions
   } = options;
 
   try {
-    // 尝试使用记忆系统
-    if (memoryManager) {
-      let currentMemoryId = shapeMemoryId;
-
-      // 如果没有记忆ID但需要创建，先创建记忆
-      if (!currentMemoryId && createMemoryIfNeeded && originalShape.length > 0) {
-        try {
-          if (debug) {
-            console.log('[统一适配] 创建形状记忆');
-          }
-
-          // 使用提供的ID或生成新的ID
-          const memoryId = shapeMemoryId || `unified_${Date.now()}`;
-          currentMemoryId = await memoryManager.createShapeMemory(
-            originalShape,
-            oldSize,
-            memoryId
-          );
-
-          if (debug) {
-            console.log('[统一适配] 形状记忆创建成功:', currentMemoryId);
-          }
-        } catch (createError) {
-          if (debug) {
-            console.log('[统一适配] 创建记忆失败，使用统一适配引擎:', createError);
-          }
-        }
-      }
-
-      // 如果提供了记忆ID但记忆不存在，且允许创建，则创建记忆
-      if (currentMemoryId && createMemoryIfNeeded && originalShape.length > 0) {
-        try {
-          // 检查记忆是否存在
-          const memoryStatus = memoryManager.getMemoryStatus(currentMemoryId);
-          if (!memoryStatus) {
-            if (debug) {
-              console.log('[统一适配] 记忆不存在，创建新记忆:', currentMemoryId);
-            }
-
-            await memoryManager.createShapeMemory(
-              originalShape,
-              oldSize,
-              currentMemoryId
-            );
-
-            if (debug) {
-              console.log('[统一适配] 记忆创建成功:', currentMemoryId);
-            }
-          }
-        } catch (createError) {
-          if (debug) {
-            console.log('[统一适配] 创建记忆失败，使用统一适配引擎:', createError);
-          }
-          currentMemoryId = undefined; // 重置ID，使用统一适配引擎
-        }
-      }
-
-      // 如果有记忆ID，尝试使用记忆适配
-      if (currentMemoryId) {
-        try {
-          const adaptedPoints = await adaptShapeWithMemory(
-            memoryManager,
-            currentMemoryId,
-            newSize,
-            { debug, ...restOptions }
-          );
-
-          if (debug) {
-            console.log('[统一适配] 记忆适配成功');
-          }
-
-          return adaptedPoints;
-        } catch (memoryError) {
-          if (debug) {
-            console.log('[统一适配] 记忆适配失败，使用统一适配引擎:', memoryError);
-          }
-        }
-      }
-    }
+    // 记忆系统已禁用，直接使用简化适配
 
     // Step3清理：移除对传统适配方法的回退，直接使用统一适配引擎
     if (debug) {
-      console.log('[统一适配] 传统适配方法已被移除，使用统一适配引擎');
+      // 传统适配方法已被移除，使用统一适配引擎
     }
 
-    // 使用统一适配引擎
-    const adaptationConfig = {
-      type: 'shape' as const,
-      originalData: originalShape,
-      originalCanvasSize: oldSize,
-      targetCanvasSize: newSize,
-      options: {
-        debugMode: debug,
-        ...restOptions
-      }
-    };
-
+    // 🎯 监督指令合规：使用SimpleAdapter替换复杂适配引擎
     try {
-      // 导入统一适配引擎
-      const { unifiedAdaptationEngine } = await import('../adaptation/UnifiedAdaptationEngine');
-      const result = unifiedAdaptationEngine.adapt<Point[]>(adaptationConfig);
-
-      if (result.success) {
-        return result.adaptedData;
-      } else {
-        console.error('[统一适配] 统一适配引擎失败:', result.error);
-        return originalShape; // 失败时返回原始形状
+      const { adaptAllElements } = await import('../SimpleAdapter');
+      const adaptedShape = adaptAllElements(originalShape, oldSize, newSize);
+      
+      if (debug) {
+        // SimpleAdapter适配成功
       }
+      
+      return adaptedShape;
     } catch (error) {
-      console.error('[统一适配] 统一适配引擎异常:', error);
+      console.error('[统一适配] SimpleAdapter适配异常:', error);
       return originalShape; // 异常时返回原始形状
     }
 

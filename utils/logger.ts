@@ -60,7 +60,7 @@ export const loggers = {
 
   // Error recovery logging
   logErrorRecovery: (component: string, error: Error, recoveryAction: string, context?: LogContext) => {
-    loggingService.warn(`Error recovery: ${recoveryAction}`, error, {
+    loggingService.warn(`Error recovery: ${recoveryAction}`, {
       component,
       pattern: LOG_PATTERNS.ERROR_RECOVERY,
       recoveryAction,

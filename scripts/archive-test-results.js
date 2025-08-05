@@ -114,6 +114,11 @@ async function generateReport(suite) {
       totalTestTime: ensureNumber(metrics.totalTestTime),
       avgFps: metrics.fps && metrics.fps.length > 0 ? parseFloat((metrics.fps.reduce((a, b) => a + b, 0) / metrics.fps.length).toFixed(1)) : null,
       memoryUsage: ensureNumber(metrics.memoryUsage),
+      // 新增：适配测试相关字段
+      adaptationPassRate: metrics.adaptationPassRate,
+      adaptationTestCount: ensureNumber(metrics.adaptationTestCount),
+      adaptationPassCount: ensureNumber(metrics.adaptationPassCount),
+      adaptationTestResults: metrics.adaptationTestResults,
     };
     const allScenario = {
       shapeType: metrics.shapeType || null,

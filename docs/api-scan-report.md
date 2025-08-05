@@ -1,17 +1,17 @@
 # API扫描报告
 
-> 生成时间: 2025/7/30 12:59:35
+> 生成时间: 2025/8/5 15:44:55
 > 扫描工具: API变更扫描器 v1.0
 
 ## 📊 统计概览
 
 | 项目 | 数量 | 说明 |
 |------|------|------|
-| API总数 | 190 | 项目中所有导出的API |
-| 已文档化 | 23 | 在API文档中已记录的API |
-| 文档覆盖率 | 12.1% | 文档化程度 |
-| 新增API | 167 | 需要添加到文档的API |
-| 可能删除 | 0 | 文档中存在但代码中找不到 |
+| API总数 | 150 | 项目中所有导出的API |
+| 已文档化 | 32 | 在API文档中已记录的API |
+| 文档覆盖率 | 21.3% | 文档化程度 |
+| 新增API | 121 | 需要添加到文档的API |
+| 可能删除 | 3 | 文档中存在但代码中找不到 |
 
 ## 🆕 新增API详情
 
@@ -169,6 +169,29 @@ export const ERROR_HANDLING = {
 
 ```typescript
 export const LOGGING_CONFIG = {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### PerformanceMetrics
+
+- **类型**: interface
+- **文件**: `src/config/performanceConfig.ts:130`
+- **签名**: `export interface PerformanceMetrics {`
+
+**建议文档结构**:
+```markdown
+### PerformanceMetrics
+
+[添加API描述]
+
+```typescript
+export interface PerformanceMetrics {
 ```
 
 #### 使用示例
@@ -477,29 +500,6 @@ export const DEVICE_THRESHOLDS = {
 ```
 ```
 
-#### IPHONE16_MODELS
-
-- **类型**: constant
-- **文件**: `src/config/deviceConfig.ts:16`
-- **签名**: `export const IPHONE16_MODELS = {`
-
-**建议文档结构**:
-```markdown
-### IPHONE16_MODELS
-
-[添加API描述]
-
-```typescript
-export const IPHONE16_MODELS = {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
 #### DETECTION_CONFIG
 
 - **类型**: constant
@@ -638,29 +638,6 @@ export type iPhone16Model = keyof typeof IPHONE16_MODELS;
 ```
 ```
 
-#### DeviceState
-
-- **类型**: interface
-- **文件**: `src/config/deviceConfig.ts:71`
-- **签名**: `export interface DeviceState {`
-
-**建议文档结构**:
-```markdown
-### DeviceState
-
-[添加API描述]
-
-```typescript
-export interface DeviceState {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
 #### iPhone16Detection
 
 - **类型**: interface
@@ -707,56 +684,10 @@ export interface DeviceLayoutInfo {
 ```
 ```
 
-#### DESKTOP_ADAPTATION
-
-- **类型**: constant
-- **文件**: `src/config/adaptationConfig.ts:7`
-- **签名**: `export const DESKTOP_ADAPTATION = {`
-
-**建议文档结构**:
-```markdown
-### DESKTOP_ADAPTATION
-
-[添加API描述]
-
-```typescript
-export const DESKTOP_ADAPTATION = {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### MOBILE_ADAPTATION
-
-- **类型**: constant
-- **文件**: `src/config/adaptationConfig.ts:26`
-- **签名**: `export const MOBILE_ADAPTATION = {`
-
-**建议文档结构**:
-```markdown
-### MOBILE_ADAPTATION
-
-[添加API描述]
-
-```typescript
-export const MOBILE_ADAPTATION = {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
 #### IPHONE16_OPTIMIZATION
 
 - **类型**: constant
-- **文件**: `src/config/adaptationConfig.ts:52`
+- **文件**: `src/config/adaptationConfig.ts:47`
 - **签名**: `export const IPHONE16_OPTIMIZATION = {`
 
 **建议文档结构**:
@@ -779,7 +710,7 @@ export const IPHONE16_OPTIMIZATION = {
 #### HIGH_RESOLUTION_MOBILE
 
 - **类型**: constant
-- **文件**: `src/config/adaptationConfig.ts:82`
+- **文件**: `src/config/adaptationConfig.ts:58`
 - **签名**: `export const HIGH_RESOLUTION_MOBILE = {`
 
 **建议文档结构**:
@@ -802,7 +733,7 @@ export const HIGH_RESOLUTION_MOBILE = {
 #### CANVAS_SAFETY
 
 - **类型**: constant
-- **文件**: `src/config/adaptationConfig.ts:111`
+- **文件**: `src/config/adaptationConfig.ts:68`
 - **签名**: `export const CANVAS_SAFETY = {`
 
 **建议文档结构**:
@@ -822,10 +753,33 @@ export const CANVAS_SAFETY = {
 ```
 ```
 
+#### AdaptationContext
+
+- **类型**: interface
+- **文件**: `src/config/adaptationConfig.ts:78`
+- **签名**: `export interface AdaptationContext {`
+
+**建议文档结构**:
+```markdown
+### AdaptationContext
+
+[添加API描述]
+
+```typescript
+export interface AdaptationContext {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
 #### AdaptationResult
 
 - **类型**: interface
-- **文件**: `src/config/adaptationConfig.ts:127`
+- **文件**: `src/config/adaptationConfig.ts:86`
 - **签名**: `export interface AdaptationResult<T> {`
 
 **建议文档结构**:
@@ -848,7 +802,7 @@ export interface AdaptationResult<T> {
 #### CanvasSizeResult
 
 - **类型**: interface
-- **文件**: `src/config/adaptationConfig.ts:139`
+- **文件**: `src/config/adaptationConfig.ts:97`
 - **签名**: `export interface CanvasSizeResult {`
 
 **建议文档结构**:
@@ -868,22 +822,22 @@ export interface CanvasSizeResult {
 ```
 ```
 
-### 工具函数API
+### 核心管理器API
 
-#### PerformanceMetrics
+#### ValidationRule
 
 - **类型**: interface
-- **文件**: `utils/memory/MemoryManager.ts:60`
-- **签名**: `export interface PerformanceMetrics {`
+- **文件**: `core/ValidationService.ts:9`
+- **签名**: `export interface ValidationRule<T = any> {`
 
 **建议文档结构**:
 ```markdown
-### PerformanceMetrics
+### ValidationRule
 
 [添加API描述]
 
 ```typescript
-export interface PerformanceMetrics {
+export interface ValidationRule<T = any> {
 ```
 
 #### 使用示例
@@ -893,20 +847,20 @@ export interface PerformanceMetrics {
 ```
 ```
 
-#### AdaptationContext
+#### ValidationSchema
 
 - **类型**: interface
-- **文件**: `utils/memory/AdaptationRules.ts:14`
-- **签名**: `export interface AdaptationContext {`
+- **文件**: `core/ValidationService.ts:16`
+- **签名**: `export interface ValidationSchema {`
 
 **建议文档结构**:
 ```markdown
-### AdaptationContext
+### ValidationSchema
 
 [添加API描述]
 
 ```typescript
-export interface AdaptationContext {
+export interface ValidationSchema {
 ```
 
 #### 使用示例
@@ -916,20 +870,89 @@ export interface AdaptationContext {
 ```
 ```
 
-#### AdaptationEngine
+#### ValidationResult
+
+- **类型**: interface
+- **文件**: `core/ValidationService.ts:20`
+- **签名**: `export interface ValidationResult {`
+
+**建议文档结构**:
+```markdown
+### ValidationResult
+
+[添加API描述]
+
+```typescript
+export interface ValidationResult {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### ValidationError
+
+- **类型**: interface
+- **文件**: `core/ValidationService.ts:26`
+- **签名**: `export interface ValidationError {`
+
+**建议文档结构**:
+```markdown
+### ValidationError
+
+[添加API描述]
+
+```typescript
+export interface ValidationError {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### ValidationWarning
+
+- **类型**: interface
+- **文件**: `core/ValidationService.ts:33`
+- **签名**: `export interface ValidationWarning {`
+
+**建议文档结构**:
+```markdown
+### ValidationWarning
+
+[添加API描述]
+
+```typescript
+export interface ValidationWarning {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### ResizeObserverManager
 
 - **类型**: class
-- **文件**: `utils/memory/AdaptationEngine.ts:63`
-- **签名**: `export class AdaptationEngine {`
+- **文件**: `core/ResizeObserverManager.ts:19`
+- **签名**: `export class ResizeObserverManager {`
 
 **建议文档结构**:
 ```markdown
-### AdaptationEngine
+### ResizeObserverManager
 
 [添加API描述]
 
 ```typescript
-export class AdaptationEngine {
+export class ResizeObserverManager {
 ```
 
 #### 使用示例
@@ -939,20 +962,20 @@ export class AdaptationEngine {
 ```
 ```
 
-#### ShapeTransformation
+#### LogContext
 
 - **类型**: interface
-- **文件**: `utils/puzzlePieceAdaptationUtils.ts:14`
-- **签名**: `export interface ShapeTransformation {`
+- **文件**: `core/LoggingService.ts:15`
+- **签名**: `export interface LogContext {`
 
 **建议文档结构**:
 ```markdown
-### ShapeTransformation
+### LogContext
 
 [添加API描述]
 
 ```typescript
-export interface ShapeTransformation {
+export interface LogContext {
 ```
 
 #### 使用示例
@@ -962,20 +985,20 @@ export interface ShapeTransformation {
 ```
 ```
 
-#### PuzzlePieceAdaptationResult
+#### LogEntry
 
 - **类型**: interface
-- **文件**: `utils/puzzlePieceAdaptationUtils.ts:25`
-- **签名**: `export interface PuzzlePieceAdaptationResult {`
+- **文件**: `core/LoggingService.ts:24`
+- **签名**: `export interface LogEntry {`
 
 **建议文档结构**:
 ```markdown
-### PuzzlePieceAdaptationResult
+### LogEntry
 
 [添加API描述]
 
 ```typescript
-export interface PuzzlePieceAdaptationResult {
+export interface LogEntry {
 ```
 
 #### 使用示例
@@ -985,20 +1008,298 @@ export interface PuzzlePieceAdaptationResult {
 ```
 ```
 
-#### validateTransformation
+#### LoggingConfig
+
+- **类型**: interface
+- **文件**: `core/LoggingService.ts:32`
+- **签名**: `export interface LoggingConfig {`
+
+**建议文档结构**:
+```markdown
+### LoggingConfig
+
+[添加API描述]
+
+```typescript
+export interface LoggingConfig {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### EventScheduler
+
+- **类型**: class
+- **文件**: `core/EventScheduler.ts:24`
+- **签名**: `export class EventScheduler {`
+
+**建议文档结构**:
+```markdown
+### EventScheduler
+
+[添加API描述]
+
+```typescript
+export class EventScheduler {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### EventManager
+
+- **类型**: class
+- **文件**: `core/EventManager.ts:61`
+- **签名**: `export class EventManager {`
+
+**建议文档结构**:
+```markdown
+### EventManager
+
+[添加API描述]
+
+```typescript
+export class EventManager {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### MonitoringConfig
+
+- **类型**: interface
+- **文件**: `core/ErrorMonitoringService.ts:9`
+- **签名**: `export interface MonitoringConfig {`
+
+**建议文档结构**:
+```markdown
+### MonitoringConfig
+
+[添加API描述]
+
+```typescript
+export interface MonitoringConfig {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### ErrorMetrics
+
+- **类型**: interface
+- **文件**: `core/ErrorMonitoringService.ts:20`
+- **签名**: `export interface ErrorMetrics {`
+
+**建议文档结构**:
+```markdown
+### ErrorMetrics
+
+[添加API描述]
+
+```typescript
+export interface ErrorMetrics {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### AlertCondition
+
+- **类型**: interface
+- **文件**: `core/ErrorMonitoringService.ts:29`
+- **签名**: `export interface AlertCondition {`
+
+**建议文档结构**:
+```markdown
+### AlertCondition
+
+[添加API描述]
+
+```typescript
+export interface AlertCondition {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### MonitoringAlert
+
+- **类型**: interface
+- **文件**: `core/ErrorMonitoringService.ts:39`
+- **签名**: `export interface MonitoringAlert {`
+
+**建议文档结构**:
+```markdown
+### MonitoringAlert
+
+[添加API描述]
+
+```typescript
+export interface MonitoringAlert {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### ErrorContext
+
+- **类型**: interface
+- **文件**: `core/ErrorHandlingService.ts:28`
+- **签名**: `export interface ErrorContext {`
+
+**建议文档结构**:
+```markdown
+### ErrorContext
+
+[添加API描述]
+
+```typescript
+export interface ErrorContext {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### ErrorReport
+
+- **类型**: interface
+- **文件**: `core/ErrorHandlingService.ts:39`
+- **签名**: `export interface ErrorReport {`
+
+**建议文档结构**:
+```markdown
+### ErrorReport
+
+[添加API描述]
+
+```typescript
+export interface ErrorReport {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### ErrorRecoveryStrategy
+
+- **类型**: interface
+- **文件**: `core/ErrorHandlingService.ts:53`
+- **签名**: `export interface ErrorRecoveryStrategy {`
+
+**建议文档结构**:
+```markdown
+### ErrorRecoveryStrategy
+
+[添加API描述]
+
+```typescript
+export interface ErrorRecoveryStrategy {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### ErrorHandlingConfig
+
+- **类型**: interface
+- **文件**: `core/ErrorHandlingService.ts:61`
+- **签名**: `export interface ErrorHandlingConfig {`
+
+**建议文档结构**:
+```markdown
+### ErrorHandlingConfig
+
+[添加API描述]
+
+```typescript
+export interface ErrorHandlingConfig {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### DeviceLayoutManager
+
+- **类型**: class
+- **文件**: `core/DeviceLayoutManager.ts:17`
+- **签名**: `export class DeviceLayoutManager {`
+
+**建议文档结构**:
+```markdown
+### DeviceLayoutManager
+
+[添加API描述]
+
+```typescript
+export class DeviceLayoutManager {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+### React Hooks API
+
+#### useResponsiveCanvasSizing
 
 - **类型**: function
-- **文件**: `utils/puzzlePieceAdaptationUtils.ts:160`
-- **签名**: `export function validateTransformation(transformation: ShapeTransformation): boolean {`
+- **文件**: `hooks/useResponsiveCanvasSizing.ts:23`
+- **签名**: `export function useResponsiveCanvasSizing({`
 
 **建议文档结构**:
 ```markdown
-### validateTransformation
+### useResponsiveCanvasSizing
 
 [添加API描述]
 
 ```typescript
-export function validateTransformation(transformation: ShapeTransformation): boolean {
+export function useResponsiveCanvasSizing({
 ```
 
 #### 使用示例
@@ -1008,20 +1309,66 @@ export function validateTransformation(transformation: ShapeTransformation): boo
 ```
 ```
 
-#### adaptPuzzlePiecesBatch
+#### MobileEnhancementState
+
+- **类型**: interface
+- **文件**: `hooks/useMobileEnhancements.ts:18`
+- **签名**: `export interface MobileEnhancementState {`
+
+**建议文档结构**:
+```markdown
+### MobileEnhancementState
+
+[添加API描述]
+
+```typescript
+export interface MobileEnhancementState {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### MobileEnhancementCallbacks
+
+- **类型**: interface
+- **文件**: `hooks/useMobileEnhancements.ts:45`
+- **签名**: `export interface MobileEnhancementCallbacks {`
+
+**建议文档结构**:
+```markdown
+### MobileEnhancementCallbacks
+
+[添加API描述]
+
+```typescript
+export interface MobileEnhancementCallbacks {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### useMobileEnhancements
 
 - **类型**: function
-- **文件**: `utils/puzzlePieceAdaptationUtils.ts:284`
-- **签名**: `export function adaptPuzzlePiecesBatch( pieces: PuzzlePiece[], transformation: ShapeTransformation, canvasCenter: Point ): PuzzlePieceAdaptationResult {`
+- **文件**: `hooks/useMobileEnhancements.ts:59`
+- **签名**: `export function useMobileEnhancements(callbacks: MobileEnhancementCallbacks = {}) {`
 
 **建议文档结构**:
 ```markdown
-### adaptPuzzlePiecesBatch
+### useMobileEnhancements
 
 [添加API描述]
 
 ```typescript
-export function adaptPuzzlePiecesBatch( pieces: PuzzlePiece[], transformation: ShapeTransformation, canvasCenter: Point ): PuzzlePieceAdaptationResult {
+export function useMobileEnhancements(callbacks: MobileEnhancementCallbacks = {}) {
 ```
 
 #### 使用示例
@@ -1031,20 +1378,20 @@ export function adaptPuzzlePiecesBatch( pieces: PuzzlePiece[], transformation: S
 ```
 ```
 
-#### safeAdaptPuzzlePieces
+#### useKeyboardDetection
 
 - **类型**: function
-- **文件**: `utils/puzzlePieceAdaptationUtils.ts:307`
-- **签名**: `export function safeAdaptPuzzlePieces( pieces: PuzzlePiece[], originalShape: Point[], adaptedShape: Point[], originalCanvasSize?: { width: number; height: number },`
+- **文件**: `hooks/useMobileEnhancements.ts:329`
+- **签名**: `export function useKeyboardDetection() {`
 
 **建议文档结构**:
 ```markdown
-### safeAdaptPuzzlePieces
+### useKeyboardDetection
 
 [添加API描述]
 
 ```typescript
-export function safeAdaptPuzzlePieces( pieces: PuzzlePiece[], originalShape: Point[], adaptedShape: Point[], originalCanvasSize?: { width: number; height: number },
+export function useKeyboardDetection() {
 ```
 
 #### 使用示例
@@ -1054,20 +1401,20 @@ export function safeAdaptPuzzlePieces( pieces: PuzzlePiece[], originalShape: Poi
 ```
 ```
 
-#### adaptPuzzlePiecesAbsolute
+#### useNetworkStatus
 
 - **类型**: function
-- **文件**: `utils/puzzlePieceAdaptationUtils.ts:417`
-- **签名**: `export function adaptPuzzlePiecesAbsolute( originalPieces: PuzzlePiece[], originalCanvasSize: { width: number; height: number }, currentCanvasSize: { width: number; height: number } ): PuzzlePiece[] {`
+- **文件**: `hooks/useMobileEnhancements.ts:342`
+- **签名**: `export function useNetworkStatus() {`
 
 **建议文档结构**:
 ```markdown
-### adaptPuzzlePiecesAbsolute
+### useNetworkStatus
 
 [添加API描述]
 
 ```typescript
-export function adaptPuzzlePiecesAbsolute( originalPieces: PuzzlePiece[], originalCanvasSize: { width: number; height: number }, currentCanvasSize: { width: number; height: number } ): PuzzlePiece[] {
+export function useNetworkStatus() {
 ```
 
 #### 使用示例
@@ -1077,20 +1424,20 @@ export function adaptPuzzlePiecesAbsolute( originalPieces: PuzzlePiece[], origin
 ```
 ```
 
-#### adaptScatteredPuzzlePiecesAbsolute
+#### useDeviceRotation
 
 - **类型**: function
-- **文件**: `utils/puzzlePieceAdaptationUtils.ts:485`
-- **签名**: `export function adaptScatteredPuzzlePiecesAbsolute( currentPieces: PuzzlePiece[], originalPositions: PuzzlePiece[], originalCanvasSize: { width: number; height: number }, currentCanvasSize: { width: number; height: number }`
+- **文件**: `hooks/useMobileEnhancements.ts:354`
+- **签名**: `export function useDeviceRotation(callbacks?: {`
 
 **建议文档结构**:
 ```markdown
-### adaptScatteredPuzzlePiecesAbsolute
+### useDeviceRotation
 
 [添加API描述]
 
 ```typescript
-export function adaptScatteredPuzzlePiecesAbsolute( currentPieces: PuzzlePiece[], originalPositions: PuzzlePiece[], originalCanvasSize: { width: number; height: number }, currentCanvasSize: { width: number; height: number }
+export function useDeviceRotation(callbacks?: {
 ```
 
 #### 使用示例
@@ -1099,6 +1446,192 @@ export function adaptScatteredPuzzlePiecesAbsolute( currentPieces: PuzzlePiece[]
 // [添加使用示例]
 ```
 ```
+
+#### UseMobileAdaptationOptions
+
+- **类型**: interface
+- **文件**: `hooks/useMobileAdaptation.ts:17`
+- **签名**: `export interface UseMobileAdaptationOptions extends MobileEnhancementCallbacks {`
+
+**建议文档结构**:
+```markdown
+### UseMobileAdaptationOptions
+
+[添加API描述]
+
+```typescript
+export interface UseMobileAdaptationOptions extends MobileEnhancementCallbacks {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### MobileAdaptationHookResult
+
+- **类型**: interface
+- **文件**: `hooks/useMobileAdaptation.ts:25`
+- **签名**: `export interface MobileAdaptationHookResult {`
+
+**建议文档结构**:
+```markdown
+### MobileAdaptationHookResult
+
+[添加API描述]
+
+```typescript
+export interface MobileAdaptationHookResult {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### useMobileAdaptationProvider
+
+- **类型**: function
+- **文件**: `hooks/useMobileAdaptation.ts:139`
+- **签名**: `export function useMobileAdaptationProvider() {`
+
+**建议文档结构**:
+```markdown
+### useMobileAdaptationProvider
+
+[添加API描述]
+
+```typescript
+export function useMobileAdaptationProvider() {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### useOrientation
+
+- **类型**: function
+- **文件**: `hooks/useMobileAdaptation.ts:177`
+- **签名**: `export function useOrientation() {`
+
+**建议文档结构**:
+```markdown
+### useOrientation
+
+[添加API描述]
+
+```typescript
+export function useOrientation() {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### useKeyboard
+
+- **类型**: function
+- **文件**: `hooks/useMobileAdaptation.ts:196`
+- **签名**: `export function useKeyboard() {`
+
+**建议文档结构**:
+```markdown
+### useKeyboard
+
+[添加API描述]
+
+```typescript
+export function useKeyboard() {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### useDeviceDetection
+
+- **类型**: function
+- **文件**: `hooks/useDeviceDetection.ts:140`
+- **签名**: `export function useDeviceDetection(): DeviceDetectionState {`
+
+**建议文档结构**:
+```markdown
+### useDeviceDetection
+
+[添加API描述]
+
+```typescript
+export function useDeviceDetection(): DeviceDetectionState {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### useDebugToggle
+
+- **类型**: function
+- **文件**: `hooks/useDebugToggle.ts:8`
+- **签名**: `export function useDebugToggle(): [boolean, (v: boolean) => void] {`
+
+**建议文档结构**:
+```markdown
+### useDebugToggle
+
+[添加API描述]
+
+```typescript
+export function useDebugToggle(): [boolean, (v: boolean) => void] {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### reducer
+
+- **类型**: constant
+- **文件**: `hooks/use-toast.ts:77`
+- **签名**: `export const reducer = (state: State, action: Action): State => {`
+
+**建议文档结构**:
+```markdown
+### reducer
+
+[添加API描述]
+
+```typescript
+export const reducer = (state: State, action: Action): State => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+### 工具函数API
 
 #### deviceLogger
 
@@ -1114,52 +1647,6 @@ export function adaptScatteredPuzzlePiecesAbsolute( currentPieces: PuzzlePiece[]
 
 ```typescript
 export const deviceLogger = loggingService.createLogger(COMPONENT_CONTEXTS.DEVICE_MANAGER);
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### adaptationLogger
-
-- **类型**: constant
-- **文件**: `utils/logger.ts:19`
-- **签名**: `export const adaptationLogger = loggingService.createLogger(COMPONENT_CONTEXTS.ADAPTATION_ENGINE);`
-
-**建议文档结构**:
-```markdown
-### adaptationLogger
-
-[添加API描述]
-
-```typescript
-export const adaptationLogger = loggingService.createLogger(COMPONENT_CONTEXTS.ADAPTATION_ENGINE);
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### puzzleLogger
-
-- **类型**: constant
-- **文件**: `utils/logger.ts:20`
-- **签名**: `export const puzzleLogger = loggingService.createLogger(COMPONENT_CONTEXTS.PUZZLE_SERVICE);`
-
-**建议文档结构**:
-```markdown
-### puzzleLogger
-
-[添加API描述]
-
-```typescript
-export const puzzleLogger = loggingService.createLogger(COMPONENT_CONTEXTS.PUZZLE_SERVICE);
 ```
 
 #### 使用示例
@@ -1206,29 +1693,6 @@ export const canvasLogger = loggingService.createLogger(COMPONENT_CONTEXTS.CANVA
 
 ```typescript
 export const eventLogger = loggingService.createLogger(COMPONENT_CONTEXTS.EVENT_MANAGER);
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### useCanvasLogger
-
-- **类型**: constant
-- **文件**: `utils/logger.ts:23`
-- **签名**: `export const useCanvasLogger = loggingService.createLogger(COMPONENT_CONTEXTS.USE_CANVAS);`
-
-**建议文档结构**:
-```markdown
-### useCanvasLogger
-
-[添加API描述]
-
-```typescript
-export const useCanvasLogger = loggingService.createLogger(COMPONENT_CONTEXTS.USE_CANVAS);
 ```
 
 #### 使用示例
@@ -1344,29 +1808,6 @@ export const loggers = {
 
 ```typescript
 export const performanceLogger = {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### debugLogger
-
-- **类型**: constant
-- **文件**: `utils/logger.ts:138`
-- **签名**: `export const debugLogger = {`
-
-**建议文档结构**:
-```markdown
-### debugLogger
-
-[添加API描述]
-
-```typescript
-export const debugLogger = {
 ```
 
 #### 使用示例
@@ -1586,7 +2027,7 @@ export interface CanvasSize {
 #### AdaptationOptions
 
 - **类型**: interface
-- **文件**: `utils/memory/AdaptationEngine.ts:52`
+- **文件**: `utils/shape/shapeAdaptationUtils.ts:22`
 - **签名**: `export interface AdaptationOptions {`
 
 **建议文档结构**:
@@ -1609,7 +2050,7 @@ export interface AdaptationOptions {
 #### adaptShapeToCanvas
 
 - **类型**: function
-- **文件**: `utils/shape/shapeAdaptationUtils.ts:83`
+- **文件**: `utils/shape/shapeAdaptationUtils.ts:80`
 - **签名**: `export function adaptShapeToCanvas( originalShape: Point[], oldSize: CanvasSize, newSize: CanvasSize, options: AdaptationOptions = {}`
 
 **建议文档结构**:
@@ -1629,10 +2070,33 @@ export function adaptShapeToCanvas( originalShape: Point[], oldSize: CanvasSize,
 ```
 ```
 
+#### scaleShapeToSize
+
+- **类型**: function
+- **文件**: `utils/shape/shapeAdaptationUtils.ts:208`
+- **签名**: `export function scaleShapeToSize( shape: Point[], targetSize: number, canvasSize: CanvasSize ): Point[] {`
+
+**建议文档结构**:
+```markdown
+### scaleShapeToSize
+
+[添加API描述]
+
+```typescript
+export function scaleShapeToSize( shape: Point[], targetSize: number, canvasSize: CanvasSize ): Point[] {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
 #### isShapeInBounds
 
 - **类型**: function
-- **文件**: `utils/shape/shapeAdaptationUtils.ts:283`
+- **文件**: `utils/shape/shapeAdaptationUtils.ts:280`
 - **签名**: `export function isShapeInBounds( shape: Point[], canvasSize: CanvasSize, margin: number = 0 ): boolean {`
 
 **建议文档结构**:
@@ -1758,6 +2222,29 @@ export const lineIntersection = (p1: Point, p2: Point, p3: Point, p4: Point): Po
 
 ```typescript
 export const distanceToLine = (point: Point, line: CutLine): number => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### isPointInPolygon
+
+- **类型**: function
+- **文件**: `utils/geometry/puzzleGeometry.ts:17`
+- **签名**: `export function isPointInPolygon(x: number, y: number, polygon: Point[]): boolean {`
+
+**建议文档结构**:
+```markdown
+### isPointInPolygon
+
+[添加API描述]
+
+```typescript
+export function isPointInPolygon(x: number, y: number, polygon: Point[]): boolean {
 ```
 
 #### 使用示例
@@ -1928,29 +2415,6 @@ export const playButtonClickSound = async (): Promise<void> => {
 ```
 ```
 
-#### playPieceSelectSound
-
-- **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:114`
-- **签名**: `export const playPieceSelectSound = async (): Promise<void> => {`
-
-**建议文档结构**:
-```markdown
-### playPieceSelectSound
-
-[添加API描述]
-
-```typescript
-export const playPieceSelectSound = async (): Promise<void> => {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
 #### playPieceSnapSound
 
 - **类型**: constant
@@ -1965,52 +2429,6 @@ export const playPieceSelectSound = async (): Promise<void> => {
 
 ```typescript
 export const playPieceSnapSound = async (): Promise<void> => {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### playPuzzleCompletedSound
-
-- **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:168`
-- **签名**: `export const playPuzzleCompletedSound = async (): Promise<void> => {`
-
-**建议文档结构**:
-```markdown
-### playPuzzleCompletedSound
-
-[添加API描述]
-
-```typescript
-export const playPuzzleCompletedSound = async (): Promise<void> => {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### playRotateSound
-
-- **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:203`
-- **签名**: `export const playRotateSound = async (): Promise<void> => {`
-
-**建议文档结构**:
-```markdown
-### playRotateSound
-
-[添加API描述]
-
-```typescript
-export const playRotateSound = async (): Promise<void> => {
 ```
 
 #### 使用示例
@@ -2066,29 +2484,6 @@ export interface Point {
 ```
 ```
 
-#### drawShape
-
-- **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:28`
-- **签名**: `export const drawShape = (ctx: CanvasRenderingContext2D, shape: Point[], shapeType: string) => {`
-
-**建议文档结构**:
-```markdown
-### drawShape
-
-[添加API描述]
-
-```typescript
-export const drawShape = (ctx: CanvasRenderingContext2D, shape: Point[], shapeType: string) => {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
 #### drawPiece
 
 - **类型**: constant
@@ -2112,33 +2507,10 @@ export const drawPiece = (
 ```
 ```
 
-#### drawHintOutline
-
-- **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:286`
-- **签名**: `export const drawHintOutline = (`
-
-**建议文档结构**:
-```markdown
-### drawHintOutline
-
-[添加API描述]
-
-```typescript
-export const drawHintOutline = (
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
 #### drawCompletionEffect
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:352`
+- **文件**: `utils/rendering/puzzleDrawing.ts:347`
 - **签名**: `export const drawCompletionEffect = (`
 
 **建议文档结构**:
@@ -2158,33 +2530,10 @@ export const drawCompletionEffect = (
 ```
 ```
 
-#### drawCanvasBorderLine
-
-- **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:416`
-- **签名**: `export const drawCanvasBorderLine = (`
-
-**建议文档结构**:
-```markdown
-### drawCanvasBorderLine
-
-[添加API描述]
-
-```typescript
-export const drawCanvasBorderLine = (
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
 #### drawDistributionArea
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:442`
+- **文件**: `utils/rendering/puzzleDrawing.ts:437`
 - **签名**: `export const drawDistributionArea = (`
 
 **建议文档结构**:
@@ -2204,20 +2553,66 @@ export const drawDistributionArea = (
 ```
 ```
 
-#### drawPuzzle
+#### drawCanvasCenter
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:481`
-- **签名**: `export const drawPuzzle = (`
+- **文件**: `utils/rendering/puzzleDrawing.ts:700`
+- **签名**: `export const drawCanvasCenter = (`
 
 **建议文档结构**:
 ```markdown
-### drawPuzzle
+### drawCanvasCenter
 
 [添加API描述]
 
 ```typescript
-export const drawPuzzle = (
+export const drawCanvasCenter = (
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### drawShapeCenter
+
+- **类型**: constant
+- **文件**: `utils/rendering/puzzleDrawing.ts:734`
+- **签名**: `export const drawShapeCenter = (`
+
+**建议文档结构**:
+```markdown
+### drawShapeCenter
+
+[添加API描述]
+
+```typescript
+export const drawShapeCenter = (
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### appendAlpha
+
+- **类型**: function
+- **文件**: `utils/rendering/colorUtils.ts:13`
+- **签名**: `export function appendAlpha(color: string, alpha: number = 1): string {`
+
+**建议文档结构**:
+```markdown
+### appendAlpha
+
+[添加API描述]
+
+```typescript
+export function appendAlpha(color: string, alpha: number = 1): string {
 ```
 
 #### 使用示例
@@ -2264,29 +2659,6 @@ export const renderOptimizer = RenderOptimizer.getInstance();
 
 ```typescript
 export const splitPolygon = (shape: Point[], cuts: CutLine[]): Point[][] => {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### splitPieceWithLine
-
-- **类型**: constant
-- **文件**: `utils/puzzle/puzzleUtils.ts:146`
-- **签名**: `export const splitPieceWithLine = (piece: Point[], cut: CutLine, recursionDepth: number = 0): Point[][] => {`
-
-**建议文档结构**:
-```markdown
-### splitPieceWithLine
-
-[添加API描述]
-
-```typescript
-export const splitPieceWithLine = (piece: Point[], cut: CutLine, recursionDepth: number = 0): Point[][] => {
 ```
 
 #### 使用示例
@@ -2365,135 +2737,20 @@ export const generateCuts = (shape: Point[], count: number, type: "straight" | "
 ```
 ```
 
-#### ScatterPuzzle
-
-- **类型**: class
-- **文件**: `utils/puzzle/ScatterPuzzle.ts:37`
-- **签名**: `export class ScatterPuzzle {`
-
-**建议文档结构**:
-```markdown
-### ScatterPuzzle
-
-[添加API描述]
-
-```typescript
-export class ScatterPuzzle {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### PuzzleGenerator
-
-- **类型**: class
-- **文件**: `utils/puzzle/PuzzleGenerator.ts:18`
-- **签名**: `export class PuzzleGenerator {`
-
-**建议文档结构**:
-```markdown
-### PuzzleGenerator
-
-[添加API描述]
-
-```typescript
-export class PuzzleGenerator {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### optimizationAdapter
-
-- **类型**: constant
-- **文件**: `utils/performance/OptimizationAdapter.ts:161`
-- **签名**: `export const optimizationAdapter = OptimizationAdapter.getInstance();`
-
-**建议文档结构**:
-```markdown
-### optimizationAdapter
-
-[添加API描述]
-
-```typescript
-export const optimizationAdapter = OptimizationAdapter.getInstance();
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### memoryManager
-
-- **类型**: constant
-- **文件**: `utils/performance/MemoryManager.ts:114`
-- **签名**: `export const memoryManager = MemoryManager.getInstance();`
-
-**建议文档结构**:
-```markdown
-### memoryManager
-
-[添加API描述]
-
-```typescript
-export const memoryManager = MemoryManager.getInstance();
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### eventManager
-
-- **类型**: constant
-- **文件**: `utils/performance/EventManager.ts:142`
-- **签名**: `export const eventManager = EventManager.getInstance();`
-
-**建议文档结构**:
-```markdown
-### eventManager
-
-[添加API描述]
-
-```typescript
-export const eventManager = EventManager.getInstance();
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### generateChecksum
+#### rotatePoint
 
 - **类型**: function
-- **文件**: `utils/memory/memoryUtils.ts:26`
-- **签名**: `export function generateChecksum(topology: ShapeTopology): string {`
+- **文件**: `utils/geometry/puzzleGeometry.ts:62`
+- **签名**: `export function rotatePoint(x: number, y: number, cx: number, cy: number, angle: number): {x: number, y: number} {`
 
 **建议文档结构**:
 ```markdown
-### generateChecksum
+### rotatePoint
 
 [添加API描述]
 
 ```typescript
-export function generateChecksum(topology: ShapeTopology): string {
+export function rotatePoint(x: number, y: number, cx: number, cy: number, angle: number): {x: number, y: number} {
 ```
 
 #### 使用示例
@@ -2503,20 +2760,20 @@ export function generateChecksum(topology: ShapeTopology): string {
 ```
 ```
 
-#### validateMemoryIntegrity
+#### calculateAngle
 
 - **类型**: function
-- **文件**: `utils/memory/memoryUtils.ts:63`
-- **签名**: `export function validateMemoryIntegrity(memory: ShapeMemory): boolean {`
+- **文件**: `utils/geometry/puzzleGeometry.ts:79`
+- **签名**: `export function calculateAngle(x1: number, y1: number, x2: number, y2: number): number {`
 
 **建议文档结构**:
 ```markdown
-### validateMemoryIntegrity
+### calculateAngle
 
 [添加API描述]
 
 ```typescript
-export function validateMemoryIntegrity(memory: ShapeMemory): boolean {
+export function calculateAngle(x1: number, y1: number, x2: number, y2: number): number {
 ```
 
 #### 使用示例
@@ -2526,1335 +2783,20 @@ export function validateMemoryIntegrity(memory: ShapeMemory): boolean {
 ```
 ```
 
-#### extractTopologyFromPoints
+#### calculatePieceBounds
 
 - **类型**: function
-- **文件**: `utils/memory/memoryUtils.ts:110`
-- **签名**: `export function extractTopologyFromPoints(points: Point[], canvasSize: { width: number; height: number }): ShapeTopology {`
+- **文件**: `utils/geometry/puzzleGeometry.ts:83`
+- **签名**: `export function calculatePieceBounds(piece: { points: Point[] }): { minX: number; maxX: number; minY: number; maxY: number; width: number; height: number; centerX: number; centerY: number } {`
 
 **建议文档结构**:
 ```markdown
-### extractTopologyFromPoints
+### calculatePieceBounds
 
 [添加API描述]
 
 ```typescript
-export function extractTopologyFromPoints(points: Point[], canvasSize: { width: number; height: number }): ShapeTopology {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### topologyToPoints
-
-- **类型**: function
-- **文件**: `utils/memory/memoryUtils.ts:130`
-- **签名**: `export function topologyToPoints( topology: ShapeTopology, targetCanvasSize: { width: number; height: number }, targetShapeSize: { width: number; height: number } ): Point[] {`
-
-**建议文档结构**:
-```markdown
-### topologyToPoints
-
-[添加API描述]
-
-```typescript
-export function topologyToPoints( topology: ShapeTopology, targetCanvasSize: { width: number; height: number }, targetShapeSize: { width: number; height: number } ): Point[] {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### ExtractionOptions
-
-- **类型**: interface
-- **文件**: `utils/memory/TopologyExtractor.ts:21`
-- **签名**: `export interface ExtractionOptions {`
-
-**建议文档结构**:
-```markdown
-### ExtractionOptions
-
-[添加API描述]
-
-```typescript
-export interface ExtractionOptions {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### TopologyExtractor
-
-- **类型**: class
-- **文件**: `utils/memory/TopologyExtractor.ts:32`
-- **签名**: `export class TopologyExtractor {`
-
-**建议文档结构**:
-```markdown
-### TopologyExtractor
-
-[添加API描述]
-
-```typescript
-export class TopologyExtractor {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### MemoryStorage
-
-- **类型**: class
-- **文件**: `utils/memory/MemoryStorage.ts:22`
-- **签名**: `export class MemoryStorage {`
-
-**建议文档结构**:
-```markdown
-### MemoryStorage
-
-[添加API描述]
-
-```typescript
-export class MemoryStorage {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### MemoryManagerConfig
-
-- **类型**: interface
-- **文件**: `utils/memory/MemoryManager.ts:30`
-- **签名**: `export interface MemoryManagerConfig {`
-
-**建议文档结构**:
-```markdown
-### MemoryManagerConfig
-
-[添加API描述]
-
-```typescript
-export interface MemoryManagerConfig {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### CleaningOptions
-
-- **类型**: interface
-- **文件**: `utils/memory/CoordinateCleaner.ts:20`
-- **签名**: `export interface CleaningOptions {`
-
-**建议文档结构**:
-```markdown
-### CleaningOptions
-
-[添加API描述]
-
-```typescript
-export interface CleaningOptions {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### CleaningResult
-
-- **类型**: interface
-- **文件**: `utils/memory/CoordinateCleaner.ts:31`
-- **签名**: `export interface CleaningResult {`
-
-**建议文档结构**:
-```markdown
-### CleaningResult
-
-[添加API描述]
-
-```typescript
-export interface CleaningResult {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### CleaningStats
-
-- **类型**: interface
-- **文件**: `utils/memory/CoordinateCleaner.ts:42`
-- **签名**: `export interface CleaningStats {`
-
-**建议文档结构**:
-```markdown
-### CleaningStats
-
-[添加API描述]
-
-```typescript
-export interface CleaningStats {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### CoordinateCleaner
-
-- **类型**: class
-- **文件**: `utils/memory/CoordinateCleaner.ts:57`
-- **签名**: `export class CoordinateCleaner {`
-
-**建议文档结构**:
-```markdown
-### CoordinateCleaner
-
-[添加API描述]
-
-```typescript
-export class CoordinateCleaner {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### AdaptationRule
-
-- **类型**: interface
-- **文件**: `utils/memory/AdaptationRules.ts:25`
-- **签名**: `export interface AdaptationRule {`
-
-**建议文档结构**:
-```markdown
-### AdaptationRule
-
-[添加API描述]
-
-```typescript
-export interface AdaptationRule {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### SizeScalingRule
-
-- **类型**: class
-- **文件**: `utils/memory/AdaptationRules.ts:44`
-- **签名**: `export class SizeScalingRule implements AdaptationRule {`
-
-**建议文档结构**:
-```markdown
-### SizeScalingRule
-
-[添加API描述]
-
-```typescript
-export class SizeScalingRule implements AdaptationRule {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### CenteringRule
-
-- **类型**: class
-- **文件**: `utils/memory/AdaptationRules.ts:175`
-- **签名**: `export class CenteringRule implements AdaptationRule {`
-
-**建议文档结构**:
-```markdown
-### CenteringRule
-
-[添加API描述]
-
-```typescript
-export class CenteringRule implements AdaptationRule {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### ProportionRule
-
-- **类型**: class
-- **文件**: `utils/memory/AdaptationRules.ts:201`
-- **签名**: `export class ProportionRule implements AdaptationRule {`
-
-**建议文档结构**:
-```markdown
-### ProportionRule
-
-[添加API描述]
-
-```typescript
-export class ProportionRule implements AdaptationRule {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### BoundaryRule
-
-- **类型**: class
-- **文件**: `utils/memory/AdaptationRules.ts:269`
-- **签名**: `export class BoundaryRule implements AdaptationRule {`
-
-**建议文档结构**:
-```markdown
-### BoundaryRule
-
-[添加API描述]
-
-```typescript
-export class BoundaryRule implements AdaptationRule {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### AdaptationRuleEngine
-
-- **类型**: class
-- **文件**: `utils/memory/AdaptationRuleEngine.ts:22`
-- **签名**: `export class AdaptationRuleEngine {`
-
-**建议文档结构**:
-```markdown
-### AdaptationRuleEngine
-
-[添加API描述]
-
-```typescript
-export class AdaptationRuleEngine {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### AdaptationError
-
-- **类型**: class
-- **文件**: `utils/memory/AdaptationEngine.ts:37`
-- **签名**: `export class AdaptationError extends Error {`
-
-**建议文档结构**:
-```markdown
-### AdaptationError
-
-[添加API描述]
-
-```typescript
-export class AdaptationError extends Error {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### UnifiedAdaptationConfig
-
-- **类型**: interface
-- **文件**: `utils/adaptation/UnifiedAdaptationEngine.ts:15`
-- **签名**: `export interface UnifiedAdaptationConfig {`
-
-**建议文档结构**:
-```markdown
-### UnifiedAdaptationConfig
-
-[添加API描述]
-
-```typescript
-export interface UnifiedAdaptationConfig {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### UnifiedAdaptationResult
-
-- **类型**: interface
-- **文件**: `utils/adaptation/UnifiedAdaptationEngine.ts:48`
-- **签名**: `export interface UnifiedAdaptationResult<T> {`
-
-**建议文档结构**:
-```markdown
-### UnifiedAdaptationResult
-
-[添加API描述]
-
-```typescript
-export interface UnifiedAdaptationResult<T> {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### UnifiedAdaptationEngine
-
-- **类型**: class
-- **文件**: `utils/adaptation/UnifiedAdaptationEngine.ts:70`
-- **签名**: `export class UnifiedAdaptationEngine {`
-
-**建议文档结构**:
-```markdown
-### UnifiedAdaptationEngine
-
-[添加API描述]
-
-```typescript
-export class UnifiedAdaptationEngine {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### unifiedAdaptationEngine
-
-- **类型**: constant
-- **文件**: `utils/adaptation/UnifiedAdaptationEngine.ts:734`
-- **签名**: `export const unifiedAdaptationEngine = new UnifiedAdaptationEngine(`
-
-**建议文档结构**:
-```markdown
-### unifiedAdaptationEngine
-
-[添加API描述]
-
-```typescript
-export const unifiedAdaptationEngine = new UnifiedAdaptationEngine(
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### PuzzlePieceAbsoluteState
-
-- **类型**: interface
-- **文件**: `utils/adaptation/StatePreservationEngine.ts:13`
-- **签名**: `export interface PuzzlePieceAbsoluteState {`
-
-**建议文档结构**:
-```markdown
-### PuzzlePieceAbsoluteState
-
-[添加API描述]
-
-```typescript
-export interface PuzzlePieceAbsoluteState {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### statePreservationEngine
-
-- **类型**: constant
-- **文件**: `utils/adaptation/StatePreservationEngine.ts:238`
-- **签名**: `export const statePreservationEngine = new StatePreservationEngine(`
-
-**建议文档结构**:
-```markdown
-### statePreservationEngine
-
-[添加API描述]
-
-```typescript
-export const statePreservationEngine = new StatePreservationEngine(
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-### 核心管理器API
-
-#### ValidationRule
-
-- **类型**: interface
-- **文件**: `core/ValidationService.ts:9`
-- **签名**: `export interface ValidationRule<T = any> {`
-
-**建议文档结构**:
-```markdown
-### ValidationRule
-
-[添加API描述]
-
-```typescript
-export interface ValidationRule<T = any> {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### ValidationSchema
-
-- **类型**: interface
-- **文件**: `core/ValidationService.ts:16`
-- **签名**: `export interface ValidationSchema {`
-
-**建议文档结构**:
-```markdown
-### ValidationSchema
-
-[添加API描述]
-
-```typescript
-export interface ValidationSchema {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### ValidationResult
-
-- **类型**: interface
-- **文件**: `core/ValidationService.ts:20`
-- **签名**: `export interface ValidationResult {`
-
-**建议文档结构**:
-```markdown
-### ValidationResult
-
-[添加API描述]
-
-```typescript
-export interface ValidationResult {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### ValidationError
-
-- **类型**: interface
-- **文件**: `core/ValidationService.ts:26`
-- **签名**: `export interface ValidationError {`
-
-**建议文档结构**:
-```markdown
-### ValidationError
-
-[添加API描述]
-
-```typescript
-export interface ValidationError {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### ValidationWarning
-
-- **类型**: interface
-- **文件**: `core/ValidationService.ts:33`
-- **签名**: `export interface ValidationWarning {`
-
-**建议文档结构**:
-```markdown
-### ValidationWarning
-
-[添加API描述]
-
-```typescript
-export interface ValidationWarning {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### ResizeObserverManager
-
-- **类型**: class
-- **文件**: `core/ResizeObserverManager.ts:19`
-- **签名**: `export class ResizeObserverManager {`
-
-**建议文档结构**:
-```markdown
-### ResizeObserverManager
-
-[添加API描述]
-
-```typescript
-export class ResizeObserverManager {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### PuzzleAdaptationService
-
-- **类型**: class
-- **文件**: `core/PuzzleAdaptationService.ts:19`
-- **签名**: `export class PuzzleAdaptationService {`
-
-**建议文档结构**:
-```markdown
-### PuzzleAdaptationService
-
-[添加API描述]
-
-```typescript
-export class PuzzleAdaptationService {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### LogContext
-
-- **类型**: interface
-- **文件**: `core/LoggingService.ts:15`
-- **签名**: `export interface LogContext {`
-
-**建议文档结构**:
-```markdown
-### LogContext
-
-[添加API描述]
-
-```typescript
-export interface LogContext {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### LogEntry
-
-- **类型**: interface
-- **文件**: `core/LoggingService.ts:24`
-- **签名**: `export interface LogEntry {`
-
-**建议文档结构**:
-```markdown
-### LogEntry
-
-[添加API描述]
-
-```typescript
-export interface LogEntry {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### LoggingConfig
-
-- **类型**: interface
-- **文件**: `core/LoggingService.ts:32`
-- **签名**: `export interface LoggingConfig {`
-
-**建议文档结构**:
-```markdown
-### LoggingConfig
-
-[添加API描述]
-
-```typescript
-export interface LoggingConfig {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### EventScheduler
-
-- **类型**: class
-- **文件**: `core/EventScheduler.ts:24`
-- **签名**: `export class EventScheduler {`
-
-**建议文档结构**:
-```markdown
-### EventScheduler
-
-[添加API描述]
-
-```typescript
-export class EventScheduler {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### MonitoringConfig
-
-- **类型**: interface
-- **文件**: `core/ErrorMonitoringService.ts:9`
-- **签名**: `export interface MonitoringConfig {`
-
-**建议文档结构**:
-```markdown
-### MonitoringConfig
-
-[添加API描述]
-
-```typescript
-export interface MonitoringConfig {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### ErrorMetrics
-
-- **类型**: interface
-- **文件**: `core/ErrorMonitoringService.ts:20`
-- **签名**: `export interface ErrorMetrics {`
-
-**建议文档结构**:
-```markdown
-### ErrorMetrics
-
-[添加API描述]
-
-```typescript
-export interface ErrorMetrics {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### AlertCondition
-
-- **类型**: interface
-- **文件**: `core/ErrorMonitoringService.ts:29`
-- **签名**: `export interface AlertCondition {`
-
-**建议文档结构**:
-```markdown
-### AlertCondition
-
-[添加API描述]
-
-```typescript
-export interface AlertCondition {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### MonitoringAlert
-
-- **类型**: interface
-- **文件**: `core/ErrorMonitoringService.ts:39`
-- **签名**: `export interface MonitoringAlert {`
-
-**建议文档结构**:
-```markdown
-### MonitoringAlert
-
-[添加API描述]
-
-```typescript
-export interface MonitoringAlert {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### ErrorContext
-
-- **类型**: interface
-- **文件**: `core/ErrorHandlingService.ts:28`
-- **签名**: `export interface ErrorContext {`
-
-**建议文档结构**:
-```markdown
-### ErrorContext
-
-[添加API描述]
-
-```typescript
-export interface ErrorContext {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### ErrorReport
-
-- **类型**: interface
-- **文件**: `core/ErrorHandlingService.ts:39`
-- **签名**: `export interface ErrorReport {`
-
-**建议文档结构**:
-```markdown
-### ErrorReport
-
-[添加API描述]
-
-```typescript
-export interface ErrorReport {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### ErrorRecoveryStrategy
-
-- **类型**: interface
-- **文件**: `core/ErrorHandlingService.ts:53`
-- **签名**: `export interface ErrorRecoveryStrategy {`
-
-**建议文档结构**:
-```markdown
-### ErrorRecoveryStrategy
-
-[添加API描述]
-
-```typescript
-export interface ErrorRecoveryStrategy {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### ErrorHandlingConfig
-
-- **类型**: interface
-- **文件**: `core/ErrorHandlingService.ts:61`
-- **签名**: `export interface ErrorHandlingConfig {`
-
-**建议文档结构**:
-```markdown
-### ErrorHandlingConfig
-
-[添加API描述]
-
-```typescript
-export interface ErrorHandlingConfig {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-### React Hooks API
-
-#### useDevice
-
-- **类型**: constant
-- **文件**: `providers/hooks/useDevice.ts:22`
-- **签名**: `export const useDevice = (): DeviceState => {`
-
-**建议文档结构**:
-```markdown
-### useDevice
-
-[添加API描述]
-
-```typescript
-export const useDevice = (): DeviceState => {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### useDeviceDetection
-
-- **类型**: function
-- **文件**: `hooks/useDeviceDetection.ts:18`
-- **签名**: `export function useDeviceDetection(): DeviceDetectionState {`
-
-**建议文档结构**:
-```markdown
-### useDeviceDetection
-
-[添加API描述]
-
-```typescript
-export function useDeviceDetection(): DeviceDetectionState {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### useIsMobile
-
-- **类型**: constant
-- **文件**: `providers/hooks/useDevice.ts:42`
-- **签名**: `export const useIsMobile = (): boolean => {`
-
-**建议文档结构**:
-```markdown
-### useIsMobile
-
-[添加API描述]
-
-```typescript
-export const useIsMobile = (): boolean => {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### useCanvasSize
-
-- **类型**: constant
-- **文件**: `providers/hooks/useCanvasSize.ts:15`
-- **签名**: `export const useCanvasSize = (): CanvasSize => {`
-
-**建议文档结构**:
-```markdown
-### useCanvasSize
-
-[添加API描述]
-
-```typescript
-export const useCanvasSize = (): CanvasSize => {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### useCanvasBounds
-
-- **类型**: constant
-- **文件**: `providers/hooks/useCanvasSize.ts:32`
-- **签名**: `export const useCanvasBounds = () => {`
-
-**建议文档结构**:
-```markdown
-### useCanvasBounds
-
-[添加API描述]
-
-```typescript
-export const useCanvasBounds = () => {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### useCanvasContext
-
-- **类型**: constant
-- **文件**: `providers/hooks/useCanvasSize.ts:45`
-- **签名**: `export const useCanvasContext = (type: 'main' | 'background' = 'main'): CanvasRenderingContext2D | null => {`
-
-**建议文档结构**:
-```markdown
-### useCanvasContext
-
-[添加API描述]
-
-```typescript
-export const useCanvasContext = (type: 'main' | 'background' = 'main'): CanvasRenderingContext2D | null => {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### useCanvasRefs
-
-- **类型**: constant
-- **文件**: `providers/hooks/useCanvasRefs.ts:16`
-- **签名**: `export const useCanvasRefs = ({ containerRef, canvasRef, backgroundCanvasRef }: CanvasHookProps) => {`
-
-**建议文档结构**:
-```markdown
-### useCanvasRefs
-
-[添加API描述]
-
-```typescript
-export const useCanvasRefs = ({ containerRef, canvasRef, backgroundCanvasRef }: CanvasHookProps) => {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### useCanvasEvents
-
-- **类型**: constant
-- **文件**: `providers/hooks/useCanvasEvents.ts:16`
-- **签名**: `export const useCanvasEvents = ({ isInitialized }: UseCanvasEventsProps) => {`
-
-**建议文档结构**:
-```markdown
-### useCanvasEvents
-
-[添加API描述]
-
-```typescript
-export const useCanvasEvents = ({ isInitialized }: UseCanvasEventsProps) => {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### useCanvas
-
-- **类型**: constant
-- **文件**: `providers/hooks/useCanvas.ts:23`
-- **签名**: `export const useCanvas = ({ containerRef, canvasRef, backgroundCanvasRef }: CanvasHookProps): CanvasSize => {`
-
-**建议文档结构**:
-```markdown
-### useCanvas
-
-[添加API描述]
-
-```typescript
-export const useCanvas = ({ containerRef, canvasRef, backgroundCanvasRef }: CanvasHookProps): CanvasSize => {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### useAdaptation
-
-- **类型**: constant
-- **文件**: `providers/hooks/useAdaptation.ts:26`
-- **签名**: `export const useAdaptation = ({`
-
-**建议文档结构**:
-```markdown
-### useAdaptation
-
-[添加API描述]
-
-```typescript
-export const useAdaptation = ({
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### usePuzzleAdaptation
-
-- **类型**: constant
-- **文件**: `hooks/usePuzzleAdaptation.ts:9`
-- **签名**: `export const usePuzzleAdaptation = (canvasSize: { width: number; height: number } | null) => {`
-
-**建议文档结构**:
-```markdown
-### usePuzzleAdaptation
-
-[添加API描述]
-
-```typescript
-export const usePuzzleAdaptation = (canvasSize: { width: number; height: number } | null) => {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### useShapeAdaptation
-
-- **类型**: constant
-- **文件**: `hooks/useShapeAdaptation.ts:16`
-- **签名**: `export const useShapeAdaptation = (canvasSize: { width: number; height: number } | null) => {`
-
-**建议文档结构**:
-```markdown
-### useShapeAdaptation
-
-[添加API描述]
-
-```typescript
-export const useShapeAdaptation = (canvasSize: { width: number; height: number } | null) => {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### useResponsiveCanvasSizing
-
-- **类型**: function
-- **文件**: `hooks/useResponsiveCanvasSizing.ts:23`
-- **签名**: `export function useResponsiveCanvasSizing({`
-
-**建议文档结构**:
-```markdown
-### useResponsiveCanvasSizing
-
-[添加API描述]
-
-```typescript
-export function useResponsiveCanvasSizing({
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### usePuzzleInteractions
-
-- **类型**: function
-- **文件**: `hooks/usePuzzleInteractions.ts:25`
-- **签名**: `export function usePuzzleInteractions({`
-
-**建议文档结构**:
-```markdown
-### usePuzzleInteractions
-
-[添加API描述]
-
-```typescript
-export function usePuzzleInteractions({
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### useDebugToggle
-
-- **类型**: function
-- **文件**: `hooks/useDebugToggle.ts:7`
-- **签名**: `export function useDebugToggle(): [boolean, (v: boolean) => void] {`
-
-**建议文档结构**:
-```markdown
-### useDebugToggle
-
-[添加API描述]
-
-```typescript
-export function useDebugToggle(): [boolean, (v: boolean) => void] {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### reducer
-
-- **类型**: constant
-- **文件**: `hooks/use-toast.ts:77`
-- **签名**: `export const reducer = (state: State, action: Action): State => {`
-
-**建议文档结构**:
-```markdown
-### reducer
-
-[添加API描述]
-
-```typescript
-export const reducer = (state: State, action: Action): State => {
+export function calculatePieceBounds(piece: { points: Point[] }): { minX: number; maxX: number; minY: number; maxY: number; width: number; height: number; centerX: number; centerY: number } {
 ```
 
 #### 使用示例
@@ -3866,7 +2808,7 @@ export const reducer = (state: State, action: Action): State => {
 
 ## 📂 分类统计
 
-### 配置管理API (37个)
+### 配置管理API (39个)
 
 - ❌ `EVENT_CONFIG` (constant)
 - ❌ `MEMORY_CONFIG` (constant)
@@ -3875,6 +2817,7 @@ export const reducer = (state: State, action: Action): State => {
 - ❌ `BROWSER_SUPPORT` (constant)
 - ❌ `ERROR_HANDLING` (constant)
 - ❌ `LOGGING_CONFIG` (constant)
+- ❌ `PerformanceMetrics` (interface)
 - ❌ `PerformanceThresholds` (interface)
 - ❌ `EventTimingConfig` (interface)
 - ❌ `DEVELOPMENT_LOGGING_CONFIG` (constant)
@@ -3888,52 +2831,89 @@ export const reducer = (state: State, action: Action): State => {
 - ❌ `validateConfig` (function)
 - ❌ `getConfigInfo` (function)
 - ❌ `DEVICE_THRESHOLDS` (constant)
-- ❌ `IPHONE16_MODELS` (constant)
+- ✅ `IPHONE16_MODELS` (constant)
 - ❌ `DETECTION_CONFIG` (constant)
 - ❌ `LARGE_SCREEN_THRESHOLDS` (constant)
 - ❌ `USER_AGENT_PATTERNS` (constant)
 - ❌ `DeviceType` (type)
 - ❌ `LayoutMode` (type)
 - ❌ `iPhone16Model` (type)
-- ❌ `DeviceState` (interface)
+- ✅ `DeviceState` (interface)
 - ❌ `iPhone16Detection` (interface)
 - ❌ `DeviceLayoutInfo` (interface)
-- ❌ `DESKTOP_ADAPTATION` (constant)
-- ❌ `MOBILE_ADAPTATION` (constant)
+- ✅ `DESKTOP_ADAPTATION` (constant)
+- ✅ `MOBILE_ADAPTATION` (constant)
 - ❌ `IPHONE16_OPTIMIZATION` (constant)
 - ❌ `HIGH_RESOLUTION_MOBILE` (constant)
 - ❌ `CANVAS_SAFETY` (constant)
+- ❌ `AdaptationContext` (interface)
 - ❌ `AdaptationResult` (interface)
 - ❌ `CanvasSizeResult` (interface)
 
-### 工具函数API (111个)
+### 核心管理器API (26个)
 
-- ❌ `PerformanceMetrics` (interface)
-- ❌ `AdaptationContext` (interface)
-- ✅ `EventManager` (class)
-- ❌ `AdaptationEngine` (class)
-- ❌ `ShapeTransformation` (interface)
-- ❌ `PuzzlePieceAdaptationResult` (interface)
-- ✅ `calculateShapeTransformation` (function)
-- ❌ `validateTransformation` (function)
-- ✅ `adaptPuzzlePiecesToShape` (function)
-- ❌ `adaptPuzzlePiecesBatch` (function)
-- ❌ `safeAdaptPuzzlePieces` (function)
-- ✅ `adaptScatteredPuzzlePieces` (function)
-- ❌ `adaptPuzzlePiecesAbsolute` (function)
-- ❌ `adaptScatteredPuzzlePiecesAbsolute` (function)
+- ❌ `ValidationRule` (interface)
+- ❌ `ValidationSchema` (interface)
+- ❌ `ValidationResult` (interface)
+- ❌ `ValidationError` (interface)
+- ❌ `ValidationWarning` (interface)
+- ✅ `ValidationService` (class)
+- ❌ `ResizeObserverManager` (class)
+- ❌ `LogContext` (interface)
+- ❌ `LogEntry` (interface)
+- ❌ `LoggingConfig` (interface)
+- ✅ `LoggingService` (class)
+- ❌ `EventScheduler` (class)
+- ❌ `EventManager` (class)
+- ❌ `MonitoringConfig` (interface)
+- ❌ `ErrorMetrics` (interface)
+- ❌ `AlertCondition` (interface)
+- ❌ `MonitoringAlert` (interface)
+- ✅ `ErrorMonitoringService` (class)
+- ❌ `ErrorContext` (interface)
+- ❌ `ErrorReport` (interface)
+- ❌ `ErrorRecoveryStrategy` (interface)
+- ❌ `ErrorHandlingConfig` (interface)
+- ✅ `ErrorHandlingService` (class)
+- ✅ `DeviceManager` (class)
+- ❌ `DeviceLayoutManager` (class)
+- ✅ `CanvasManager` (class)
+
+### React Hooks API (18个)
+
+- ❌ `useResponsiveCanvasSizing` (function)
+- ✅ `usePuzzleInteractions` (function)
+- ❌ `MobileEnhancementState` (interface)
+- ❌ `MobileEnhancementCallbacks` (interface)
+- ❌ `useMobileEnhancements` (function)
+- ❌ `useKeyboardDetection` (function)
+- ❌ `useNetworkStatus` (function)
+- ❌ `useDeviceRotation` (function)
+- ❌ `UseMobileAdaptationOptions` (interface)
+- ❌ `MobileAdaptationHookResult` (interface)
+- ✅ `useMobileAdaptation` (function)
+- ❌ `useMobileAdaptationProvider` (function)
+- ✅ `useDeviceType` (function)
+- ❌ `useOrientation` (function)
+- ❌ `useKeyboard` (function)
+- ❌ `useDeviceDetection` (function)
+- ❌ `useDebugToggle` (function)
+- ❌ `reducer` (constant)
+
+### 工具函数API (67个)
+
 - ❌ `deviceLogger` (constant)
-- ❌ `adaptationLogger` (constant)
-- ❌ `puzzleLogger` (constant)
+- ✅ `adaptationLogger` (constant)
+- ✅ `puzzleLogger` (constant)
 - ❌ `canvasLogger` (constant)
 - ❌ `eventLogger` (constant)
-- ❌ `useCanvasLogger` (constant)
+- ✅ `useCanvasLogger` (constant)
 - ❌ `useCanvasSizeLogger` (constant)
 - ❌ `useCanvasRefsLogger` (constant)
 - ❌ `useCanvasEventsLogger` (constant)
 - ❌ `loggers` (constant)
 - ❌ `performanceLogger` (constant)
-- ❌ `debugLogger` (constant)
+- ✅ `debugLogger` (constant)
 - ❌ `errorLogger` (constant)
 - ❌ `loggingStats` (constant)
 - ❌ `calculateCenter` (constant)
@@ -3946,14 +2926,14 @@ export const reducer = (state: State, action: Action): State => {
 - ❌ `AdaptationOptions` (interface)
 - ❌ `adaptShapeToCanvas` (function)
 - ✅ `centerShapeInCanvas` (function)
-- ✅ `scaleShapeToSize` (function)
+- ❌ `scaleShapeToSize` (function)
 - ❌ `isShapeInBounds` (function)
 - ❌ `calculatePolygonArea` (constant)
 - ❌ `calculateBounds` (constant)
 - ❌ `createSafeZone` (constant)
 - ❌ `lineIntersection` (constant)
 - ❌ `distanceToLine` (constant)
-- ✅ `isPointInPolygon` (function)
+- ❌ `isPointInPolygon` (function)
 - ❌ `isPointNearLine` (constant)
 - ❌ `ShapeGenerator` (class)
 - ❌ `soundPlayedForTest` (constant)
@@ -3961,110 +2941,32 @@ export const reducer = (state: State, action: Action): State => {
 - ❌ `toggleBackgroundMusic` (constant)
 - ❌ `getBackgroundMusicStatus` (constant)
 - ❌ `playButtonClickSound` (constant)
-- ❌ `playPieceSelectSound` (constant)
+- ✅ `playPieceSelectSound` (constant)
 - ❌ `playPieceSnapSound` (constant)
-- ❌ `playPuzzleCompletedSound` (constant)
-- ❌ `playRotateSound` (constant)
+- ✅ `playPuzzleCompletedSound` (constant)
+- ✅ `playRotateSound` (constant)
 - ❌ `PuzzlePiece` (interface)
 - ❌ `Point` (interface)
-- ❌ `drawShape` (constant)
+- ✅ `drawShape` (constant)
 - ❌ `drawPiece` (constant)
-- ❌ `drawHintOutline` (constant)
+- ✅ `drawHintOutline` (constant)
 - ❌ `drawCompletionEffect` (constant)
-- ❌ `drawCanvasBorderLine` (constant)
+- ✅ `drawCanvasBorderLine` (constant)
 - ❌ `drawDistributionArea` (constant)
-- ❌ `drawPuzzle` (constant)
-- ✅ `appendAlpha` (function)
+- ✅ `drawPuzzle` (constant)
+- ❌ `drawCanvasCenter` (constant)
+- ❌ `drawShapeCenter` (constant)
+- ❌ `appendAlpha` (function)
 - ✅ `RenderOptimizer` (class)
 - ❌ `renderOptimizer` (constant)
 - ❌ `splitPolygon` (constant)
-- ❌ `splitPieceWithLine` (constant)
+- ✅ `splitPieceWithLine` (constant)
 - ❌ `isValidPiece` (constant)
 - ❌ `checkRectOverlap` (constant)
 - ❌ `generateCuts` (constant)
-- ❌ `ScatterPuzzle` (class)
-- ❌ `PuzzleGenerator` (class)
-- ✅ `SystemPerformanceMonitor` (class)
-- ✅ `OptimizationAdapter` (class)
-- ❌ `optimizationAdapter` (constant)
-- ✅ `MemoryManager` (class)
-- ❌ `memoryManager` (constant)
-- ❌ `eventManager` (constant)
-- ❌ `generateChecksum` (function)
-- ❌ `validateMemoryIntegrity` (function)
-- ❌ `extractTopologyFromPoints` (function)
-- ❌ `topologyToPoints` (function)
-- ❌ `ExtractionOptions` (interface)
-- ❌ `TopologyExtractor` (class)
-- ❌ `MemoryStorage` (class)
-- ❌ `MemoryManagerConfig` (interface)
-- ❌ `CleaningOptions` (interface)
-- ❌ `CleaningResult` (interface)
-- ❌ `CleaningStats` (interface)
-- ❌ `CoordinateCleaner` (class)
-- ❌ `AdaptationRule` (interface)
-- ❌ `SizeScalingRule` (class)
-- ❌ `CenteringRule` (class)
-- ❌ `ProportionRule` (class)
-- ❌ `BoundaryRule` (class)
-- ❌ `AdaptationRuleEngine` (class)
-- ❌ `AdaptationError` (class)
-- ✅ `rotatePoint` (function)
-- ✅ `calculateAngle` (function)
-- ✅ `calculatePieceBounds` (function)
-- ❌ `UnifiedAdaptationConfig` (interface)
-- ❌ `UnifiedAdaptationResult` (interface)
-- ❌ `UnifiedAdaptationEngine` (class)
-- ❌ `unifiedAdaptationEngine` (constant)
-- ❌ `PuzzlePieceAbsoluteState` (interface)
-- ✅ `StatePreservationEngine` (class)
-- ❌ `statePreservationEngine` (constant)
-
-### 核心管理器API (26个)
-
-- ❌ `ValidationRule` (interface)
-- ❌ `ValidationSchema` (interface)
-- ❌ `ValidationResult` (interface)
-- ❌ `ValidationError` (interface)
-- ❌ `ValidationWarning` (interface)
-- ✅ `ValidationService` (class)
-- ❌ `ResizeObserverManager` (class)
-- ❌ `PuzzleAdaptationService` (class)
-- ❌ `LogContext` (interface)
-- ❌ `LogEntry` (interface)
-- ❌ `LoggingConfig` (interface)
-- ✅ `LoggingService` (class)
-- ❌ `EventScheduler` (class)
-- ❌ `MonitoringConfig` (interface)
-- ❌ `ErrorMetrics` (interface)
-- ❌ `AlertCondition` (interface)
-- ❌ `MonitoringAlert` (interface)
-- ✅ `ErrorMonitoringService` (class)
-- ❌ `ErrorContext` (interface)
-- ❌ `ErrorReport` (interface)
-- ❌ `ErrorRecoveryStrategy` (interface)
-- ❌ `ErrorHandlingConfig` (interface)
-- ✅ `ErrorHandlingService` (class)
-- ✅ `DeviceManager` (class)
-- ✅ `DeviceLayoutManager` (class)
-- ✅ `CanvasManager` (class)
-
-### React Hooks API (16个)
-
-- ❌ `useDevice` (constant)
-- ❌ `useDeviceDetection` (function)
-- ❌ `useIsMobile` (constant)
-- ❌ `useCanvasSize` (constant)
-- ❌ `useCanvasBounds` (constant)
-- ❌ `useCanvasContext` (constant)
-- ❌ `useCanvasRefs` (constant)
-- ❌ `useCanvasEvents` (constant)
-- ❌ `useCanvas` (constant)
-- ❌ `useAdaptation` (constant)
-- ❌ `usePuzzleAdaptation` (constant)
-- ❌ `useShapeAdaptation` (constant)
-- ❌ `useResponsiveCanvasSizing` (function)
-- ❌ `usePuzzleInteractions` (function)
-- ❌ `useDebugToggle` (function)
-- ❌ `reducer` (constant)
+- ✅ `ScatterPuzzle` (class)
+- ✅ `PuzzleGenerator` (class)
+- ❌ `rotatePoint` (function)
+- ❌ `calculateAngle` (function)
+- ❌ `calculatePieceBounds` (function)
 

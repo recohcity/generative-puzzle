@@ -30,11 +30,7 @@ export type PieceBounds = any; // 请根据实际定义替换 any
 
 export interface GameState {
   originalShape: Point[] // 当前显示的形状（可能已适配）
-  baseShape?: Point[] // 基础形状（未经适配的原始形状）
-  baseCanvasSize?: { width: number; height: number } // 基础形状对应的画布尺寸
   puzzle: PuzzlePiece[] | null
-  basePuzzle?: PuzzlePiece[] | null // 基础拼图块（未经适配的原始拼图块）- Step3新增
-  scatterCanvasSize?: { width: number; height: number } | null // 散开时的画布尺寸 - Step3散开适配新增
   draggingPiece: DraggingPiece | null
   selectedPiece: number | null
   completedPieces: number[]
@@ -51,7 +47,8 @@ export interface GameState {
   // 添加画布尺寸信息，用于边界检查
   canvasWidth?: number
   canvasHeight?: number
-  previousCanvasSize?: { width: number; height: number } | null; // Added for adaptation
+  // 🔑 关键修复：保存形状生成时的基准画布尺寸，用于正确的适配计算
+  baseCanvasSize?: { width: number; height: number } | null;
 }
 
 // 更新GameContextProps接口

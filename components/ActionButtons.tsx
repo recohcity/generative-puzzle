@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Lightbulb, RotateCcw, RotateCw } from "lucide-react"
 import { playButtonClickSound, playRotateSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
-import { useDevice } from "@/providers/hooks"
+import { useDeviceDetection } from "@/hooks/useDeviceDetection"
 
 interface ActionButtonsProps {
   layout?: 'mobile' | 'desktop'; // Prop to differentiate layout styles if needed
@@ -12,14 +12,14 @@ interface ActionButtonsProps {
 }
 
 export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: ActionButtonsProps) {
-  const { 
+  const {
     state,
     rotatePiece,
     showHintOutline,
   } = useGame()
 
   // 使用统一设备检测系统
-  const device = useDevice();
+  const device = useDeviceDetection();
   const isPhone = layout === 'mobile' ? device.deviceType === 'phone' : false;
   const isLandscape = layout === 'mobile' ? device.layoutMode === 'landscape' : false;
 
@@ -41,7 +41,7 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
     rotatePiece(clockwise)
     console.log('[ActionButtons] handleRotatePiece finished');
   }
-  
+
   // Determine styles based on layout prop or detected device state
   const buttonHeightClass = layout === 'desktop' ? 'h-9' : (isLandscape ? 'h-8 py-0.5' : 'h-9 py-0.5');
   // 统一图标大小为24px

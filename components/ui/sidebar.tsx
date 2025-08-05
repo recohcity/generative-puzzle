@@ -5,7 +5,7 @@ import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
 import { PanelLeft } from "lucide-react"
 
-import { useIsMobile } from "@/providers/hooks"
+import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -67,7 +67,8 @@ const SidebarProvider = React.forwardRef<
     },
     ref
   ) => {
-    const isMobile = useIsMobile()
+    const device = useDeviceDetection();
+    const isMobile = device.deviceType === 'phone';
     const [openMobile, setOpenMobile] = React.useState(false)
 
     // This is the internal state of the sidebar.

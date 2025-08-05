@@ -26,6 +26,11 @@ interface TrendData {
   cutCount: number;
   version?: string; 
   failReason?: string;
+  // 新增：适配测试相关字段
+  adaptationPassRate?: number;
+  adaptationTestCount?: number;
+  adaptationPassCount?: number;
+  adaptationTestResults?: { [resolution: string]: boolean };
 }
 
 const BENCHMARKS = {
@@ -48,7 +53,11 @@ const METRIC_LABELS: Record<string, string> = {
   scatterTime: '散开(ms)',
   avgInteractionTime: '交互(ms)',
   fps: 'FPS',
-  memoryUsage: '内存(MB)'
+  memoryUsage: '内存(MB)',
+  // 新增：适配测试指标
+  adaptationPassRate: '适配通过率(%)',
+  adaptationTestCount: '适配测试数',
+  adaptationPassCount: '适配通过数'
 };
 const METRIC_KEYS = [
   'resourceLoadTime',
@@ -58,7 +67,8 @@ const METRIC_KEYS = [
   'scatterTime',
   'avgInteractionTime',
   'fps',
-  'memoryUsage'
+  'memoryUsage',
+  'adaptationPassRate'
 ] as const;
 
 type MetricKey = typeof METRIC_KEYS[number];
@@ -107,6 +117,12 @@ const getPerformanceGrade = (metric: MetricKey, value: number) => {
       if (value <= BENCHMARKS.maxMemoryUsage * 0.7) return { grade: '良好', color: 'text-blue-600', bg: 'bg-blue-100' };
       if (value <= BENCHMARKS.maxMemoryUsage) return { grade: '合格', color: 'text-yellow-600', bg: 'bg-yellow-100' };
       return { grade: '超标', color: 'text-red-600', bg: 'bg-red-100' };
+    case 'adaptationPassRate':
+      if (value >= 100) return { grade: '完美', color: 'text-green-700', bg: 'bg-green-100' };
+      if (value >= 90) return { grade: '优秀', color: 'text-green-600', bg: 'bg-green-100' };
+      if (value >= 75) return { grade: '良好', color: 'text-blue-600', bg: 'bg-blue-100' };
+      if (value >= 50) return { grade: '合格', color: 'text-yellow-600', bg: 'bg-yellow-100' };
+      return { grade: '不达标', color: 'text-red-600', bg: 'bg-red-100' };
     default:
       return { grade: '未知', color: 'text-gray-600', bg: 'bg-gray-100' };
   }
@@ -213,6 +229,66 @@ function getModeRating(stats: { successRate: number, compliantRate: number, exce
   return { grade: 'C', desc: '成功率和性能指标不达标，建议重点排查和优化。' };
 }
 
+// 新增：单次测试评级计算函数
+function getSingleTestRating(item: TrendData) {
+  let excellentCount = 0;
+  let goodCount = 0;
+  let warningCount = 0;
+  let exceededCount = 0;
+  
+  METRIC_KEYS.forEach(key => {
+    const grade = getPerformanceGrade(key, item[key as keyof TrendData] as number);
+    if (grade.grade === '极优' || grade.grade === '优秀' || grade.grade === '完美') {
+      excellentCount++;
+    } else if (grade.grade === '达标' || grade.grade === '良好') {
+      goodCount++;
+    } else if (grade.grade === '预警' || grade.grade === '警告' || grade.grade === '合格') {
+      warningCount++;
+    } else if (grade.grade === '超标' || grade.grade === '不达标') {
+      exceededCount++;
+    }
+  });
+  
+  const totalMetrics = METRIC_KEYS.length;
+  const excellentRate = excellentCount / totalMetrics;
+  const goodRate = (excellentCount + goodCount) / totalMetrics;
+  const exceededRate = exceededCount / totalMetrics;
+  
+  // 如果测试失败，直接返回F
+  if (item.status !== '✅') {
+    return { grade: 'F', color: 'text-red-700', bg: 'bg-red-100', desc: '测试失败' };
+  }
+  
+  // 检查适配测试结果 - 只有当数据存在时才考虑适配测试
+  const hasAdaptationData = item.adaptationPassRate !== undefined && item.adaptationPassRate !== null;
+  const adaptationPassRate = hasAdaptationData ? item.adaptationPassRate : 100; // 缺失数据时默认为100%
+  let adaptationPenalty = 0;
+  
+  // 只有当适配测试数据存在且不达标时才应用惩罚
+  if (hasAdaptationData && adaptationPassRate && adaptationPassRate < 100) {
+    adaptationPenalty = (100 - adaptationPassRate) / 100 * 0.2; // 适配测试占20%权重
+  }
+  
+  // 根据指标表现评级（考虑适配测试影响）
+  const adjustedExcellentRate = Math.max(0, excellentRate - adaptationPenalty);
+  const adjustedGoodRate = Math.max(0, goodRate - adaptationPenalty);
+  
+  // 评级逻辑：当没有适配数据时，不要求适配测试通过率
+  if (adjustedExcellentRate >= 0.8 && (!hasAdaptationData || (adaptationPassRate && adaptationPassRate >= 90))) {
+    return { grade: 'A+', color: 'text-green-700', bg: 'bg-green-100', desc: '性能卓越' };
+  } else if (adjustedExcellentRate >= 0.6 || (adjustedGoodRate >= 0.9 && (!hasAdaptationData || (adaptationPassRate && adaptationPassRate >= 75)))) {
+    return { grade: 'A', color: 'text-green-600', bg: 'bg-green-50', desc: '性能优秀' };
+  } else if (adjustedGoodRate >= 0.8 && exceededRate === 0 && (!hasAdaptationData || (adaptationPassRate && adaptationPassRate >= 75))) {
+    return { grade: 'B+', color: 'text-blue-600', bg: 'bg-blue-50', desc: '性能良好' };
+  } else if (adjustedGoodRate >= 0.7 && exceededRate <= 0.1) {
+    return { grade: 'B', color: 'text-blue-500', bg: 'bg-blue-50', desc: '性能合格' };
+  } else if (exceededRate <= 0.2) {
+    return { grade: 'C', color: 'text-yellow-600', bg: 'bg-yellow-50', desc: '需要优化' };
+  } else {
+    return { grade: 'D', color: 'text-red-600', bg: 'bg-red-50', desc: '性能不达标' };
+  }
+}
+
 
 const PerformanceTrendPage: React.FC = () => {
   const [trendData, setTrendData] = useState<TrendData[]>([]);
@@ -222,10 +298,17 @@ const PerformanceTrendPage: React.FC = () => {
   // 分页相关
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
-  const totalPages = Math.max(1, Math.ceil(trendData.length / pageSize));
   // 新增：模式筛选
   const [envFilter, setEnvFilter] = useState<'all' | 'development' | 'production'>('all');
-  const filteredData = envFilter === 'all' ? trendData : trendData.filter(d => d.envMode === envFilter);
+  
+  // 优化：使用 useMemo 缓存计算结果
+  const filteredData = React.useMemo(() => {
+    return envFilter === 'all' ? trendData : trendData.filter(d => d.envMode === envFilter);
+  }, [trendData, envFilter]);
+  
+  const totalPages = React.useMemo(() => {
+    return Math.max(1, Math.ceil(filteredData.length / pageSize));
+  }, [filteredData.length, pageSize]);
 
   // 统计开发/生产均值、极值
   function calcStats(data: TrendData[], key: MetricKey) {
@@ -289,13 +372,46 @@ const PerformanceTrendPage: React.FC = () => {
   // 当数据变化时自动跳转到最后一页（最新数据）
   useEffect(() => {
     setCurrentPage(1);
-  }, [trendData.length]);
+  }, [filteredData.length]);
 
-  // pagedFilteredData 定义移到 useEffect 之后，确保作用域
-  const pagedFilteredData: any[] = filteredData.slice().reverse().slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  // 优化：使用 useMemo 缓存分页数据
+  const pagedFilteredData = React.useMemo(() => {
+    return filteredData.slice().reverse().slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  }, [filteredData, currentPage, pageSize]);
 
-  if (loading) return <div className="flex justify-center items-center h-screen">加载中...</div>;
-  if (error) return <div className="flex justify-center items-center h-screen text-red-500">加载数据失败: {error}</div>;
+  // 优化：更好的加载和错误状态
+  if (loading) {
+    return (
+      <div className="flex flex-col justify-center items-center h-screen bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+        <p className="text-gray-600">正在加载性能数据...</p>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="flex flex-col justify-center items-center h-screen bg-gray-50">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
+          <div className="flex items-center mb-4">
+            <div className="bg-red-100 rounded-full p-2 mr-3">
+              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-red-800">数据加载失败</h3>
+          </div>
+          <p className="text-red-700 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
+          >
+            重新加载
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const complianceStats = calculateComplianceStats(trendData);
 
@@ -320,11 +436,44 @@ const PerformanceTrendPage: React.FC = () => {
   });
 
   return (
-    <main className="w-full min-h-screen bg-gray-50 p-4 sm:p-6 md:p-8" style={{ userSelect: 'text' }}>
-      <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-lg p-4 sm:p-6">
+    <main className="w-full min-h-screen bg-gray-50 p-4 sm:p-6 md:p-8 text-gray-900" style={{ userSelect: 'text', color: '#111827' }}>
+      <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-lg p-4 sm:p-6 text-gray-900">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Generative Puzzle - 游戏性能测试平台</h1>
-          <p className="text-sm text-gray-600 mt-1 sm:mt-0">基于 Playwright 的自动化测试与性能分析</p>
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Generative Puzzle - 游戏性能测试平台</h1>
+            <p className="text-sm text-gray-600 mt-1">基于 Playwright 的自动化测试与性能分析</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 mt-4 sm:mt-0">
+            <button
+              onClick={() => {
+                const csvContent = [
+                  ['时间', '版本', '模式', ...METRIC_KEYS.map(k => METRIC_LABELS[k]), '综合评级'],
+                  ...filteredData.map(item => [
+                    item.fullTime,
+                    item.version || '',
+                    item.envMode || '',
+                    ...METRIC_KEYS.map(k => item[k as keyof TrendData] || ''),
+                    getSingleTestRating(item).grade
+                  ])
+                ].map(row => row.join(',')).join('\n');
+                
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `performance-data-${new Date().toISOString().split('T')[0]}.csv`;
+                link.click();
+              }}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+            >
+              📊 导出CSV
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+            >
+              🔄 刷新数据
+            </button>
+          </div>
         </div>
         
         <section className="mb-6">
@@ -412,94 +561,231 @@ const PerformanceTrendPage: React.FC = () => {
           </div>
         </section>
         
-        <div className="flex space-x-2 mb-6">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-0 sm:space-x-2 mb-6">
           <button
             onClick={() => setSelectedMetric('performance')}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedMetric === 'performance' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
           >
-            性能指标趋势
+            📈 性能指标趋势
           </button>
           <button
             onClick={() => setSelectedMetric('system')}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedMetric === 'system' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
           >
-            系统指标趋势
+            💻 系统指标趋势
           </button>
         </div>
 
-        {/* 模式筛选下拉框 */}
-        <div className="flex items-center space-x-2 mb-4">
-          <span className="text-gray-700 font-medium">模式筛选：</span>
-          <select
-            value={envFilter}
-            onChange={e => setEnvFilter(e.target.value as any)}
-            className="border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-          >
-            <option value="all">全部</option>
-            <option value="development">开发</option>
-            <option value="production">生产</option>
-          </select>
+        {/* 模式筛选和数据摘要 */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center space-x-4 mb-2 sm:mb-0">
+            <div className="flex items-center space-x-2">
+              <span className="text-gray-700 font-medium">模式筛选：</span>
+              <select
+                value={envFilter}
+                onChange={e => setEnvFilter(e.target.value as any)}
+                className="border border-gray-300 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-800"
+              >
+                <option value="all" className="text-gray-800">全部 ({trendData.length})</option>
+                <option value="development" className="text-gray-800">开发 ({devData.length})</option>
+                <option value="production" className="text-gray-800">生产 ({prodData.length})</option>
+              </select>
+            </div>
+          </div>
+          <div className="flex items-center space-x-4 text-sm text-gray-600">
+            <span>📊 当前显示: <strong className="text-blue-600">{filteredData.length}</strong> 条记录</span>
+            <span>📅 最新测试: <strong className="text-green-600">
+              {filteredData.length > 0 ? filteredData[filteredData.length - 1]?.fullTime?.split(' ')[0] : '无数据'}
+            </strong></span>
+          </div>
         </div>
         {/* 差异分析说明块 */}
         {diffAnalysis.length > 0 && (
           <div className="mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 rounded">
-            <strong>开发/生产环境主要性能差异：</strong>
-            <ul className="list-disc pl-5 mt-1">
-              {diffAnalysis.map((txt, i) => <li key={i}>{txt}</li>)}
+            <strong className="text-yellow-900">开发/生产环境主要性能差异：</strong>
+            <ul className="list-disc pl-5 mt-1 text-yellow-800">
+              {diffAnalysis.map((txt, i) => <li key={i} className="text-yellow-800">{txt}</li>)}
             </ul>
           </div>
         )}
 
         {selectedMetric === 'performance' && (
           <section className="mb-6">
-            <h2 className="text-lg font-semibold mb-4 text-gray-800">性能指标趋势 (含基准线)</h2>
-            <ResponsiveContainer width="100%" height={400}>
-              <LineChart data={filteredData} margin={{ top: 5, right: 20, left: 10, bottom: 50 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" angle={-45} textAnchor="end" height={60} interval="preserveStartEnd" />
-                <YAxis label={{ value: '时间 (ms)', angle: -90, position: 'insideLeft' }} />
-                <Tooltip content={<CustomTooltip data={trendData} />} />
-                <Legend />
-                <ReferenceLine y={BENCHMARKS.shapeGenerationTime} label="形状基准" stroke="#f59e0b" strokeDasharray="3 3" />
-                <ReferenceLine y={BENCHMARKS.pieceInteractionTime} label="交互基准" stroke="#ef4444" strokeDasharray="3 3" />
-                <Line type="monotone" dataKey="shapeGenerationTime" name={METRIC_LABELS.shapeGenerationTime} stroke="#f59e0b" strokeWidth={2} />
-                <Line type="monotone" dataKey="puzzleGenerationTime" name={METRIC_LABELS.puzzleGenerationTime} stroke="#10b981" strokeWidth={2} />
-                <Line type="monotone" dataKey="scatterTime" name={METRIC_LABELS.scatterTime} stroke="#8b5cf6" strokeWidth={2} />
-                <Line type="monotone" dataKey="avgInteractionTime" name={METRIC_LABELS.avgInteractionTime} stroke="#ef4444" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-800">性能指标趋势 (含基准线)</h2>
+              <div className="flex items-center space-x-2 mt-2 sm:mt-0">
+                <span className="text-sm text-gray-600">显示数据点:</span>
+                <span className="text-sm font-medium text-blue-600">{filteredData.length} 个</span>
+              </div>
+            </div>
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <ResponsiveContainer width="100%" height={400}>
+                <LineChart 
+                  data={filteredData} 
+                  margin={{ top: 5, right: 20, left: 10, bottom: 50 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis 
+                    dataKey="time" 
+                    angle={-45} 
+                    textAnchor="end" 
+                    height={60} 
+                    interval="preserveStartEnd"
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis 
+                    label={{ value: '时间 (ms)', angle: -90, position: 'insideLeft' }}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <Tooltip content={<CustomTooltip data={filteredData} />} />
+                  <Legend wrapperStyle={{ fontSize: '12px' }} />
+                  <ReferenceLine y={BENCHMARKS.shapeGenerationTime} label="形状基准" stroke="#f59e0b" strokeDasharray="3 3" />
+                  <ReferenceLine y={BENCHMARKS.pieceInteractionTime} label="交互基准" stroke="#ef4444" strokeDasharray="3 3" />
+                  <Line 
+                    type="monotone" 
+                    dataKey="shapeGenerationTime" 
+                    name={METRIC_LABELS.shapeGenerationTime} 
+                    stroke="#f59e0b" 
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                    activeDot={{ r: 5 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="puzzleGenerationTime" 
+                    name={METRIC_LABELS.puzzleGenerationTime} 
+                    stroke="#10b981" 
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                    activeDot={{ r: 5 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="scatterTime" 
+                    name={METRIC_LABELS.scatterTime} 
+                    stroke="#8b5cf6" 
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                    activeDot={{ r: 5 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="avgInteractionTime" 
+                    name={METRIC_LABELS.avgInteractionTime} 
+                    stroke="#ef4444" 
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                    activeDot={{ r: 5 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </section>
         )}
         
         {selectedMetric === 'system' && (
           <section className="mb-6">
-            <h2 className="text-lg font-semibold mb-4 text-gray-800">系统指标趋势 (含基准线)</h2>
-            <ResponsiveContainer width="100%" height={400}>
-              <LineChart data={filteredData} margin={{ top: 5, right: 30, left: 10, bottom: 50 }}>
-          <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" angle={-45} textAnchor="end" height={60} interval="preserveStartEnd" />
-                <YAxis yAxisId="fps" label={{ value: 'FPS', angle: -90, position: 'insideLeft' }} />
-                <YAxis yAxisId="memory" orientation="right" label={{ value: '内存 (MB)', angle: 90, position: 'insideRight' }} />
-                <Tooltip content={<CustomTooltip data={trendData} />} />
-          <Legend />
-                <ReferenceLine yAxisId="fps" y={BENCHMARKS.minFps} label="FPS基准" stroke="#06b6d4" strokeDasharray="3 3" />
-                <Line yAxisId="fps" type="monotone" dataKey="fps" name={METRIC_LABELS.fps} stroke="#06b6d4" strokeWidth={2} />
-                <Line yAxisId="memory" type="monotone" dataKey="memoryUsage" name={METRIC_LABELS.memoryUsage} stroke="#84cc16" strokeWidth={2} />
-        </LineChart>
-      </ResponsiveContainer>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-800">系统指标趋势 (含基准线)</h2>
+              <div className="flex items-center space-x-2 mt-2 sm:mt-0">
+                <span className="text-sm text-gray-600">显示数据点:</span>
+                <span className="text-sm font-medium text-blue-600">{filteredData.length} 个</span>
+              </div>
+            </div>
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <ResponsiveContainer width="100%" height={400}>
+                <LineChart 
+                  data={filteredData} 
+                  margin={{ top: 5, right: 30, left: 10, bottom: 50 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis 
+                    dataKey="time" 
+                    angle={-45} 
+                    textAnchor="end" 
+                    height={60} 
+                    interval="preserveStartEnd"
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis 
+                    yAxisId="fps" 
+                    label={{ value: 'FPS', angle: -90, position: 'insideLeft' }}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis 
+                    yAxisId="memory" 
+                    orientation="right" 
+                    label={{ value: '内存 (MB)', angle: 90, position: 'insideRight' }}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <Tooltip content={<CustomTooltip data={filteredData} />} />
+                  <Legend wrapperStyle={{ fontSize: '12px' }} />
+                  <ReferenceLine 
+                    yAxisId="fps" 
+                    y={BENCHMARKS.minFps} 
+                    label="FPS基准" 
+                    stroke="#06b6d4" 
+                    strokeDasharray="3 3" 
+                  />
+                  <ReferenceLine 
+                    yAxisId="memory" 
+                    y={BENCHMARKS.maxMemoryUsage} 
+                    label="内存基准" 
+                    stroke="#84cc16" 
+                    strokeDasharray="3 3" 
+                  />
+                  <Line 
+                    yAxisId="fps" 
+                    type="monotone" 
+                    dataKey="fps" 
+                    name={METRIC_LABELS.fps} 
+                    stroke="#06b6d4" 
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                    activeDot={{ r: 5 }}
+                  />
+                  <Line 
+                    yAxisId="memory" 
+                    type="monotone" 
+                    dataKey="memoryUsage" 
+                    name={METRIC_LABELS.memoryUsage} 
+                    stroke="#84cc16" 
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                    activeDot={{ r: 5 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </section>
         )}
 
         <section className="mb-6">
           <h2 className="text-lg font-semibold mb-4 text-gray-800">详细性能评估报告</h2>
-          <div className="mb-2 text-sm text-blue-700 bg-blue-50 rounded p-3 border-l-4 border-blue-400">
-            <div><strong>加载时间说明：</strong></div>
-            <div>• <strong>页面资源加载时间（page.goto）</strong>：仅统计页面资源加载（如JS/CSS/图片），基准值 <strong>1000ms</strong>。</div>
-            <div>• <strong>端到端可交互加载时间（E2E）</strong>：统计从访问到页面完全可操作的完整耗时，基准值 <strong>1800ms</strong>。端到端体验更贴近用户真实感受。</div>
-            <div>• 两者均有测试参考价值，建议同时关注。</div>
+          <div className="mb-4 space-y-3">
+            <div className="text-sm text-blue-700 bg-blue-50 rounded p-3 border-l-4 border-blue-400">
+              <div><strong>加载时间说明：</strong></div>
+              <div>• <strong>页面资源加载时间（page.goto）</strong>：仅统计页面资源加载（如JS/CSS/图片），基准值 <strong>1000ms</strong>。</div>
+              <div>• <strong>端到端可交互加载时间（E2E）</strong>：统计从访问到页面完全可操作的完整耗时，基准值 <strong>1800ms</strong>。端到端体验更贴近用户真实感受。</div>
+              <div>• 两者均有测试参考价值，建议同时关注。</div>
+            </div>
+            <div className="text-sm text-purple-700 bg-purple-50 rounded p-3 border-l-4 border-purple-400">
+              <div><strong>综合评级说明：</strong></div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                <div><strong className="text-green-700">A+</strong>: 性能卓越 (80%+极优指标)</div>
+                <div><strong className="text-green-600">A</strong>: 性能优秀 (60%+极优或90%+达标)</div>
+                <div><strong className="text-blue-600">B+</strong>: 性能良好 (80%+达标，无超标)</div>
+                <div><strong className="text-blue-500">B</strong>: 性能合格 (70%+达标，≤10%超标)</div>
+                <div><strong className="text-yellow-600">C</strong>: 需要优化 (≤20%超标)</div>
+                <div><strong className="text-red-600">D/F</strong>: 性能不达标或测试失败</div>
+              </div>
+              <div className="text-xs text-gray-600 mt-2 italic">
+                注：旧数据缺失适配测试指标时，不影响综合评级计算
+              </div>
+            </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full border-collapse border border-gray-300 text-sm">
+          <div className="overflow-x-auto shadow-sm border border-gray-200 rounded-lg">
+            <table className="min-w-full border-collapse bg-white text-sm">
               <thead className="sticky top-0 z-10 bg-gray-200">
                 <tr>
                   <th className="sticky left-0 bg-gray-200 border-r border-gray-300 px-3 py-2 text-left font-bold text-gray-700">测试时间</th>
@@ -508,10 +794,7 @@ const PerformanceTrendPage: React.FC = () => {
                   {METRIC_KEYS.map(key => (
                     <th key={key} className="border-r border-gray-300 px-3 py-2 text-center font-bold text-gray-700">{METRIC_LABELS[key]}</th>
                   ))}
-                  <th className="border-r border-gray-300 px-3 py-2 text-center font-bold text-gray-700">形状</th>
-                  <th className="border-r border-gray-300 px-3 py-2 text-center font-bold text-gray-700">切割</th>
-                  <th className="border-r border-gray-300 px-3 py-2 text-center font-bold text-gray-700">次数</th>
-                  <th className="px-3 py-2 text-center font-bold text-gray-700">拼图</th>
+                  <th className="px-3 py-2 text-center font-bold text-gray-700">综合评级</th>
                 </tr>
               </thead>
               <tbody>
@@ -541,6 +824,7 @@ const PerformanceTrendPage: React.FC = () => {
                           <div className={`px-2 py-1 rounded text-xs font-medium ${grade.bg} ${grade.color} flex items-center justify-center`}>
                             {key === 'avgInteractionTime' && value ? value.toFixed(2) :
                              key === 'memoryUsage' && value !== undefined && value !== null ? value.toFixed(2) :
+                             key === 'adaptationPassRate' ? (value !== undefined && value !== null ? `${value.toFixed(1)}%` : '缺失') :
                              value}
                             {grade.grade === '极优' && <span className="ml-1 bg-green-500 text-white rounded px-1 text-[10px]">极优</span>}
                           </div>
@@ -548,22 +832,29 @@ const PerformanceTrendPage: React.FC = () => {
                         </td>
                       );
                     })}
-                    <td className="border-r border-b border-gray-300 px-3 py-2 text-center text-gray-800">{item.shapeType}</td>
-                    <td className="border-r border-b border-gray-300 px-3 py-2 text-center text-gray-800">{item.cutType}</td>
-                    <td className="border-r border-b border-gray-300 px-3 py-2 text-center text-gray-800">{item.cutCount}</td>
-                    <td className="border-b border-gray-300 px-3 py-2 text-center text-gray-800">{item.count}</td>
+                    <td className="border-b border-gray-300 px-3 py-2 text-center">
+                      {(() => {
+                        const rating = getSingleTestRating(item);
+                        return (
+                          <div className={`px-3 py-2 rounded-lg font-bold text-lg ${rating.bg} ${rating.color} flex flex-col items-center`}>
+                            <span className="text-xl">{rating.grade}</span>
+                            <span className="text-xs font-normal mt-1">{rating.desc}</span>
+                          </div>
+                        );
+                      })()}
+                    </td>
                   </tr>
                 ))}
                 {/* 分组统计行 */}
                 <tr className="bg-gray-50 font-semibold">
-                  <td colSpan={3} className="text-right pr-2">开发均值</td>
-                  {METRIC_KEYS.map(key => <td key={key} className="text-center text-blue-700">{calcStats(devData, key).avg}</td>)}
-                  <td colSpan={4}></td>
+                  <td colSpan={3} className="text-right pr-2 text-gray-800">开发均值</td>
+                  {METRIC_KEYS.map(key => <td key={key} className="text-center text-blue-700 border-r border-gray-300 px-3 py-2">{calcStats(devData, key).avg}</td>)}
+                  <td className="text-center text-gray-800">-</td>
                 </tr>
                 <tr className="bg-gray-50 font-semibold">
-                  <td colSpan={3} className="text-right pr-2">生产均值</td>
-                  {METRIC_KEYS.map(key => <td key={key} className="text-center text-green-700">{calcStats(prodData, key).avg}</td>)}
-                  <td colSpan={4}></td>
+                  <td colSpan={3} className="text-right pr-2 text-gray-800">生产均值</td>
+                  {METRIC_KEYS.map(key => <td key={key} className="text-center text-green-700 border-r border-gray-300 px-3 py-2">{calcStats(prodData, key).avg}</td>)}
+                  <td className="text-center text-gray-800">-</td>
                 </tr>
               </tbody>
           </table>

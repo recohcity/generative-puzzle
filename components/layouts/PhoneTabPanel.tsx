@@ -35,24 +35,24 @@ const tabLabels: Record<string, string> = {
 const TITLE_CLASS = "font-bold text-[#FFB17A] text-lg md:text-xl leading-tight"; // 主标题字号、颜色、粗细
 
 // 分区标题样式
-const SECTION_TITLE_CLASS = "font-semibold text-[#FFD5AB] text-md mb-2 leading-snug "; // 分区标题字号、颜色、粗细、下边距
+const SECTION_TITLE_CLASS = "font-semibold text-[#FFD5AB] text-md mb-1 leading-snug "; // 分区标题字号、颜色、粗细、下边距优化为4px
 
 // 卡片内小标题样式
-const CARD_TITLE_CLASS = "text-xs font-medium mb-3 text-[#FFD5AB] leading-tight text-center"; // 卡片内小标题字号、颜色、粗细、下边距、居中
+const CARD_TITLE_CLASS = "text-xs font-medium mb-2 text-[#FFD5AB] leading-tight text-center"; // 卡片内小标题字号、颜色、粗细、下边距优化为8px
 
 // tab按钮样式
 const TAB_BUTTON_CLASS = "flex-1 px-0 py-1 text-sm font-medium mx-0 transition-colors text-center"; // flex-1 让按钮均分
 
 // 卡片容器样式
-const CARD_CLASS = "p-2 bg-[#463E50] rounded-4xl shadow-md w-full mb-2"; // 卡片padding、背景、圆角、阴影、下边距
+const CARD_CLASS = "p-2 bg-[#463E50] rounded-4xl shadow-md w-full mb-1"; // 卡片padding、背景、圆角、阴影、下边距优化为4px
 
 // 分区容器样式
 const SECTION_CLASS = "mb-1"; // 分区下边距
 
 // 面板根容器样式 - 横屏模式优化内边距
-const PANEL_CLASS_BASE = "bg-white/30 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/30 h-full w-full flex flex-col gap-4"; // 基础样式，不包含padding
-const PANEL_PADDING_PORTRAIT = "p-6"; // 竖屏模式的内边距
-const PANEL_PADDING_LANDSCAPE = "px-6 py-6"; // 横屏模式的内边距（与竖屏模式保持一致的水平内边距，提供舒适的呼吸空间）
+const PANEL_CLASS_BASE = "bg-white/30 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/30 h-full w-full flex flex-col gap-2"; // 基础样式，gap从4减少到2 (8px)
+const PANEL_PADDING_PORTRAIT = "p-3"; // 竖屏模式的内边距 (从24px减少到12px)
+const PANEL_PADDING_LANDSCAPE = "px-3 py-2"; // 横屏模式的内边距 (水平12px，垂直8px)
 
 // 新增：可调内容区水平padding参数
 const CONTENT_HORIZONTAL_PADDING = 0; // 可根据需要调整
@@ -195,19 +195,19 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
           <div className={SECTION_CLASS + ' mt-0'}>
             {/* 分区标题已上移，这里不再渲染 */}
             {activeTab === 'shape' && (
-              <div>
+              <div className="flex flex-col items-center">
                 <h4 className={CARD_TITLE_CLASS}>选择形状类型</h4>
                 <ShapeControls goToNextTab={goToNextTab} buttonHeight={SHAPE_BUTTON_HEIGHT} fontSize={MOBILE_SHAPE_BUTTON_FONT_SIZE} />
               </div>
             )}
             {activeTab === 'puzzle' && (
-              <div>
+              <div className="flex flex-col items-center">
                 <h4 className={CARD_TITLE_CLASS}>选择切割类型</h4>
                 <PuzzleControlsCutType goToNextTab={goToNextTab} buttonHeight={CUT_TYPE_BUTTON_HEIGHT} />
               </div>
             )}
             {activeTab === 'cut' && (
-              <div className="px-3">
+              <div className="flex flex-col items-center px-3">
                 <h4 className={CARD_TITLE_CLASS}>选择切割次数</h4>
                 <div className="max-w-[290px] w-full mx-auto">
                   <PuzzleControlsCutCount goToNextTab={goToNextTab} buttonHeight={NUMBER_BUTTON_HEIGHT} actionButtonHeight={ACTION_BUTTON_HEIGHT} />
@@ -215,7 +215,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
               </div>
             )}
             {activeTab === 'scatter' && (
-              <div>
+              <div className="flex flex-col items-center">
                 <h4 className={CARD_TITLE_CLASS}>散开拼图</h4>
                 <PuzzleControlsScatter goToNextTab={goToNextTab} buttonHeight={ACTION_BUTTON_HEIGHT} />
               </div>
@@ -225,9 +225,9 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
         {/* 游戏控制分区 */}
         {activeTab === 'controls' && (
           <div className={SECTION_CLASS + ' mt-0'}>
-            <div>
+            <div className="flex flex-col items-center">
               {/* 控制按钮组（移动端专用，样式与散开拼图一致） */}
-              <div className="flex gap-2 mb-2">
+              <div className="flex w-full mb-2" style={{ gap: '8px' }}>
                 <Button
                   style={{
                     height: MOBILE_CONTROL_BUTTON_HEIGHT,
@@ -239,11 +239,11 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '4px',
-                    flex: 1, // 保证等宽并排
+                    flex: '1 1 0%', // 确保等宽分布
+                    width: 0, // 重置宽度让flex生效
                   }}
                   className={
-                    `bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md min-h-0 p-0 leading-none w-full` +
+                    `bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md min-h-0 p-0 leading-none` +
                     ` disabled:opacity-30 disabled:pointer-events-none disabled:hover:bg-[#F68E5F]`
                   }
                   variant="ghost"
@@ -263,11 +263,11 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '4px',
-                    flex: 1,
+                    flex: '1 1 0%', // 确保等宽分布
+                    width: 0, // 重置宽度让flex生效
                   }}
                   className={
-                    `bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md min-h-0 p-0 leading-none w-full` +
+                    `bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md min-h-0 p-0 leading-none` +
                     ` disabled:opacity-30 disabled:pointer-events-none disabled:hover:bg-[#F68E5F]`
                   }
                   variant="ghost"
@@ -287,11 +287,11 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '4px',
-                    flex: 1,
+                    flex: '1 1 0%', // 确保等宽分布
+                    width: 0, // 重置宽度让flex生效
                   }}
                   className={
-                    `bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md min-h-0 p-0 leading-none w-full` +
+                    `bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md min-h-0 p-0 leading-none` +
                     ` disabled:opacity-30 disabled:pointer-events-none disabled:hover:bg-[#F68E5F]`
                   }
                   variant="ghost"

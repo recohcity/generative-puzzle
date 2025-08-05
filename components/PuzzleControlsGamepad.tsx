@@ -6,7 +6,7 @@ import { playButtonClickSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
 import ActionButtons from "./ActionButtons"
 import RestartButton from "@/components/RestartButton"
-import { useDevice } from "@/providers/hooks"
+import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 
 interface PuzzleControlsGamepadProps {
   goToFirstTab?: () => void;
@@ -23,7 +23,7 @@ export default function PuzzleControlsGamepad({ goToFirstTab, controlButtonHeigh
   } = useGame()
   
   // 使用统一设备检测系统
-  const device = useDevice();
+  const device = useDeviceDetection();
   const isPhone = device.deviceType === 'phone';
   const isLandscape = device.layoutMode === 'landscape';
   

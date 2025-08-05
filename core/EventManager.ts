@@ -29,6 +29,15 @@ interface CustomEventData {
   data: any;
   timestamp: number;
   source?: string;
+  // 扩展属性以支持各种事件类型
+  viewportHeight?: number;
+  windowHeight?: number;
+  heightDiff?: number;
+  isHidden?: boolean;
+  online?: boolean;
+  memoryPressure?: number;
+  usedMemory?: number;
+  totalMemory?: number;
 }
 
 interface CanvasSizeChangeEvent extends CustomEventData {
@@ -114,6 +123,92 @@ export class EventManager {
     this.addNativeListener('blur', (event) => {
       this.handleEvent('blur', event);
     });
+
+    // 🎯 移动端特殊场景支持
+    this.setupMobileSpecificListeners();
+  }
+
+  /**
+   * 🎯 设置移动端特殊场景的事件监听器
+   * 解决真实的移动端适配问题
+   */
+  private setupMobileSpecificListeners(): void {
+    // 1. 视口变化监听 - 处理地址栏显示/隐藏
+    if (window.visualViewport) {
+      this.addNativeListener('resize', (event) => {
+        // 检测是否为视口变化（地址栏显示/隐藏）
+        const isViewportChange = window.visualViewport && 
+          (window.visualViewport.height !== window.innerHeight);
+        
+        if (isViewportChange) {
+          this.handleEvent('viewportchange', {
+            ...event,
+            viewportHeight: window.visualViewport?.height || window.innerHeight,
+            windowHeight: window.innerHeight,
+            heightDiff: window.innerHeight - (window.visualViewport?.height || window.innerHeight)
+          });
+        }
+      });
+    }
+
+    // 2. 页面可见性变化 - 处理多任务切换
+    this.addNativeListener('visibilitychange', (event) => {
+      const isHidden = document.hidden;
+      this.handleEvent('multitaskswitch', {
+        ...event,
+        isHidden,
+        timestamp: Date.now()
+      });
+    });
+
+    // 3. 页面焦点变化 - 处理应用切换
+    this.addNativeListener('pagehide', (event) => {
+      this.handleEvent('appbackground', event);
+    });
+
+    this.addNativeListener('pageshow', (event) => {
+      this.handleEvent('appforeground', event);
+    });
+
+    // 4. 网络状态变化监听
+    if ('onLine' in navigator) {
+      this.addNativeListener('online', (event) => {
+        this.handleEvent('networkchange', {
+          ...event,
+          online: true,
+          timestamp: Date.now()
+        });
+      });
+
+      this.addNativeListener('offline', (event) => {
+        this.handleEvent('networkchange', {
+          ...event,
+          online: false,
+          timestamp: Date.now()
+        });
+      });
+    }
+
+    // 5. 设备内存压力监听（如果支持）
+    if ('memory' in performance) {
+      // 定期检查内存使用情况
+      setInterval(() => {
+        const memInfo = (performance as any).memory;
+        if (memInfo) {
+          const memoryPressure = memInfo.usedJSHeapSize / memInfo.jsHeapSizeLimit;
+          if (memoryPressure > 0.8) { // 内存使用超过80%
+            this.handleEvent('memorypressure', {
+              type: 'memorypressure',
+              data: {},
+              memoryPressure,
+              usedMemory: memInfo.usedJSHeapSize,
+              totalMemory: memInfo.jsHeapSizeLimit,
+              timestamp: Date.now()
+            });
+          }
+        }
+      }, 5000); // 每5秒检查一次
+    }
   }
 
   private addNativeListener(eventType: string, handler: EventListener, options?: AddEventListenerOptions): void {
@@ -395,7 +490,7 @@ export class EventManager {
     this.isProcessingQueue = true;
 
     // Process events in next frame to avoid blocking
-    requestAnimationFrame(() => {
+    const processEvents = () => {
       while (this.customEventQueue.length > 0) {
         const event = this.customEventQueue.shift()!;
         this.handleEvent(event.type, event);
@@ -407,7 +502,14 @@ export class EventManager {
       if (this.customEventQueue.length > 0) {
         this.processCustomEventQueue();
       }
-    });
+    };
+
+    // 使用requestAnimationFrame（如果可用），否则使用setTimeout
+    if (typeof requestAnimationFrame !== 'undefined') {
+      requestAnimationFrame(processEvents);
+    } else {
+      setTimeout(processEvents, 0);
+    }
   }
 
   // Canvas size change event handling
@@ -491,6 +593,136 @@ export class EventManager {
     priority: number = 0
   ): () => void {
     return this.subscribe(eventType, callback, { priority });
+  }
+
+  // 🎯 移动端特殊场景事件处理方法
+
+  /**
+   * 监听视口变化（地址栏显示/隐藏）
+   */
+  public onViewportChange(
+    callback: (event: any) => void,
+    priority: number = 0,
+    debounceMs: number = 150
+  ): () => void {
+    return this.subscribe('viewportchange', callback, {
+      priority,
+      config: { debounceMs }
+    });
+  }
+
+  /**
+   * 监听多任务切换
+   */
+  public onMultitaskSwitch(
+    callback: (event: any) => void,
+    priority: number = 0
+  ): () => void {
+    return this.subscribe('multitaskswitch', callback, { priority });
+  }
+
+  /**
+   * 监听应用前后台切换
+   */
+  public onAppBackground(callback: (event: Event) => void, priority: number = 0): () => void {
+    return this.subscribe('appbackground', callback, { priority });
+  }
+
+  public onAppForeground(callback: (event: Event) => void, priority: number = 0): () => void {
+    return this.subscribe('appforeground', callback, { priority });
+  }
+
+  /**
+   * 监听网络状态变化
+   */
+  public onNetworkChange(
+    callback: (event: any) => void,
+    priority: number = 0
+  ): () => void {
+    return this.subscribe('networkchange', callback, { priority });
+  }
+
+  /**
+   * 监听内存压力
+   */
+  public onMemoryPressure(
+    callback: (event: any) => void,
+    priority: number = 0
+  ): () => void {
+    return this.subscribe('memorypressure', callback, { priority });
+  }
+
+  /**
+   * 🎯 移动端键盘检测
+   * 通过视口高度变化检测虚拟键盘的显示/隐藏
+   */
+  public detectKeyboardState(): {
+    isVisible: boolean;
+    height: number;
+  } {
+    if (typeof window === 'undefined') {
+      return { isVisible: false, height: 0 };
+    }
+
+    // 如果没有visualViewport API，使用window尺寸作为fallback
+    if (!window.visualViewport) {
+      return { isVisible: false, height: 0 };
+    }
+
+    const heightDiff = window.innerHeight - window.visualViewport.height;
+    const isVisible = heightDiff > 150; // 键盘高度通常大于150px
+    
+    return {
+      isVisible,
+      height: isVisible ? heightDiff : 0
+    };
+  }
+
+  /**
+   * 🎯 获取设备性能等级
+   * 基于设备内存和硬件并发数
+   */
+  public getDevicePerformanceLevel(): 'low' | 'medium' | 'high' {
+    if (typeof navigator === 'undefined') return 'medium';
+
+    const memory = (navigator as any).deviceMemory || 4;
+    const cores = navigator.hardwareConcurrency || 4;
+
+    if (memory >= 8 && cores >= 8) return 'high';
+    if (memory >= 4 && cores >= 4) return 'medium';
+    return 'low';
+  }
+
+  /**
+   * 🎯 检测设备方向锁定状态
+   */
+  public async checkOrientationLock(): Promise<{
+    isLocked: boolean;
+    currentOrientation: string;
+    supportedOrientations: string[];
+  }> {
+    if (typeof screen === 'undefined' || !screen.orientation) {
+      return {
+        isLocked: false,
+        currentOrientation: 'unknown',
+        supportedOrientations: []
+      };
+    }
+
+    try {
+      const orientation = screen.orientation;
+      return {
+        isLocked: false, // 无法直接检测锁定状态
+        currentOrientation: orientation.type,
+        supportedOrientations: ['portrait-primary', 'portrait-secondary', 'landscape-primary', 'landscape-secondary']
+      };
+    } catch (error) {
+      return {
+        isLocked: false,
+        currentOrientation: 'unknown',
+        supportedOrientations: []
+      };
+    }
   }
 
   // Clean up all subscriptions and timers

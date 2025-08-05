@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label"
 import { CutType } from "@/types/puzzleTypes"
 import { playButtonClickSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
-import { useDevice } from "@/providers/hooks"
+import { useDeviceDetection } from "@/hooks/useDeviceDetection"
 
 interface PuzzleControlsCutTypeProps {
   goToNextTab?: () => void;
@@ -33,7 +33,7 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
   }, [state.originalShape.length]); // 移除localCutType依赖，避免循环
 
   // 使用统一设备检测系统
-  const device = useDevice();
+  const device = useDeviceDetection();
   const isPhone = device.deviceType === 'phone';
   const isLandscape = device.layoutMode === 'landscape';
 
@@ -66,7 +66,7 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--panel-scale, 1) * 16px)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--panel-scale, 1) * 16px)', width: '100%' }}>
       {/* 添加切割类型标签 - 仅在非手机设备上显示 */}
       {!isPhone && !isLandscape && (
         <div style={{ fontSize: 'calc(var(--panel-scale, 1) * 12px)', color: '#FFD5AB', marginBottom: 'calc(var(--panel-scale, 1) * 4px)' }}>

@@ -37,7 +37,7 @@ import DesktopLayout from "./layouts/DesktopLayout";
 import PhonePortraitLayout from "./layouts/PhonePortraitLayout";
 import PhoneLandscapeLayout from "./layouts/PhoneLandscapeLayout";
 // 使用统一的设备检测系统
-import { useDevice } from '@/providers/hooks';
+import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 
 export default function CurveTestOptimized() {
   // --- Remove useGame hook call from top level --- 
@@ -54,25 +54,14 @@ export default function CurveTestOptimized() {
   // 添加ref用于全屏元素
   const gameContainerRef = useRef<HTMLDivElement>(null);
   // 使用统一的设备检测系统
-  const device = useDevice();
+  const device = useDeviceDetection();
   const deviceType = device.deviceType;
   const phoneMode = device.layoutMode as 'portrait' | 'landscape';
   
   // 添加控制面板选项卡状态（仅用于手机模式）
   const [activeTab, setActiveTab] = useState<'shape' | 'puzzle' | 'cut' | 'scatter' | 'controls'>('shape');
 
-  // 监听设备状态变化进行调试输出
-  useEffect(() => {
-    console.log(`设备检测结果 (统一系统):`, {
-      deviceType: device.deviceType,
-      layoutMode: device.layoutMode,
-      screenSize: `${device.screenWidth}x${device.screenHeight}`,
-      isMobile: device.isMobile,
-      isTablet: device.isTablet,
-      isDesktop: device.isDesktop,
-      isPortrait: device.isPortrait
-    });
-  }, [device]);
+  // 设备检测调试输出已移除
 
   // 初始化背景音乐
   useEffect(() => {
@@ -138,8 +127,13 @@ export default function CurveTestOptimized() {
                         e.target.hasAttribute('role') && e.target.getAttribute('role') === 'button' ||
                         e.target.classList.contains('cursor-pointer');
         
-        // 如果是按钮，不阻止默认行为
-        if (isButton) {
+        // 🔧 修复：检查是否是画布元素
+        const isCanvas = e.target.tagName === 'CANVAS' || 
+                        e.target.id === 'puzzle-canvas' ||
+                        e.target.closest('canvas');
+        
+        // 如果是按钮或画布，不阻止默认行为
+        if (isButton || isCanvas) {
           return;
         }
       }
@@ -164,10 +158,20 @@ export default function CurveTestOptimized() {
                         e.target.hasAttribute('role') && e.target.getAttribute('role') === 'button' ||
                         e.target.classList.contains('cursor-pointer');
         
-        // 如果是按钮，不阻止默认行为
-        if (isButton) {
+        // 🔧 修复：检查是否是画布元素
+        const isCanvas = e.target.tagName === 'CANVAS' || 
+                        e.target.id === 'puzzle-canvas' ||
+                        e.target.closest('canvas');
+        
+        // 如果是按钮或画布，不阻止默认行为
+        if (isButton || isCanvas) {
           return;
         }
+      }
+      
+      // 🔧 修复：对于多指触摸（双指旋转），不进行全屏手势检测
+      if (e.touches.length >= 2) {
+        return; // 让双指触摸事件正常传递给画布
       }
       
       // 确保是单指触摸
@@ -195,6 +199,18 @@ export default function CurveTestOptimized() {
     
     // 处理触摸结束事件
     const handleTouchEnd = (e: TouchEvent) => {
+      // 🔧 修复：检查是否是画布元素
+      if (e.target instanceof Element) {
+        const isCanvas = e.target.tagName === 'CANVAS' || 
+                        e.target.id === 'puzzle-canvas' ||
+                        e.target.closest('canvas');
+        
+        // 如果是画布，不阻止默认行为
+        if (isCanvas) {
+          return;
+        }
+      }
+      
       // 重置触摸开始位置
       touchStartY = 0;
       
@@ -565,16 +581,18 @@ export default function CurveTestOptimized() {
   };
 
   let layoutToRender;
-  if (deviceType === 'desktop' || deviceType === 'tablet') {
+  // 🎯 智能布局选择：所有桌面设备（包括iPad横屏）使用桌面布局
+  const shouldUseDesktopLayout = deviceType === 'desktop';
+  
+  if (shouldUseDesktopLayout) {
     layoutToRender = <DesktopLayout {...commonLayoutProps} goToNextTab={goToNextTab} />;
-  } else if (deviceType === 'phone') {
+  } else {
+    // 手机、平板竖屏、小屏设备使用移动端布局
     if (phoneMode === 'portrait') {
       layoutToRender = <PhonePortraitLayout {...commonLayoutProps} />;
     } else { // landscape
       layoutToRender = <PhoneLandscapeLayout {...commonLayoutProps} />;
     }
-  } else {
-    layoutToRender = <div>Loading layout...</div>; // Fallback or loading state
   }
 
   return (
@@ -588,7 +606,9 @@ export default function CurveTestOptimized() {
           display: 'block', // 改为block，不使用flex
         }}
       >
-        {deviceType === 'desktop' ? (
+        
+        {/* 🎯 性能优化：iPad设备使用静态背景，避免动态背景导致的卡顿 */}
+        {(deviceType === 'desktop' && !device.isIPad) ? (
           <BubbleBackground interactive className="absolute inset-0 w-full h-full" />
         ) : (
           <ResponsiveBackground />

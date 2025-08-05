@@ -1,25 +1,20 @@
 # 📚 项目文档中心
 
-欢迎来到 Generative Puzzle 项目文档中心！这里包含了项目的所有详细文档。
+欢迎来到 Generative Puzzle 项目文档中心！这里包含了项目的核心文档。
 
 ## 🚀 快速导航
 
-### 📖 用户文档
+### 📖 核心文档
 - **[快速开始](./GETTING_STARTED.md)** - 5分钟上手指南
-- **[API文档](./API_DOCUMENTATION.md)** - 完整的API参考
-
-### 🏗️ 开发文档
+- **[API文档](./API_DOCUMENTATION.md)** - 完整的API参考手册 (148个API)
+- **[当前适配系统](./CURRENT_ADAPTATION_SYSTEM.md)** - 最新适配技术方案详解
 - **[项目结构](./project_structure.md)** - 完整的项目架构
-- **[自动化测试](./automated_testing_workflow.cn.md)** - 测试体系指南
-- **[开发记录](./development/)** - 开发过程记录
-
-### 🔧 技术文档
-- **[重构记录](./REFACTORING/)** - 重构1.0和2.0完整记录
-- **[适配系统](./adaptation/)** - 跨平台适配技术方案
 - **[配置指南](./configuration/)** - 环境配置和部署
-
-### 📊 分析报告
+- **[测试文档](./testing/)** - Playwright自动化测试系统
 - **[难度设计](./difficulty-design.md)** - 游戏难度设计文档
+
+### 🎯 监督指令
+- **[最高级别监督指令](./SUPREME_ADAPTATION_DIRECTIVE.md)** - 项目开发的最高指导原则
 
 ## 📁 目录结构
 
@@ -27,16 +22,14 @@
 docs/
 ├── README.md                           # 文档中心首页
 ├── GETTING_STARTED.md                  # 快速开始指南
-├── API_DOCUMENTATION.md                # 完整API文档
-├── project_structure.md               # 项目结构文档
-├── automated_testing_workflow.cn.md   # 测试工作流
+├── CURRENT_ADAPTATION_SYSTEM.md        # 当前适配系统技术方案
+├── project_structure.md                # 项目结构文档
+├── difficulty-design.md                # 游戏难度设计文档
+├── SUPREME_ADAPTATION_DIRECTIVE.md     # 最高级别监督指令
 ├── configuration/                      # 配置相关文档
-├── REFACTORING/                        # 重构记录
-│   ├── refactoring1.0/                # 重构1.0：统一架构重构
-│   └── refactoring2.0/                # 重构2.0：架构优化重构
-├── adaptation/                         # 适配相关文档
-├── testing/                           # 测试相关文档
-└── reports/                           # 各类分析报告
+└── testing/                           # 测试相关文档
+    ├── README.md                      # 测试文档索引
+    └── playwright-automation.md       # Playwright自动化测试系统
 ```
 
 ## 🔍 文档搜索
@@ -76,8 +69,21 @@ npm run generate-structure
 # 3. 验证文档完整性
 npm run docs:check
 ```
+### 运行项目质量检查
+```bash
+# 运行完整的质量检查（日常开发使用）
+npm run quality
 
+# 运行质量检查并显示详细报告路径（查看报告）
+npm run quality:verbose
+
+# CI/CD环境中运行（静默模式，CI/CD流水线使用）
+npm run quality:ci
+
+# 检查覆盖率
+npm run test:unit -- --coverage --coverageReporters=text
+
+# 单个文件覆盖率检查
+npm run test:unit -- --testPathPatterns="puzzleDrawing" --coverage --coverageReporters=text
+```
 ---
-
-*📝 最后更新: 2025年7月28日*  
-*🔄 本文档会随着项目发展持续更新*

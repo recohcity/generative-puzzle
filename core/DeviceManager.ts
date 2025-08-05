@@ -243,6 +243,132 @@ export class DeviceManager {
     
     // 发射设备状态变化事件
     this.emitDeviceStateChangeEvent(previousState, newState, changes);
+
+    // 🎯 移动端特殊场景处理
+    this.handleMobileSpecificScenarios(previousState, newState);
+  }
+
+  /**
+   * 🎯 处理移动端特殊场景
+   * 基于真实的设备状态变化进行相应处理
+   */
+  private handleMobileSpecificScenarios(previousState: DeviceState, currentState: DeviceState): void {
+    // 1. 设备旋转场景处理
+    if (previousState.isPortrait !== currentState.isPortrait) {
+      this.handleOrientationChange(previousState, currentState);
+    }
+
+    // 2. 设备类型变化处理（如iPad在不同模式下的识别）
+    if (previousState.deviceType !== currentState.deviceType) {
+      this.handleDeviceTypeChange(previousState, currentState);
+    }
+
+    // 3. 屏幕尺寸显著变化处理（可能是外接显示器或分屏模式）
+    const sizeChangeThreshold = 100; // 100px的变化阈值
+    if (Math.abs(previousState.screenWidth - currentState.screenWidth) > sizeChangeThreshold ||
+        Math.abs(previousState.screenHeight - currentState.screenHeight) > sizeChangeThreshold) {
+      this.handleSignificantSizeChange(previousState, currentState);
+    }
+  }
+
+  /**
+   * 🎯 处理设备旋转变化
+   */
+  private handleOrientationChange(previousState: DeviceState, currentState: DeviceState): void {
+    deviceLogger.info('设备旋转检测', {
+      from: previousState.isPortrait ? 'portrait' : 'landscape',
+      to: currentState.isPortrait ? 'portrait' : 'landscape',
+      screenSize: `${currentState.screenWidth}x${currentState.screenHeight}`
+    });
+
+    // 发射旋转事件给EventManager
+    try {
+      const { EventManager } = require('./EventManager');
+      const eventManager = EventManager.getInstance();
+      
+      eventManager.emit('devicerotation', {
+        from: {
+          orientation: previousState.isPortrait ? 'portrait' : 'landscape',
+          width: previousState.screenWidth,
+          height: previousState.screenHeight
+        },
+        to: {
+          orientation: currentState.isPortrait ? 'portrait' : 'landscape',
+          width: currentState.screenWidth,
+          height: currentState.screenHeight
+        },
+        timestamp: Date.now()
+      }, 'DeviceManager');
+    } catch (error) {
+      deviceLogger.warn('Failed to emit device rotation event', error as Error);
+    }
+  }
+
+  /**
+   * 🎯 处理设备类型变化
+   */
+  private handleDeviceTypeChange(previousState: DeviceState, currentState: DeviceState): void {
+    deviceLogger.info('设备类型变化检测', {
+      from: previousState.deviceType,
+      to: currentState.deviceType,
+      reason: this.getDeviceTypeChangeReason(previousState, currentState)
+    });
+
+    // 可能的原因：iPad在不同模式下的识别、外接键盘等
+    if (currentState.isIOS && previousState.deviceType !== currentState.deviceType) {
+      deviceLogger.info('iOS设备模式变化', {
+        possibleCause: 'iPad键盘连接/断开或分屏模式变化'
+      });
+    }
+  }
+
+  /**
+   * 🎯 处理显著的屏幕尺寸变化
+   */
+  private handleSignificantSizeChange(previousState: DeviceState, currentState: DeviceState): void {
+    const widthChange = currentState.screenWidth - previousState.screenWidth;
+    const heightChange = currentState.screenHeight - previousState.screenHeight;
+
+    deviceLogger.info('显著屏幕尺寸变化', {
+      widthChange,
+      heightChange,
+      from: `${previousState.screenWidth}x${previousState.screenHeight}`,
+      to: `${currentState.screenWidth}x${currentState.screenHeight}`,
+      possibleCause: this.analyzeSizeChangeReason(widthChange, heightChange)
+    });
+  }
+
+  /**
+   * 🎯 分析设备类型变化原因
+   */
+  private getDeviceTypeChangeReason(previousState: DeviceState, currentState: DeviceState): string {
+    if (previousState.isIOS && currentState.isIOS) {
+      if (previousState.deviceType === 'phone' && currentState.deviceType === 'tablet') {
+        return 'iPad可能连接了外接键盘';
+      }
+      if (previousState.deviceType === 'tablet' && currentState.deviceType === 'phone') {
+        return 'iPad可能断开了外接键盘或进入分屏模式';
+      }
+    }
+    
+    return '屏幕尺寸或用户代理变化';
+  }
+
+  /**
+   * 🎯 分析屏幕尺寸变化原因
+   */
+  private analyzeSizeChangeReason(widthChange: number, heightChange: number): string {
+    if (Math.abs(widthChange) > Math.abs(heightChange)) {
+      return widthChange > 0 ? '可能连接了外接显示器' : '可能断开了外接显示器';
+    } else {
+      if (heightChange < -200) {
+        return '可能是虚拟键盘弹出';
+      } else if (heightChange > 200) {
+        return '可能是虚拟键盘收起或地址栏隐藏';
+      }
+    }
+    
+    return '未知原因的尺寸变化';
   }
 
   private notifyListeners(): void {

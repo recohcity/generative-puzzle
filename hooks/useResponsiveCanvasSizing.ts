@@ -1,5 +1,6 @@
 import { RefObject } from "react";
-import { useCanvas } from "@/providers/hooks";
+import { useState, useEffect } from "react";
+import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 
 // 定义 Hook 的 props 接口
 interface UseResponsiveCanvasSizingProps {
@@ -15,25 +16,26 @@ interface CanvasSize {
 }
 
 /**
- * useResponsiveCanvasSizing - 迁移到统一画布管理系统
+ * useResponsiveCanvasSizing - 简化版本
  * 
- * ✅ 现在使用统一的画布管理系统，提供向后兼容性
- * 这个Hook现在是useCanvas的包装器，保持API兼容性
+ * ✅ 基于设备检测提供基础画布尺寸
  */
 export function useResponsiveCanvasSizing({
   containerRef,
   canvasRef,
   backgroundCanvasRef,
 }: UseResponsiveCanvasSizingProps): CanvasSize {
-  // 使用统一的画布管理系统
-  const canvasSize = useCanvas({
-    containerRef,
-    canvasRef,
-    backgroundCanvasRef,
+  const device = useDeviceDetection();
+  const [canvasSize, setCanvasSize] = useState<CanvasSize>({
+    width: 400,
+    height: 400
   });
 
-  // 统一画布管理系统会自动处理所有画布尺寸逻辑
-  // 包括事件监听、防抖、设备检测等
-  
-  return canvasSize; // 返回当前的画布尺寸
+  useEffect(() => {
+    // 简化的尺寸计算
+    const size = device.deviceType === 'phone' ? 300 : 400;
+    setCanvasSize({ width: size, height: size });
+  }, [device.deviceType]);
+
+  return canvasSize;
 } 

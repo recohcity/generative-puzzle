@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label"
 import { PuzzleIcon } from "lucide-react"
 import { playButtonClickSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
-import { useDevice } from "@/providers/hooks"
+import { useDeviceDetection } from "@/hooks/useDeviceDetection"
 
 interface PuzzleControlsCutCountProps {
   goToNextTab?: () => void;
@@ -31,7 +31,7 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
   }, [state.cutCount]);
   
   // 使用统一设备检测系统
-  const device = useDevice();
+  const device = useDeviceDetection();
   const isPhone = device.deviceType === 'phone';
   const isLandscape = device.layoutMode === 'landscape';
   const isSmallScreen = device.screenWidth < 600;

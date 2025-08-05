@@ -1,6 +1,6 @@
 # 项目结构（Project Structure）
 
-> 自动生成时间：2025/7/31 19:49:19  
+> 自动生成时间：2025/8/5 16:04:19  
 > 生成工具：项目结构文档生成器 v3.1.0 - 开发导航版
 
 **开发者导航工具** - 快速理解项目架构，精准定位代码位置，提升开发效率。
@@ -14,9 +14,9 @@
 
 | 统计项 | 数量 | 说明 |
 |--------|------|------|
-| 总目录数 | 67 | 项目目录结构层次 |
-| 总文件数 | 295 | 代码文件和资源文件总数 |
-| 项目容量 | 6.47 MB | 不包含node_modules的项目大小 |
+| 总目录数 | 41 | 项目目录结构层次 |
+| 总文件数 | 199 | 代码文件和资源文件总数 |
+| 项目容量 | 4.5 MB | 不包含node_modules的项目大小 |
 
 ---
 
@@ -193,7 +193,6 @@ npm run lint                   # 代码检查
   - api/
     - performance-trend/
   - test/
-  - test-unified-system/
 - components/
   - animate-ui/
     - backgrounds/
@@ -204,58 +203,33 @@ npm run lint                   # 代码检查
 - contexts/
 - core/
 - coverage/
+  - lcov-report/
 - docs/
-  - adaptation/
-    - architecture/
-    - archive/
-    - compatibility/
-    - desktop/
-    - mobile/
-  - code-review/
-    - v1.3.37/
   - configuration/
-  - REFACTORING/
-    - refactoring1.0/
-    - refactoring2.0/
-      - analysis/
-      - optimization/
-      - tasks/
   - testing/
 - e2e/
+  - screenshots/
   - temp/
 - hooks/
 - lib/
 - playwright-report/
-- providers/
-  - hooks/
 - public/
 - quality-reports/
 - scripts/
 - src/
   - config/
   - quality-system/
-    - ci-cd/
-      - configs/
-      - examples/
-      - tests/
-    - quality-detection/
-      - __tests__/
-      - analyzers/
-      - examples/
 - test-results/
-- tests/
 - types/
 - utils/
-  - adaptation/
+  - __tests__/
+  - debug/
   - geometry/
     - __tests__/
-  - memory/
-  - performance/
   - puzzle/
   - rendering/
     - __tests__/
   - shape/
-- validation-reports/
 ```
 
 </details>
@@ -272,8 +246,6 @@ npm run lint                   # 代码检查
     📁 **performance-trend/**
       📄 `route.ts`
   📁 **test/**
-    📄 `page.tsx`
-  📁 **test-unified-system/**
     📄 `page.tsx`
   📄 `globals.css` - 全局 CSS 样式
   📄 `layout.tsx` - 全局布局
@@ -350,13 +322,11 @@ npm run lint                   # 代码检查
   📄 `RestartButton.tsx`
   📄 `ShapeControls.tsx`
   📄 `theme-provider.tsx`
-  📄 `UnifiedSystemDemo.tsx`
 📁 **constants/**
   📄 `canvasAdaptation.ts`
 📁 **contexts/**
   📄 🔥 `GameContext.tsx` - 核心状态管理中心
 📁 **core/**
-  📄 `AdaptationEngine.ts`
   📄 `CanvasManager.ts`
   📄 `DeviceLayoutManager.ts`
   📄 ⭐ `DeviceManager.ts`
@@ -366,153 +336,82 @@ npm run lint                   # 代码检查
   📄 `EventScheduler.ts`
   📄 `index.ts`
   📄 `LoggingService.ts`
-  📄 `PuzzleAdaptationService.ts`
   📄 `ResizeObserverManager.ts`
   📄 `ValidationService.ts`
 📁 **coverage/**
+  📁 **lcov-report/**
+    📄 `base.css`
+    📄 `block-navigation.js`
+    📄 `colorUtils.ts.html`
+    📄 `favicon.png`
+    📄 `index.html`
+    📄 `prettify.css`
+    📄 `prettify.js`
+    📄 `sort-arrow-sprite.png`
+    📄 `sorter.js`
+  📄 `base.css`
+  📄 `block-navigation.js`
+  📄 `colorUtils.ts.html`
   📄 `coverage-final.json`
+  📄 `coverage-summary.json`
+  📄 `favicon.png`
+  📄 `index.html`
+  📄 `lcov.info`
+  📄 `prettify.css`
+  📄 `prettify.js`
+  📄 `sort-arrow-sprite.png`
+  📄 `sorter.js`
 📁 **docs/**
-  📁 **adaptation/**
-    📁 **architecture/**
-      📄 `performance_optimization.md`
-      📄 `README.md` - 项目说明文档
-      📄 `unified_adaptation_engine.md`
-    📁 **archive/**
-      📄 `puzzle_memory_system_legacy.md`
-    📁 **compatibility/**
-      📄 `browser_support.md`
-      📄 `device_compatibility.md`
-      📄 `README.md` - 项目说明文档
-      📄 `testing_matrix.md`
-    📁 **desktop/**
-      📄 `desktop_canvas_fix.md`
-      📄 `README.md` - 项目说明文档
-      📄 `ultrawide_support.md`
-      📄 `window_resize_handling.md`
-    📁 **mobile/**
-      📄 `iphone16_optimization.md`
-      📄 `mobile_adaptation_summary.md`
-      📄 `mobile_background_adaptation.md`
-      📄 `README.md` - 项目说明文档
-      📄 `touch_interaction.md`
-    📄 `ADAPTATION_GUIDE.md`
-    📄 `ADAPTATION_KNOWLEDGE_INHERITANCE.md`
-    📄 `fix.md`
-    📄 `README.md` - 项目说明文档
-    📄 `V1_3_39_GOLDEN_STANDARD.md`
-  📁 **code-review/**
-    📁 **v1.3.37/**
-      📄 `code-review-report.md`
-      📄 `improvement-plan.md`
-      📄 `metrics-summary.json`
-    📄 `quality-trends.md`
-    📄 `README.md` - 项目说明文档
   📁 **configuration/**
-    📄 `00-configuration-impact-matrix.md`
-    📄 `01-core-architecture.md`
-    📄 `02-unified-managers.md`
-    📄 `03-mobile-adaptation.md`
-    📄 `04-unified-adaptation.md`
-    📄 `05-desktop-centering.md`
-    📄 `06-difficulty-cutting.md`
-    📄 `07-shape-generation.md`
-    📄 `08-puzzle-scatter.md`
-    📄 `09-collision-bounce.md`
-    📄 `10-rotation.md`
-    📄 `11-device-responsive.md`
-    📄 `12-puzzle-piece-adaptation.md`
-    📄 `13-media-sound.md`
-    📄 `14-visual-theme.md`
-    📄 `15-build-dev.md`
-    📄 `16-performance-test.md`
-    📄 `17-ui-components.md`
-    📄 `18-touch-interaction.md`
-    📄 `19-debug-mode.md`
+    📄 `adaptation-system.md`
+    📄 `build-dev.md`
+    📄 `core-architecture.md`
+    📄 `debug-mode.md`
+    📄 `device-responsive.md`
+    📄 `difficulty-cutting.md`
+    📄 `media-sound.md`
+    📄 `performance.md`
     📄 `README.md` - 项目说明文档
-  📁 **REFACTORING/**
-    📁 **refactoring1.0/**
-      📄 `重构前分析.md`
-      📄 `BUILD_STATUS.md`
-      📄 `MIGRATION_COMPLETE.md`
-      📄 `MIGRATION_GUIDE.md`
-      📄 `plan.md`
-      📄 `README.md` - 项目说明文档
-      📄 `REFACTORING_SUMMARY.md`
-      📄 `TYPE_ERRORS_FINAL_FIX.md`
-    📁 **refactoring2.0/**
-      📁 **analysis/**
-        📄 `1.0重构分析.md`
-        📄 `1.0重构改进方案.md`
-        📄 `event-driven-architecture-design.md`
-      📁 **optimization/**
-        📄 `cross-brand-optimization-summary.md`
-        📄 `iphone16-cross-brand-compatibility.md`
-      📁 **tasks/**
-        📄 `task1-7.md`
-        📄 `task10-resize-observer-implementation.md`
-        📄 `task11-setTimeout-removal-implementation.md`
-        📄 `task12-event-response-optimization.md`
-        📄 `task13-device-manager-refactoring.md`
-        📄 `task14-adaptation-engine-refactoring.md`
-        📄 `task15-useCanvas-hook-refactoring.md`
-        📄 `task16-responsibility-separation-validation.md`
-        📄 `task19-error-handling-mechanism.md`
-        📄 `task20-completion-summary.md`
-        📄 `task21-completion-summary.md`
-        📄 `task22-performance-benchmark.md`
-        📄 `task23-code-quality-assessment.md`
-        📄 `task24-documentation-update.md`
-        📄 `task8-device-detection-verification.md`
-        📄 `task9-setTimeout-analysis.md`
-      📄 `README.md` - 项目说明文档
-      📄 `REFACTORING_2.0_SUMMARY.md`
-    📄 `README.md` - 项目说明文档
+    📄 `shape-generation.md`
   📁 **testing/**
-    📄 `automated_testing_workflow.cn.md`
-    📄 `automated_testing_workflow.en.md`
+    📄 `playwright-automation.md`
+    📄 `README.md` - 项目说明文档
   📄 `API_DOCUMENTATION.md`
   📄 `api-scan-report.md`
-  📄 `CICD_INTEGRATION_STATUS.md`
+  📄 `CURRENT_ADAPTATION_SYSTEM.md`
   📄 `difficulty-design.md`
   📄 `GETTING_STARTED.md`
-  📄 `GITHUB_ACTIONS_SETUP_GUIDE.md`
-  📄 `PRE_PUSH_CHECKLIST.md`
   📄 `project_structure.md`
-  📄 `QUICK_ADAPTATION_GUIDE.md`
   📄 `README.md` - 项目说明文档
+  📄 `SUPREME_ADAPTATION_DIRECTIVE.md`
 📁 **e2e/**
+  📁 **screenshots/**
   📁 **temp/**
+    📄 `final_acceptance_test.spec.ts`
+    📄 `simple_desktop_adaptation_test.spec.ts`
   📄 `full_game_flow.spec.ts`
 📁 **hooks/**
   📄 `use-mobile.tsx`
   📄 `use-toast.ts`
   📄 `useDebugToggle.ts`
   📄 `useDeviceDetection.ts`
-  📄 `usePuzzleAdaptation.ts`
+  📄 `useMobileAdaptation.ts`
+  📄 `useMobileEnhancements.ts`
   📄 `usePuzzleInteractions.ts`
   📄 `useResponsiveCanvasSizing.ts`
-  📄 `useShapeAdaptation.ts`
 📁 **lib/**
   📄 `utils.ts`
 📁 **playwright-report/**
-📁 **providers/**
-  📁 **hooks/**
-    📄 `index.ts`
-    📄 `useAdaptation.ts`
-    📄 `useCanvas.ts`
-    📄 `useCanvasEvents.ts`
-    📄 `useCanvasRefs.ts`
-    📄 `useCanvasSize.ts`
-    📄 `useDevice.ts`
-  📄 `SystemProvider.tsx`
 📁 **public/**
-  📄 `bg-mobile-landscape.png`
   📄 `bg-mobile-portrait.png`
   📄 `puzzle-pieces.mp3` - 游戏音效文件
   📄 `texture-tile.png` - 拼图材质纹理
 📁 **quality-reports/**
   📄 `cicd-test-report.json`
   📄 `cicd-test-report.md`
+  📄 `quality-report-2025-07-31.json`
+  📄 `quality-report-2025-08-03.json`
+  📄 `quality-report-2025-08-05.json`
 📁 **scripts/**
   📄 `archive-test-results.js`
   📄 `check-architecture-conflicts.ts`
@@ -533,65 +432,22 @@ npm run lint                   # 代码检查
     📄 `index.ts`
     📄 `performanceConfig.ts`
   📁 **quality-system/**
-    📁 **ci-cd/**
-      📁 **configs/**
-        📄 `external-tools.config.js`
-        📄 `sonarqube.properties`
-      📁 **examples/**
-        📄 `cicd-integration-demo.ts`
-      📁 **tests/**
-        📄 `external-tools-integration.test.ts`
-      📄 `CICDIntegrationService.ts`
-    📁 **quality-detection/**
-      📁 **__tests__/**
-        📄 `AdvancedQualityMetrics.test.ts`
-        📄 `QualityDetectionEngine.test.ts`
-      📁 **analyzers/**
-        📄 `ComplexityAnalyzer.ts`
-        📄 `ESLintAnalyzer.ts`
-        📄 `TestCoverageAnalyzer.ts`
-        📄 `TypeScriptAnalyzer.ts`
-      📁 **examples/**
-        📄 `advanced-metrics-demo.ts`
-        📄 `quality-detection-demo.ts`
-      📄 `AdvancedQualityMetrics.ts`
-      📄 `ImprovementSuggestionEngine.ts`
-      📄 `QualityDetectionEngine.ts`
-      📄 `QualityScoreCalculator.ts`
-      📄 `QualityTrendAnalyzer.ts`
+    📄 `quality-checker.js`
     📄 `README.md` - 项目说明文档
+    📄 `test-trigger.md`
 📁 **test-results/**
-📁 **tests/**
-  📄 `test-performance-benchmark.js`
-  📄 `test-performance-impact.js`
-  📄 `test-real-performance-analysis.js`
-  📄 `test-real-performance-baseline.js`
 📁 **types/**
-  📄 `common.ts`
   📄 `global.d.ts`
-  📄 `memory.ts`
   📄 `puzzleTypes.ts`
 📁 **utils/**
-  📁 **adaptation/**
-    📄 `StatePreservationEngine.ts`
-    📄 ⭐ `UnifiedAdaptationEngine.ts`
+  📁 **__tests__/**
+    📄 `SimpleAdapter.test.ts`
+  📁 **debug/**
+    📄 `wechatTest.js`
   📁 **geometry/**
     📁 **__tests__/**
       📄 `puzzleGeometry.test.ts`
     📄 `puzzleGeometry.ts`
-  📁 **memory/**
-    📄 `AdaptationEngine.ts`
-    📄 `AdaptationRuleEngine.ts`
-    📄 `AdaptationRules.ts`
-    📄 `CoordinateCleaner.ts`
-    📄 `MemoryManager.ts`
-    📄 `MemoryStorage.ts`
-    📄 `memoryUtils.ts`
-  📁 **performance/**
-    📄 `EventManager.ts`
-    📄 `MemoryManager.ts`
-    📄 `OptimizationAdapter.ts`
-    📄 `SystemPerformanceMonitor.ts`
   📁 **puzzle/**
     📄 `cutGenerators.ts`
     📄 `PuzzleGenerator.ts`
@@ -610,11 +466,7 @@ npm run lint                   # 代码检查
     📄 `ShapeGenerator.ts`
   📄 `constants.ts`
   📄 `helper.ts`
-  📄 `puzzlePieceAdaptationUtils.ts`
-📁 **validation-reports/**
-  📄 `validation-report-report_1753780609470_esnf4leap.html`
-  📄 `validation-report-report_1753780609470_esnf4leap.json`
-  📄 `validation-report-report_1753780609470_esnf4leap.markdown`
+  📄 `SimpleAdapter.ts`
 📄 `.gitignore` - Git 忽略文件配置
 📄 `CHANGELOG.md` - 版本历史与变更记录
 📄 `components.json` - Shadcn UI 组件配置
@@ -666,4 +518,4 @@ npm run generate-structure  # 一键更新项目结构文档
 
 ---
 
-*📅 生成时间：2025/7/31 19:49:19 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*
+*📅 生成时间：2025/8/5 16:04:19 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*

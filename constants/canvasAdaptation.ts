@@ -151,8 +151,26 @@ export function calculateMobilePortraitCanvasSize(windowWidth: number, windowHei
     let canvasSize: number;
     let maxCanvasSize: number = MAX_CANVAS_SIZE;
 
+    // iPad竖屏特殊优化 - 充分利用屏幕宽度
+    if (windowWidth >= 768 && windowWidth <= 1024 && windowHeight >= 1024) {
+        // iPad全系列竖屏优化：标准iPad (768×1024)、iPad Pro 11" (834×1194)、iPad Pro 12.9" (1024×1366)
+        canvasSize = Math.min(availableWidth, availableHeight);
+        maxCanvasSize = Math.min(canvasSize, windowWidth - CANVAS_MARGIN * 2 - 20); // 预留20px安全边距
+        
+        // 针对不同iPad尺寸优化
+        if (windowWidth >= 1000) {
+            // iPad Pro 12.9" 竖屏 (1024×1366)
+            maxCanvasSize = Math.min(canvasSize, 980);
+        } else if (windowWidth >= 820) {
+            // iPad Pro 11" 竖屏 (834×1194)
+            maxCanvasSize = Math.min(canvasSize, 780);
+        } else {
+            // iPad 标准 竖屏 (768×1024)
+            maxCanvasSize = Math.min(canvasSize, 720);
+        }
+    }
     // iPhone 16系列特殊优化
-    if (iPhone16Result.detected && iPhone16Result.orientation === 'portrait') {
+    else if (iPhone16Result.detected && iPhone16Result.orientation === 'portrait') {
         canvasSize = Math.min(availableWidth, availableHeight);
 
         // 根据不同iPhone 16机型设置不同的最大画布尺寸
@@ -220,6 +238,8 @@ export function calculateMobilePortraitCanvasSize(windowWidth: number, windowHei
             iPhone16Detected: iPhone16Result.detected,
             maxCanvasSize,
             isHighResolutionPhone: windowWidth <= 460 && windowHeight >= 800,
+            isIPadPortrait: windowWidth >= 768 && windowWidth <= 1024 && windowHeight >= 1024,
+            iPadOptimization: windowWidth >= 768 && windowWidth <= 1024 && windowHeight >= 1024 ? '已启用' : '未启用',
         }
     };
 }

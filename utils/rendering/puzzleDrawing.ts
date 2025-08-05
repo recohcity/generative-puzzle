@@ -632,8 +632,8 @@ export const drawPuzzle = (
     ctx.restore(); // Restore state after applying text styles
 
   } else {
-    // 1. 先绘制目标形状（如有）
-    if (isScattered && originalShape && originalShape.length > 0) {
+    // 1. 先绘制目标形状（如有）- 修复：不论是否散开都显示目标形状轮廓
+    if (originalShape && originalShape.length > 0) {
       ctx.save();
       ctx.beginPath();
       ctx.moveTo(originalShape[0].x, originalShape[0].y);
@@ -692,3 +692,81 @@ export const drawPuzzle = (
 };
 
 // ... existing code ... 
+/**
+ * 🎯 
+绘制画布中心红色+ (F10调试功能)
+ * 用于验证形状是否正确居中
+ */
+export const drawCanvasCenter = (
+  ctx: CanvasRenderingContext2D,
+  canvasWidth: number,
+  canvasHeight: number,
+  showDebugElements: boolean
+) => {
+  if (!showDebugElements) return;
+
+  const centerX = canvasWidth / 2;
+  const centerY = canvasHeight / 2;
+  const crossSize = 20; // +号的大小
+
+  ctx.save();
+  ctx.strokeStyle = 'red';
+  ctx.lineWidth = 3;
+  ctx.setLineDash([]); // 实线
+
+  // 绘制红色+
+  ctx.beginPath();
+  // 水平线
+  ctx.moveTo(centerX - crossSize, centerY);
+  ctx.lineTo(centerX + crossSize, centerY);
+  // 垂直线
+  ctx.moveTo(centerX, centerY - crossSize);
+  ctx.lineTo(centerX, centerY + crossSize);
+  ctx.stroke();
+
+  ctx.restore();
+};
+
+/**
+ * 🎯 绘制形状中心黑色+ (F10调试功能)
+ * 用于验证形状中心位置
+ */
+export const drawShapeCenter = (
+  ctx: CanvasRenderingContext2D,
+  shape: Point[],
+  showDebugElements: boolean
+) => {
+  if (!showDebugElements || !shape || shape.length === 0) return;
+
+  // 计算形状中心
+  const bounds = shape.reduce(
+    (acc, point) => ({
+      minX: Math.min(acc.minX, point.x),
+      minY: Math.min(acc.minY, point.y),
+      maxX: Math.max(acc.maxX, point.x),
+      maxY: Math.max(acc.maxY, point.y),
+    }),
+    { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
+  );
+
+  const centerX = (bounds.minX + bounds.maxX) / 2;
+  const centerY = (bounds.minY + bounds.maxY) / 2;
+  const crossSize = 15; // +号的大小
+
+  ctx.save();
+  ctx.strokeStyle = 'black';
+  ctx.lineWidth = 4;
+  ctx.setLineDash([]); // 实线
+
+  // 绘制黑色+
+  ctx.beginPath();
+  // 水平线
+  ctx.moveTo(centerX - crossSize, centerY);
+  ctx.lineTo(centerX + crossSize, centerY);
+  // 垂直线
+  ctx.moveTo(centerX, centerY - crossSize);
+  ctx.lineTo(centerX, centerY + crossSize);
+  ctx.stroke();
+
+  ctx.restore();
+};

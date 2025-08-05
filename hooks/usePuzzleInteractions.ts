@@ -1,3 +1,8 @@
+/**
+ * 拼图交互处理Hook
+ * 处理鼠标和触摸事件的拼图交互逻辑
+ */
+
 import { RefObject, useState, useRef, useEffect, useCallback } from "react";
 import { GameState, Point, PuzzlePiece } from "@/types/puzzleTypes"; // 从统一类型文件导入
 import { useGame } from "@/contexts/GameContext"; // 导入 useGame 钩子
@@ -100,7 +105,7 @@ export function usePuzzleInteractions({
   );
 
   // 鼠标按下事件
-  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (e.button !== 0) return; // 只响应鼠标左键
 
     const canvas = canvasRef.current;
@@ -108,8 +113,14 @@ export function usePuzzleInteractions({
     if (!state.isScattered) return // 如果拼图没有散开，不允许交互
 
     const rect = canvas.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
+    
+    // 🔧 关键修复：考虑画布缩放比例进行坐标转换
+    // 画布的CSS尺寸可能与逻辑尺寸不同，需要进行缩放转换
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
+    
+    const x = (e.clientX - rect.left) * scaleX
+    const y = (e.clientY - rect.top) * scaleY
 
     // 检查点击的是哪个拼图片段
     let clickedPieceIndex = -1
@@ -177,9 +188,9 @@ export function usePuzzleInteractions({
       dispatch({ type: "SET_SELECTED_PIECE", payload: null })
       dispatch({ type: "SET_DRAGGING_PIECE", payload: null });
     }
-  };
+  }, [state, canvasRef, dispatch]);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!state.draggingPiece || !state.puzzle) {
       return
     }
@@ -188,8 +199,13 @@ export function usePuzzleInteractions({
     if (!canvas) return
 
     const rect = canvas.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
+    
+    // 🔧 关键修复：考虑画布缩放比例进行坐标转换
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
+    
+    const x = (e.clientX - rect.left) * scaleX
+    const y = (e.clientY - rect.top) * scaleY
 
     const dx = x - state.draggingPiece.startX
     const dy = y - state.draggingPiece.startY
@@ -322,9 +338,9 @@ export function usePuzzleInteractions({
         }
       }
     }
-  };
+  }, [state, canvasRef, dispatch]);
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     if (!state.isScattered) return; // Prevent interaction if not scattered
     if (!state.draggingPiece || !state.puzzle || !state.originalPositions) return; // Exit if not dragging or puzzle/positions not ready
 
@@ -375,9 +391,9 @@ export function usePuzzleInteractions({
 
     // 清除拖动状态
     dispatch({ type: "SET_DRAGGING_PIECE", payload: null })
-  };
+  }, [state, dispatch]);
 
-  const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
     // 在React事件中，preventDefault通常是安全的
     // 如果仍有问题，浏览器会忽略而不会抛出错误
     e.preventDefault();
@@ -386,13 +402,17 @@ export function usePuzzleInteractions({
     if (!state.isScattered) return // 如果拼图没有散开，不允许交互
 
     const rect = canvasRef.current.getBoundingClientRect()
+    
+    // 🔧 关键修复：考虑画布缩放比例进行坐标转换
+    const scaleX = canvasRef.current.width / rect.width
+    const scaleY = canvasRef.current.height / rect.height
 
     // 检查是否是单点触摸（拖拽）或多点触摸（旋转）
     if (e.touches.length === 1) {
       // 单点触摸 - 处理拼图选择/拖拽
       const touch = e.touches[0]
-      const touchX = touch.clientX - rect.left
-      const touchY = touch.clientY - rect.top
+      const touchX = (touch.clientX - rect.left) * scaleX
+      const touchY = (touch.clientY - rect.top) * scaleY
 
       // 保存初始触摸位置
       lastTouchRef.current = { x: touchX, y: touchY }
@@ -460,30 +480,64 @@ export function usePuzzleInteractions({
         playPieceSelectSound()
       }
     } 
-    else if (e.touches.length === 2 && state.selectedPiece !== null) {
+    else if (e.touches.length === 2) {
       // 双指触摸 - 处理旋转
+      // 🔧 修复：不需要已选中拼图，双指触摸时自动选中触摸区域的拼图
       const touch1 = e.touches[0]
       const touch2 = e.touches[1]
       
+      // 计算双指中心点，用于确定要旋转的拼图
+      const centerX = ((touch1.clientX + touch2.clientX) / 2 - rect.left) * scaleX
+      const centerY = ((touch1.clientY + touch2.clientY) / 2 - rect.top) * scaleY
+      
+      // 如果没有选中拼图，先尝试选中双指中心点下的拼图
+      if (state.selectedPiece === null) {
+        let clickedPieceIndex = -1
+        
+        if (state.puzzle) {
+          for (let i = state.puzzle.length - 1; i >= 0; i--) {
+            if (state.completedPieces.includes(i)) continue
+
+            const piece = state.puzzle[i]
+            const center = calculateCenter(piece.points)
+            const rotationAngle = -piece.rotation
+            const rotatedPoint = rotatePoint(centerX, centerY, center.x, center.y, rotationAngle)
+            
+            if (isPointInPolygon(rotatedPoint.x, rotatedPoint.y, piece.points)) {
+              clickedPieceIndex = i
+              break
+            }
+          }
+        }
+        
+        // 如果找到拼图，选中它
+        if (clickedPieceIndex !== -1) {
+          dispatch({ type: "SET_SELECTED_PIECE", payload: clickedPieceIndex })
+          playPieceSelectSound()
+        }
+      }
+      
       // 计算两个触摸点形成的角度
-        const angle = calculateAngle(
-          touch1.clientX - rect.left,
-          touch1.clientY - rect.top,
-          touch2.clientX - rect.left,
-        touch2.clientY - rect.top
+      const angle = calculateAngle(
+        (touch1.clientX - rect.left) * scaleX,
+        (touch1.clientY - rect.top) * scaleY,
+        (touch2.clientX - rect.left) * scaleX,
+        (touch2.clientY - rect.top) * scaleY
       )
       
       // 保存初始角度用于计算旋转
       setTouchStartAngle(angle)
+      
+      // 清除拖拽状态，因为双指操作是旋转而不是拖拽
+      dispatch({ type: "SET_DRAGGING_PIECE", payload: null })
     }
-  };
+  }, [state, canvasRef, dispatch]);
   
   // 触摸移动事件处理
-  const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
     // 在React合成事件中，preventDefault通常是安全的
     e.preventDefault();
-    if (!state.draggingPiece || !state.puzzle) return
-
+    
     const canvas = canvasRef.current
     if (!canvas) return
 
@@ -491,35 +545,64 @@ export function usePuzzleInteractions({
     
     // 处理多点触摸旋转
     if (e.touches.length >= 2 && state.selectedPiece !== null) {
+      
       // 多点触摸 - 处理旋转
+      // 🔧 关键修复：考虑画布缩放比例进行坐标转换
+      const scaleX = canvas.width / rect.width
+      const scaleY = canvas.height / rect.height
+      
       const touch1 = e.touches[0]
       const touch2 = e.touches[1]
-      const touch1X = touch1.clientX - rect.left
-      const touch1Y = touch1.clientY - rect.top
-      const touch2X = touch2.clientX - rect.left
-      const touch2Y = touch2.clientY - rect.top
+      const touch1X = (touch1.clientX - rect.left) * scaleX
+      const touch1Y = (touch1.clientY - rect.top) * scaleY
+      const touch2X = (touch2.clientX - rect.left) * scaleX
+      const touch2Y = (touch2.clientY - rect.top) * scaleY
 
       const currentAngle = calculateAngle(touch1X, touch1Y, touch2X, touch2Y)
+      
+      // 🔧 修复：确保touchStartAngle已初始化且不为0
       if (touchStartAngle !== 0) {
-        const rotationChange = currentAngle - touchStartAngle
+        let rotationChange = currentAngle - touchStartAngle
+        
+        // 🔧 修复：处理角度跨越-180/180度边界的情况
+        if (rotationChange > 180) {
+          rotationChange -= 360
+        } else if (rotationChange < -180) {
+          rotationChange += 360
+        }
 
-        // 只有当旋转变化超过阈值时才应用旋转
-        if (Math.abs(rotationChange) > 5) {
-          const isClockwise = rotationChange > 0
-          rotatePiece(isClockwise)
+        // 🔧 修复：按15度增量旋转，与旋转按钮保持一致
+        if (Math.abs(rotationChange) >= 15) {
+          // 只执行一次15度旋转，避免重复
+          const isClockwise = rotationChange > 0;
+          
+
+          
+          // 只执行一次15度旋转
+          rotatePiece(isClockwise);
           
           // 播放旋转音效
-          playRotateSound()
+          playRotateSound();
           
-          // 更新开始角度
-          setTouchStartAngle(currentAngle)
+          // 🔧 关键修复：直接设置为当前角度，而不是累加
+          setTouchStartAngle(currentAngle);
         }
+      } else {
+        // 如果touchStartAngle为0，重新初始化
+        setTouchStartAngle(currentAngle);
       }
+      
+      // 双指旋转时不处理拖拽
+      return
     } else if (e.touches.length === 1) {
       // 单点触摸 - 处理拖动
+      // 🔧 关键修复：考虑画布缩放比例进行坐标转换
+      const scaleX = canvas.width / rect.width
+      const scaleY = canvas.height / rect.height
+      
       const touch = e.touches[0]
-      const touchX = touch.clientX - rect.left
-      const touchY = touch.clientY - rect.top
+      const touchX = (touch.clientX - rect.left) * scaleX
+      const touchY = (touch.clientY - rect.top) * scaleY
 
       // 使用上一次触摸位置计算移动距离
       if (lastTouchRef.current) {
@@ -640,16 +723,16 @@ export function usePuzzleInteractions({
         lastTouchRef.current = { x: touchX, y: touchY };
       }
     }
-  };
+  }, [state, canvasRef, dispatch]);
   
   // 处理触摸结束事件
-  const handleTouchEnd = (e: React.TouchEvent<HTMLCanvasElement>) => {
+  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
     // 在React合成事件中，preventDefault通常是安全的
     e.preventDefault();
     e.stopPropagation();
     
     // 检查是否所有触摸点都已结束
-      if (e.touches.length === 0) {
+    if (e.touches.length === 0) {
       // 复用鼠标释放的逻辑处理拖动结束
       handleMouseUp()
       
@@ -660,22 +743,64 @@ export function usePuzzleInteractions({
       lastTouchRef.current = null
       setTouchStartAngle(0)
     }
-    // 如果仍有一个触摸点，更新lastTouch为当前位置
+    // 🔧 修复：从双指变为单指时的状态处理
     else if (e.touches.length === 1) {
       const canvas = canvasRef.current
       if (!canvas) return
       
       const rect = canvas.getBoundingClientRect()
-      const touch = e.touches[0]
-      lastTouchRef.current = { 
-        x: touch.clientX - rect.left, 
-        y: touch.clientY - rect.top 
-      }
       
-      // 重置旋转状态
+      // 🔧 关键修复：考虑画布缩放比例进行坐标转换
+      const scaleX = canvas.width / rect.width
+      const scaleY = canvas.height / rect.height
+      
+      const touch = e.touches[0]
+      const touchX = (touch.clientX - rect.left) * scaleX
+      const touchY = (touch.clientY - rect.top) * scaleY
+      
+      // 更新lastTouch为当前位置，准备单指拖拽
+      lastTouchRef.current = { x: touchX, y: touchY }
+      
+      // 重置旋转状态，因为不再是双指操作
       setTouchStartAngle(0)
+      
+      // 🔧 修复：如果有选中的拼图，设置拖拽状态
+      if (state.selectedPiece !== null) {
+        dispatch({ 
+          type: "SET_DRAGGING_PIECE", 
+          payload: {
+            index: state.selectedPiece,
+            startX: touchX,
+            startY: touchY,
+          } 
+        })
+      }
     }
-  };
+    // 🔧 修复：从单指变为双指时清除拖拽状态
+    else if (e.touches.length === 2) {
+      // 清除拖拽状态，准备旋转
+      dispatch({ type: "SET_DRAGGING_PIECE", payload: null })
+      lastTouchRef.current = null
+      
+      // 重新计算双指角度
+      const canvas = canvasRef.current
+      if (canvas) {
+        const rect = canvas.getBoundingClientRect()
+        const scaleX = canvas.width / rect.width
+        const scaleY = canvas.height / rect.height
+        
+        const touch1 = e.touches[0]
+        const touch2 = e.touches[1]
+        const angle = calculateAngle(
+          (touch1.clientX - rect.left) * scaleX,
+          (touch1.clientY - rect.top) * scaleY,
+          (touch2.clientX - rect.left) * scaleX,
+          (touch2.clientY - rect.top) * scaleY
+        )
+        setTouchStartAngle(angle)
+      }
+    }
+  }, [state, dispatch, handleMouseUp]);
 
   return {
     handleMouseDown,

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { ScatterChart } from "lucide-react"
 import { playButtonClickSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
-import { useDevice } from "@/providers/hooks"
+import { useDeviceDetection } from "@/hooks/useDeviceDetection"
 
 interface PuzzleControlsScatterProps {
   goToNextTab?: () => void;
@@ -18,7 +18,7 @@ export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 34 }
   } = useGame()
   
   // 使用统一设备检测系统
-  const device = useDevice();
+  const device = useDeviceDetection();
   const isPhone = device.deviceType === 'phone';
   const isLandscape = device.layoutMode === 'landscape';
   
@@ -44,7 +44,7 @@ export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 34 }
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', width: '100%' }}>
       <Button
         onClick={handleScatterPuzzle}
         disabled={!isPuzzleGenerated || state.isScattered}

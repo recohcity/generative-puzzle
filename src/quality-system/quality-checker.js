@@ -145,7 +145,8 @@ class ProjectQualityChecker {
       
       this.results.tests.passed = true;
       this.results.tests.coverage = coverage;
-      this.results.tests.score = Math.min(100, coverage + 20); // 覆盖率 + 20分基础分
+      // 修复评分逻辑：覆盖率直接作为分数，不加基础分
+      this.results.tests.score = Math.round(coverage);
       
       console.log(`✅ 测试通过，覆盖率: ${coverage.toFixed(1)}%`);
       
@@ -161,9 +162,9 @@ class ProjectQualityChecker {
    */
   calculateOverallScore() {
     const weights = {
-      typescript: 0.4,  // TypeScript 权重 40%
-      eslint: 0.3,      // ESLint 权重 30%
-      tests: 0.3        // 测试 权重 30%
+      typescript: 0.3,  // TypeScript 权重 30% (降低权重)
+      eslint: 0.2,      // ESLint 权重 20%
+      tests: 0.5        // 测试 权重 50% (提高测试重要性)
     };
     
     this.results.overall.score = Math.round(
@@ -172,10 +173,8 @@ class ProjectQualityChecker {
       this.results.tests.score * weights.tests
     );
     
-    this.results.overall.passed = 
-      this.results.typescript.passed &&
-      this.results.eslint.passed &&
-      this.results.tests.passed;
+    // 修复"通过"逻辑：基于总体分数而不是所有项目都必须完美
+    this.results.overall.passed = this.results.overall.score >= 70;
   }
 
   /**

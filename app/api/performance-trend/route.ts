@@ -49,6 +49,11 @@ export async function GET() {
           cutType: meta.scenario.cutType || '-',
           cutCount: meta.scenario.cutCount ?? '-',
           version: meta.version || '未记录',
+          // 新增：适配测试数据
+          adaptationPassRate: meta.metrics.adaptationPassRate ? parseFloat(meta.metrics.adaptationPassRate.replace('%', '')) : undefined,
+          adaptationTestCount: meta.metrics.adaptationTestCount ?? undefined,
+          adaptationPassCount: meta.metrics.adaptationPassCount ?? undefined,
+          adaptationTestResults: meta.metrics.adaptationTestResults ?? undefined,
           ...(meta.failReason ? { failReason: meta.failReason } : {})
         });
       }

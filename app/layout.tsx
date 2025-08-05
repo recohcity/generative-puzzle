@@ -3,9 +3,7 @@ import "@/app/globals.css"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
-import { useEffect } from "react"
 import EnvModeClient from "@/components/EnvModeClient"
-import { SystemProvider } from "@/providers/SystemProvider";
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -37,13 +35,10 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <EnvModeClient />
-        <SystemProvider>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            {children}
-          </ThemeProvider>
-        </SystemProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   )
 }
-

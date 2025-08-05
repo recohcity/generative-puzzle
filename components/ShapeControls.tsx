@@ -1,11 +1,11 @@
 "use client"
 import { useGame } from "@/contexts/GameContext"
 import { Button } from "@/components/ui/button"
-import { Check, Hexagon, Circle, CloudyIcon as BlobIcon } from "lucide-react"
+import { Hexagon, Cloud, Zap } from "lucide-react"
 import { ShapeType } from "@/types/puzzleTypes"
 import { playButtonClickSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
-import { useDevice } from "@/providers/hooks"
+import { useDeviceDetection } from "@/hooks/useDeviceDetection"
 
 interface ShapeControlsProps {
   goToNextTab?: () => void;
@@ -17,7 +17,7 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
   const { state, dispatch, generateShape, resetGame } = useGame()
 
   // 使用统一设备检测系统
-  const device = useDevice();
+  const device = useDeviceDetection();
   const isPhone = device.deviceType === 'phone';
   const isLandscape = device.layoutMode === 'landscape';
 
@@ -75,17 +75,19 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
     return `flex flex-col items-center justify-center shadow-sm transition-all duration-200 ${base}`;
   };
 
-  // --- 固定像素样式 ---
+  // --- 响应式样式 ---
   const buttonStyle = {
     fontSize: fontSize + 'px',
     padding: '0',
     borderRadius: '14px',
     gap: '6px',
-    minWidth: '80px',
     minHeight: buttonHeight,
-    width: '80px',
     height: buttonHeight,
     lineHeight: '18px',
+    // 弹性布局样式
+    flex: 1,
+    minWidth: 0,
+    width: 'auto',
   };
   const iconStyle = {
     width: buttonHeight * 0.27,
@@ -98,23 +100,23 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
   };
 
   return (
-    <div className="space-y-[1px]" style={{}}>
+    <div className="space-y-[1px] w-full" style={{}}>
       {/* 添加形状类型标签 - 仅在非手机设备上显示 */}
       {!isPhone && !isLandscape && (
         <div className="text-[12px] text-[#FFD5AB] mb-[10px] leading-[22px] font-medium">选择形状类型</div>
       )}
-      <div>
-        <div className="flex gap-[10px]">
+      <div className="w-full">
+        <div className="flex gap-[10px] w-full">
           <Button
             variant="ghost"
             className={getButtonClass(ShapeType.Polygon) + " flex flex-col items-center justify-center"}
-            style={{ ...buttonStyle, flex: 1, minWidth: 0, width: 'auto', maxWidth: '240px' }}
+            style={buttonStyle}
             onClick={() => {
               if (isShapeButtonDisabled) return;
               handleShapeButtonClick(ShapeType.Polygon);
             }}
           >
-            <Hexagon 
+            <Hexagon
               style={iconStyle}
               className="text-white"
               strokeWidth={2}
@@ -124,13 +126,13 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
           <Button
             variant="ghost"
             className={getButtonClass(ShapeType.Curve) + " flex flex-col items-center justify-center"}
-            style={{ ...buttonStyle, flex: 1, minWidth: 0, width: 'auto', maxWidth: '240px' }}
+            style={buttonStyle}
             onClick={() => {
               if (isShapeButtonDisabled) return;
               handleShapeButtonClick(ShapeType.Curve);
             }}
           >
-            <Circle 
+            <Cloud
               style={iconStyle}
               className="text-white"
               strokeWidth={2}
@@ -140,13 +142,13 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
           <Button
             variant="ghost"
             className={getButtonClass(ShapeType.Irregular) + " flex flex-col items-center justify-center"}
-            style={{ ...buttonStyle, flex: 1, minWidth: 0, width: 'auto', maxWidth: '240px' }}
+            style={buttonStyle}
             onClick={() => {
               if (isShapeButtonDisabled) return;
               handleShapeButtonClick(ShapeType.Irregular);
             }}
           >
-            <BlobIcon 
+            <Zap
               style={iconStyle}
               className="text-white"
               strokeWidth={2}

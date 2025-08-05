@@ -1,4 +1,4 @@
-import { calculateCenter, isPointInPolygon, rotatePoint, calculateAngle, Point } from '../puzzleGeometry';
+import { calculateCenter, isPointInPolygon, rotatePoint, calculateAngle, calculatePieceBounds, Point } from '../puzzleGeometry';
 
 describe('puzzleGeometry', () => {
   describe('calculateCenter', () => {
@@ -115,6 +115,68 @@ describe('puzzleGeometry', () => {
 
     test('should calculate 45 degrees for a diagonal line', () => {
       expect(calculateAngle(0, 0, 10, 10)).toBeCloseTo(45);
+    });
+  });
+
+  describe('calculatePieceBounds', () => {
+    test('should calculate correct bounds for a square piece', () => {
+      const piece = {
+        points: [
+          { x: 10, y: 20 },
+          { x: 50, y: 20 },
+          { x: 50, y: 60 },
+          { x: 10, y: 60 }
+        ]
+      };
+      
+      const bounds = calculatePieceBounds(piece);
+      
+      expect(bounds.minX).toBe(10);
+      expect(bounds.maxX).toBe(50);
+      expect(bounds.minY).toBe(20);
+      expect(bounds.maxY).toBe(60);
+      expect(bounds.width).toBe(40);
+      expect(bounds.height).toBe(40);
+      expect(bounds.centerX).toBe(30);
+      expect(bounds.centerY).toBe(40);
+    });
+
+    test('should calculate correct bounds for a triangle piece', () => {
+      const piece = {
+        points: [
+          { x: 0, y: 0 },
+          { x: 100, y: 0 },
+          { x: 50, y: 80 }
+        ]
+      };
+      
+      const bounds = calculatePieceBounds(piece);
+      
+      expect(bounds.minX).toBe(0);
+      expect(bounds.maxX).toBe(100);
+      expect(bounds.minY).toBe(0);
+      expect(bounds.maxY).toBe(80);
+      expect(bounds.width).toBe(100);
+      expect(bounds.height).toBe(80);
+      expect(bounds.centerX).toBe(50);
+      expect(bounds.centerY).toBe(40);
+    });
+
+    test('should handle single point piece', () => {
+      const piece = {
+        points: [{ x: 25, y: 35 }]
+      };
+      
+      const bounds = calculatePieceBounds(piece);
+      
+      expect(bounds.minX).toBe(25);
+      expect(bounds.maxX).toBe(25);
+      expect(bounds.minY).toBe(35);
+      expect(bounds.maxY).toBe(35);
+      expect(bounds.width).toBe(0);
+      expect(bounds.height).toBe(0);
+      expect(bounds.centerX).toBe(25);
+      expect(bounds.centerY).toBe(35);
     });
   });
 }); 

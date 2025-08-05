@@ -14,6 +14,8 @@ module.exports = {
   testMatch: [
     '<rootDir>/utils/rendering/__tests__/**/*.test.ts',
     '<rootDir>/utils/geometry/__tests__/**/*.test.ts',
+    '<rootDir>/utils/adaptation/__tests__/**/*.test.ts',
+    '<rootDir>/utils/mobile/__tests__/**/*.test.ts',
     '<rootDir>/src/quality-system/__tests__/**/*.test.ts',
     '<rootDir>/src/quality-system/logging/__tests__/**/*.test.ts',
     '<rootDir>/src/quality-system/error-handling/__tests__/basic-error-handling.test.ts',

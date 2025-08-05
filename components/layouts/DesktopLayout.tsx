@@ -15,8 +15,7 @@ import { useGame } from "@/contexts/GameContext";
 import { playButtonClickSound } from "@/utils/rendering/soundEffects";
 import { DESKTOP_ADAPTATION } from '@/src/config/adaptationConfig';
 import { calculateDesktopCanvasSize } from '@/constants/canvasAdaptation';
-import { useSystem } from '@/providers/SystemProvider';
-import { useDevice } from '@/providers/hooks';
+import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 
 interface DesktopLayoutProps {
   isMusicPlaying: boolean;
@@ -75,7 +74,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   const leftPanelRef = useRef<HTMLDivElement>(null);
   
   // 使用统一设备检测系统获取屏幕尺寸
-  const device = useDevice();
+  const device = useDeviceDetection();
   const windowWidth = device.screenWidth;
   const windowHeight = device.screenHeight;
   
@@ -112,8 +111,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   const panelContentPadding = panelScale <= 0.5 ? 10 : 10;
   const panelContentGap = panelScale <= 0.5 ? 10 : Math.max(2, Math.min(6, 16 * panelScale));
 
-  // 使用统一的事件管理系统监听resize
-  const { eventManager } = useSystem();
+  // 移除统一的事件管理系统，使用原生事件监听
   
   useEffect(() => {
     function updateLayout() {
@@ -127,11 +125,20 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
     
     updateLayout();
     
-    // 使用统一的事件管理系统
-    const unsubscribe = eventManager.onResize(updateLayout, 5, 200); // 中等优先级，200ms防抖
+    // 使用原生事件监听替代eventManager
+    let timeoutId: NodeJS.Timeout;
+    const handleResize = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(updateLayout, 200); // 200ms防抖
+    };
     
-    return unsubscribe;
-  }, [canvasSizeFinal, actualPanelWidth, panelHeight, eventManager]);
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      clearTimeout(timeoutId);
+    };
+  }, [canvasSizeFinal, actualPanelWidth, panelHeight]);
 
 
 
@@ -161,49 +168,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
         // 确保内容在超宽屏幕下居中，不贴边
         width: 'fit-content',
       }}>
-        {/* Left Control Panel */}
-        <div
-          ref={leftPanelRef}
-          className="flex-shrink-0"
-          style={{
-            height: panelHeight,
-            width: actualPanelWidth,
-            minWidth: MIN_PANEL_WIDTH,
-            // 去除marginTop/marginLeft，完全由外层padding控制
-            ...(panelScale <= 0.5 ? { '--panel-scale': 0.4 } : { '--panel-scale': panelScale })
-          } as React.CSSProperties}
-        >
-          <div className="bg-white/30 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/30 h-full flex flex-col overflow-auto"
-            style={{ padding: panelContentPadding, fontSize: panelScale <= 0.5 ? 16 : 'calc(16px * var(--panel-scale))', gap: panelContentGap }}
-          >
-            <div className="flex flex-col mb-1 flex-shrink-0">
-              <div className="flex items-center justify-between">
-                <h1 className="font-bold text-[#FFB17A]" style={{ fontSize: 18, marginTop: 0, marginBottom: 0 }}>生成式拼图游戏</h1>
-                <GlobalUtilityButtons 
-                  isMusicPlaying={isMusicPlaying}
-                  isFullscreen={isFullscreen}
-                  onToggleMusic={onToggleMusic}
-                  onToggleFullscreen={onToggleFullscreen}
-                />
-              </div>
-              <h3 className="font-medium text-[#FFD5AB]" style={{ fontSize: 14, marginTop: 1, marginBottom: 1 }}>生成拼图</h3>
-            </div>
-            <div className="space-y-4 flex-1 pr-1 -mr-1">
-              <ShapeControls goToNextTab={goToNextTab} /> 
-              <PuzzleControlsCutType goToNextTab={goToNextTab} />
-              <PuzzleControlsCutCount goToNextTab={goToNextTab} />
-              <PuzzleControlsScatter goToNextTab={goToNextTab} />
-              <h3 className="font-medium mt-4 mb-3 text-[#FFD5AB]" style={{ fontSize: panelScale <= 0.5 ? 16 : 'calc(0.9rem * var(--panel-scale))' }}>游戏控制</h3>
-              <ActionButtons layout="desktop" buttonHeight={DESKTOP_CONTROL_BUTTON_HEIGHT} />
-              <RestartButton
-                onClick={handleDesktopResetGame}
-                style={{ height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 14 : 'calc(0.95rem * var(--panel-scale))' }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Right Game Area */}
+        {/* Left Game Area - 优化后的主要内容区域 */}
         <div
           style={{
             width: canvasSizeFinal,
@@ -248,6 +213,48 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
               </div>
             )}
             <PuzzleCanvas />
+          </div>
+        </div>
+
+        {/* Right Control Panel - 优化后的控制面板 */}
+        <div
+          ref={leftPanelRef}
+          className="flex-shrink-0"
+          style={{
+            height: panelHeight,
+            width: actualPanelWidth,
+            minWidth: MIN_PANEL_WIDTH,
+            // 去除marginTop/marginLeft，完全由外层padding控制
+            ...(panelScale <= 0.5 ? { '--panel-scale': 0.4 } : { '--panel-scale': panelScale })
+          } as React.CSSProperties}
+        >
+          <div className="bg-white/30 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/30 h-full flex flex-col overflow-auto"
+            style={{ padding: panelContentPadding, fontSize: panelScale <= 0.5 ? 16 : 'calc(16px * var(--panel-scale))', gap: panelContentGap }}
+          >
+            <div className="flex flex-col mb-1 flex-shrink-0">
+              <div className="flex items-center justify-between">
+                <h1 className="font-bold text-[#FFB17A]" style={{ fontSize: 18, marginTop: 0, marginBottom: 0 }}>生成式拼图游戏</h1>
+                <GlobalUtilityButtons 
+                  isMusicPlaying={isMusicPlaying}
+                  isFullscreen={isFullscreen}
+                  onToggleMusic={onToggleMusic}
+                  onToggleFullscreen={onToggleFullscreen}
+                />
+              </div>
+              <h3 className="font-medium text-[#FFD5AB]" style={{ fontSize: 14, marginTop: 1, marginBottom: 1 }}>生成拼图</h3>
+            </div>
+            <div className="space-y-4 flex-1 pr-1 -mr-1">
+              <ShapeControls goToNextTab={goToNextTab} /> 
+              <PuzzleControlsCutType goToNextTab={goToNextTab} />
+              <PuzzleControlsCutCount goToNextTab={goToNextTab} />
+              <PuzzleControlsScatter goToNextTab={goToNextTab} />
+              <h3 className="font-medium mt-4 mb-3 text-[#FFD5AB]" style={{ fontSize: panelScale <= 0.5 ? 16 : 'calc(0.9rem * var(--panel-scale))' }}>游戏控制</h3>
+              <ActionButtons layout="desktop" buttonHeight={DESKTOP_CONTROL_BUTTON_HEIGHT} />
+              <RestartButton
+                onClick={handleDesktopResetGame}
+                style={{ height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 14 : 'calc(0.95rem * var(--panel-scale))' }}
+              />
+            </div>
           </div>
         </div>
         </div>
