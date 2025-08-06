@@ -5,6 +5,7 @@ import { ScatterChart } from "lucide-react"
 import { playButtonClickSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
 import { useDeviceDetection } from "@/hooks/useDeviceDetection"
+import { useTranslation } from '@/contexts/I18nContext'
 
 interface PuzzleControlsScatterProps {
   goToNextTab?: () => void;
@@ -16,6 +17,7 @@ export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 34 }
     state,
     scatterPuzzle 
   } = useGame()
+  const { t } = useTranslation()
   
   // 使用统一设备检测系统
   const device = useDeviceDetection();
@@ -49,6 +51,7 @@ export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 34 }
         onClick={handleScatterPuzzle}
         disabled={!isPuzzleGenerated || state.isScattered}
         className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md ${(!isPuzzleGenerated || state.isScattered) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+        data-testid="scatter-puzzle-button"
         style={{
           fontSize: '14px',
           borderRadius: '14px',
@@ -64,7 +67,7 @@ export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 34 }
         variant="ghost"
       >
         <ScatterChart style={{ width: '16px', height: '16px', marginRight: '6px', flexShrink: 0 }} strokeWidth={2} />
-        {state.isScattered ? "拼图已散开" : "散开拼图"}
+        {state.isScattered ? t('game.scatter.completed') : t('game.scatter.button')}
       </Button>
 
       <div style={{
@@ -75,7 +78,7 @@ export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 34 }
         lineHeight: '16px',
       }}>
         {state.isScattered 
-          ? "游戏已开始，请将拼图拖到正确位置" 
+          ? t('game.hints.gameInProgress')
           : " "
         }
       </div>

@@ -3,9 +3,10 @@ import { useGame } from "@/contexts/GameContext"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { PuzzleIcon } from "lucide-react"
-import { playButtonClickSound } from "@/utils/rendering/soundEffects"
+import { playButtonClickSound, playCutSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
 import { useDeviceDetection } from "@/hooks/useDeviceDetection"
+import { useTranslation } from '@/contexts/I18nContext'
 
 interface PuzzleControlsCutCountProps {
   goToNextTab?: () => void;
@@ -19,6 +20,7 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
     dispatch, 
     generatePuzzle 
   } = useGame()
+  const { t } = useTranslation()
   
   // 添加本地状态用于跟踪选择的次数
   const [localCutCount, setLocalCutCount] = useState<number | null>(null)
@@ -56,7 +58,7 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
   }
 
   const handleGeneratePuzzle = () => {
-    playButtonClickSound()
+    playCutSound() // 使用切割音效替代按钮点击音效
     generatePuzzle()
     
     // 生成拼图后自动跳转到下一个tab
@@ -83,7 +85,7 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
       {/* 添加切割次数标签 - 仅在非手机设备上显示 */}
       {!isPhone && !isLandscape && (
         <div style={{ fontSize: '12px', color: '#FFD5AB', marginBottom: '4px', lineHeight: '16px' }}>
-          选择切割次数
+          {t('game.cutCount.title')}
         </div>
       )}
       <div className="w-full">
@@ -94,7 +96,8 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
               key={num}
               onClick={() => canModifySettings && handleCutCountChange(num)}
               className={getDifficultyButtonStyle(num)}
-              aria-label={`选择切割${num}次`}
+              aria-label={t('game.cutCount.title') + ` ${num}`}
+              data-testid={`cut-count-${num}-button`}
               disabled={!canModifySettings}
               style={{
                 borderRadius: '50%', // 圆形
@@ -117,8 +120,8 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
         </div>
         {/* 难度指示器 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#FFD5AB', padding: '0 4px', marginTop: '4px', marginBottom: '12px', lineHeight: '16px' }}>
-          <span>简单</span>
-          <span style={{ marginLeft: 'auto' }}>困难</span>
+          <span>{t('game.cutCount.difficulty.easy')}</span>
+          <span style={{ marginLeft: 'auto' }}>{t('game.cutCount.difficulty.hard')}</span>
         </div>
       </div>
 
@@ -127,6 +130,7 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
         onClick={handleGeneratePuzzle} 
         disabled={!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType} 
         className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md ${(!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+        data-testid="generate-puzzle-button"
         style={{
           fontSize: '14px',
           borderRadius: '14px',
@@ -137,12 +141,12 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
         }}
       >
         <PuzzleIcon style={{ width: '20px', height: '20px', marginRight: '8px', flexShrink: 0 }} strokeWidth={2} />
-        <span style={{ fontSize: '14px' }}>切割形状</span>
+        <span style={{ fontSize: '14px' }}>{t('game.cutCount.button')}</span>
       </Button>
       {/* 添加提示信息，当按钮不可点击时显示原因 */}
       {isShapeGenerated && !state.isScattered && (!hasCutType || !hasSelectedCount) && (
         <div style={{ fontSize: '12px', color: '#FFD5AB', textAlign: 'center', marginTop: '4px', lineHeight: '16px' }}>
-          {!hasCutType ? "请先选择切割类型" : !hasSelectedCount ? "请选择切割次数" : ""}
+          {!hasCutType ? t('game.cutCount.hints.selectCutType') : !hasSelectedCount ? t('game.cutCount.hints.selectCount') : ""}
         </div>
       )}
     </div>

@@ -294,7 +294,7 @@ const PerformanceTrendPage: React.FC = () => {
   const [trendData, setTrendData] = useState<TrendData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedMetric, setSelectedMetric] = useState<'performance' | 'system'>('performance');
+  const [selectedMetric, setSelectedMetric] = useState<'performance' | 'system' | 'adaptation'>('performance');
   // 分页相关
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
@@ -555,9 +555,56 @@ const PerformanceTrendPage: React.FC = () => {
               { label: '交互响应', value: `≤${BENCHMARKS.pieceInteractionTime}ms` },
               { label: '最低帧率', value: `≥${BENCHMARKS.minFps}fps` },
               { label: '最大内存', value: `≤${BENCHMARKS.maxMemoryUsage}MB` },
+              { label: '适配通过率', value: '≥90%' },
             ].map(item => (
               <div key={item.label} className="text-blue-700"><strong>{item.label}:</strong> {item.value}</div>
             ))}
+          </div>
+        </section>
+
+        {/* 新增：跨平台适配测试指标说明 */}
+        <section className="mb-6 p-4 bg-purple-50 rounded-lg border-l-4 border-purple-500">
+          <h2 className="font-semibold text-purple-800 mb-3 text-lg">📱 跨平台适配测试指标说明</h2>
+          <div className="space-y-3 text-sm">
+            <div className="bg-white p-3 rounded border-l-2 border-purple-300">
+              <h3 className="font-semibold text-purple-700 mb-2">🖥️ 桌面端适配测试</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-purple-600">
+                <div>• <strong>1920×1080</strong>：标准桌面分辨率</div>
+                <div>• <strong>1366×768</strong>：笔记本常见分辨率</div>
+                <div>• <strong>2560×1440</strong>：2K高分辨率显示器</div>
+                <div>• <strong>3840×2160</strong>：4K超高清显示器</div>
+              </div>
+            </div>
+            <div className="bg-white p-3 rounded border-l-2 border-purple-300">
+              <h3 className="font-semibold text-purple-700 mb-2">📱 移动端适配测试</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-purple-600">
+                <div>• <strong>375×667</strong>：iPhone SE/8 竖屏</div>
+                <div>• <strong>414×896</strong>：iPhone 11/XR 竖屏</div>
+                <div>• <strong>390×844</strong>：iPhone 12/13 竖屏</div>
+                <div>• <strong>360×640</strong>：Android 小屏设备</div>
+              </div>
+            </div>
+            <div className="bg-white p-3 rounded border-l-2 border-purple-300">
+              <h3 className="font-semibold text-purple-700 mb-2">📟 平板端适配测试</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-purple-600">
+                <div>• <strong>768×1024</strong>：iPad 竖屏模式</div>
+                <div>• <strong>1024×768</strong>：iPad 横屏模式</div>
+                <div>• <strong>820×1180</strong>：iPad Air 竖屏</div>
+                <div>• <strong>1180×820</strong>：iPad Air 横屏</div>
+              </div>
+            </div>
+            <div className="bg-white p-3 rounded border-l-2 border-purple-300">
+              <h3 className="font-semibold text-purple-700 mb-2">🎯 适配测试评估标准</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-purple-600">
+                <div><strong className="text-green-700">完美 (100%)</strong>: 所有分辨率通过</div>
+                <div><strong className="text-green-600">优秀 (≥90%)</strong>: 主流分辨率通过</div>
+                <div><strong className="text-blue-600">良好 (≥75%)</strong>: 大部分分辨率通过</div>
+                <div><strong className="text-yellow-600">合格 (≥50%)</strong>: 基本分辨率通过</div>
+              </div>
+              <div className="mt-2 text-xs text-purple-500 italic">
+                注：适配测试检查布局完整性、交互可用性、性能稳定性等关键指标
+              </div>
+            </div>
           </div>
         </section>
         
@@ -573,6 +620,12 @@ const PerformanceTrendPage: React.FC = () => {
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedMetric === 'system' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
           >
             💻 系统指标趋势
+          </button>
+          <button
+            onClick={() => setSelectedMetric('adaptation')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedMetric === 'adaptation' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+          >
+            📱 适配指标趋势
           </button>
         </div>
 
@@ -683,6 +736,108 @@ const PerformanceTrendPage: React.FC = () => {
           </section>
         )}
         
+        {selectedMetric === 'adaptation' && (
+          <section className="mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-800">跨平台适配指标趋势</h2>
+              <div className="flex items-center space-x-2 mt-2 sm:mt-0">
+                <span className="text-sm text-gray-600">显示数据点:</span>
+                <span className="text-sm font-medium text-blue-600">{filteredData.length} 个</span>
+              </div>
+            </div>
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <ResponsiveContainer width="100%" height={400}>
+                <LineChart 
+                  data={filteredData} 
+                  margin={{ top: 5, right: 30, left: 10, bottom: 50 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis 
+                    dataKey="time" 
+                    angle={-45} 
+                    textAnchor="end" 
+                    height={60} 
+                    interval="preserveStartEnd"
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis 
+                    label={{ value: '通过率 (%)', angle: -90, position: 'insideLeft' }}
+                    tick={{ fontSize: 12 }}
+                    domain={[0, 100]}
+                  />
+                  <Tooltip content={<CustomTooltip data={filteredData} />} />
+                  <Legend wrapperStyle={{ fontSize: '12px' }} />
+                  <ReferenceLine 
+                    y={90} 
+                    label="优秀基准 (90%)" 
+                    stroke="#10b981" 
+                    strokeDasharray="3 3" 
+                  />
+                  <ReferenceLine 
+                    y={75} 
+                    label="良好基准 (75%)" 
+                    stroke="#f59e0b" 
+                    strokeDasharray="3 3" 
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="adaptationPassRate" 
+                    name={METRIC_LABELS.adaptationPassRate} 
+                    stroke="#8b5cf6" 
+                    strokeWidth={3}
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            
+            {/* 适配测试详细统计 */}
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-purple-50 p-4 rounded-lg border-l-4 border-purple-500">
+                <h3 className="font-semibold text-purple-800 mb-2">📊 适配测试统计</h3>
+                <div className="space-y-1 text-sm text-purple-700">
+                  <div>总测试次数: <strong>{filteredData.filter(d => d.adaptationTestCount).length}</strong></div>
+                  <div>平均通过率: <strong>
+                    {filteredData.filter(d => d.adaptationPassRate !== undefined).length > 0 
+                      ? (filteredData.filter(d => d.adaptationPassRate !== undefined)
+                          .reduce((sum, d) => sum + (d.adaptationPassRate || 0), 0) / 
+                         filteredData.filter(d => d.adaptationPassRate !== undefined).length).toFixed(1)
+                      : '暂无数据'}%
+                  </strong></div>
+                  <div>完美通过次数: <strong>{filteredData.filter(d => d.adaptationPassRate === 100).length}</strong></div>
+                </div>
+              </div>
+              
+              <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                <h3 className="font-semibold text-green-800 mb-2">✅ 优秀表现</h3>
+                <div className="space-y-1 text-sm text-green-700">
+                  <div>≥90% 通过率: <strong>{filteredData.filter(d => (d.adaptationPassRate || 0) >= 90).length}</strong> 次</div>
+                  <div>≥75% 通过率: <strong>{filteredData.filter(d => (d.adaptationPassRate || 0) >= 75).length}</strong> 次</div>
+                  <div>最高通过率: <strong>
+                    {filteredData.filter(d => d.adaptationPassRate !== undefined).length > 0
+                      ? Math.max(...filteredData.filter(d => d.adaptationPassRate !== undefined).map(d => d.adaptationPassRate || 0)).toFixed(1)
+                      : '暂无数据'}%
+                  </strong></div>
+                </div>
+              </div>
+              
+              <div className="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500">
+                <h3 className="font-semibold text-yellow-800 mb-2">⚠️ 需要关注</h3>
+                <div className="space-y-1 text-sm text-yellow-700">
+                  <div>&lt;75% 通过率: <strong>{filteredData.filter(d => (d.adaptationPassRate || 0) < 75 && d.adaptationPassRate !== undefined).length}</strong> 次</div>
+                  <div>&lt;50% 通过率: <strong>{filteredData.filter(d => (d.adaptationPassRate || 0) < 50 && d.adaptationPassRate !== undefined).length}</strong> 次</div>
+                  <div>最低通过率: <strong>
+                    {filteredData.filter(d => d.adaptationPassRate !== undefined).length > 0
+                      ? Math.min(...filteredData.filter(d => d.adaptationPassRate !== undefined).map(d => d.adaptationPassRate || 0)).toFixed(1)
+                      : '暂无数据'}%
+                  </strong></div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+        
         {selectedMetric === 'system' && (
           <section className="mb-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
@@ -772,16 +927,23 @@ const PerformanceTrendPage: React.FC = () => {
             <div className="text-sm text-purple-700 bg-purple-50 rounded p-3 border-l-4 border-purple-400">
               <div><strong>综合评级说明：</strong></div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-                <div><strong className="text-green-700">A+</strong>: 性能卓越 (80%+极优指标)</div>
-                <div><strong className="text-green-600">A</strong>: 性能优秀 (60%+极优或90%+达标)</div>
-                <div><strong className="text-blue-600">B+</strong>: 性能良好 (80%+达标，无超标)</div>
+                <div><strong className="text-green-700">A+</strong>: 性能卓越 (80%+极优指标 + 适配≥90%)</div>
+                <div><strong className="text-green-600">A</strong>: 性能优秀 (60%+极优或90%+达标 + 适配≥75%)</div>
+                <div><strong className="text-blue-600">B+</strong>: 性能良好 (80%+达标，无超标 + 适配≥75%)</div>
                 <div><strong className="text-blue-500">B</strong>: 性能合格 (70%+达标，≤10%超标)</div>
                 <div><strong className="text-yellow-600">C</strong>: 需要优化 (≤20%超标)</div>
                 <div><strong className="text-red-600">D/F</strong>: 性能不达标或测试失败</div>
               </div>
               <div className="text-xs text-gray-600 mt-2 italic">
-                注：旧数据缺失适配测试指标时，不影响综合评级计算
+                注：适配测试影响A+/A/B+评级，旧数据缺失适配指标时不影响评级计算
               </div>
+            </div>
+            <div className="text-sm text-indigo-700 bg-indigo-50 rounded p-3 border-l-4 border-indigo-400 mt-3">
+              <div><strong>适配测试指标说明：</strong></div>
+              <div>• <strong>适配通过率</strong>：跨平台测试中通过的分辨率占比，反映游戏在不同设备上的兼容性</div>
+              <div>• <strong>测试覆盖</strong>：包含桌面(1920×1080等)、移动(375×667等)、平板(768×1024等)主流分辨率</div>
+              <div>• <strong>评估维度</strong>：布局完整性、交互可用性、性能稳定性、视觉效果一致性</div>
+              <div>• <strong>基准要求</strong>：≥90%为优秀，≥75%为良好，≥50%为合格，&lt;50%需要优化</div>
             </div>
           </div>
           <div className="overflow-x-auto shadow-sm border border-gray-200 rounded-lg">
@@ -898,8 +1060,9 @@ const PerformanceTrendPage: React.FC = () => {
             <p><strong>资源加载与端到端加载：</strong>生产环境资源加载和端到端加载时间表现优异，绝大多数测试远低于基准值。开发环境波动较大，建议引入更接近生产的构建流程，便于提前发现潜在瓶颈。</p>
             <p><strong>形状/拼图生成与交互：</strong>生产环境下形状生成、拼图生成、散开和交互性能均表现稳定，核心算法和渲染流程高效。建议持续关注极端场景下的性能波动，定期回归测试。</p>
             <p><strong>FPS与内存：</strong>生产环境FPS长期稳定在60帧左右，内存使用极低，未见异常。建议持续监控大规模拼图或复杂动画场景，防止回归。</p>
+            <p><strong>跨平台适配表现：</strong>适配测试通过率整体表现优秀，主流分辨率兼容性良好。建议重点关注移动端小屏设备(360×640)和超高分辨率显示器(4K)的适配效果，确保极端场景下的用户体验一致性。定期验证新设备分辨率的兼容性。</p>
             <p><strong>开发/生产差异：</strong>多项指标在开发与生产环境间存在2倍及以上差异，主要源于资源未压缩、调试工具注入等。开发环境建议模拟生产优化，提升测试数据参考价值。</p>
-            <p><strong>自动化与趋势监控：</strong>建议持续自动化回归与趋势监控，关注资源体积、渲染链路、交互流畅性和内存使用，防止性能回退。差异显著的指标需定期分析，确保开发与生产环境的性能趋势一致。</p>
+            <p><strong>自动化与趋势监控：</strong>建议持续自动化回归与趋势监控，关注资源体积、渲染链路、交互流畅性、内存使用和跨平台适配，防止性能回退。差异显著的指标需定期分析，确保开发与生产环境的性能趋势一致。</p>
           </div>
         </section>
       </div>

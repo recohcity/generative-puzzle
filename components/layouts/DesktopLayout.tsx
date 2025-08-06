@@ -16,6 +16,7 @@ import { playButtonClickSound } from "@/utils/rendering/soundEffects";
 import { DESKTOP_ADAPTATION } from '@/src/config/adaptationConfig';
 import { calculateDesktopCanvasSize } from '@/constants/canvasAdaptation';
 import { useDeviceDetection } from '@/hooks/useDeviceDetection';
+import { useTranslation } from '@/contexts/I18nContext';
 
 interface DesktopLayoutProps {
   isMusicPlaying: boolean;
@@ -36,27 +37,28 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
 }) => {
   // const titleSizeClass = deviceType === 'tablet' ? 'text-lg' : 'text-xl'; // Example if tablet uses this with variation
   const titleSizeClass = 'text-xl'; // Assuming desktop for now
-  
-  // 从GameContext获取state和resetGame函数
+
+  // 从GameContext获取state和resetGame函数，以及翻译函数
   const { state, resetGame } = useGame();
-  
+  const { t } = useTranslation();
+
   // 计算拼图完成进度
   const totalPieces = (state.puzzle ?? []).length;
   const completedPiecesCount = (state.completedPieces ?? []).length;
   // const puzzleProgressText = totalPieces > 0 ? `${completedPiecesCount} / ${totalPieces} 块拼图已完成` : '';
 
-  // 智能提示内容（新版流程）
+  // 智能提示内容（新版流程）- 使用翻译
   let progressTip = '';
   if (state.originalShape.length === 0 && state.puzzle === null && state.cutType === "") {
-    progressTip = "请点击生成你喜欢的形状";
+    progressTip = t('game.hints.selectShape');
   } else if (state.originalShape.length > 0 && state.puzzle === null && state.cutType === "") {
-    progressTip = "请选择切割类型";
+    progressTip = t('game.hints.selectCutType');
   } else if (state.originalShape.length > 0 && state.puzzle === null && state.cutType !== "") {
-    progressTip = "请切割形状";
+    progressTip = t('game.hints.cutShape');
   } else if (state.puzzle !== null && !state.isScattered) {
-    progressTip = "请散开拼图，开始游戏";
+    progressTip = t('game.hints.scatterPuzzle');
   } else if (state.puzzle !== null && state.isScattered) {
-    progressTip = `${completedPiecesCount} / ${totalPieces} 块拼图已完成`;
+    progressTip = t('game.hints.progress', { completed: completedPiecesCount, total: totalPieces });
   }
 
   // 处理重新开始按钮点击
@@ -72,19 +74,19 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   // 动态计算画布尺寸
   const [canvasSize, setCanvasSize] = useState(560); // 默认560
   const leftPanelRef = useRef<HTMLDivElement>(null);
-  
+
   // 使用统一设备检测系统获取屏幕尺寸
   const device = useDeviceDetection();
   const windowWidth = device.screenWidth;
   const windowHeight = device.screenHeight;
-  
+
   // 使用统一计算函数（现在返回计算好的边距）
   const calculationResult = calculateDesktopCanvasSize(windowWidth, windowHeight);
   const { canvasSize: canvasSizeFinal, panelHeight, actualPanelWidth, actualLeftRightMargin } = calculationResult;
-  
+
   // 计算布局参数
   const { TOP_BOTTOM_MARGIN, LEFT_RIGHT_MARGIN, CANVAS_PANEL_GAP, MIN_PANEL_WIDTH } = DESKTOP_ADAPTATION;
-  
+
   // 调试信息已关闭 - 避免控制台日志过多
   // if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   //   const contentWidth = actualPanelWidth + CANVAS_PANEL_GAP + canvasSizeFinal;
@@ -112,7 +114,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   const panelContentGap = panelScale <= 0.5 ? 10 : Math.max(2, Math.min(6, 16 * panelScale));
 
   // 移除统一的事件管理系统，使用原生事件监听
-  
+
   useEffect(() => {
     function updateLayout() {
       // 触发重渲染
@@ -122,18 +124,18 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
         leftPanelRef.current.style.width = actualPanelWidth + 'px';
       }
     }
-    
+
     updateLayout();
-    
+
     // 使用原生事件监听替代eventManager
     let timeoutId: NodeJS.Timeout;
     const handleResize = () => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(updateLayout, 200); // 200ms防抖
     };
-    
+
     window.addEventListener('resize', handleResize);
-    
+
     return () => {
       window.removeEventListener('resize', handleResize);
       clearTimeout(timeoutId);
@@ -233,22 +235,22 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
           >
             <div className="flex flex-col mb-1 flex-shrink-0">
               <div className="flex items-center justify-between">
-                <h1 className="font-bold text-[#FFB17A]" style={{ fontSize: 18, marginTop: 0, marginBottom: 0 }}>生成式拼图游戏</h1>
-                <GlobalUtilityButtons 
+                <h1 className="font-bold text-[#FFB17A]" style={{ fontSize: 18, marginTop: 0, marginBottom: 0 }}>{t('game.title')}</h1>
+                <GlobalUtilityButtons
                   isMusicPlaying={isMusicPlaying}
                   isFullscreen={isFullscreen}
                   onToggleMusic={onToggleMusic}
                   onToggleFullscreen={onToggleFullscreen}
                 />
               </div>
-              <h3 className="font-medium text-[#FFD5AB]" style={{ fontSize: 14, marginTop: 1, marginBottom: 1 }}>生成拼图</h3>
+
             </div>
             <div className="space-y-4 flex-1 pr-1 -mr-1">
-              <ShapeControls goToNextTab={goToNextTab} /> 
+              <ShapeControls goToNextTab={goToNextTab} />
               <PuzzleControlsCutType goToNextTab={goToNextTab} />
               <PuzzleControlsCutCount goToNextTab={goToNextTab} />
               <PuzzleControlsScatter goToNextTab={goToNextTab} />
-              <h3 className="font-medium mt-4 mb-3 text-[#FFD5AB]" style={{ fontSize: panelScale <= 0.5 ? 16 : 'calc(0.9rem * var(--panel-scale))' }}>游戏控制</h3>
+              <h3 className="font-medium mt-4 mb-3 text-[#FFD5AB]" style={{ fontSize: panelScale <= 0.5 ? 16 : 'calc(0.9rem * var(--panel-scale))' }}>{t('game.controls.title')}</h3>
               <ActionButtons layout="desktop" buttonHeight={DESKTOP_CONTROL_BUTTON_HEIGHT} />
               <RestartButton
                 onClick={handleDesktopResetGame}
@@ -257,8 +259,8 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
             </div>
           </div>
         </div>
-        </div>
       </div>
+    </div>
   );
 };
 

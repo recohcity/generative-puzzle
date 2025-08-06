@@ -1,0 +1,88 @@
+{
+    "common": {
+        "loading": "Loading...",
+        "error": "Error",
+        "success": "Success",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "close": "Close"
+    },
+    "game": {
+        "title": "Generative Puzzle",
+        "description": "A generative puzzle game project based on Next.js and React",
+        "hints": {
+            "selectShape": "Please click to generate your favorite shape",
+            "selectCutType": "Please select cut type",
+            "cutShape": "Please cut the shape",
+            "scatterPuzzle": "Please scatter the puzzle to start the game",
+            "gameInProgress": "Please drag puzzle pieces to correct positions",
+            "completed": "Congratulations! Puzzle completed!",
+            "progress": "{{completed}} / {{total}} pieces completed",
+            "completionMessages": [
+                "Awesome !",
+                "Perfect !",
+                "Amazing !",
+                "Excellent !",
+                "Great job !",
+                "Well done !",
+                "Fantastic !",
+                "Outstanding !",
+                "Brilliant !"
+            ],
+            "hintText": "Here"
+        },
+        "shapes": {
+            "title": "Select Shape Type",
+            "polygon": "Polygon",
+            "curve": "Cloud",
+            "irregular": "Jagged"
+        },
+        "cutType": {
+            "title": "Select Cut Type",
+            "straight": "Straight",
+            "diagonal": "Diagonal"
+        },
+        "cutCount": {
+            "title": "Select Cut Count",
+            "difficulty": {
+                "easy": "Easy",
+                "hard": "Hard"
+            },
+            "button": "Cut Shape",
+            "hints": {
+                "selectCutType": "Please select cut type first",
+                "selectCount": "Please select cut count"
+            }
+        },
+        "scatter": {
+            "title": "Scatter Puzzle",
+            "button": "Scatter Puzzle",
+            "completed": "Puzzle Scattered"
+        },
+        "controls": {
+            "title": "Game Controls",
+            "hint": "Hint",
+            "rotateLeft": "Rotate Left",
+            "rotateRight": "Rotate Right",
+            "restart": "Restart",
+            "currentAngle": "Current Angle: {{angle}}°",
+            "rotateInstruction": "Use 2 fingers to rotate puzzle pieces",
+            "rotateInstructionDesktop": "(Rotation angle must match target angle to place)"
+        },
+        "tabs": {
+            "shape": "Shape",
+            "puzzle": "Type",
+            "cut": "Count",
+            "scatter": "Scatter",
+            "controls": "Controls"
+        },
+        "audio": {
+            "toggleOn": "Turn on background music",
+            "toggleOff": "Turn off background music"
+        },
+        "fullscreen": {
+            "enter": "Fullscreen",
+            "exit": "Exit Fullscreen"
+        }
+    }
+}

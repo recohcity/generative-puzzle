@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import React from "react";
+import { useTranslation } from '@/contexts/I18nContext';
 
 interface RestartButtonProps {
   onClick: () => void;
@@ -25,13 +26,16 @@ const RestartButton: React.FC<RestartButtonProps> = ({
   fontSize = DEFAULT_FONT_SIZE,
   iconSize = DEFAULT_ICON_SIZE,
   height = DEFAULT_HEIGHT,
-  children = "重新开始",
+  children,
 }) => {
+  const { t } = useTranslation();
+  const defaultText = children || t('game.controls.restart');
   return (
     <Button
       onClick={onClick}
       disabled={disabled}
       className={`w-full bg-[#1E1A2A] text-white rounded-3xl shadow-md hover:bg-[#141022] hover:text-white hover:border-[#706B89] active:bg-[#2A283E] active:text-white active:border-[#463E50] min-h-0 p-0 leading-none ${className}`}
+      data-testid="restart-button"
       style={{
         height,
         fontSize,
@@ -52,7 +56,7 @@ const RestartButton: React.FC<RestartButtonProps> = ({
           lineHeight: 1,
         }}
       />
-      <span style={{lineHeight: 1}}>{children}</span>
+      <span style={{lineHeight: 1}}>{defaultText}</span>
     </Button>
   );
 };

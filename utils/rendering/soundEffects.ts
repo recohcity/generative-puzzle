@@ -5,7 +5,7 @@ let audioContext: AudioContext | null = null;
 let backgroundMusic: HTMLAudioElement | null = null;
 let isBackgroundMusicPlaying: boolean = false;
 let audioUnlocked = false;
-      
+
 // Test-specific global flag/listener for Playwright
 // This function will be exposed to Playwright's Node.js context.
 // When called from the browser, it notifies the test.
@@ -26,15 +26,15 @@ const createAudioContext = (): AudioContext | null => {
   }
   return audioContext;
 };
-    
+
 // Function to ensure AudioContext is running
 const ensureAudioContextRunning = async (context: AudioContext): Promise<void> => {
   if (context.state === 'suspended') {
     await context.resume();
   }
   audioUnlocked = true;
-    };
-  
+};
+
 // Initialize background music
 export const initBackgroundMusic = () => {
   if (backgroundMusic === null) {
@@ -81,10 +81,10 @@ export const playButtonClickSound = async (): Promise<void> => {
   try {
     // 确保AudioContext正在运行
     await ensureAudioContextRunning(audioContext);
-    
+
     // Create oscillator and gain node
     soundPlayedForTest('buttonClick');
-    
+
     // Create oscillator and gain node
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
@@ -93,7 +93,7 @@ export const playButtonClickSound = async (): Promise<void> => {
     oscillator.type = 'sine';
     oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // A4 note
     oscillator.frequency.exponentialRampToValueAtTime(220, audioContext.currentTime + 0.1); // Quickly decay
-    
+
     // Configure gain node (volume envelope)
     gainNode.gain.setValueAtTime(0.5, audioContext.currentTime); // Start at 50% volume
     gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.2); // Decay to almost zero
@@ -150,7 +150,7 @@ export const playPieceSnapSound = async (): Promise<void> => {
     oscillator.type = 'triangle';
     oscillator.frequency.setValueAtTime(880, audioContext.currentTime); // A5
     oscillator.frequency.exponentialRampToValueAtTime(440, audioContext.currentTime + 0.2);
-    
+
     gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
 
@@ -174,7 +174,7 @@ export const playPuzzleCompletedSound = async (): Promise<void> => {
     await ensureAudioContextRunning(audioContext);
     const oscillator1 = audioContext.createOscillator();
     const oscillator2 = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
+    const gainNode = audioContext.createGain();
 
     // First note
     oscillator1.type = 'sine';
@@ -188,7 +188,7 @@ export const playPuzzleCompletedSound = async (): Promise<void> => {
 
     oscillator1.connect(gainNode);
     oscillator2.connect(gainNode);
-      gainNode.connect(audioContext.destination);
+    gainNode.connect(audioContext.destination);
 
     oscillator1.start(audioContext.currentTime);
     oscillator1.stop(audioContext.currentTime + 0.6);
@@ -216,7 +216,7 @@ export const playRotateSound = async (): Promise<void> => {
     oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
     // 轻微的频率上升，模拟旋转动作
     oscillator.frequency.linearRampToValueAtTime(450, audioContext.currentTime + 0.08);
-    
+
     // 适中的音量和较短的持续时间，适合快速旋转操作
     gainNode.gain.setValueAtTime(0.25, audioContext.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.12);
@@ -228,5 +228,42 @@ export const playRotateSound = async (): Promise<void> => {
     oscillator.stop(audioContext.currentTime + 0.12);
   } catch (error) {
     console.error('Error playing rotate sound:', error);
+  }
+};
+
+// Play sound when cutting/generating puzzle pieces
+export const playCutSound = async (): Promise<void> => {
+  soundPlayedForTest('cut');
+  const audioContext = createAudioContext();
+  if (!audioContext) return;
+
+  try {
+    await ensureAudioContextRunning(audioContext);
+
+    // 清晰简单的切割音效：模拟刀片切割的"咔嚓"声
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    // 使用锯齿波产生更锐利的切割声
+    oscillator.type = 'sawtooth';
+    oscillator.frequency.setValueAtTime(300, audioContext.currentTime); // 中频开始
+    oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.01); // 快速上升
+    oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.08); // 快速下降
+
+    // 音量包络：瞬间攻击，快速衰减，模拟切割的瞬间性
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.002); // 瞬间音量
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.08); // 快速衰减
+
+    // 连接音频节点
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    // 播放音效
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.08);
+
+  } catch (error) {
+    console.error('Error playing cut sound:', error);
   }
 };

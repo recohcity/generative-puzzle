@@ -6,6 +6,7 @@ import { CutType } from "@/types/puzzleTypes"
 import { playButtonClickSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
 import { useDeviceDetection } from "@/hooks/useDeviceDetection"
+import { useTranslation } from '@/contexts/I18nContext'
 
 interface PuzzleControlsCutTypeProps {
   goToNextTab?: () => void;
@@ -14,6 +15,7 @@ interface PuzzleControlsCutTypeProps {
 
 export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }: PuzzleControlsCutTypeProps) {
   const { state, dispatch } = useGame()
+  const { t } = useTranslation()
   // 添加本地状态，初始值为空字符串，表示未选择
   const [localCutType, setLocalCutType] = useState<string>("")
 
@@ -70,7 +72,7 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
       {/* 添加切割类型标签 - 仅在非手机设备上显示 */}
       {!isPhone && !isLandscape && (
         <div style={{ fontSize: 'calc(var(--panel-scale, 1) * 12px)', color: '#FFD5AB', marginBottom: 'calc(var(--panel-scale, 1) * 4px)' }}>
-          选择切割类型
+          {t('game.cutType.title')}
         </div>
       )}
       <div>
@@ -89,6 +91,7 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
             />
             <Label
               htmlFor="straight"
+              data-testid="cut-type-straight-button"
               className={`flex items-center justify-center transition-all shadow-sm \
                 ${localCutType === CutType.Straight
                   ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]"
@@ -106,7 +109,7 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
                 display: 'flex',
               }}
             >
-              <span style={{ fontSize: 'calc(var(--panel-scale, 1) * 14px)' }}>直线</span>
+              <span style={{ fontSize: 'calc(var(--panel-scale, 1) * 14px)' }}>{t('game.cutType.straight')}</span>
             </Label>
           </div>
           <div className="relative">
@@ -118,6 +121,7 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
             />
             <Label
               htmlFor="diagonal"
+              data-testid="cut-type-diagonal-button"
               className={`flex items-center justify-center transition-all shadow-sm \
                 ${localCutType === CutType.Diagonal
                   ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]"
@@ -135,7 +139,7 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
                 display: 'flex',
               }}
             >
-              <span style={{ fontSize: 'calc(var(--panel-scale, 1) * 14px)' }}>斜线</span>
+              <span style={{ fontSize: 'calc(var(--panel-scale, 1) * 14px)' }}>{t('game.cutType.diagonal')}</span>
             </Label>
           </div>
         </RadioGroup>

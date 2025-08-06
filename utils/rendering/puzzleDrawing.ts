@@ -263,7 +263,8 @@ export const drawPiece = (
 export const drawHintOutline = (
   ctx: CanvasRenderingContext2D, 
   piece: PuzzlePiece, // Changed to take the puzzle piece object
-  shapeType?: string // 🔧 添加形状类型参数，确保提示轮廓与拼图形状一致
+  shapeType?: string, // 🔧 添加形状类型参数，确保提示轮廓与拼图形状一致
+  hintText?: string // 添加提示文本参数
   ) => {
   if (!piece) return;
 
@@ -332,7 +333,7 @@ export const drawHintOutline = (
   ctx.shadowOffsetY = 2;
   
   // 只需绘制一次文字，阴影会自动应用
-  ctx.fillText("这里", centerX, centerY);
+  ctx.fillText(hintText || "这里", centerX, centerY);
   
   // 重置阴影效果，避免影响其他绘制
   ctx.shadowColor = "transparent";
@@ -480,7 +481,8 @@ export const drawPuzzle = (
   selectedPiece: number | null, // 当前选中的拼图片段索引 (或 null)
   shapeType: string, // 形状类型 ('polygon' 或 'curve')
   originalShape?: Point[], // 原始形状的顶点数组 (用于显示轮廓或完成状态)
-  isScattered: boolean = false // 游戏是否处于拼图散开的状态
+  isScattered: boolean = false, // 游戏是否处于拼图散开的状态
+  completionText?: string // 添加完成文本参数
 ) => {
   // 清除整个画布，准备重新绘制
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -591,7 +593,7 @@ export const drawPuzzle = (
     // 文本位置 - 移到形状上方，避免遮挡，并确保不会超出画布顶部
     const textY = bounds.minY - 40; // 文本基础Y坐标，在形状 minY 上方40像素
     const finalY = Math.max(50, textY); // 确保文本不会太靠近顶部边缘，最小Y坐标为50
-    const completeText = "你好犀利吖!"; // 游戏完成时显示的文本内容
+    const completeText = completionText || "你好犀利吖!"; // 游戏完成时显示的文本内容
     
     // 多层渲染技术，通过绘制多次叠加不同样式来创建复杂的文本效果
     // 1. 外发光效果 - 较大模糊，作为文本底层的辉光，使文本看起来更醒目

@@ -4,6 +4,7 @@ import type React from "react"
 import { useEffect, useRef, useState, useMemo, useCallback } from "react"
 import { useGame } from "@/contexts/GameContext"
 import { playPieceSelectSound, playPieceSnapSound, playPuzzleCompletedSound, playRotateSound } from "@/utils/rendering/soundEffects"
+import { useTranslation } from '@/contexts/I18nContext'
 
 import {
   drawPuzzle,
@@ -99,6 +100,7 @@ function useCanvasResizeObserver(
 
 export default function PuzzleCanvas() {
   const { state, dispatch, canvasRef, backgroundCanvasRef, ensurePieceInBounds, calculatePieceBounds, rotatePiece } = useGame();
+  const { t, getRandomCompletionMessage } = useTranslation();
 
   // 解冻专用函数：从冻结前尺寸适配到当前尺寸
   const handleUnfreeze = useCallback((width: number, height: number) => {
@@ -326,6 +328,9 @@ export default function PuzzleCanvas() {
     }
 
     if (state.puzzle) {
+      // 获取随机完成消息
+      const completionMessage = getRandomCompletionMessage();
+      
       drawPuzzle(
         ctx,
         state.puzzle,
@@ -333,13 +338,15 @@ export default function PuzzleCanvas() {
         state.selectedPiece,
         state.shapeType,
         state.originalShape,
-        state.isScattered
+        state.isScattered,
+        completionMessage
       );
 
       if (state.showHint && state.selectedPiece !== null && (state.originalPositions as PuzzlePiece[]).length > 0) {
         const hintPiece = state.originalPositions[state.selectedPiece];
         if (hintPiece) {
-          drawHintOutline(ctx, hintPiece, state.shapeType);
+          const hintText = t('game.hints.hintText');
+          drawHintOutline(ctx, hintPiece, state.shapeType, hintText);
         }
       }
 

@@ -1,6 +1,8 @@
 "use client"
 // import { GameProvider, useGame } from "@/contexts/GameContext" // useGame is called in child components now
 import { GameProvider } from "@/contexts/GameContext"
+import { I18nProvider } from "@/contexts/I18nContext"
+import DynamicTitle from "@/components/DynamicTitle"
 // Removed custom ThemeProvider/useTheme import
 // import { ThemeProvider, useTheme } from "@/contexts/ThemeContext"
 import PuzzleCanvas from "@/components/PuzzleCanvas"
@@ -596,7 +598,8 @@ export default function CurveTestOptimized() {
   }
 
   return (
-    <GameProvider>
+    <I18nProvider>
+      <GameProvider>
       <div 
         ref={gameContainerRef}
         className="min-h-screen w-full relative overflow-hidden"
@@ -613,9 +616,11 @@ export default function CurveTestOptimized() {
         ) : (
           <ResponsiveBackground />
         )}
+        <DynamicTitle />
         {layoutToRender}
       </div>
-    </GameProvider>
+      </GameProvider>
+    </I18nProvider>
   )
 }
 

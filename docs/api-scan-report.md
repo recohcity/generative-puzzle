@@ -1,16 +1,16 @@
 # API扫描报告
 
-> 生成时间: 2025/8/5 15:44:55
+> 生成时间: 2025/8/7 02:10:10
 > 扫描工具: API变更扫描器 v1.0
 
 ## 📊 统计概览
 
 | 项目 | 数量 | 说明 |
 |------|------|------|
-| API总数 | 150 | 项目中所有导出的API |
+| API总数 | 151 | 项目中所有导出的API |
 | 已文档化 | 32 | 在API文档中已记录的API |
-| 文档覆盖率 | 21.3% | 文档化程度 |
-| 新增API | 121 | 需要添加到文档的API |
+| 文档覆盖率 | 21.2% | 文档化程度 |
+| 新增API | 122 | 需要添加到文档的API |
 | 可能删除 | 3 | 文档中存在但代码中找不到 |
 
 ## 🆕 新增API详情
@@ -2438,6 +2438,29 @@ export const playPieceSnapSound = async (): Promise<void> => {
 ```
 ```
 
+#### playCutSound
+
+- **类型**: constant
+- **文件**: `utils/rendering/soundEffects.ts:235`
+- **签名**: `export const playCutSound = async (): Promise<void> => {`
+
+**建议文档结构**:
+```markdown
+### playCutSound
+
+[添加API描述]
+
+```typescript
+export const playCutSound = async (): Promise<void> => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
 #### PuzzlePiece
 
 - **类型**: interface
@@ -2510,7 +2533,7 @@ export const drawPiece = (
 #### drawCompletionEffect
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:347`
+- **文件**: `utils/rendering/puzzleDrawing.ts:348`
 - **签名**: `export const drawCompletionEffect = (`
 
 **建议文档结构**:
@@ -2533,7 +2556,7 @@ export const drawCompletionEffect = (
 #### drawDistributionArea
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:437`
+- **文件**: `utils/rendering/puzzleDrawing.ts:438`
 - **签名**: `export const drawDistributionArea = (`
 
 **建议文档结构**:
@@ -2556,7 +2579,7 @@ export const drawDistributionArea = (
 #### drawCanvasCenter
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:700`
+- **文件**: `utils/rendering/puzzleDrawing.ts:702`
 - **签名**: `export const drawCanvasCenter = (`
 
 **建议文档结构**:
@@ -2579,7 +2602,7 @@ export const drawCanvasCenter = (
 #### drawShapeCenter
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:734`
+- **文件**: `utils/rendering/puzzleDrawing.ts:736`
 - **签名**: `export const drawShapeCenter = (`
 
 **建议文档结构**:
@@ -2900,7 +2923,7 @@ export function calculatePieceBounds(piece: { points: Point[] }): { minX: number
 - ❌ `useDebugToggle` (function)
 - ❌ `reducer` (constant)
 
-### 工具函数API (67个)
+### 工具函数API (68个)
 
 - ❌ `deviceLogger` (constant)
 - ✅ `adaptationLogger` (constant)
@@ -2945,6 +2968,7 @@ export function calculatePieceBounds(piece: { points: Point[] }): { minX: number
 - ❌ `playPieceSnapSound` (constant)
 - ✅ `playPuzzleCompletedSound` (constant)
 - ✅ `playRotateSound` (constant)
+- ❌ `playCutSound` (constant)
 - ❌ `PuzzlePiece` (interface)
 - ❌ `Point` (interface)
 - ✅ `drawShape` (constant)

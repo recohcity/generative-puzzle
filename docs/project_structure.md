@@ -1,6 +1,6 @@
 # 项目结构（Project Structure）
 
-> 自动生成时间：2025/8/5 16:04:19  
+> 自动生成时间：2025/8/7 02:06:54  
 > 生成工具：项目结构文档生成器 v3.1.0 - 开发导航版
 
 **开发者导航工具** - 快速理解项目架构，精准定位代码位置，提升开发效率。
@@ -14,9 +14,9 @@
 
 | 统计项 | 数量 | 说明 |
 |--------|------|------|
-| 总目录数 | 41 | 项目目录结构层次 |
-| 总文件数 | 199 | 代码文件和资源文件总数 |
-| 项目容量 | 4.5 MB | 不包含node_modules的项目大小 |
+| 总目录数 | 45 | 项目目录结构层次 |
+| 总文件数 | 216 | 代码文件和资源文件总数 |
+| 项目容量 | 4.61 MB | 不包含node_modules的项目大小 |
 
 ---
 
@@ -205,7 +205,9 @@ npm run lint                   # 代码检查
 - coverage/
   - lcov-report/
 - docs/
+  - audio/
   - configuration/
+  - i18n/
   - testing/
 - e2e/
   - screenshots/
@@ -218,6 +220,8 @@ npm run lint                   # 代码检查
 - scripts/
 - src/
   - config/
+  - i18n/
+    - locales/
   - quality-system/
 - test-results/
 - types/
@@ -310,9 +314,11 @@ npm run lint                   # 代码检查
     📄 `tooltip.tsx`
   📄 `ActionButtons.tsx`
   📄 `DesktopPuzzleSettings.tsx`
+  📄 `DynamicTitle.tsx`
   📄 `EnvModeClient.tsx`
   📄 🔥 `GameInterface.tsx` - 核心游戏界面
   📄 `GlobalUtilityButtons.tsx`
+  📄 `LanguageSwitcher.tsx`
   📄 `PuzzleCanvas.tsx` - 主画布组件
   📄 `PuzzleControlsCutCount.tsx`
   📄 `PuzzleControlsCutType.tsx`
@@ -326,6 +332,7 @@ npm run lint                   # 代码检查
   📄 `canvasAdaptation.ts`
 📁 **contexts/**
   📄 🔥 `GameContext.tsx` - 核心状态管理中心
+  📄 `I18nContext.tsx`
 📁 **core/**
   📄 `CanvasManager.ts`
   📄 `DeviceLayoutManager.ts`
@@ -362,6 +369,8 @@ npm run lint                   # 代码检查
   📄 `sort-arrow-sprite.png`
   📄 `sorter.js`
 📁 **docs/**
+  📁 **audio/**
+    📄 `sound-effects.md`
   📁 **configuration/**
     📄 `adaptation-system.md`
     📄 `build-dev.md`
@@ -373,7 +382,10 @@ npm run lint                   # 代码检查
     📄 `performance.md`
     📄 `README.md` - 项目说明文档
     📄 `shape-generation.md`
+  📁 **i18n/**
+    📄 `README.md` - 项目说明文档
   📁 **testing/**
+    📄 `button-testids.md`
     📄 `playwright-automation.md`
     📄 `README.md` - 项目说明文档
   📄 `API_DOCUMENTATION.md`
@@ -381,6 +393,7 @@ npm run lint                   # 代码检查
   📄 `CURRENT_ADAPTATION_SYSTEM.md`
   📄 `difficulty-design.md`
   📄 `GETTING_STARTED.md`
+  📄 `PRD_生成式拼图游戏.md`
   📄 `project_structure.md`
   📄 `README.md` - 项目说明文档
   📄 `SUPREME_ADAPTATION_DIRECTIVE.md`
@@ -389,7 +402,13 @@ npm run lint                   # 代码检查
   📁 **temp/**
     📄 `final_acceptance_test.spec.ts`
     📄 `simple_desktop_adaptation_test.spec.ts`
+  📄 `canvas-hints-translation.spec.ts`
+  📄 `completion-messages.spec.ts`
+  📄 `cut-sound-effect.spec.ts`
   📄 `full_game_flow.spec.ts`
+  📄 `language-switcher-icon.spec.ts`
+  📄 `language-switching.spec.ts`
+  📄 `page-title-translation.spec.ts`
 📁 **hooks/**
   📄 `use-mobile.tsx`
   📄 `use-toast.ts`
@@ -431,6 +450,12 @@ npm run lint                   # 代码检查
     📄 `deviceConfig.ts`
     📄 `index.ts`
     📄 `performanceConfig.ts`
+  📁 **i18n/**
+    📁 **locales/**
+      📄 `en.json`
+      📄 `zh-CN.json`
+    📄 `config.ts`
+    📄 `index.ts`
   📁 **quality-system/**
     📄 `quality-checker.js`
     📄 `README.md` - 项目说明文档
@@ -518,4 +543,4 @@ npm run generate-structure  # 一键更新项目结构文档
 
 ---
 
-*📅 生成时间：2025/8/5 16:04:19 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*
+*📅 生成时间：2025/8/7 02:06:54 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*

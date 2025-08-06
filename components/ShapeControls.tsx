@@ -6,6 +6,7 @@ import { ShapeType } from "@/types/puzzleTypes"
 import { playButtonClickSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
 import { useDeviceDetection } from "@/hooks/useDeviceDetection"
+import { useTranslation } from '@/contexts/I18nContext'
 
 interface ShapeControlsProps {
   goToNextTab?: () => void;
@@ -15,6 +16,7 @@ interface ShapeControlsProps {
 
 export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize = 14 }: ShapeControlsProps) {
   const { state, dispatch, generateShape, resetGame } = useGame()
+  const { t } = useTranslation()
 
   // 使用统一设备检测系统
   const device = useDeviceDetection();
@@ -103,7 +105,7 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
     <div className="space-y-[1px] w-full" style={{}}>
       {/* 添加形状类型标签 - 仅在非手机设备上显示 */}
       {!isPhone && !isLandscape && (
-        <div className="text-[12px] text-[#FFD5AB] mb-[10px] leading-[22px] font-medium">选择形状类型</div>
+        <div className="text-[12px] text-[#FFD5AB] mb-[10px] leading-[22px] font-medium">{t('game.shapes.title')}</div>
       )}
       <div className="w-full">
         <div className="flex gap-[10px] w-full">
@@ -111,6 +113,7 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
             variant="ghost"
             className={getButtonClass(ShapeType.Polygon) + " flex flex-col items-center justify-center"}
             style={buttonStyle}
+            data-testid="shape-polygon-button"
             onClick={() => {
               if (isShapeButtonDisabled) return;
               handleShapeButtonClick(ShapeType.Polygon);
@@ -121,12 +124,13 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
               className="text-white"
               strokeWidth={2}
             />
-            <span style={labelStyle}>多边形</span>
+            <span style={labelStyle}>{t('game.shapes.polygon')}</span>
           </Button>
           <Button
             variant="ghost"
             className={getButtonClass(ShapeType.Curve) + " flex flex-col items-center justify-center"}
             style={buttonStyle}
+            data-testid="shape-curve-button"
             onClick={() => {
               if (isShapeButtonDisabled) return;
               handleShapeButtonClick(ShapeType.Curve);
@@ -137,12 +141,13 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
               className="text-white"
               strokeWidth={2}
             />
-            <span style={labelStyle}>云朵形状</span>
+            <span style={labelStyle}>{t('game.shapes.curve')}</span>
           </Button>
           <Button
             variant="ghost"
             className={getButtonClass(ShapeType.Irregular) + " flex flex-col items-center justify-center"}
             style={buttonStyle}
+            data-testid="shape-irregular-button"
             onClick={() => {
               if (isShapeButtonDisabled) return;
               handleShapeButtonClick(ShapeType.Irregular);
@@ -153,7 +158,7 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
               className="text-white"
               strokeWidth={2}
             />
-            <span style={labelStyle}>锯齿形状</span>
+            <span style={labelStyle}>{t('game.shapes.irregular')}</span>
           </Button>
         </div>
       </div>

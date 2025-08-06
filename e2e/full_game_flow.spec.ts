@@ -582,8 +582,8 @@ test('完整自动化游戏流程', async ({ page }) => {
 
     // 2. 形状生成时间采集
     const shapeGenStart = Date.now();
-    // 点击云朵形状按钮前
-    await page.getByRole('button', { name: /云朵形状|云朵/ }).click();
+    // 点击云朵形状按钮前 (支持多语言)
+    await page.getByTestId('shape-curve-button').click();
     // 点击云朵形状按钮后
     await waitForTip(page, '请选择切割类型');
     metrics.shapeGenerationTime = Date.now() - shapeGenStart;
@@ -604,17 +604,17 @@ test('完整自动化游戏流程', async ({ page }) => {
 
     // 3. 拼图生成时间采集
     // 选择斜线切割类型前
-    await page.getByText('斜线').click();
+    await page.getByTestId('cut-type-diagonal-button').click();
     metrics.cutType = '斜线'; // 新增：记录切割类型
     // 选择斜线切割类型后
     await waitForTip(page, '请切割形状');
     // 选择切割次数前
-    await page.getByRole('button', { name: '8' }).click();
+    await page.getByTestId('cut-count-8-button').click();
     metrics.cutCount = 8; // 新增：记录切割次数
     // 选择切割次数后
     const puzzleGenStart = Date.now();
     // 点击切割形状按钮前
-    await page.getByRole('button', { name: /切割形状|重新切割形状/ }).click();
+    await page.getByTestId('generate-puzzle-button').click();
     // 点击切割形状按钮后
     await waitForTip(page, '请散开拼图，开始游戏');
     metrics.puzzleGenerationTime = Date.now() - puzzleGenStart;
@@ -626,7 +626,7 @@ test('完整自动化游戏流程', async ({ page }) => {
     // 5. 散开拼图
     const scatterStartTime = Date.now();
     // 点击散开拼图按钮前
-    await page.getByRole('button', { name: '散开拼图' }).click();
+    await page.getByTestId('scatter-puzzle-button').click();
     // 点击散开拼图按钮后
     // robustWaitForFunction 等待 puzzle !== undefined 前
     await robustWaitForFunction(page, () => {

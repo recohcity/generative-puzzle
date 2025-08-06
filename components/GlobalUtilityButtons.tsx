@@ -3,6 +3,8 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Volume2, VolumeX, Maximize, Minimize } from "lucide-react";
+import LanguageSwitcher from './LanguageSwitcher';
+import { useTranslation } from '@/contexts/I18nContext';
 
 interface GlobalUtilityButtonsProps {
   isMusicPlaying: boolean;
@@ -19,6 +21,7 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
   onToggleFullscreen,
   buttonSize = 'default',
 }) => {
+  const { t } = useTranslation();
   const iconSizeClass = '!w-6 !h-6 shrink-0';
   const buttonClass = `rounded-full ${buttonSize === 'small' ? 'w-6 h-6' : 'w-8 h-8'} text-[#F68E5F] bg-[#1E1A2A] hover:bg-[#141022] active:bg-[#2A283E] transition-colors border-none shadow-none`;
   const iconSize = 12;
@@ -41,15 +44,19 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
 
   return (
     <div className="flex items-center" style={{ gap: '8px' }}>
+      <LanguageSwitcher 
+        variant="iconOnly" 
+        size={buttonSize === 'small' ? 'small' : 'default'} 
+      />
       <Button
         onClick={onToggleMusic}
-        
         variant="ghost"
         size="icon"
         className={buttonClass}
         style={buttonStyle}
-        aria-label={isMusicPlaying ? "关闭背景音乐" : "开启背景音乐"}
-        title={isMusicPlaying ? "关闭背景音乐" : "开启背景音乐"}
+        data-testid="toggle-music-button"
+        aria-label={isMusicPlaying ? t('game.audio.toggleOff') : t('game.audio.toggleOn')}
+        title={isMusicPlaying ? t('game.audio.toggleOff') : t('game.audio.toggleOn')}
       >
         {isMusicPlaying ? (
           <Volume2 width={iconSize} height={iconSize} strokeWidth={2} />
@@ -63,8 +70,9 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
         size="icon"
         className={buttonClass}
         style={buttonStyle}
-        aria-label={isFullscreen ? "退出全屏" : "全屏"}
-        title={isFullscreen ? "退出全屏" : "全屏"}
+        data-testid="toggle-fullscreen-button"
+        aria-label={isFullscreen ? t('game.fullscreen.exit') : t('game.fullscreen.enter')}
+        title={isFullscreen ? t('game.fullscreen.exit') : t('game.fullscreen.enter')}
       >
         {isFullscreen ? (
           <Minimize width={iconSize} height={iconSize} strokeWidth={2} />

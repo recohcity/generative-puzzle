@@ -5,6 +5,7 @@ import { Lightbulb, RotateCcw, RotateCw } from "lucide-react"
 import { playButtonClickSound, playRotateSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
 import { useDeviceDetection } from "@/hooks/useDeviceDetection"
+import { useTranslation } from '@/contexts/I18nContext'
 
 interface ActionButtonsProps {
   layout?: 'mobile' | 'desktop'; // Prop to differentiate layout styles if needed
@@ -17,6 +18,7 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
     rotatePiece,
     showHintOutline,
   } = useGame()
+  const { t } = useTranslation()
 
   // 使用统一设备检测系统
   const device = useDeviceDetection();
@@ -63,6 +65,7 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
             state.completedPieces.includes(state.selectedPiece ?? -1)
           }
           className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md ${!state.isScattered || state.selectedPiece === null || state.completedPieces.includes(state.selectedPiece ?? -1) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+          data-testid="hint-button"
           style={{
             height: buttonHeight,
             borderRadius: '14px',
@@ -74,17 +77,18 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
             justifyContent: 'center',
             gap: '4px',
           }}
-          title="显示提示"
+          title={t('game.controls.hint')}
           variant="ghost"
         >
           <Lightbulb style={{ width: '16px', height: '16px' }} className="text-white shrink-0" strokeWidth={2} />
-          {layout === 'mobile' && <span style={{ fontSize: '14px', marginLeft: '2px' }}>提示</span>}
+          {layout === 'mobile' && <span style={{ fontSize: '14px', marginLeft: '2px' }}>{t('game.controls.hint')}</span>}
         </Button>
 
         <Button
           onClick={() => handleRotatePiece(false)}
           disabled={!state.isScattered || state.selectedPiece === null || state.isCompleted}
           className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md ${!state.isScattered || state.selectedPiece === null || state.isCompleted ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+          data-testid="rotate-left-button"
           style={{
             height: buttonHeight,
             borderRadius: '14px',
@@ -96,17 +100,18 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
             justifyContent: 'center',
             gap: '4px',
           }}
-          title="逆时针旋转"
+          title={t('game.controls.rotateLeft')}
           variant="ghost"
         >
           <RotateCcw style={{ width: '16px', height: '16px' }} className="text-white shrink-0" strokeWidth={2} />
-          {layout === 'mobile' && <span style={{ fontSize: '14px', marginLeft: '2px' }}>左转</span>}
+          {layout === 'mobile' && <span style={{ fontSize: '14px', marginLeft: '2px' }}>{t('game.controls.rotateLeft')}</span>}
         </Button>
 
         <Button
           onClick={() => handleRotatePiece(true)}
           disabled={!state.isScattered || state.selectedPiece === null || state.isCompleted}
           className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md ${!state.isScattered || state.selectedPiece === null || state.isCompleted ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+          data-testid="rotate-right-button"
           style={{
             height: buttonHeight,
             borderRadius: '14px',
@@ -118,11 +123,11 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
             justifyContent: 'center',
             gap: '4px',
           }}
-          title="顺时针旋转"
+          title={t('game.controls.rotateRight')}
           variant="ghost"
         >
           <RotateCw style={{ width: '16px', height: '16px' }} className="text-white shrink-0" strokeWidth={2} />
-          {layout === 'mobile' && <span style={{ fontSize: '14px', marginLeft: '2px' }}>右转</span>}
+          {layout === 'mobile' && <span style={{ fontSize: '14px', marginLeft: '2px' }}>{t('game.controls.rotateRight')}</span>}
         </Button>
       </div>
 
@@ -130,10 +135,10 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
       {state.selectedPiece !== null && state.puzzle && (
         <div style={{ textAlign: 'center', fontSize: '14px', marginTop: '6px', color: '#FFD5AB', fontWeight: 500 }}>
           <div>
-            当前角度: {Math.round(state.puzzle[state.selectedPiece].rotation)}°
+            {t('game.controls.currentAngle', { angle: Math.round(state.puzzle[state.selectedPiece].rotation) })}
           </div>
           <div style={{ fontSize: '12px', marginTop: '2px', color: '#FFD5AB', fontWeight: 500 }}>
-            {layout === 'mobile' && isPhone ? "可以使用2只手指旋转拼图" : "(旋转角度需与目标角度匹配才能放置)"}
+            {layout === 'mobile' && isPhone ? t('game.controls.rotateInstruction') : t('game.controls.rotateInstructionDesktop')}
           </div>
         </div>
       )}

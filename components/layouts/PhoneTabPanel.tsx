@@ -9,6 +9,7 @@ import RestartButton from "@/components/RestartButton";
 import { Button } from "@/components/ui/button";
 import { useGame } from "@/contexts/GameContext";
 import { playRotateSound, playButtonClickSound } from "@/utils/rendering/soundEffects";
+import { useTranslation } from '@/contexts/I18nContext';
 
 interface PhoneTabPanelProps {
   activeTab: 'shape' | 'puzzle' | 'cut' | 'scatter' | 'controls';
@@ -23,13 +24,7 @@ interface PhoneTabPanelProps {
   isLandscape?: boolean; // 新增横竖屏标志
 }
 
-const tabLabels: Record<string, string> = {
-  shape: '形状',
-  puzzle: '类型',
-  cut: '次数',
-  scatter: '散开',
-  controls: '控制',
-};
+// tabLabels 将通过翻译函数动态获取
 
 // 主标题样式
 const TITLE_CLASS = "font-bold text-[#FFB17A] text-lg md:text-xl leading-tight"; // 主标题字号、颜色、粗细
@@ -93,8 +88,14 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
   style,
   isLandscape = false
 }) => {
-  // 新增：引入游戏核心逻辑
+  // 新增：引入游戏核心逻辑和翻译
   const { state, rotatePiece, showHintOutline, resetGame } = useGame();
+  const { t } = useTranslation();
+
+  // 动态获取tab标签
+  const getTabLabel = (tab: string) => {
+    return t(`game.tabs.${tab}`);
+  };
 
   // 按照 ActionButtons 的禁用逻辑
   const isHintDisabled = !state.isScattered || state.selectedPiece === null || state.completedPieces.includes(state.selectedPiece ?? -1);
@@ -136,7 +137,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
     >
       {/* 顶部标题和全局按钮 */}
       <div className="flex items-center justify-between mb-0">
-        <h1 className={TITLE_CLASS}>生成式拼图游戏</h1>
+        <h1 className={TITLE_CLASS}>{t('game.title')}</h1>
         <GlobalUtilityButtons
           isMusicPlaying={isMusicPlaying}
           isFullscreen={isFullscreen}
@@ -169,6 +170,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                   ? ' bg-[#F68E5F] text-white shadow'
                   : ' text-[#FFD5AB] hover:bg-[#463E50]')
               }
+              data-testid={`tab-${tab}-button`}
               onClick={() => onTabChange(tab)}
               style={{
                 outline: 'none',
@@ -184,7 +186,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                 overflow: 'hidden',
               }}
             >
-              {tabLabels[tab]}
+              {getTabLabel(tab)}
             </button>
           ))}
         </div>
@@ -196,19 +198,19 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
             {/* 分区标题已上移，这里不再渲染 */}
             {activeTab === 'shape' && (
               <div className="flex flex-col items-center">
-                <h4 className={CARD_TITLE_CLASS}>选择形状类型</h4>
+                <h4 className={CARD_TITLE_CLASS}>{t('game.shapes.title')}</h4>
                 <ShapeControls goToNextTab={goToNextTab} buttonHeight={SHAPE_BUTTON_HEIGHT} fontSize={MOBILE_SHAPE_BUTTON_FONT_SIZE} />
               </div>
             )}
             {activeTab === 'puzzle' && (
               <div className="flex flex-col items-center">
-                <h4 className={CARD_TITLE_CLASS}>选择切割类型</h4>
+                <h4 className={CARD_TITLE_CLASS}>{t('game.cutType.title')}</h4>
                 <PuzzleControlsCutType goToNextTab={goToNextTab} buttonHeight={CUT_TYPE_BUTTON_HEIGHT} />
               </div>
             )}
             {activeTab === 'cut' && (
               <div className="flex flex-col items-center px-3">
-                <h4 className={CARD_TITLE_CLASS}>选择切割次数</h4>
+                <h4 className={CARD_TITLE_CLASS}>{t('game.cutCount.title')}</h4>
                 <div className="max-w-[290px] w-full mx-auto">
                   <PuzzleControlsCutCount goToNextTab={goToNextTab} buttonHeight={NUMBER_BUTTON_HEIGHT} actionButtonHeight={ACTION_BUTTON_HEIGHT} />
                 </div>
@@ -216,7 +218,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
             )}
             {activeTab === 'scatter' && (
               <div className="flex flex-col items-center">
-                <h4 className={CARD_TITLE_CLASS}>散开拼图</h4>
+                <h4 className={CARD_TITLE_CLASS}>{t('game.scatter.title')}</h4>
                 <PuzzleControlsScatter goToNextTab={goToNextTab} buttonHeight={ACTION_BUTTON_HEIGHT} />
               </div>
             )}
@@ -250,7 +252,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                   onClick={handleShowHint}
                   disabled={isHintDisabled}
                 >
-                  <span style={{ lineHeight: 1 }}>提示</span>
+                  <span style={{ lineHeight: 1 }}>{t('game.controls.hint')}</span>
                 </Button>
                 <Button
                   style={{
@@ -274,7 +276,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                   onClick={handleRotateLeft}
                   disabled={isRotateDisabled}
                 >
-                  <span style={{ lineHeight: 1 }}>左转</span>
+                  <span style={{ lineHeight: 1 }}>{t('game.controls.rotateLeft')}</span>
                 </Button>
                 <Button
                   style={{
@@ -298,7 +300,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                   onClick={handleRotateRight}
                   disabled={isRotateDisabled}
                 >
-                  <span style={{ lineHeight: 1 }}>右转</span>
+                  <span style={{ lineHeight: 1 }}>{t('game.controls.rotateRight')}</span>
                 </Button>
               </div>
 
@@ -306,10 +308,10 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
               {state.selectedPiece !== null && state.puzzle && (
                 <div style={{ textAlign: 'center', fontSize: '14px', marginTop: '10px', color: '#FFD5AB', fontWeight: 500 }}>
                   <div>
-                    当前角度: {Math.round(state.puzzle[state.selectedPiece].rotation)}°
+                    {t('game.controls.currentAngle', { angle: Math.round(state.puzzle[state.selectedPiece].rotation) })}
                   </div>
                   <div style={{ fontSize: '12px', marginTop: '2px', marginBottom: '10px', color: '#FFD5AB', fontWeight: 500 }}>
-                    可以使用2只手指旋转拼图
+                    {t('game.controls.rotateInstruction')}
                   </div>
                 </div>
               )}
