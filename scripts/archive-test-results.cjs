@@ -14,13 +14,13 @@ const testSourceFile = path.join(workspaceRoot, 'e2e/full_game_flow.spec.ts');
 const errorContextFile = path.join(workspaceRoot, 'test-results/full_game_flow-完整自动化游戏流程/error-context.md');
 
 const PERFORMANCE_BENCHMARKS = {
-  loadTime: 1000,
-  shapeGenerationTime: 500,
-  puzzleGenerationTime: 800,
-  scatterTime: 800,
-  pieceInteractionTime: 1200,
-  minFps: 30,
-  maxMemoryUsage: 100 * 1024 * 1024,
+    loadTime: 1000,
+    shapeGenerationTime: 500,
+    puzzleGenerationTime: 800,
+    scatterTime: 800,
+    pieceInteractionTime: 1200,
+    minFps: 30,
+    maxMemoryUsage: 100 * 1024 * 1024,
 };
 
 const OPTIMIZATION_SUGGESTIONS = {
@@ -37,13 +37,13 @@ const OPTIMIZATION_SUGGESTIONS = {
 const E2E_LOAD_BENCHMARK = 1800;
 
 function stripAnsiCodes(str) {
-  return str.replace(/[\u001b\u009b][[()#;?]*.{0,2}(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
+    return str.replace(/[\u001b\u009b][[()#;?]*.{0,2}(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
 }
 
 function getStatusIcon(value, base, type = 'max') {
-  if (value === undefined || value === null || isNaN(value)) return '❌';
-  if (type === 'max') return value > base ? '⚠️' : '✅';
-  return value < base ? '⚠️' : '✅';
+    if (value === undefined || value === null || isNaN(value)) return '❌';
+    if (type === 'max') return value > base ? '⚠️' : '✅';
+    return value < base ? '⚠️' : '✅';
 }
 
 function parseTestStepsFromStdout(stdout) {
@@ -77,60 +77,60 @@ async function generateReport(suite) {
 
     // 从测试附件中查找性能指标
     const performanceAttachment = result.attachments.find(
-      (att) => att.name === 'performance-metrics'
+        (att) => att.name === 'performance-metrics'
     );
 
     if (!performanceAttachment || !performanceAttachment.body) {
-      console.log('Could not find performance metrics in test attachments. Skipping report generation.');
-      return;
+        console.log('Could not find performance metrics in test attachments. Skipping report generation.');
+        return;
     }
-    
+
     let metrics;
     try {
-      // Playwright的JSON报告会将附件body进行base64编码，所以需要先解码
-      const decodedBody = Buffer.from(performanceAttachment.body, 'base64').toString('utf8');
-      metrics = JSON.parse(decodedBody);
+        // Playwright的JSON报告会将附件body进行base64编码，所以需要先解码
+        const decodedBody = Buffer.from(performanceAttachment.body, 'base64').toString('utf8');
+        metrics = JSON.parse(decodedBody);
     } catch (e) {
-      console.error('Failed to parse performance metrics from attachment:', e);
-      return;
+        console.error('Failed to parse performance metrics from attachment:', e);
+        return;
     }
-    
+
     // 计算平均交互时间
     if (metrics.pieceInteractionTimes && metrics.pieceInteractionTimes.length > 0) {
-      metrics.avgInteractionTime = metrics.pieceInteractionTimes.reduce((a, b) => a + b, 0) / metrics.pieceInteractionTimes.length;
+        metrics.avgInteractionTime = metrics.pieceInteractionTimes.reduce((a, b) => a + b, 0) / metrics.pieceInteractionTimes.length;
     }
 
     // 新增：保证所有核心字段存在
     const ensureNumber = v => (typeof v === 'number' && !isNaN(v) ? v : null);
     const allMetrics = {
-      resourceLoadTime: ensureNumber(metrics.resourceLoadTime ?? metrics.gotoLoadTime),
-      e2eLoadTime: ensureNumber(metrics.e2eLoadTime ?? metrics.loadTime),
-      loadTime: ensureNumber(metrics.loadTime),
-      shapeGenerationTime: ensureNumber(metrics.shapeGenerationTime),
-      puzzleGenerationTime: ensureNumber(metrics.puzzleGenerationTime),
-      scatterTime: ensureNumber(metrics.scatterTime),
-      avgInteractionTime: ensureNumber(metrics.avgInteractionTime),
-      puzzleInteractionDuration: ensureNumber(metrics.puzzleInteractionDuration),
-      totalTestTime: ensureNumber(metrics.totalTestTime),
-      avgFps: metrics.fps && metrics.fps.length > 0 ? parseFloat((metrics.fps.reduce((a, b) => a + b, 0) / metrics.fps.length).toFixed(1)) : null,
-      memoryUsage: ensureNumber(metrics.memoryUsage),
-      // 新增：适配测试相关字段
-      adaptationPassRate: metrics.adaptationPassRate ? parseFloat(metrics.adaptationPassRate.replace('%', '')) : null,
-      adaptationTestCount: ensureNumber(metrics.adaptationTestCount),
-      adaptationPassCount: ensureNumber(metrics.adaptationPassCount),
-      adaptationTestResults: metrics.adaptationTestResults,
+        resourceLoadTime: ensureNumber(metrics.resourceLoadTime ?? metrics.gotoLoadTime),
+        e2eLoadTime: ensureNumber(metrics.e2eLoadTime ?? metrics.loadTime),
+        loadTime: ensureNumber(metrics.loadTime),
+        shapeGenerationTime: ensureNumber(metrics.shapeGenerationTime),
+        puzzleGenerationTime: ensureNumber(metrics.puzzleGenerationTime),
+        scatterTime: ensureNumber(metrics.scatterTime),
+        avgInteractionTime: ensureNumber(metrics.avgInteractionTime),
+        puzzleInteractionDuration: ensureNumber(metrics.puzzleInteractionDuration),
+        totalTestTime: ensureNumber(metrics.totalTestTime),
+        avgFps: metrics.fps && metrics.fps.length > 0 ? parseFloat((metrics.fps.reduce((a, b) => a + b, 0) / metrics.fps.length).toFixed(1)) : null,
+        memoryUsage: ensureNumber(metrics.memoryUsage),
+        // 新增：适配测试相关字段
+        adaptationPassRate: metrics.adaptationPassRate ? parseFloat(metrics.adaptationPassRate.replace('%', '')) : null,
+        adaptationTestCount: ensureNumber(metrics.adaptationTestCount),
+        adaptationPassCount: ensureNumber(metrics.adaptationPassCount),
+        adaptationTestResults: metrics.adaptationTestResults,
     };
     const allScenario = {
-      shapeType: metrics.shapeType || null,
-      cutType: metrics.cutType || null,
-      cutCount: typeof metrics.cutCount === 'number' ? metrics.cutCount : null,
-      pieceCount: typeof metrics.pieceCount === 'number' ? metrics.pieceCount : null,
+        shapeType: metrics.shapeType || null,
+        cutType: metrics.cutType || null,
+        cutCount: typeof metrics.cutCount === 'number' ? metrics.cutCount : null,
+        pieceCount: typeof metrics.pieceCount === 'number' ? metrics.pieceCount : null,
     };
     // 失败原因
     const failReason = result.status !== 'passed' && result.errors && result.errors.length > 0 ? result.errors.map(e => e.message).join('\n') : undefined;
 
     const stdout = stripAnsiCodes(result.stdout.map(s => s.text || '').join(''));
-    
+
     const timestamp = dayjs().tz('Asia/Hong_Kong').format('YYYY-MM-DD HH:mm:ss');
     const fileTimestamp = dayjs().tz('Asia/Hong_Kong').format('YYYYMMDDHHmmss');
     const reportFileName = `test-report-${fileTimestamp}.md`;
@@ -144,7 +144,7 @@ async function generateReport(suite) {
     const memMB = metrics.memoryUsage;
     const avgFpsStr = isNaN(avgFps) ? '缺失' : avgFps.toFixed(2);
     const memMBStr = isNaN(memMB) ? '缺失' : memMB.toFixed(2);
-    
+
     const summaryData = {
         fileName: reportFileName,
         title: testTitle,
@@ -345,7 +345,7 @@ async function main() {
     const results = await fse.readJson(resultsFile);
     // 使用新的递归查找函数来定位测试结果，并使用正确的文件名
     const gameFlowResult = findSuite(results, 'full_game_flow.spec.ts');
-    
+
     if (gameFlowResult) {
         await generateReport(gameFlowResult);
         await updateIndex();

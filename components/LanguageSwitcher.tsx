@@ -93,170 +93,88 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
     color: 'white',
   };
 
-  // iconOnly 变体 - 完全图标化的语言切换器（横向展开）
+  // iconOnly 变体 - 直接切换模式（优化后）
   if (variant === 'iconOnly') {
-    // 使用与其他工具按钮一致的大小：26px
     const buttonWidth = 26;
-    const buttonGap = 8;
-    const languageCount = Object.keys(SUPPORTED_LOCALES).length;
-    const totalWidth = isOpen ? (languageCount * buttonWidth + (languageCount - 1) * buttonGap) : buttonWidth;
+    
+    // 获取下一个语言
+    const getNextLocale = (currentLocale: SupportedLocale): SupportedLocale => {
+      const locales = Object.keys(SUPPORTED_LOCALES) as SupportedLocale[];
+      const currentIndex = locales.indexOf(currentLocale);
+      const nextIndex = (currentIndex + 1) % locales.length;
+      return locales[nextIndex];
+    };
+    
+    const nextLocale = getNextLocale(locale);
     
     return (
       <div 
         className={`relative ${className}`} 
         style={{
-          width: `${totalWidth}px`,
+          width: `${buttonWidth}px`,
           height: `${buttonWidth}px`,
-          transition: 'width 0.3s ease-in-out',
           display: 'flex',
-          justifyContent: 'flex-end', // 确保从右侧开始布局
           alignItems: 'center',
+          justifyContent: 'center',
         }}
         suppressHydrationWarning
       >
-        {/* 展开状态：显示所有语言选项 */}
-        {isOpen ? (
-          <div 
-            style={{
-              display: 'flex',
-              gap: `${buttonGap}px`,
-              alignItems: 'center',
-              width: '100%',
-              justifyContent: 'flex-end', // 从右侧对齐
-            }}
-            suppressHydrationWarning
-          >
-            {Object.entries(SUPPORTED_LOCALES).reverse().map(([code, name]) => (
-              <Button
-                key={code}
-                onClick={async (e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  
-                  // 播放按钮点击音效
-                  try {
-                    await playButtonClickSound();
-                  } catch (error) {
-                    console.error('Failed to play button click sound:', error);
-                  }
-                  
-                  console.log('Language button clicked:', code, 'current locale:', locale);
-                  if (code !== locale && !isLoading) {
-                    console.log('Changing locale to:', code);
-                    try {
-                      await changeLocale(code as SupportedLocale);
-                      console.log('Locale changed successfully');
-                    } catch (error) {
-                      console.error('Failed to change locale:', error);
-                    }
-                  }
-                  setIsOpen(false);
-                }}
-                variant="ghost"
-                size="icon"
-                className={`rounded-full border-none shadow-none transition-all duration-200 cursor-pointer ${
-                  code === locale 
-                    ? 'bg-[#F68E5F] text-white' 
-                    : 'bg-[#1E1A2A] text-[#F68E5F] hover:bg-[#463E50] active:bg-[#2A283E]'
-                }`}
-                style={{
-                  width: `${buttonWidth}px`,
-                  height: `${buttonWidth}px`,
-                  borderRadius: '50%',
-                  minWidth: `${buttonWidth}px`,
-                  minHeight: `${buttonWidth}px`,
-                  padding: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: 'none',
-                  border: 'none',
-                  zIndex: 1001, // 确保在点击外部关闭层之上
-                  position: 'relative',
-                  cursor: 'pointer',
-                }}
-                data-testid={`language-option-${code}`}
-                title={name}
-                suppressHydrationWarning
-              >
-                <span 
-                  style={{ 
-                    fontSize: '10px', 
-                    fontWeight: 'bold',
-                    fontFamily: 'monospace'
-                  }} 
-                  suppressHydrationWarning
-                >
-                  {getLanguageIcon(code as SupportedLocale)}
-                </span>
-              </Button>
-            ))}
-          </div>
-        ) : (
-          /* 收起状态：只显示当前语言 */
-          <Button
-            onClick={async () => {
-              // 播放按钮点击音效
+        <Button
+          onClick={async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // 播放按钮点击音效
+            try {
+              await playButtonClickSound();
+            } catch (error) {
+              console.error('Failed to play button click sound:', error);
+            }
+            
+            console.log('Direct language switch clicked, current:', locale, 'switching to:', nextLocale);
+            
+            if (!isLoading) {
               try {
-                await playButtonClickSound();
+                await changeLocale(nextLocale);
+                console.log('Language switched successfully to:', nextLocale);
               } catch (error) {
-                console.error('Failed to play button click sound:', error);
+                console.error('Failed to switch language:', error);
               }
-              setIsOpen(true);
-            }}
-            disabled={isLoading}
-            variant="ghost"
-            size="icon"
-            className={`rounded-full text-[#F68E5F] bg-[#1E1A2A] hover:bg-[#141022] active:bg-[#2A283E] transition-colors border-none shadow-none`}
-            style={{
-              width: `${buttonWidth}px`,
-              height: `${buttonWidth}px`,
-              borderRadius: '50%',
-              minWidth: `${buttonWidth}px`,
-              minHeight: `${buttonWidth}px`,
-              padding: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: 'none',
-              border: 'none',
-            }}
-            data-testid="language-switcher-button"
-            title={`当前语言: ${SUPPORTED_LOCALES[locale]}`}
+            }
+          }}
+          disabled={isLoading}
+          variant="ghost"
+          size="icon"
+          className="rounded-full text-[#F68E5F] bg-[#1E1A2A] hover:bg-[#141022] active:bg-[#2A283E] transition-all duration-200 border-none shadow-none cursor-pointer"
+          style={{
+            width: `${buttonWidth}px`,
+            height: `${buttonWidth}px`,
+            borderRadius: '50%',
+            minWidth: `${buttonWidth}px`,
+            minHeight: `${buttonWidth}px`,
+            padding: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: 'none',
+            border: 'none',
+            opacity: isLoading ? 0.5 : 1,
+          }}
+          data-testid="language-switcher-button"
+          title={`当前: ${SUPPORTED_LOCALES[locale]} → 点击切换到: ${SUPPORTED_LOCALES[nextLocale]}`}
+          suppressHydrationWarning
+        >
+          <span 
+            style={{ 
+              fontSize: '10px', 
+              fontWeight: 'bold',
+              fontFamily: 'monospace'
+            }} 
             suppressHydrationWarning
           >
-            <span 
-              style={{ 
-                fontSize: '10px', 
-                fontWeight: 'bold',
-                fontFamily: 'monospace'
-              }} 
-              suppressHydrationWarning
-            >
-              {getLanguageIcon(locale)}
-            </span>
-          </Button>
-        )}
-        
-        {/* 点击外部关闭展开状态 */}
-        {isOpen && (
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 999,
-            }}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              console.log('Clicking outside, closing language switcher');
-              setIsOpen(false);
-            }}
-          />
-        )}
+            {getLanguageIcon(locale)}
+          </span>
+        </Button>
       </div>
     );
   }
