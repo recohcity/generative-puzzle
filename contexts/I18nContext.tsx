@@ -20,11 +20,8 @@ interface I18nProviderProps {
 }
 
 export function I18nProvider({ children }: I18nProviderProps) {
-  const [locale, setLocale] = useState<SupportedLocale>(() => {
-    // 在服务端始终返回默认语言，避免水合错误
-    if (typeof window === 'undefined') return DEFAULT_LOCALE;
-    return getStoredLocale();
-  });
+  // 始终从默认语言开始，避免水合错误
+  const [locale, setLocale] = useState<SupportedLocale>(DEFAULT_LOCALE);
   const [messages, setMessages] = useState<TranslationMessages | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);
@@ -40,25 +37,35 @@ export function I18nProvider({ children }: I18nProviderProps) {
     
     const initializeLocale = async () => {
       setIsLoading(true);
-      const storedLocale = getStoredLocale();
-      
-      // 如果存储的语言与当前语言不同，更新语言
-      if (storedLocale !== locale) {
-        setLocale(storedLocale);
-      }
       
       try {
+        // 获取用户偏好的语言
+        const storedLocale = getStoredLocale();
+        
+        // 加载对应的翻译文件
         const loadedMessages = await loadMessages(storedLocale);
         setMessages(loadedMessages);
+        
+        // 如果存储的语言与默认语言不同，更新语言状态
+        if (storedLocale !== DEFAULT_LOCALE) {
+          setLocale(storedLocale);
+        }
       } catch (error) {
         console.error('Failed to load initial messages:', error);
+        // 加载失败时使用默认语言
+        try {
+          const fallbackMessages = await loadMessages(DEFAULT_LOCALE);
+          setMessages(fallbackMessages);
+        } catch (fallbackError) {
+          console.error('Failed to load fallback messages:', fallbackError);
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
     initializeLocale();
-  }, [isClient, locale]);
+  }, [isClient]);
 
   // 切换语言
   const changeLocale = async (newLocale: SupportedLocale) => {

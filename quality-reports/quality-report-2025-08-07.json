@@ -1,0 +1,25 @@
+{
+  "typescript": {
+    "passed": true,
+    "score": 100,
+    "errors": [],
+    "warnings": []
+  },
+  "eslint": {
+    "passed": true,
+    "score": 100,
+    "errors": [],
+    "warnings": []
+  },
+  "tests": {
+    "passed": true,
+    "score": 100,
+    "coverage": 100
+  },
+  "overall": {
+    "score": 100,
+    "passed": true
+  },
+  "timestamp": "2025-08-07T05:33:45.038Z",
+  "project": "generative-puzzle-game"
+}

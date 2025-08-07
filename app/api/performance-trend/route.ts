@@ -20,15 +20,27 @@ export async function GET() {
   let result: any[] = [];
 
   try {
+    // 检查目录是否存在
+    if (!fs.existsSync(logsDir)) {
+      console.log(`Logs directory does not exist: ${logsDir}`);
+      return NextResponse.json([]);
+    }
+
     const files = fs.readdirSync(logsDir)
       .filter(f => /^test-report-.*\.md$/.test(f))
       .sort((a, b) => b.localeCompare(a)); // 按文件名（时间）降序
 
+    if (files.length === 0) {
+      console.log('No test report files found');
+      return NextResponse.json([]);
+    }
+
     for (const file of files) {
-      const filePath = path.join(logsDir, file);
-      const content = fs.readFileSync(filePath, 'utf-8');
-      const meta = extractMetaFromMarkdown(content);
-      if (meta && meta.metrics && meta.scenario) {
+      try {
+        const filePath = path.join(logsDir, file);
+        const content = fs.readFileSync(filePath, 'utf-8');
+        const meta = extractMetaFromMarkdown(content);
+        if (meta && meta.metrics && meta.scenario) {
         // status 字段只与流程通过/失败相关，性能极优不会导致失败
         // 如有 failReason 字段，聚合到结果中，便于前端展示失败详情
         result.push({
@@ -50,12 +62,19 @@ export async function GET() {
           cutCount: meta.scenario.cutCount ?? '-',
           version: meta.version || '未记录',
           // 新增：适配测试数据
-          adaptationPassRate: meta.metrics.adaptationPassRate ? parseFloat(meta.metrics.adaptationPassRate.replace('%', '')) : undefined,
+          adaptationPassRate: typeof meta.metrics.adaptationPassRate === 'string' 
+            ? parseFloat(meta.metrics.adaptationPassRate.replace('%', '')) 
+            : meta.metrics.adaptationPassRate ?? undefined,
           adaptationTestCount: meta.metrics.adaptationTestCount ?? undefined,
           adaptationPassCount: meta.metrics.adaptationPassCount ?? undefined,
           adaptationTestResults: meta.metrics.adaptationTestResults ?? undefined,
           ...(meta.failReason ? { failReason: meta.failReason } : {})
         });
+        }
+      } catch (fileError) {
+        console.error(`Error processing file ${file}:`, fileError);
+        // 跳过有问题的文件，继续处理其他文件
+        continue;
       }
     }
     // 前端图表需要升序数据

@@ -1,0 +1,30 @@
+{
+  "extends": ["next/core-web-vitals"],
+  "rules": {
+    "no-console": "off",
+    "react/no-unescaped-entities": "warn",
+    "@next/next/no-img-element": "warn"
+  },
+  "overrides": [
+    {
+      "files": ["src/quality-system/**/*.cjs"],
+      "env": {
+        "node": true,
+        "commonjs": true
+      },
+      "rules": {
+        "no-console": "off",
+        "no-unused-vars": "warn"
+      }
+    }
+  ],
+  "ignorePatterns": [
+    "node_modules/",
+    ".next/",
+    "dist/",
+    "coverage/",
+    "*.d.ts",
+    "playwright-report/",
+    "test-results/"
+  ]
+}

@@ -1,6 +1,6 @@
 # 项目结构（Project Structure）
 
-> 自动生成时间：2025/8/7 02:06:54  
+> 自动生成时间：2025/8/7 13:25:40  
 > 生成工具：项目结构文档生成器 v3.1.0 - 开发导航版
 
 **开发者导航工具** - 快速理解项目架构，精准定位代码位置，提升开发效率。
@@ -14,9 +14,9 @@
 
 | 统计项 | 数量 | 说明 |
 |--------|------|------|
-| 总目录数 | 45 | 项目目录结构层次 |
+| 总目录数 | 44 | 项目目录结构层次 |
 | 总文件数 | 216 | 代码文件和资源文件总数 |
-| 项目容量 | 4.61 MB | 不包含node_modules的项目大小 |
+| 项目容量 | 4.69 MB | 不包含node_modules的项目大小 |
 
 ---
 
@@ -210,7 +210,6 @@ npm run lint                   # 代码检查
   - i18n/
   - testing/
 - e2e/
-  - screenshots/
   - temp/
 - hooks/
 - lib/
@@ -398,7 +397,6 @@ npm run lint                   # 代码检查
   📄 `README.md` - 项目说明文档
   📄 `SUPREME_ADAPTATION_DIRECTIVE.md`
 📁 **e2e/**
-  📁 **screenshots/**
   📁 **temp/**
     📄 `final_acceptance_test.spec.ts`
     📄 `simple_desktop_adaptation_test.spec.ts`
@@ -431,18 +429,19 @@ npm run lint                   # 代码检查
   📄 `quality-report-2025-07-31.json`
   📄 `quality-report-2025-08-03.json`
   📄 `quality-report-2025-08-05.json`
+  📄 `quality-report-2025-08-07.json`
 📁 **scripts/**
-  📄 `archive-test-results.js`
+  📄 `archive-test-results.cjs`
   📄 `check-architecture-conflicts.ts`
-  📄 `classify-apis.js`
-  📄 `cleanup-code.js`
-  📄 `generate-project-structure-clean.js`
-  📄 `generate-project-structure-simple.js`
-  📄 `generate-project-structure.js`
-  📄 `organize-docs.js`
-  📄 `run-comprehensive-tests.js`
-  📄 `scan-api-changes.js`
-  📄 `test-cicd-integration.js`
+  📄 `classify-apis.cjs`
+  📄 `cleanup-code.cjs`
+  📄 `generate-project-structure-clean.cjs`
+  📄 `generate-project-structure-simple.cjs`
+  📄 `generate-project-structure.cjs`
+  📄 `organize-docs.cjs`
+  📄 `run-comprehensive-tests.cjs`
+  📄 `scan-api-changes.cjs`
+  📄 `test-cicd-integration.cjs`
   📄 `validate-unified-system.ts`
 📁 **src/**
   📁 **config/**
@@ -457,7 +456,7 @@ npm run lint                   # 代码检查
     📄 `config.ts`
     📄 `index.ts`
   📁 **quality-system/**
-    📄 `quality-checker.js`
+    📄 `quality-checker.cjs`
     📄 `README.md` - 项目说明文档
     📄 `test-trigger.md`
 📁 **test-results/**
@@ -495,14 +494,13 @@ npm run lint                   # 代码检查
 📄 `.gitignore` - Git 忽略文件配置
 📄 `CHANGELOG.md` - 版本历史与变更记录
 📄 `components.json` - Shadcn UI 组件配置
-📄 `eslint.config.js`
-📄 `jest.config.js` - Jest 测试配置
+📄 `jest.config.cjs`
 📄 `next.config.mjs` - Next.js 框架配置
 📄 `package-lock.json` - 依赖锁定文件
 📄 `package.json` - 项目依赖和脚本配置
 📄 `playwright.config.ts` - Playwright E2E 测试配置
 📄 `postcss.config.mjs` - PostCSS 配置
-📄 `quality-gate.config.js`
+📄 `quality-gate.config.cjs`
 📄 `README.md` - 项目说明文档
 📄 `tailwind.config.ts` - Tailwind CSS 配置
 📄 `tsconfig.json` - TypeScript 编译配置
@@ -543,4 +541,4 @@ npm run generate-structure  # 一键更新项目结构文档
 
 ---
 
-*📅 生成时间：2025/8/7 02:06:54 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*
+*📅 生成时间：2025/8/7 13:25:40 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*

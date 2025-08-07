@@ -179,11 +179,14 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
                 title={name}
                 suppressHydrationWarning
               >
-                <span style={{ 
-                  fontSize: '10px', 
-                  fontWeight: 'bold',
-                  fontFamily: 'monospace'
-                }} suppressHydrationWarning>
+                <span 
+                  style={{ 
+                    fontSize: '10px', 
+                    fontWeight: 'bold',
+                    fontFamily: 'monospace'
+                  }} 
+                  suppressHydrationWarning
+                >
                   {getLanguageIcon(code as SupportedLocale)}
                 </span>
               </Button>
@@ -222,11 +225,14 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
             title={`当前语言: ${SUPPORTED_LOCALES[locale]}`}
             suppressHydrationWarning
           >
-            <span style={{ 
-              fontSize: '10px', 
-              fontWeight: 'bold',
-              fontFamily: 'monospace'
-            }} suppressHydrationWarning>
+            <span 
+              style={{ 
+                fontSize: '10px', 
+                fontWeight: 'bold',
+                fontFamily: 'monospace'
+              }} 
+              suppressHydrationWarning
+            >
               {getLanguageIcon(locale)}
             </span>
           </Button>

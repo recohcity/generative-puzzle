@@ -17,13 +17,34 @@ class ProjectQualityChecker {
       tests: { passed: false, score: 0, coverage: 0 },
       overall: { score: 0, passed: false }
     };
+    
+    // 检测运行环境
+    this.isCI = process.env.CI === 'true';
+    this.isSilent = process.env.SILENT === 'true';
+    this.isVerbose = process.env.VERBOSE === 'true';
+  }
+  
+  /**
+   * 日志输出方法，支持静默模式
+   */
+  log(message, force = false) {
+    if (!this.isSilent || force) {
+      console.log(message);
+    }
+  }
+  
+  /**
+   * 错误输出方法，始终输出
+   */
+  error(message) {
+    console.error(message);
   }
 
   /**
    * 运行完整的质量检查
    */
   async runFullCheck() {
-    console.log('🔍 开始项目质量检查...\n');
+    this.log('🔍 开始项目质量检查...\n');
     
     try {
       // 1. TypeScript 检查
@@ -43,9 +64,9 @@ class ProjectQualityChecker {
       
       return this.results;
       
-    } catch (error) {
-      console.error('❌ 质量检查失败:', error.message);
-      throw error;
+    } catch (err) {
+      console.error('❌ 质量检查失败:', err.message);
+      throw err;
     }
   }
 
@@ -53,17 +74,17 @@ class ProjectQualityChecker {
    * TypeScript 编译检查
    */
   async checkTypeScript() {
-    console.log('📝 检查 TypeScript 编译...');
+    this.log('📝 检查 TypeScript 编译...');
     
     try {
-      const output = execSync('npx tsc --noEmit --pretty false', { 
+      execSync('npx tsc --noEmit --pretty false', { 
         encoding: 'utf8',
         stdio: 'pipe'
       });
       
       this.results.typescript.passed = true;
       this.results.typescript.score = 100;
-      console.log('✅ TypeScript 编译通过');
+      this.log('✅ TypeScript 编译通过');
       
     } catch (error) {
       const output = error.stdout || error.stderr || '';
@@ -81,7 +102,7 @@ class ProjectQualityChecker {
       const warningPenalty = warnings.length * 2;
       this.results.typescript.score = Math.max(0, 100 - errorPenalty - warningPenalty);
       
-      console.log(`${errors.length > 0 ? '❌' : '⚠️'} TypeScript: ${errors.length} 错误, ${warnings.length} 警告`);
+      this.log(`${errors.length > 0 ? '❌' : '⚠️'} TypeScript: ${errors.length} 错误, ${warnings.length} 警告`);
     }
   }
 
@@ -89,17 +110,17 @@ class ProjectQualityChecker {
    * ESLint 检查
    */
   async checkESLint() {
-    console.log('🔧 检查 ESLint 规则...');
+    this.log('🔧 检查 ESLint 规则...');
     
     try {
-      const output = execSync('npm run lint', { 
+      execSync('npm run lint', { 
         encoding: 'utf8',
         stdio: 'pipe'
       });
       
       this.results.eslint.passed = true;
       this.results.eslint.score = 100;
-      console.log('✅ ESLint 检查通过');
+      this.log('✅ ESLint 检查通过');
       
     } catch (error) {
       const output = error.stdout || error.stderr || '';
@@ -117,7 +138,7 @@ class ProjectQualityChecker {
       const warningPenalty = warnings.length * 1;
       this.results.eslint.score = Math.max(0, 100 - errorPenalty - warningPenalty);
       
-      console.log(`${errors.length > 0 ? '❌' : '⚠️'} ESLint: ${errors.length} 错误, ${warnings.length} 警告`);
+      this.log(`${errors.length > 0 ? '❌' : '⚠️'} ESLint: ${errors.length} 错误, ${warnings.length} 警告`);
     }
   }
 
@@ -125,11 +146,11 @@ class ProjectQualityChecker {
    * 测试和覆盖率检查
    */
   async checkTests() {
-    console.log('🧪 运行测试和覆盖率检查...');
+    this.log('🧪 运行测试和覆盖率检查...');
     
     try {
       // 运行测试并生成覆盖率报告
-      const output = execSync('npm run test:unit -- --coverage --coverageReporters=json-summary --passWithNoTests', { 
+      execSync('npm run test:unit -- --coverage --coverageReporters=json-summary --passWithNoTests', { 
         encoding: 'utf8',
         stdio: 'pipe'
       });
@@ -148,12 +169,12 @@ class ProjectQualityChecker {
       // 修复评分逻辑：覆盖率直接作为分数，不加基础分
       this.results.tests.score = Math.round(coverage);
       
-      console.log(`✅ 测试通过，覆盖率: ${coverage.toFixed(1)}%`);
+      this.log(`✅ 测试通过，覆盖率: ${coverage.toFixed(1)}%`);
       
-    } catch (error) {
+    } catch {
       this.results.tests.passed = false;
       this.results.tests.score = 0;
-      console.log('❌ 测试失败');
+      this.log('❌ 测试失败');
     }
   }
 
@@ -181,42 +202,42 @@ class ProjectQualityChecker {
    * 生成质量报告
    */
   generateReport() {
-    console.log('\n📊 质量检查报告');
-    console.log('==================');
+    this.log('\n📊 质量检查报告');
+    this.log('==================');
     
-    console.log(`\n🎯 总体评分: ${this.results.overall.score}/100 ${this.getScoreEmoji(this.results.overall.score)}`);
-    console.log(`📋 总体状态: ${this.results.overall.passed ? '✅ 通过' : '❌ 未通过'}`);
+    this.log(`\n🎯 总体评分: ${this.results.overall.score}/100 ${this.getScoreEmoji(this.results.overall.score)}`, true);
+    this.log(`📋 总体状态: ${this.results.overall.passed ? '✅ 通过' : '❌ 未通过'}`, true);
     
-    console.log('\n📝 详细结果:');
-    console.log(`  TypeScript: ${this.results.typescript.score}/100 ${this.results.typescript.passed ? '✅' : '❌'}`);
-    console.log(`  ESLint:     ${this.results.eslint.score}/100 ${this.results.eslint.passed ? '✅' : '❌'}`);
-    console.log(`  测试覆盖率: ${this.results.tests.score}/100 ${this.results.tests.passed ? '✅' : '❌'} (${this.results.tests.coverage.toFixed(1)}%)`);
+    this.log('\n📝 详细结果:');
+    this.log(`  TypeScript: ${this.results.typescript.score}/100 ${this.results.typescript.passed ? '✅' : '❌'}`);
+    this.log(`  ESLint:     ${this.results.eslint.score}/100 ${this.results.eslint.passed ? '✅' : '❌'}`);
+    this.log(`  测试覆盖率: ${this.results.tests.score}/100 ${this.results.tests.passed ? '✅' : '❌'} (${this.results.tests.coverage.toFixed(1)}%)`);
     
     // 显示具体问题
     if (this.results.typescript.errors.length > 0) {
-      console.log('\n🔴 TypeScript 错误:');
+      this.log('\n🔴 TypeScript 错误:');
       this.results.typescript.errors.slice(0, 5).forEach(error => {
-        console.log(`  - ${error}`);
+        this.log(`  - ${error}`);
       });
       if (this.results.typescript.errors.length > 5) {
-        console.log(`  ... 还有 ${this.results.typescript.errors.length - 5} 个错误`);
+        this.log(`  ... 还有 ${this.results.typescript.errors.length - 5} 个错误`);
       }
     }
     
     if (this.results.eslint.errors.length > 0) {
-      console.log('\n🟠 ESLint 错误:');
+      this.log('\n🟠 ESLint 错误:');
       this.results.eslint.errors.slice(0, 5).forEach(error => {
-        console.log(`  - ${error}`);
+        this.log(`  - ${error}`);
       });
       if (this.results.eslint.errors.length > 5) {
-        console.log(`  ... 还有 ${this.results.eslint.errors.length - 5} 个错误`);
+        this.log(`  ... 还有 ${this.results.eslint.errors.length - 5} 个错误`);
       }
     }
     
     // 生成JSON报告
     this.saveJsonReport();
     
-    console.log('\n💡 建议:');
+    this.log('\n💡 建议:');
     this.generateSuggestions();
   }
 
@@ -247,7 +268,7 @@ class ProjectQualityChecker {
     }
     
     suggestions.forEach(suggestion => {
-      console.log(`  • ${suggestion}`);
+      this.log(`  • ${suggestion}`);
     });
   }
 
@@ -268,7 +289,7 @@ class ProjectQualityChecker {
     };
     
     fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
-    console.log(`\n📄 详细报告已保存: ${reportPath}`);
+    this.log(`\n📄 详细报告已保存: ${reportPath}`);
   }
 
   /**
@@ -295,7 +316,7 @@ if (require.main === module) {
   const checker = new ProjectQualityChecker();
   
   checker.runFullCheck()
-    .then(results => {
+    .then(() => {
       const passed = checker.passesQualityGate();
       console.log(`\n🚪 质量门禁: ${passed ? '✅ 通过' : '❌ 未通过'}`);
       

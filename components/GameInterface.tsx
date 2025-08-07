@@ -15,7 +15,7 @@ import PuzzleControlsGamepad from "@/components/PuzzleControlsGamepad"
 import ActionButtons from "@/components/ActionButtons" 
 import { Button } from "@/components/ui/button"
 import { Volume2, VolumeX, Maximize, Minimize, RefreshCw } from "lucide-react" 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { 
   initBackgroundMusic, 
   toggleBackgroundMusic, 
@@ -75,44 +75,8 @@ export default function CurveTestOptimized() {
     }
   }, []);
   
-  // 监听全屏状态变化
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      // 检查标准全屏API的状态
-      const isInFullscreen = !!(document.fullscreenElement ||
-      (document as any).webkitFullscreenElement ||
-      (document as any).mozFullScreenElement ||
-      (document as any).msFullscreenElement);
-      
-      // 如果使用了标准全屏API，更新状态
-      if (isInFullscreen !== isFullscreen) {
-        console.log(`全屏状态变化: ${isInFullscreen ? '进入全屏' : '退出全屏'} (点击次数: ${fullscreenClickCount})`);
-        setIsFullscreen(isInFullscreen);
-      }
-      
-      // 在全屏状态改变时设置特定的触摸事件处理
-      if (isInFullscreen) {
-        setupFullscreenTouchHandlers();
-      } else {
-        removeFullscreenTouchHandlers();
-      }
-    };
-    
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-    
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
-      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
-    };
-  }, [isFullscreen, fullscreenClickCount]);
-  
   // 设置全屏模式下的特殊触摸事件处理
-  const setupFullscreenTouchHandlers = () => {
+  const setupFullscreenTouchHandlers = useCallback(() => {
     const gameContainer = gameContainerRef.current;
     if (!gameContainer) return;
     
@@ -242,7 +206,7 @@ export default function CurveTestOptimized() {
       handleTouchMove,
       handleTouchEnd
     };
-  };
+  }, [device]);
   
   // 移除全屏模式下的触摸事件处理
   const removeFullscreenTouchHandlers = () => {
@@ -258,6 +222,42 @@ export default function CurveTestOptimized() {
       delete (window as any).__fullscreenTouchHandlers;
     }
   };
+
+  // 监听全屏状态变化
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      // 检查标准全屏API的状态
+      const isInFullscreen = !!(document.fullscreenElement ||
+      (document as any).webkitFullscreenElement ||
+      (document as any).mozFullScreenElement ||
+      (document as any).msFullscreenElement);
+      
+      // 如果使用了标准全屏API，更新状态
+      if (isInFullscreen !== isFullscreen) {
+        console.log(`全屏状态变化: ${isInFullscreen ? '进入全屏' : '退出全屏'} (点击次数: ${fullscreenClickCount})`);
+        setIsFullscreen(isInFullscreen);
+      }
+      
+      // 在全屏状态改变时设置特定的触摸事件处理
+      if (isInFullscreen) {
+        setupFullscreenTouchHandlers();
+      } else {
+        removeFullscreenTouchHandlers();
+      }
+    };
+    
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+    
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+    };
+  }, [isFullscreen, fullscreenClickCount, setupFullscreenTouchHandlers]);
 
   // 处理音乐切换
   const handleToggleMusic = async () => {

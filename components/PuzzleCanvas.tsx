@@ -301,7 +301,7 @@ export default function PuzzleCanvas() {
       // canvas.removeEventListener('touchend', nativeHandleTouchEnd);
       // canvas.removeEventListener('touchcancel', nativeHandleTouchEnd);
     };
-  }, [handleTouchStart, handleTouchMove, handleTouchEnd]);
+  }, [handleTouchStart, handleTouchMove, handleTouchEnd, canvasRef]);
 
   // 渲染逻辑
   useEffect(() => {
@@ -447,7 +447,11 @@ export default function PuzzleCanvas() {
     isShaking,
     state.showHint,
     state.originalPositions,
-    calculatePieceBounds
+    calculatePieceBounds,
+    canvasRef,
+    backgroundCanvasRef,
+    getRandomCompletionMessage,
+    t
   ]);
 
   return (

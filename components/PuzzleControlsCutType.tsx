@@ -24,6 +24,7 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
     if (state.cutType && localCutType === "" && state.cutType !== localCutType) {
       setLocalCutType(state.cutType);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.cutType]); // 移除localCutType依赖，避免循环
 
   // 监听游戏重置事件，当原始形状被清空（即游戏重置）时，清除本地选择状态
@@ -32,6 +33,7 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
       console.log("游戏已重置，清除切割类型选择");
       setLocalCutType("");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.originalShape.length]); // 移除localCutType依赖，避免循环
 
   // 使用统一设备检测系统

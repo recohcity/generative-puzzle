@@ -47,7 +47,9 @@ export function getStoredLocale(): SupportedLocale {
     console.warn('Failed to read locale from localStorage:', error);
   }
   
-  return detectBrowserLocale();
+  // 如果没有存储的语言设置，优先使用默认语言而不是浏览器检测
+  // 这确保了测试环境的一致性
+  return DEFAULT_LOCALE;
 }
 
 // 保存语言设置到本地存储
