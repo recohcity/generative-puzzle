@@ -7,6 +7,7 @@ import PuzzleControlsGamepad from "@/components/PuzzleControlsGamepad";
 import GlobalUtilityButtons from "@/components/GlobalUtilityButtons";
 import RestartButton from "@/components/RestartButton";
 import { Button } from "@/components/ui/button";
+import { Lightbulb, RotateCcw, RotateCw } from "lucide-react";
 import { useGame } from "@/contexts/GameContext";
 import { playRotateSound, playButtonClickSound } from "@/utils/rendering/soundEffects";
 import { useTranslation } from '@/contexts/I18nContext';
@@ -228,7 +229,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
         {activeTab === 'controls' && (
           <div className={SECTION_CLASS + ' mt-0'}>
             <div className="flex flex-col items-center">
-              {/* 控制按钮组（移动端专用，样式与散开拼图一致） */}
+              {/* 控制按钮组（移动端专用，使用与桌面端一致的图标） */}
               <div className="flex w-full mb-2" style={{ gap: '8px' }}>
                 <Button
                   style={{
@@ -251,8 +252,9 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                   variant="ghost"
                   onClick={handleShowHint}
                   disabled={isHintDisabled}
+                  title={t('game.controls.hint')}
                 >
-                  <span style={{ lineHeight: 1 }}>{t('game.controls.hint')}</span>
+                  <Lightbulb style={{ width: '16px', height: '16px' }} className="text-white shrink-0" strokeWidth={2} />
                 </Button>
                 <Button
                   style={{
@@ -275,8 +277,9 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                   variant="ghost"
                   onClick={handleRotateLeft}
                   disabled={isRotateDisabled}
+                  title={t('game.controls.rotateLeft')}
                 >
-                  <span style={{ lineHeight: 1 }}>{t('game.controls.rotateLeft')}</span>
+                  <RotateCcw style={{ width: '16px', height: '16px' }} className="text-white shrink-0" strokeWidth={2} />
                 </Button>
                 <Button
                   style={{
@@ -299,8 +302,9 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                   variant="ghost"
                   onClick={handleRotateRight}
                   disabled={isRotateDisabled}
+                  title={t('game.controls.rotateRight')}
                 >
-                  <span style={{ lineHeight: 1 }}>{t('game.controls.rotateRight')}</span>
+                  <RotateCw style={{ width: '16px', height: '16px' }} className="text-white shrink-0" strokeWidth={2} />
                 </Button>
               </div>
 
