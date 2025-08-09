@@ -1,5 +1,19 @@
 # 生成式拼图游戏 Changelog
 
+## [v1.3.44] -2025-08-09
+### 主题：修复移动端按钮状态问题
+修复了移动端语言切换按钮和其他工具按钮的状态问题：
+**主要修改：**
+移除CSS过渡效果：将 transition 设置为 none，避免状态切换时的延迟
+强制样式覆盖：使用 !important 强制覆盖所有可能的状态样式
+**添加自定义CSS类：**
+.language-button-fixed - 语言切换按钮
+.utility-button-fixed - 音乐和全屏按钮
+**禁用系统默认行为：**
+WebkitTapHighlightColor: 'transparent' - 移除点击高亮
+WebkitTouchCallout: 'none' - 禁用长按菜单
+userSelect: 'none' - 禁用文本选择
+
 ## [v1.3.43] - 2025-08-07
 ### 主题：移动端界面统一优化
 

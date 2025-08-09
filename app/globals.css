@@ -38,6 +38,53 @@ h1, h2, h3, h4, h5, h6,
   user-select: none !important;
 }
 
+/* 语言切换按钮固定样式 - 强制覆盖所有状态 */
+.language-button-fixed,
+.language-button-fixed:hover,
+.language-button-fixed:focus,
+.language-button-fixed:active,
+.language-button-fixed:focus-visible,
+.language-button-fixed[data-state="open"],
+.language-button-fixed[aria-expanded="true"] {
+  background-color: #1E1A2A !important;
+  color: #F68E5F !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.language-button-fixed span,
+.language-button-fixed:hover span,
+.language-button-fixed:focus span,
+.language-button-fixed:active span,
+.language-button-fixed:focus-visible span {
+  color: #F68E5F !important;
+}
+
+/* 工具按钮固定样式 - 强制覆盖所有状态 */
+.utility-button-fixed,
+.utility-button-fixed:hover,
+.utility-button-fixed:focus,
+.utility-button-fixed:active,
+.utility-button-fixed:focus-visible,
+.utility-button-fixed[data-state="open"],
+.utility-button-fixed[aria-expanded="true"] {
+  background-color: #1E1A2A !important;
+  color: #F68E5F !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.utility-button-fixed svg,
+.utility-button-fixed:hover svg,
+.utility-button-fixed:focus svg,
+.utility-button-fixed:active svg,
+.utility-button-fixed:focus-visible svg {
+  color: #F68E5F !important;
+  stroke: #F68E5F !important;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

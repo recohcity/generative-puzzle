@@ -96,7 +96,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   // iconOnly 变体 - 直接切换模式（优化后）
   if (variant === 'iconOnly') {
     const buttonWidth = 26;
-    
+
     // 获取下一个语言
     const getNextLocale = (currentLocale: SupportedLocale): SupportedLocale => {
       const locales = Object.keys(SUPPORTED_LOCALES) as SupportedLocale[];
@@ -104,12 +104,12 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
       const nextIndex = (currentIndex + 1) % locales.length;
       return locales[nextIndex];
     };
-    
+
     const nextLocale = getNextLocale(locale);
-    
+
     return (
-      <div 
-        className={`relative ${className}`} 
+      <div
+        className={`relative ${className}`}
         style={{
           width: `${buttonWidth}px`,
           height: `${buttonWidth}px`,
@@ -123,16 +123,16 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
           onClick={async (e) => {
             e.preventDefault();
             e.stopPropagation();
-            
+
             // 播放按钮点击音效
             try {
               await playButtonClickSound();
             } catch (error) {
               console.error('Failed to play button click sound:', error);
             }
-            
+
             console.log('Direct language switch clicked, current:', locale, 'switching to:', nextLocale);
-            
+
             if (!isLoading) {
               try {
                 await changeLocale(nextLocale);
@@ -145,7 +145,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
           disabled={isLoading}
           variant="ghost"
           size="icon"
-          className="rounded-full text-[#F68E5F] bg-[#1E1A2A] hover:bg-[#141022] active:bg-[#2A283E] transition-all duration-200 border-none shadow-none cursor-pointer"
+          className="rounded-full border-none shadow-none cursor-pointer language-button-fixed"
           style={{
             width: `${buttonWidth}px`,
             height: `${buttonWidth}px`,
@@ -159,17 +159,27 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
             boxShadow: 'none',
             border: 'none',
             opacity: isLoading ? 0.5 : 1,
+            transition: 'none',
+            WebkitTapHighlightColor: 'transparent',
+            WebkitTouchCallout: 'none',
+            WebkitUserSelect: 'none',
+            userSelect: 'none',
+            // 强制覆盖所有状态的样式
+            backgroundColor: '#1E1A2A !important',
+            color: '#F68E5F !important',
           }}
           data-testid="language-switcher-button"
           title={`当前: ${SUPPORTED_LOCALES[locale]} → 点击切换到: ${SUPPORTED_LOCALES[nextLocale]}`}
           suppressHydrationWarning
         >
-          <span 
-            style={{ 
-              fontSize: '10px', 
+          <span
+            style={{
+              fontSize: '10px',
               fontWeight: 'bold',
-              fontFamily: 'monospace'
-            }} 
+              fontFamily: 'monospace',
+              color: '#F68E5F !important',
+              pointerEvents: 'none',
+            }}
             suppressHydrationWarning
           >
             {getLanguageIcon(locale)}
@@ -196,13 +206,13 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
           data-testid="language-switcher-button"
         >
           <span>{SUPPORTED_LOCALES[locale]}</span>
-          <ChevronDown 
-            width={12} 
-            height={12} 
-            style={{ marginLeft: '4px', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} 
+          <ChevronDown
+            width={12}
+            height={12}
+            style={{ marginLeft: '4px', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
           />
         </Button>
-        
+
         {isOpen && (
           <div style={dropdownStyle}>
             {Object.entries(SUPPORTED_LOCALES).map(([code, name]) => (
@@ -245,7 +255,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
       >
         <Globe width={iconSize} height={iconSize} strokeWidth={2} />
       </Button>
-      
+
       {isOpen && (
         <div style={dropdownStyle}>
           {Object.entries(SUPPORTED_LOCALES).map(([code, name]) => (
@@ -270,7 +280,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
           ))}
         </div>
       )}
-      
+
       {/* 点击外部关闭下拉菜单 */}
       {isOpen && (
         <div

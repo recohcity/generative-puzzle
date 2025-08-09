@@ -22,8 +22,7 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
   buttonSize = 'default',
 }) => {
   const { t } = useTranslation();
-  const iconSizeClass = '!w-6 !h-6 shrink-0';
-  const buttonClass = `rounded-full ${buttonSize === 'small' ? 'w-6 h-6' : 'w-8 h-8'} text-[#F68E5F] bg-[#1E1A2A] hover:bg-[#141022] active:bg-[#2A283E] transition-colors border-none shadow-none`;
+  const buttonClass = `rounded-full ${buttonSize === 'small' ? 'w-6 h-6' : 'w-8 h-8'} border-none shadow-none cursor-pointer utility-button-fixed`;
   const iconSize = 12;
   const buttonStyle = {
     width: '26px',
@@ -35,11 +34,16 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: '#1E1A2A',
+    backgroundColor: '#1E1A2A !important',
     boxShadow: 'none',
     border: 'none',
-    color: '#F68E5F',
+    color: '#F68E5F !important',
     opacity: 1,
+    transition: 'none',
+    WebkitTapHighlightColor: 'transparent',
+    WebkitTouchCallout: 'none',
+    WebkitUserSelect: 'none',
+    userSelect: 'none',
   };
 
   return (
@@ -59,9 +63,9 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
         title={isMusicPlaying ? t('game.audio.toggleOff') : t('game.audio.toggleOn')}
       >
         {isMusicPlaying ? (
-          <Volume2 width={iconSize} height={iconSize} strokeWidth={2} />
+          <Volume2 width={iconSize} height={iconSize} strokeWidth={2} style={{ pointerEvents: 'none' }} />
         ) : (
-          <VolumeX width={iconSize} height={iconSize} strokeWidth={2} />
+          <VolumeX width={iconSize} height={iconSize} strokeWidth={2} style={{ pointerEvents: 'none' }} />
         )}
       </Button>
       <Button
@@ -75,9 +79,9 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
         title={isFullscreen ? t('game.fullscreen.exit') : t('game.fullscreen.enter')}
       >
         {isFullscreen ? (
-          <Minimize width={iconSize} height={iconSize} strokeWidth={2} />
+          <Minimize width={iconSize} height={iconSize} strokeWidth={2} style={{ pointerEvents: 'none' }} />
         ) : (
-          <Maximize width={iconSize} height={iconSize} strokeWidth={2} />
+          <Maximize width={iconSize} height={iconSize} strokeWidth={2} style={{ pointerEvents: 'none' }} />
         )}
       </Button>
     </div>
