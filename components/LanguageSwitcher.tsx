@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Globe, ChevronDown, Languages } from "lucide-react";
+import { Globe, ChevronDown } from "lucide-react";
 import { useTranslation } from '@/contexts/I18nContext';
 import { SUPPORTED_LOCALES, SupportedLocale } from '@/src/i18n/config';
 import { playButtonClickSound } from '@/utils/rendering/soundEffects';
@@ -165,8 +165,8 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
             WebkitUserSelect: 'none',
             userSelect: 'none',
             // 强制覆盖所有状态的样式
-            backgroundColor: '#1E1A2A !important',
-            color: '#F68E5F !important',
+            backgroundColor: '#1E1A2A',
+            color: '#F68E5F',
           }}
           data-testid="language-switcher-button"
           title={`当前: ${SUPPORTED_LOCALES[locale]} → 点击切换到: ${SUPPORTED_LOCALES[nextLocale]}`}
@@ -177,7 +177,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
               fontSize: '10px',
               fontWeight: 'bold',
               fontFamily: 'monospace',
-              color: '#F68E5F !important',
+              color: '#F68E5F',
               pointerEvents: 'none',
             }}
             suppressHydrationWarning

@@ -34,17 +34,17 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1E1A2A !important',
+    backgroundColor: '#1E1A2A',
     boxShadow: 'none',
     border: 'none',
-    color: '#F68E5F !important',
+    color: '#F68E5F',
     opacity: 1,
     transition: 'none',
     WebkitTapHighlightColor: 'transparent',
     WebkitTouchCallout: 'none',
     WebkitUserSelect: 'none',
     userSelect: 'none',
-  };
+  } as React.CSSProperties;
 
   return (
     <div className="flex items-center" style={{ gap: '8px' }}>
