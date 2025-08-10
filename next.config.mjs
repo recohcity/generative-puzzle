@@ -22,11 +22,17 @@ const nextConfig = {
     parallelServerCompiles: true,
   },
   reactStrictMode: false,
+  // GitHub Pages 配置
+  output: 'export',
+  trailingSlash: true,
+  basePath: process.env.NODE_ENV === 'production' ? '/generative-puzzle' : '',
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/generative-puzzle/' : '',
 }
 
 mergeConfig(nextConfig, userConfig)
 
-export const dynamic = "force-dynamic";
+// 移除 force-dynamic，因为静态导出不支持
+// export const dynamic = "force-dynamic";
 
 function mergeConfig(nextConfig, userConfig) {
   if (!userConfig) {

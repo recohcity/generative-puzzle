@@ -344,7 +344,8 @@ const PerformanceTrendPage: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch('/api/performance-trend');
+        // 在静态导出模式下使用静态数据文件
+        const res = await fetch('/performance-data.json');
         if (!res.ok) {
           throw new Error(`Failed to fetch: ${res.status} ${res.statusText}`);
         }
