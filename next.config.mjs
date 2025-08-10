@@ -22,11 +22,12 @@ const nextConfig = {
     parallelServerCompiles: true,
   },
   reactStrictMode: false,
-  // GitHub Pages 配置
+  // 静态导出配置
   output: 'export',
   trailingSlash: true,
-  basePath: process.env.NODE_ENV === 'production' ? '/generative-puzzle' : '',
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/generative-puzzle/' : '',
+  // 使用自定义域名时不需要basePath和assetPrefix
+  // basePath: process.env.NODE_ENV === 'production' ? '/generative-puzzle' : '',
+  // assetPrefix: process.env.NODE_ENV === 'production' ? '/generative-puzzle/' : '',
 }
 
 mergeConfig(nextConfig, userConfig)
