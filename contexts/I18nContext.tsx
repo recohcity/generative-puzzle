@@ -4,9 +4,6 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { SupportedLocale, DEFAULT_LOCALE } from '@/src/i18n/config';
 import { TranslationMessages, loadMessages, interpolate, getNestedValue, getRandomCompletionMessage } from '@/src/i18n';
 
-// 预加载默认翻译文件，避免初始渲染时显示翻译键
-import defaultMessages from '@/src/i18n/locales/zh-CN.json';
-
 interface I18nContextType {
   locale: SupportedLocale;
   messages: TranslationMessages | null;
@@ -25,9 +22,8 @@ interface I18nProviderProps {
 export function I18nProvider({ children }: I18nProviderProps) {
   // 始终从默认语言开始，避免水合错误
   const [locale, setLocale] = useState<SupportedLocale>(DEFAULT_LOCALE);
-  // 立即使用预加载的默认翻译文件，避免显示翻译键
-  const [messages, setMessages] = useState<TranslationMessages | null>(defaultMessages as TranslationMessages);
-  const [isLoading, setIsLoading] = useState(false); // 由于已有默认翻译，初始不需要loading状态
+  const [messages, setMessages] = useState<TranslationMessages | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);
 
   // 标记客户端已挂载
@@ -35,16 +31,25 @@ export function I18nProvider({ children }: I18nProviderProps) {
     setIsClient(true);
   }, []);
 
-  // 初始化语言设置 - 页面刷新后保持默认中文，不自动切换
+  // 初始化语言设置 - 立即加载默认语言
   useEffect(() => {
-    if (!isClient) return;
+    const initializeLocale = async () => {
+      setIsLoading(true);
+      try {
+        // 直接加载默认中文翻译
+        const defaultMessages = await loadMessages(DEFAULT_LOCALE);
+        setMessages(defaultMessages);
+      } catch (error) {
+        console.error('Failed to load default messages:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    // 页面刷新后默认停留在中文，用户需要手动切换语言
-    // 这样避免了页面刷新时的语言闪烁问题
-    console.log('I18n initialized with default locale (zh-CN)');
-  }, [isClient]);
+    initializeLocale();
+  }, []);
 
-  // 切换语言 - 仅在用户手动切换时保存偏好
+  // 切换语言 - 不保存用户偏好，每次刷新回到默认中文
   const changeLocale = async (newLocale: SupportedLocale) => {
     if (newLocale === locale) return;
 
@@ -53,8 +58,6 @@ export function I18nProvider({ children }: I18nProviderProps) {
       const newMessages = await loadMessages(newLocale);
       setMessages(newMessages);
       setLocale(newLocale);
-      // 注释掉自动保存，让每次刷新都回到默认中文
-      // setStoredLocale(newLocale);
       console.log(`Language switched to: ${newLocale}`);
     } catch (error) {
       console.error('Failed to change locale:', error);

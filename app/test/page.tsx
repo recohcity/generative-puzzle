@@ -346,8 +346,8 @@ const PerformanceTrendPage: React.FC = () => {
       try {
         console.log('开始获取性能数据...');
         
-        // 使用API路由读取测试报告数据
-        const apiUrl = '/api/performance-trend';
+        // 使用静态文件读取测试报告数据（适配GitHub Pages静态部署）
+        const apiUrl = '/performance-data.json';
         const res = await fetch(apiUrl);
         
         if (!res.ok) {
