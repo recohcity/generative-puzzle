@@ -49,15 +49,18 @@ npm run test:quality
 
 # 检查单元测试覆盖率
 npm run test:unit -- --coverage --coverageReporters=text
+npm run test:unit -- --coverage --silent
 
 # 单个文件覆盖率检查
 npm run test:unit -- --testPathPatterns="ScatterPuzzle" --coverage --coverageReporters=text
-```
 
+
+```
 ### 🔍 代码质量
 ```bash
 # ESLint 代码检查
 npm run lint
+npx tsc --noEmit
 
 # 格式化代码
 npm run format
