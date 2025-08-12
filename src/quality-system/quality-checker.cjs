@@ -150,9 +150,10 @@ class ProjectQualityChecker {
     
     try {
       // 运行测试并生成覆盖率报告
-      execSync('npm run test:unit -- --coverage --coverageReporters=json-summary --passWithNoTests', { 
+      execSync('npm run test:unit -- --coverage --coverageReporters=json-summary --passWithNoTests --silent', { 
         encoding: 'utf8',
-        stdio: 'pipe'
+        stdio: 'pipe',
+        maxBuffer: 1024 * 1024 * 10 // 10MB buffer
       });
       
       // 读取覆盖率报告
@@ -171,10 +172,13 @@ class ProjectQualityChecker {
       
       this.log(`✅ 测试通过，覆盖率: ${coverage.toFixed(1)}%`);
       
-    } catch {
+    } catch (error) {
       this.results.tests.passed = false;
       this.results.tests.score = 0;
       this.log('❌ 测试失败');
+      if (this.isVerbose) {
+        this.log(`测试错误详情: ${error.message}`);
+      }
     }
   }
 

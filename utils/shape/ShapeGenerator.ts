@@ -1,4 +1,4 @@
-import type { ShapeType } from "@/types/puzzleTypes"
+import { ShapeType } from "@/types/puzzleTypes"
 
 type Point = {
   x: number
@@ -39,13 +39,16 @@ export class ShapeGenerator {
     // 生成标准化形状
     let points: Point[] = [];
     switch (shapeType) {
-      case "polygon":
+      case ShapeType.Polygon:
+      case 'polygon':
         points = this.generateStandardPolygon(centerX, centerY, shapeParams);
         break;
-      case "curve":
+      case ShapeType.Cloud:
+      case 'cloud':
         points = this.generateStandardCurve(centerX, centerY, shapeParams);
         break;
-      case "irregular":
+      case ShapeType.Jagged:
+      case 'jagged':
         points = this.generateStandardIrregular(centerX, centerY, shapeParams);
         break;
       default:
@@ -57,7 +60,11 @@ export class ShapeGenerator {
   }
 
   // 生成标准多边形
-  private static generateStandardPolygon(centerX: number, centerY: number, params: any): Point[] {
+  private static generateStandardPolygon(centerX: number, centerY: number, params: {
+    numPoints: number;
+    minRadius: number;
+    maxRadius: number;
+  }): Point[] {
     const { numPoints, minRadius, maxRadius } = params;
     const actualPoints = 5 + Math.floor(Math.random() * numPoints);
 
@@ -76,7 +83,12 @@ export class ShapeGenerator {
   }
 
   // 生成云朵形状 - 平滑的曲凸效果
-  private static generateStandardCurve(centerX: number, centerY: number, params: any): Point[] {
+  private static generateStandardCurve(centerX: number, centerY: number, params: {
+    minRadius: number;
+    maxRadius: number;
+    amplitude: number;
+    detail: number;
+  }): Point[] {
     const { minRadius, maxRadius, amplitude, detail } = params;
 
     console.log(`生成云朵形状: ${detail}个点, 振幅=${amplitude}`);
@@ -112,7 +124,11 @@ export class ShapeGenerator {
   }
 
   // 生成锯齿形状 - 随机半径产生锯齿效果
-  private static generateStandardIrregular(centerX: number, centerY: number, params: any): Point[] {
+  private static generateStandardIrregular(centerX: number, centerY: number, params: {
+    minRadius: number;
+    maxRadius: number;
+    detail: number;
+  }): Point[] {
     const { minRadius, maxRadius, detail } = params;
 
     console.log(`生成锯齿形状: ${detail}个点`);

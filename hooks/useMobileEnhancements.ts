@@ -83,7 +83,7 @@ export function useMobileEnhancements(callbacks: MobileEnhancementCallbacks = {}
   /**
    * 🎯 处理设备旋转
    */
-  const handleDeviceRotation = useCallback((event: any) => {
+  const handleDeviceRotation = useCallback((event: { isPortrait: boolean; timestamp: number }) => {
     const isOrientationChange = lastOrientationRef.current !== device.isPortrait;
     
     if (isOrientationChange) {
@@ -122,7 +122,7 @@ export function useMobileEnhancements(callbacks: MobileEnhancementCallbacks = {}
   /**
    * 🎯 处理视口变化（地址栏显示/隐藏）
    */
-  const handleViewportChange = useCallback((event: any) => {
+  const handleViewportChange = useCallback((event: { viewportHeight: number; windowHeight: number; heightDiff: number }) => {
     const { viewportHeight, windowHeight, heightDiff } = event;
     
     // 视口变化检测

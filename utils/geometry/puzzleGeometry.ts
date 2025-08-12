@@ -1,8 +1,5 @@
-export interface Point {
-  x: number
-  y: number
-  isOriginal?: boolean
-}
+// 使用统一的Point类型定义
+import type { Point } from '@/types/puzzleTypes';
 
 export const calculateCenter = (points: Point[]) => {
   return points.reduce(

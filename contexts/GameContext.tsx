@@ -2,12 +2,13 @@
 
 import { useCallback, useReducer, useRef, createContext, useContext, useEffect } from "react"
 import type { ReactNode } from "react"
+
+import { ScatterPuzzle } from "@/utils/puzzle/ScatterPuzzle"
 import { ShapeGenerator } from "@/utils/shape/ShapeGenerator"
 import { PuzzleGenerator } from "@/utils/puzzle/PuzzleGenerator"
-import { ScatterPuzzle } from "@/utils/puzzle/ScatterPuzzle"
 import { calculateCenter } from "@/utils/geometry/puzzleGeometry"
 import { adaptAllElements } from "@/utils/SimpleAdapter"
-import { Point, PuzzlePiece, DraggingPiece, PieceBounds, GameState, GameContextProps, ShapeType, CutType } from "@/types/puzzleTypes";
+import { Point, PuzzlePiece, DraggingPiece, PieceBounds, GameState, GameContextProps, ShapeType, CutType, CanvasSize } from "@/types/puzzleTypes";
 
 // Step3: 定义GameAction类型，包含新的UPDATE_SHAPE_AND_PUZZLE action
 type GameAction =
@@ -38,9 +39,9 @@ type GameAction =
   | { type: "SET_CUT_COUNT"; payload: number }
   | { type: "BATCH_UPDATE"; payload: { puzzle: PuzzlePiece[]; originalPositions: PuzzlePiece[] } }
   | { type: "SYNC_ALL_POSITIONS"; payload: { originalShape: Point[]; puzzle: PuzzlePiece[]; originalPositions: PuzzlePiece[]; shapeOffset: { offsetX: number; offsetY: number } } }
-  | { type: "UPDATE_CANVAS_SIZE"; payload: { canvasWidth: number; canvasHeight: number; scale: number; orientation: string; skipAdaptation?: boolean; forceUpdate?: boolean } }
+  | { type: "UPDATE_CANVAS_SIZE"; payload: { canvasSize: CanvasSize; scale: number; orientation: string; skipAdaptation?: boolean; forceUpdate?: boolean } }
   | { type: "UPDATE_SHAPE_AND_PUZZLE"; payload: { originalShape: Point[]; puzzle: PuzzlePiece[] } }
-  | { type: "SET_BASE_CANVAS_SIZE"; payload: { width: number; height: number } }
+  | { type: "SET_BASE_CANVAS_SIZE"; payload: CanvasSize }
   | { type: "NO_CHANGE" }
   | { type: "MOVE_PIECE"; payload: { pieceIndex: number; x: number; y: number } };
 const initialState: GameState = {
@@ -57,8 +58,8 @@ const initialState: GameState = {
   cutType: "" as CutType,
   cutCount: 1,
   originalPositions: [],
-  canvasWidth: 0, // 当前画布宽度（像素）
-  canvasHeight: 0, // 当前画布高度（像素）
+  canvasSize: null, // 当前画布尺寸
+  baseCanvasSize: null, // 基准画布尺寸
 }
 
 function gameReducer(state: GameState, action: GameAction): GameState {
@@ -178,8 +179,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case "RESET_GAME":
       return {
         ...initialState,
-        canvasWidth: state.canvasWidth,
-        canvasHeight: state.canvasHeight
+        canvasSize: state.canvasSize,
+        baseCanvasSize: state.baseCanvasSize
       }
     case "SET_ORIGINAL_POSITIONS":
       return { ...state, originalPositions: action.payload }
@@ -205,8 +206,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         lastShapeOffsetY: action.payload.shapeOffset.offsetY
       }
     case "UPDATE_CANVAS_SIZE": {
-      const newCanvasWidth = action.payload.canvasWidth || 0;
-      const newCanvasHeight = action.payload.canvasHeight || 0;
+      const newCanvasSize = action.payload.canvasSize;
       const skipAdaptation = action.payload.skipAdaptation || false;
       const forceUpdate = action.payload.forceUpdate || false;
       
@@ -214,28 +214,28 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (skipAdaptation) {
         return {
           ...state,
-          canvasWidth: newCanvasWidth,
-          canvasHeight: newCanvasHeight
+          canvasSize: newCanvasSize
         };
       }
       
       // 冻结保护：检测需要保护的情况
-      const aspectRatio = newCanvasWidth / newCanvasHeight;
+      const aspectRatio = newCanvasSize.width / newCanvasSize.height;
       const isExtremeRatio = aspectRatio > 3 || aspectRatio < 0.3;
-      const hasSignificantChange = Math.abs(newCanvasWidth - (state.canvasWidth || 0)) > 100 || 
-                                  Math.abs(newCanvasHeight - (state.canvasHeight || 0)) > 100;
+      const currentSize = state.canvasSize;
+      const hasSignificantChange = !currentSize || 
+                                  Math.abs(newCanvasSize.width - currentSize.width) > 100 || 
+                                  Math.abs(newCanvasSize.height - currentSize.height) > 100;
       const needsProtection = (isExtremeRatio || hasSignificantChange) && !forceUpdate;
       
       if (needsProtection) {
         return {
           ...state,
-          canvasWidth: newCanvasWidth,
-          canvasHeight: newCanvasHeight
+          canvasSize: newCanvasSize
         };
       }
       
       // 尺寸无变化时跳过
-      if (state.canvasWidth === newCanvasWidth && state.canvasHeight === newCanvasHeight) {
+      if (currentSize && currentSize.width === newCanvasSize.width && currentSize.height === newCanvasSize.height) {
         return state;
       }
       
@@ -243,21 +243,17 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (!state.originalShape || state.originalShape.length === 0) {
         return {
           ...state,
-          canvasWidth: newCanvasWidth,
-          canvasHeight: newCanvasHeight
+          canvasSize: newCanvasSize
         };
       }
       
       // 使用当前画布尺寸作为适配基准
-      const fromSize = {
-        width: state.canvasWidth || state.baseCanvasSize?.width || 640,
-        height: state.canvasHeight || state.baseCanvasSize?.height || 640
-      };
-      const toSize = { width: newCanvasWidth, height: newCanvasHeight };
+      const fromSize = currentSize || state.baseCanvasSize || { width: 640, height: 640 };
+      const toSize = newCanvasSize;
       
       // 避免形状刚生成时的无效适配
       const isSameSize = fromSize.width === toSize.width && fromSize.height === toSize.height;
-      const isInitialCall = state.canvasWidth === 0;
+      const isInitialCall = !currentSize;
       
       if (!isSameSize && !isInitialCall && fromSize.width > 0 && fromSize.height > 0) {
         const adaptedOriginalShape = adaptAllElements(state.originalShape, fromSize, toSize);
@@ -266,8 +262,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         
         return {
           ...state,
-          canvasWidth: newCanvasWidth,
-          canvasHeight: newCanvasHeight,
+          canvasSize: newCanvasSize,
           originalShape: adaptedOriginalShape,
           puzzle: adaptedPuzzle,
           originalPositions: adaptedOriginalPositions
@@ -275,8 +270,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       } else {
         return {
           ...state,
-          canvasWidth: newCanvasWidth,
-          canvasHeight: newCanvasHeight
+          canvasSize: newCanvasSize
         };
       }
     }
@@ -342,8 +336,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const currentShapeType = shapeType || state.pendingShapeType || state.shapeType;
 
     if (canvasRef.current) {
-      let canvasWidth = canvasRef.current.width || state.canvasWidth || 640;
-      let canvasHeight = canvasRef.current.height || state.canvasHeight || 640;
+      let canvasWidth = canvasRef.current.width || (state.canvasSize ? state.canvasSize.width : 640);
+      let canvasHeight = canvasRef.current.height || (state.canvasSize ? state.canvasSize.height : 640);
       try {
         const shape = ShapeGenerator.generateShape(currentShapeType);
         if (shape.length === 0) {
@@ -453,7 +447,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           };
         });
 
-        dispatch({ type: "SET_BASE_CANVAS_SIZE", payload: { width: defaultCanvasSize.width, height: defaultCanvasSize.height } });
+        dispatch({ type: "SET_BASE_CANVAS_SIZE", payload: defaultCanvasSize });
         dispatch({ type: "SET_ORIGINAL_SHAPE", payload: adaptedShape });
         dispatch({ type: "SET_SHAPE_TYPE", payload: currentShapeType });
       } catch (error) {
@@ -469,11 +463,12 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const generatePuzzle = useCallback(() => {
     if (!state.originalShape) return;
 
+    const cutTypeString = state.cutType === "straight" ? "straight" : "diagonal";
     const { pieces, originalPositions } = PuzzleGenerator.generatePuzzle(
       state.originalShape,
-      state.cutType,
+      cutTypeString,
       state.cutCount,
-      state.shapeType,
+      state.shapeType
     );
 
     dispatch({ type: "SET_PUZZLE", payload: pieces as any });
@@ -483,8 +478,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const scatterPuzzle = useCallback(() => {
     const puzzle = puzzleRef.current;
     
-    let canvasWidth = state.canvasWidth || 640;
-    let canvasHeight = state.canvasHeight || 640;
+    const canvasSize = state.canvasSize || { width: 640, height: 640 };
+    let canvasWidth = canvasSize.width;
+    let canvasHeight = canvasSize.height;
     
     if (canvasRef.current) {
       canvasWidth = canvasRef.current.width || canvasWidth;
@@ -519,8 +515,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       };
     }
     const scatteredPuzzle = ScatterPuzzle.scatterPuzzle(puzzle, {
-      canvasWidth,
-      canvasHeight,
+      canvasSize: { width: canvasWidth, height: canvasHeight },
       targetShape: targetShape
     });
     
@@ -530,7 +525,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     dispatch({ type: "SET_PUZZLE", payload: scatteredPuzzle as any });
     dispatch({ type: "SCATTER_PUZZLE" });
-  }, [state.isScattered, state.canvasWidth, state.canvasHeight, state.originalShape, dispatch]);
+  }, [state.isScattered, state.canvasSize, state.originalShape, dispatch]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -541,8 +536,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         isCompleted: state.isCompleted,
         isScattered: state.isScattered,
         originalShape: state.originalShape,
-        canvasWidth: state.canvasWidth,
-        canvasHeight: state.canvasHeight,
+        canvasWidth: state.canvasSize ? state.canvasSize.width : null,
+        canvasHeight: state.canvasSize ? state.canvasSize.height : null,
         shapeType: state.shapeType,
         cutType: state.cutType,
         cutCount: state.cutCount,
@@ -550,14 +545,14 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       (window as any).__GAME_STATE__ = {
         originalShape: state.originalShape,
-        canvasWidth: state.canvasWidth,
-        canvasHeight: state.canvasHeight,
+        canvasWidth: state.canvasSize ? state.canvasSize.width : null,
+        canvasHeight: state.canvasSize ? state.canvasSize.height : null,
         puzzle: state.puzzle,
         isCompleted: state.isCompleted,
         shapeType: state.shapeType,
         _debug: {
           originalShapeLength: state.originalShape?.length || 0,
-          hasValidCanvas: (state.canvasWidth || 0) > 0 && (state.canvasHeight || 0) > 0,
+          hasValidCanvas: state.canvasSize ? (state.canvasSize.width > 0 && state.canvasSize.height > 0) : false,
           timestamp: Date.now()
         }
       };
@@ -570,8 +565,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         isCompleted: state.isCompleted,
         isScattered: state.isScattered,
         originalShape: state.originalShape,
-        canvasWidth: state.canvasWidth,
-        canvasHeight: state.canvasHeight,
+        canvasWidth: state.canvasSize ? state.canvasSize.width : null,
+        canvasHeight: state.canvasSize ? state.canvasSize.height : null,
         shapeType: state.shapeType,
         cutType: state.cutType,
         cutCount: state.cutCount,
@@ -605,14 +600,14 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           dispatch({ type: 'ADD_COMPLETED_PIECE', payload: pieceIndex });
         },
         getPieceCenter: (pieceIndex) => {
-          if (!state.puzzle) return { x: 0, y: 0 };
+          if (!state.puzzle) return { x: 0, y: 0 } as Point;
           const piece = state.puzzle[pieceIndex];
-          return piece ? calculateCenter(piece.points) : { x: 0, y: 0 };
+          return piece ? calculateCenter(piece.points) as Point : { x: 0, y: 0 } as Point;
         },
         getPieceTargetCenter: (pieceIndex) => {
-          if (!state.originalPositions) return { x: 0, y: 0 };
+          if (!state.originalPositions) return { x: 0, y: 0 } as Point;
           const piece = state.originalPositions[pieceIndex];
-          return piece ? calculateCenter(piece.points) : { x: 0, y: 0 };
+          return piece ? calculateCenter(piece.points) as Point : { x: 0, y: 0 } as Point;
         },
       };
     }
@@ -740,8 +735,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     let canvasW = canvasRef.current?.width;
     let canvasH = canvasRef.current?.height;
     if (!canvasW || !canvasH) {
-      canvasW = (state.canvasWidth ?? 0);
-      canvasH = (state.canvasHeight ?? 0);
+      canvasW = state.canvasSize ? state.canvasSize.width : 0;
+      canvasH = state.canvasSize ? state.canvasSize.height : 0;
     }
     if (!canvasW || !canvasH) {
       console.warn("Canvas size not available for boundary check.");
@@ -907,9 +902,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     return { constrainedDx, constrainedDy, hitBoundary };
-  }, [state.canvasWidth, state.canvasHeight, calculatePieceBounds, state.puzzle, canvasRef]);
+  }, [state.canvasSize, calculatePieceBounds, state.puzzle, canvasRef]);
   // 🗑️ updateCanvasSize函数已删除 - 画布尺寸统一由PuzzleCanvas管理
-  const isCanvasReady = (state.canvasWidth || 0) > 0 && (state.canvasHeight || 0) > 0;
+  const isCanvasReady = state.canvasSize ? (state.canvasSize.width > 0 && state.canvasSize.height > 0) : false;
   // 生成/分布拼图的 useEffect 依赖 isCanvasReady
   useEffect(() => {
     if (!isCanvasReady) return;

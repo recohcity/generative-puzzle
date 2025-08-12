@@ -128,12 +128,12 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
           </Button>
           <Button
             variant="ghost"
-            className={getButtonClass(ShapeType.Curve) + " flex flex-col items-center justify-center"}
+            className={getButtonClass(ShapeType.Cloud) + " flex flex-col items-center justify-center"}
             style={buttonStyle}
             data-testid="shape-curve-button"
             onClick={() => {
               if (isShapeButtonDisabled) return;
-              handleShapeButtonClick(ShapeType.Curve);
+              handleShapeButtonClick(ShapeType.Cloud);
             }}
           >
             <Cloud
@@ -145,12 +145,12 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
           </Button>
           <Button
             variant="ghost"
-            className={getButtonClass(ShapeType.Irregular) + " flex flex-col items-center justify-center"}
+            className={getButtonClass(ShapeType.Jagged) + " flex flex-col items-center justify-center"}
             style={buttonStyle}
             data-testid="shape-irregular-button"
             onClick={() => {
               if (isShapeButtonDisabled) return;
-              handleShapeButtonClick(ShapeType.Irregular);
+              handleShapeButtonClick(ShapeType.Jagged);
             }}
           >
             <Zap

@@ -37,7 +37,7 @@ export const loggers = {
   },
 
   // State change logging
-  logStateChange: (component: string, from: any, to: any, context?: LogContext) => {
+  logStateChange: (component: string, from: unknown, to: unknown, context?: LogContext) => {
     loggingService.info(`State changed from ${JSON.stringify(from)} to ${JSON.stringify(to)}`, {
       component,
       pattern: LOG_PATTERNS.STATE_CHANGE,
@@ -48,7 +48,7 @@ export const loggers = {
   },
 
   // Event handling logging
-  logEventHandling: (component: string, eventType: string, details?: any, context?: LogContext) => {
+  logEventHandling: (component: string, eventType: string, details?: unknown, context?: LogContext) => {
     loggingService.debug(`Handling event: ${eventType}`, {
       component,
       pattern: LOG_PATTERNS.EVENT_HANDLING,
@@ -81,7 +81,7 @@ export const loggers = {
   },
 
   // User action logging
-  logUserAction: (action: string, details?: any, context?: LogContext) => {
+  logUserAction: (action: string, details?: unknown, context?: LogContext) => {
     loggingService.info(`User action: ${action}`, {
       pattern: LOG_PATTERNS.USER_ACTION,
       action,
@@ -91,7 +91,7 @@ export const loggers = {
   },
 
   // System event logging
-  logSystemEvent: (event: string, details?: any, context?: LogContext) => {
+  logSystemEvent: (event: string, details?: unknown, context?: LogContext) => {
     loggingService.info(`System event: ${event}`, {
       pattern: LOG_PATTERNS.SYSTEM_EVENT,
       event,
@@ -106,7 +106,7 @@ export const performanceLogger = {
   // Time a function execution
   timeFunction: <T>(component: string, functionName: string, fn: () => T, context?: LogContext): T => {
     const endTimer = loggingService.time(`${component}.${functionName}`, { component, method: functionName, ...context });
-    
+
     try {
       const result = fn();
       endTimer();
@@ -121,7 +121,7 @@ export const performanceLogger = {
   // Time an async function execution
   timeAsyncFunction: async <T>(component: string, functionName: string, fn: () => Promise<T>, context?: LogContext): Promise<T> => {
     const endTimer = loggingService.time(`${component}.${functionName}`, { component, method: functionName, ...context });
-    
+
     try {
       const result = await fn();
       endTimer();
@@ -166,8 +166,8 @@ export const debugLogger = {
         });
       };
     }
-    
-    return () => {}; // No-op in production
+
+    return () => { }; // No-op in production
   }
 };
 
@@ -176,7 +176,7 @@ export const errorLogger = {
   // Log and handle errors with context
   handleError: (component: string, error: Error, context?: LogContext, recoveryAction?: () => void) => {
     loggingService.error(`Error in ${component}`, error, { component, ...context });
-    
+
     if (recoveryAction) {
       try {
         recoveryAction();

@@ -227,7 +227,7 @@ const CONFIG = {
     'utils/rendering/soundEffects.ts': '音效播放函数',
     'utils/shape/ShapeGenerator.ts': '生成多边形、曲线等基础形状',
     'utils/shape/geometryUtils.ts': '形状相关几何计算函数',
-    'utils/shape/shapeAdaptationUtils.ts': '形状适配工具函数（Step2新增）',
+
     'utils/adaptation/UnifiedAdaptationEngine.ts': '统一适配引擎，支持形状、拼图块、散开拼图的统一适配处理（v1.3.31增强：添加详细的NaN检测和错误处理机制，解决Hook冲突导致的坐标异常问题）',
 
     'providers/SystemProvider.tsx': '系统级提供者，统一管理全局状态和服务',

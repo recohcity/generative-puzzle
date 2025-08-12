@@ -12,8 +12,14 @@ interface Size {
 interface Scalable {
   x: number;
   y: number;
-  points?: Array<{ x: number; y: number;[key: string]: any }>;
-  [key: string]: any; // 保持其他属性不变
+  points?: Array<{ x: number; y: number; [key: string]: unknown }>;
+  originalX?: number;
+  originalY?: number;
+  rotation?: number;
+  originalRotation?: number;
+  color?: string;
+  isCompleted?: boolean;
+  [key: string]: unknown; // 保持其他属性不变，使用unknown替代any
 }
 
 // Point接口已在其他地方定义，移除重复定义

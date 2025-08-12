@@ -1,15 +1,15 @@
 # API分类报告
 
-> 生成时间: 2025/8/7 19:53:55
+> 生成时间: 2025/8/13 00:09:08
 > 分类工具: API分类器 v1.0
 
 ## 📊 分类统计
 
 | 分类 | 数量 | 占比 | 优先级 | 建议 |
 |------|------|------|--------|------|
-| PUBLIC | 6 | 4.9% | 1 | 必须文档化 |
-| TEAM | 18 | 14.8% | 2 | 建议文档化 |
-| INTERNAL | 98 | 80.3% | 3 | 选择性文档化 |
+| PUBLIC | 6 | 4.2% | 1 | 必须文档化 |
+| TEAM | 19 | 13.3% | 2 | 建议文档化 |
+| INTERNAL | 118 | 82.5% | 3 | 选择性文档化 |
 
 ## 📋 详细分类
 
@@ -30,7 +30,7 @@
 
 **描述**: 团队内部共享的工具和服务
 
-**API列表** (18个):
+**API列表** (19个):
 
 - `PERFORMANCE_THRESHOLDS`
 - `ERROR_HANDLING`
@@ -50,12 +50,13 @@
 - `useCanvasSizeLogger`
 - `useCanvasRefsLogger`
 - `useCanvasEventsLogger`
+- `GeometryUtils`
 
 ### INTERNAL (优先级3)
 
 **描述**: 模块内部实现细节
 
-**API列表** (98个):
+**API列表** (118个):
 
 - `EVENT_CONFIG`
 - `MEMORY_CONFIG`
@@ -122,11 +123,7 @@
 - `MIN_SHAPE_DIAMETER`
 - `MAX_SHAPE_DIAMETER`
 - `MIN_SHAPE_AREA`
-- `CanvasSize`
-- `AdaptationOptions`
-- `adaptShapeToCanvas`
-- `scaleShapeToSize`
-- `isShapeInBounds`
+- `generateSimpleShape`
 - `calculatePolygonArea`
 - `calculateBounds`
 - `createSafeZone`
@@ -142,7 +139,6 @@
 - `playPieceSnapSound`
 - `playCutSound`
 - `PuzzlePiece`
-- `Point`
 - `drawPiece`
 - `drawCompletionEffect`
 - `drawDistributionArea`
@@ -150,9 +146,34 @@
 - `drawShapeCenter`
 - `appendAlpha`
 - `renderOptimizer`
+- `generateSimplePuzzle`
 - `splitPolygon`
 - `isValidPiece`
 - `checkRectOverlap`
 - `generateCuts`
+- `CutValidator`
+- `Bounds`
+- `CutLine`
+- `CutType`
+- `CutGenerationContext`
+- `CutGenerationResult`
+- `CutGenerationStrategy`
+- `SimpleCutStrategy`
+- `MediumCutStrategy`
+- `HardCutStrategy`
+- `CutStrategyFactory`
+- `doesCutIntersectShape`
+- `cutsAreTooClose`
+- `generateStraightCutLine`
+- `generateDiagonalCutLine`
+- `generateCenterCutLine`
+- `generateForcedCutLine`
+- `CutGeneratorController`
+- `CUT_GENERATOR_CONFIG`
+- `DIFFICULTY_SETTINGS`
+- `MAX_ATTEMPTS`
+- `EARLY_EXIT_THRESHOLD`
+- `DifficultyLevel`
+- `DifficultySettings`
 - `calculatePieceBounds`
 

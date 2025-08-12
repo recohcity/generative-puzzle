@@ -3,6 +3,8 @@
 
 import { calculateCenter } from "@/utils/geometry/puzzleGeometry"; // Import geometry helpers
 import { appendAlpha } from "@/utils/rendering/colorUtils"; // Assuming appendAlpha is needed
+// 使用统一的Point类型定义
+import type { Point } from '@/types/puzzleTypes';
 
 // 定义类型 (从 PuzzleCanvas.tsx 迁移)
 export interface PuzzlePiece { // Export the interface
@@ -17,25 +19,18 @@ export interface PuzzlePiece { // Export the interface
   color?: string;
 }
 
-// 定义 Point 接口 (从 PuzzleCanvas.tsx 迁移)
-export interface Point {
-  x: number;
-  y: number;
-  isOriginal?: boolean; // Add isOriginal property
-}
-
 // 绘制形状
 export const drawShape = (ctx: CanvasRenderingContext2D, shape: Point[], shapeType: string) => {
   console.log(`开始绘制形状: ${shape.length}个点, 类型:${shapeType}`);
-  
+
   if (shape.length === 0) {
     console.error('形状没有点，无法绘制');
     return;
   }
-  
+
   // 记录画布尺寸
   console.log(`画布尺寸: ${ctx.canvas.width}x${ctx.canvas.height}`);
-  
+
   // 先清除画布
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
@@ -47,10 +42,10 @@ export const drawShape = (ctx: CanvasRenderingContext2D, shape: Point[], shapeTy
   try {
     // 绘制路径
     ctx.beginPath();
-    
+
     // 记录第一个点
     console.log(`起始点: (${shape[0].x.toFixed(2)}, ${shape[0].y.toFixed(2)})`);
-    
+
     // 移动到第一个点
     if (shape.length > 0) {
       ctx.moveTo(shape[0].x, shape[0].y);
@@ -61,7 +56,7 @@ export const drawShape = (ctx: CanvasRenderingContext2D, shape: Point[], shapeTy
           ctx.lineTo(shape[i].x, shape[i].y);
           console.log(`线段到: (${shape[i].x.toFixed(2)}, ${shape[i].y.toFixed(2)})`);
         }
-        
+
         // 闭合路径
         ctx.lineTo(shape[0].x, shape[0].y);
       } else {
@@ -80,18 +75,18 @@ export const drawShape = (ctx: CanvasRenderingContext2D, shape: Point[], shapeTy
           ctx.quadraticCurveTo(current.x, current.y, nextMidX, nextMidY);
         }
       }
-      
+
       ctx.closePath();
       ctx.fill();
-      
+
       // 添加轻微发光效果
       ctx.shadowColor = "rgba(255, 255, 255, 0.4)";
       ctx.shadowBlur = 15;
       ctx.stroke();
-      
+
       // 重置阴影
       ctx.shadowBlur = 0;
-      
+
       console.log('形状绘制完成');
     } else {
       console.error('没有点可绘制');
@@ -149,13 +144,13 @@ export const drawPiece = (
     }
 
     ctx.closePath();
-    
+
     // 🎯 增强选中状态的阴影效果，让触控反馈更强烈
     ctx.shadowColor = 'rgba(0, 0, 0, 0.8)'; // 更深的阴影颜色，增强视觉反馈
     ctx.shadowBlur = 20; // 更大的阴影模糊半径，让选中效果更明显
     ctx.shadowOffsetX = 8; // 增大水平偏移，增强立体感
     ctx.shadowOffsetY = 8; // 增大垂直偏移，增强立体感
-    
+
     // 填充形状以显示阴影效果（阴影是绘制在填充形状下方的）
     // 🎯 使用不透明的纯色填充，取消透明度
     ctx.fillStyle = piece.color || "#CCCCCC";
@@ -191,7 +186,7 @@ export const drawPiece = (
 
   // 🎯 填充颜色：使用不透明的纯色，取消透明度
   // 根据是否已完成和是否有颜色属性设置填充颜色
-  ctx.fillStyle = isCompleted 
+  ctx.fillStyle = isCompleted
     ? "#B8A9E8" // 🎯 已完成拼图使用浅蓝紫色，与背景冷色调同色系，更和谐美观
     : (piece.color || "#CCCCCC"); // 使用拼图的原始颜色，无透明度
 
@@ -261,11 +256,11 @@ export const drawPiece = (
 
 // 改进提示轮廓显示
 export const drawHintOutline = (
-  ctx: CanvasRenderingContext2D, 
+  ctx: CanvasRenderingContext2D,
   piece: PuzzlePiece, // Changed to take the puzzle piece object
   shapeType?: string, // 🔧 添加形状类型参数，确保提示轮廓与拼图形状一致
   hintText?: string // 添加提示文本参数
-  ) => {
+) => {
   if (!piece) return;
 
   ctx.save();
@@ -308,7 +303,7 @@ export const drawHintOutline = (
 
   // 添加"放在这里"的文本提示
   const bounds = piece.points.reduce(
-    (acc: {minX: number, maxX: number, minY: number, maxY: number}, point: Point) => ({
+    (acc: { minX: number, maxX: number, minY: number, maxY: number }, point: Point) => ({
       minX: Math.min(acc.minX, point.x),
       maxX: Math.max(acc.maxX, point.x),
       minY: Math.min(acc.minY, point.y),
@@ -325,16 +320,16 @@ export const drawHintOutline = (
   ctx.font = "bold 16px Arial";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  
+
   // 添加黑色阴影使文字在任何背景下都清晰可见
   ctx.shadowColor = "black";
   ctx.shadowBlur = 4;
   ctx.shadowOffsetX = 2;
   ctx.shadowOffsetY = 2;
-  
+
   // 只需绘制一次文字，阴影会自动应用
   ctx.fillText(hintText || "这里", centerX, centerY);
-  
+
   // 重置阴影效果，避免影响其他绘制
   ctx.shadowColor = "transparent";
   ctx.shadowBlur = 0;
@@ -354,7 +349,7 @@ export const drawCompletionEffect = (
 
   // 计算形状的边界框，用于定位效果和阴影尺寸计算
   const bounds = shape.reduce(
-    (acc: {minX: number, maxX: number, minY: number, maxY: number}, point: Point) => ({
+    (acc: { minX: number, maxX: number, minY: number, maxY: number }, point: Point) => ({
       minX: Math.min(acc.minX, point.x),
       maxX: Math.max(acc.maxX, point.x),
       minY: Math.min(acc.minY, point.y),
@@ -365,92 +360,92 @@ export const drawCompletionEffect = (
 
   const centerX = (bounds.minX + bounds.maxX) / 2; // 形状中心X坐标
   const centerY = (bounds.minY + bounds.maxY) / 2; // 形状中心Y坐标
-  
+
   // 绘制水平压扁的椭圆阴影，制造悬浮效果
   ctx.save(); // 保存当前状态以便应用变换
-  
+
   // 计算阴影尺寸 - 宽度稍大于形状本身
   const shapeWidth = bounds.maxX - bounds.minX;
   const shadowWidthRadius = shapeWidth * 0.65;  // 控制阴影的宽度半径，占形状宽度的比例
   const shadowHeightRadius = shapeWidth * 0.2;  // 高度比宽度小很多，创造扁平效果
-  
+
   // 阴影的位置 - 在形状下方，增加与拼图的距离
   const shadowX = centerX; // 阴影中心X坐标与形状中心一致
   const shadowY = bounds.maxY + shadowHeightRadius * 1.5;  // 阴影中心Y坐标在形状底部下方一定距离
-  
+
   // 创建径向渐变，使阴影从中心向外逐渐消失，实现羽化效果
   const gradient = ctx.createRadialGradient(
     shadowX, shadowY, 0, // 渐变起始圆（中心点，半径0）
     shadowX, shadowY, shadowWidthRadius // 渐变结束圆（中心点，半径等于阴影宽度半径）
   );
-  
+
   // 精细调整渐变过渡，中心稍黑但保持良好羽化
   gradient.addColorStop(0, 'rgba(0, 0, 0, 0.3)');   // 渐变中心颜色和透明度
   gradient.addColorStop(0.4, 'rgba(0, 0, 0, 0.15)'); // 内部区域过渡颜色和透明度
   gradient.addColorStop(0.7, 'rgba(0, 0, 0, 0.05)'); // 外围区域过渡颜色和透明度
   gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');      // 边缘完全透明
-  
+
   // 保存当前状态以便应用变换 (压扁阴影)
   ctx.save();
-  
+
   // 设置变换矩阵使圆形在垂直方向压扁（扁平比例约0.3），绘制出椭圆阴影
   ctx.translate(shadowX, shadowY); // 平移到阴影中心
   ctx.scale(1, 0.3);  // Y轴缩放为原来的0.3倍，创造扁平椭圆
   ctx.translate(-shadowX, -shadowY); // 平移回原点
-  
+
   // 应用渐变填充绘制阴影
   ctx.fillStyle = gradient; // 设置填充样式为创建的渐变
   ctx.beginPath(); // 开始绘制路径
   ctx.arc(shadowX, shadowY, shadowWidthRadius, 0, Math.PI * 2); // 绘制一个圆形 (将被压扁成椭圆)
   ctx.fill(); // 填充路径
-  
+
   ctx.restore(); // 恢复到应用压扁变换之前的状态
   ctx.restore(); // 恢复到应用阴影绘制之前的状态
 };
 
 // 绘制画布边缘警戒线 (调试功能)
 export const drawCanvasBorderLine = (
-  ctx: CanvasRenderingContext2D, 
-  canvasWidth: number, 
+  ctx: CanvasRenderingContext2D,
+  canvasWidth: number,
   canvasHeight: number,
   showDebugElements: boolean // Pass debug state as parameter
-  ) => {
+) => {
   if (!showDebugElements) return; // 只在调试模式下显示
-  
+
   // 保存当前绘图状态
   ctx.save();
-  
+
   // 设置警戒线样式 - 红色虚线
   ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
   ctx.lineWidth = 3;
   ctx.setLineDash([10, 5]);
-  
+
   // 绘制内边框（警戒线）- 距离画布边缘1像素
   ctx.beginPath();
   ctx.rect(1, 1, canvasWidth - 2, canvasHeight - 2); // Use passed dimensions
   ctx.stroke();
-  
+
   // 恢复绘图状态
   ctx.restore();
 };
 
 // 绘制可分布区域 (调试功能)
 export const drawDistributionArea = (
-  ctx: CanvasRenderingContext2D, 
-  canvasWidth: number, 
+  ctx: CanvasRenderingContext2D,
+  canvasWidth: number,
   canvasHeight: number,
   showDebugElements: boolean // Pass debug state as parameter
-  ) => {
+) => {
   if (!showDebugElements) return; // 只在调试模式下显示
-  
+
   // 保存当前绘图状态
   ctx.save();
-  
+
   // 获取当前在ScatterPuzzle中使用的边距
   // 模拟计算边距的逻辑 (simplified for drawing visualization)
   // This part might need refinement based on actual ScatterPuzzle logic
   const isSmallScreen = canvasWidth < 400 || canvasHeight < 400; // Use passed dimensions
-  
+
   let margin;
   // Simplified margin calculation for drawing visualization
   if (isSmallScreen) {
@@ -458,18 +453,18 @@ export const drawDistributionArea = (
   } else {
     margin = Math.min(30, Math.floor(canvasWidth * 0.03));
   }
-  
+
   // 小边距区域（用于拼图放置边界）
   const minMargin = 5;
-  
+
   // 绘制安全放置区域（淡绿色）
   ctx.fillStyle = 'rgba(0, 255, 0, 0.1)';
   ctx.fillRect(margin, margin, canvasWidth - margin * 2, canvasHeight - margin * 2); // Use passed dimensions
-  
+
   // 绘制较小放置边界区域（淡黄色）
   ctx.fillStyle = 'rgba(255, 255, 0, 0.1)';
   ctx.fillRect(minMargin, minMargin, canvasWidth - minMargin * 2, canvasHeight - minMargin * 2); // Use passed dimensions
-  
+
   // 恢复绘图状态
   ctx.restore();
 };
@@ -517,10 +512,10 @@ export const drawPuzzle = (
     }
 
     ctx.closePath();
-    
+
     // 使用纯色填充，不使用半透明
     const fillColor = "#F26419";
-    
+
     // 先填充纯色
     ctx.fillStyle = fillColor;
     ctx.shadowColor = "transparent";
@@ -574,7 +569,7 @@ export const drawPuzzle = (
     // 绘制完成文本 - 使用更精确的字体堆栈和多层渲染技术，增强视觉效果
     // Calculate bounds for text positioning (re-calculating here for clarity, could pass from above)
     const bounds = originalShape.reduce(
-      (acc: {minX: number, maxX: number, minY: number, maxY: number}, point: Point) => ({
+      (acc: { minX: number, maxX: number, minY: number, maxY: number }, point: Point) => ({
         minX: Math.min(acc.minX, point.x),
         maxX: Math.max(acc.maxX, point.x),
         minY: Math.min(acc.minY, point.y),
@@ -584,17 +579,17 @@ export const drawPuzzle = (
     );
 
     const centerX = (bounds.minX + bounds.maxX) / 2; // 形状中心X坐标
-    
+
     const fontSize = Math.min(36, Math.max(24, ctx.canvas.width / 15)); // 根据画布宽度自适应字体大小，确保在不同屏幕尺寸下都合适
     ctx.font = `bold ${fontSize}px 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'STHeiti', 'SimHei', 'WenQuanYi Micro Hei', sans-serif`; // 设置字体样式，包含多种中文字体以提高兼容性
     ctx.textAlign = "center"; // 文本水平居中对齐
     ctx.textBaseline = "middle"; // 文本垂直居中对齐
-    
+
     // 文本位置 - 移到形状上方，避免遮挡，并确保不会超出画布顶部
     const textY = bounds.minY - 40; // 文本基础Y坐标，在形状 minY 上方40像素
     const finalY = Math.max(50, textY); // 确保文本不会太靠近顶部边缘，最小Y坐标为50
     const completeText = completionText || "你好犀利吖!"; // 游戏完成时显示的文本内容
-    
+
     // 多层渲染技术，通过绘制多次叠加不同样式来创建复杂的文本效果
     // 1. 外发光效果 - 较大模糊，作为文本底层的辉光，使文本看起来更醒目
     ctx.save(); // Save state before applying text styles
@@ -604,7 +599,7 @@ export const drawPuzzle = (
     ctx.shadowOffsetY = 0; // 垂直方向无偏移
     ctx.fillStyle = "rgba(255, 215, 0, 0.4)"; // 半透明金色作为发光填充色，与橙色阴影叠加产生层次感
     ctx.fillText(completeText, centerX, finalY); // 绘制带发光的文本
-    
+
     // 2. 描边阴影 - 增加文本的深度感和立体感，使文本边缘更清晰
     ctx.shadowColor = "rgba(0, 0, 0, 0.7)"; // 黑色阴影颜色，提供深度
     ctx.shadowBlur = 3; // 较小的模糊半径，创建清晰的阴影边缘
@@ -613,17 +608,17 @@ export const drawPuzzle = (
     ctx.strokeStyle = "#FF7700"; // 亮橙色作为描边颜色，与主体文字颜色形成对比
     ctx.lineWidth = Math.max(3, fontSize / 12); // 根据字体大小比例设置描边宽度，确保描边粗细适中
     ctx.strokeText(completeText, centerX, finalY); // 绘制带阴影的描边文本
-    
+
     // 3. 清除阴影，绘制主体文字，确保主体文字清晰不受阴影影响
     ctx.shadowColor = "transparent"; // 将阴影颜色设为透明，移除阴影效果
     ctx.shadowBlur = 0;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
-    
+
     // 4. 渐变填充效果 - 使主体文字具有更丰富的色彩层次和质感
     const textGradient = ctx.createLinearGradient(
-      centerX, finalY - fontSize/2, // 渐变起始点 (文本顶部中心)
-      centerX, finalY + fontSize/2 // 渐变结束点 (文本底部中心)
+      centerX, finalY - fontSize / 2, // 渐变起始点 (文本顶部中心)
+      centerX, finalY + fontSize / 2 // 渐变结束点 (文本底部中心)
     );
     textGradient.addColorStop(0, "#FFD700"); // 金色顶部，起始颜色
     textGradient.addColorStop(0.5, "#FFCC00"); // 中间色，黄色

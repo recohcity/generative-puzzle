@@ -1,16 +1,16 @@
 # API扫描报告
 
-> 生成时间: 2025/8/7 19:53:55
+> 生成时间: 2025/8/13 00:09:08
 > 扫描工具: API变更扫描器 v1.0
 
 ## 📊 统计概览
 
 | 项目 | 数量 | 说明 |
 |------|------|------|
-| API总数 | 151 | 项目中所有导出的API |
-| 已文档化 | 32 | 在API文档中已记录的API |
-| 文档覆盖率 | 21.2% | 文档化程度 |
-| 新增API | 122 | 需要添加到文档的API |
+| API总数 | 171 | 项目中所有导出的API |
+| 已文档化 | 31 | 在API文档中已记录的API |
+| 文档覆盖率 | 18.1% | 文档化程度 |
+| 新增API | 143 | 需要添加到文档的API |
 | 可能删除 | 3 | 文档中存在但代码中找不到 |
 
 ## 🆕 新增API详情
@@ -1866,7 +1866,7 @@ export const loggingStats = {
 #### calculateCenter
 
 - **类型**: constant
-- **文件**: `utils/geometry/puzzleGeometry.ts:7`
+- **文件**: `utils/geometry/puzzleGeometry.ts:4`
 - **签名**: `export const calculateCenter = (points: Point[]) => {`
 
 **建议文档结构**:
@@ -2001,112 +2001,20 @@ export const MIN_SHAPE_AREA = Math.PI * Math.pow(MIN_SHAPE_DIAMETER / 2, 2)
 ```
 ```
 
-#### CanvasSize
-
-- **类型**: interface
-- **文件**: `utils/shape/shapeAdaptationUtils.ts:14`
-- **签名**: `export interface CanvasSize {`
-
-**建议文档结构**:
-```markdown
-### CanvasSize
-
-[添加API描述]
-
-```typescript
-export interface CanvasSize {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### AdaptationOptions
-
-- **类型**: interface
-- **文件**: `utils/shape/shapeAdaptationUtils.ts:22`
-- **签名**: `export interface AdaptationOptions {`
-
-**建议文档结构**:
-```markdown
-### AdaptationOptions
-
-[添加API描述]
-
-```typescript
-export interface AdaptationOptions {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### adaptShapeToCanvas
+#### generateSimpleShape
 
 - **类型**: function
-- **文件**: `utils/shape/shapeAdaptationUtils.ts:80`
-- **签名**: `export function adaptShapeToCanvas( originalShape: Point[], oldSize: CanvasSize, newSize: CanvasSize, options: AdaptationOptions = {}`
+- **文件**: `utils/shape/simpleShapeGenerator.ts:11`
+- **签名**: `export function generateSimpleShape(): Point[] {`
 
 **建议文档结构**:
 ```markdown
-### adaptShapeToCanvas
+### generateSimpleShape
 
 [添加API描述]
 
 ```typescript
-export function adaptShapeToCanvas( originalShape: Point[], oldSize: CanvasSize, newSize: CanvasSize, options: AdaptationOptions = {}
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### scaleShapeToSize
-
-- **类型**: function
-- **文件**: `utils/shape/shapeAdaptationUtils.ts:208`
-- **签名**: `export function scaleShapeToSize( shape: Point[], targetSize: number, canvasSize: CanvasSize ): Point[] {`
-
-**建议文档结构**:
-```markdown
-### scaleShapeToSize
-
-[添加API描述]
-
-```typescript
-export function scaleShapeToSize( shape: Point[], targetSize: number, canvasSize: CanvasSize ): Point[] {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### isShapeInBounds
-
-- **类型**: function
-- **文件**: `utils/shape/shapeAdaptationUtils.ts:280`
-- **签名**: `export function isShapeInBounds( shape: Point[], canvasSize: CanvasSize, margin: number = 0 ): boolean {`
-
-**建议文档结构**:
-```markdown
-### isShapeInBounds
-
-[添加API描述]
-
-```typescript
-export function isShapeInBounds( shape: Point[], canvasSize: CanvasSize, margin: number = 0 ): boolean {
+export function generateSimpleShape(): Point[] {
 ```
 
 #### 使用示例
@@ -2142,7 +2050,7 @@ export const calculatePolygonArea = (vertices: Point[]): number => {
 #### calculateBounds
 
 - **类型**: constant
-- **文件**: `utils/shape/geometryUtils.ts:35`
+- **文件**: `utils/puzzle/cutGeneratorGeometry.ts:13`
 - **签名**: `export const calculateBounds = (points: Point[]): Bounds => {`
 
 **建议文档结构**:
@@ -2188,7 +2096,7 @@ export const createSafeZone = (shape: Point[]): Bounds => {
 #### lineIntersection
 
 - **类型**: constant
-- **文件**: `utils/shape/geometryUtils.ts:61`
+- **文件**: `utils/puzzle/cutGeneratorGeometry.ts:32`
 - **签名**: `export const lineIntersection = (p1: Point, p2: Point, p3: Point, p4: Point): Point | null => {`
 
 **建议文档结构**:
@@ -2234,7 +2142,7 @@ export const distanceToLine = (point: Point, line: CutLine): number => {
 #### isPointInPolygon
 
 - **类型**: function
-- **文件**: `utils/geometry/puzzleGeometry.ts:17`
+- **文件**: `utils/geometry/puzzleGeometry.ts:14`
 - **签名**: `export function isPointInPolygon(x: number, y: number, polygon: Point[]): boolean {`
 
 **建议文档结构**:
@@ -2257,7 +2165,7 @@ export function isPointInPolygon(x: number, y: number, polygon: Point[]): boolea
 #### isPointNearLine
 
 - **类型**: constant
-- **文件**: `utils/shape/geometryUtils.ts:138`
+- **文件**: `utils/puzzle/cutGeneratorGeometry.ts:53`
 - **签名**: `export const isPointNearLine = (point: Point, line: CutLine, threshold: number): boolean => {`
 
 **建议文档结构**:
@@ -2464,7 +2372,7 @@ export const playCutSound = async (): Promise<void> => {
 #### PuzzlePiece
 
 - **类型**: interface
-- **文件**: `utils/rendering/puzzleDrawing.ts:8`
+- **文件**: `utils/rendering/puzzleDrawing.ts:10`
 - **签名**: `export interface PuzzlePiece { // Export the interface`
 
 **建议文档结构**:
@@ -2484,33 +2392,10 @@ export interface PuzzlePiece { // Export the interface
 ```
 ```
 
-#### Point
-
-- **类型**: interface
-- **文件**: `utils/geometry/puzzleGeometry.ts:1`
-- **签名**: `export interface Point {`
-
-**建议文档结构**:
-```markdown
-### Point
-
-[添加API描述]
-
-```typescript
-export interface Point {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
 #### drawPiece
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:105`
+- **文件**: `utils/rendering/puzzleDrawing.ts:100`
 - **签名**: `export const drawPiece = (`
 
 **建议文档结构**:
@@ -2533,7 +2418,7 @@ export const drawPiece = (
 #### drawCompletionEffect
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:348`
+- **文件**: `utils/rendering/puzzleDrawing.ts:343`
 - **签名**: `export const drawCompletionEffect = (`
 
 **建议文档结构**:
@@ -2556,7 +2441,7 @@ export const drawCompletionEffect = (
 #### drawDistributionArea
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:438`
+- **文件**: `utils/rendering/puzzleDrawing.ts:433`
 - **签名**: `export const drawDistributionArea = (`
 
 **建议文档结构**:
@@ -2579,7 +2464,7 @@ export const drawDistributionArea = (
 #### drawCanvasCenter
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:702`
+- **文件**: `utils/rendering/puzzleDrawing.ts:697`
 - **签名**: `export const drawCanvasCenter = (`
 
 **建议文档结构**:
@@ -2602,7 +2487,7 @@ export const drawCanvasCenter = (
 #### drawShapeCenter
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:736`
+- **文件**: `utils/rendering/puzzleDrawing.ts:731`
 - **签名**: `export const drawShapeCenter = (`
 
 **建议文档结构**:
@@ -2659,6 +2544,29 @@ export function appendAlpha(color: string, alpha: number = 1): string {
 
 ```typescript
 export const renderOptimizer = RenderOptimizer.getInstance();
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### generateSimplePuzzle
+
+- **类型**: function
+- **文件**: `utils/puzzle/simplePuzzleGenerator.ts:13`
+- **签名**: `export function generateSimplePuzzle( shape: Point[], cutType: "straight" | "diagonal", cutCount: number ): { pieces: PuzzlePiece[]; originalPositions: PuzzlePiece[] } {`
+
+**建议文档结构**:
+```markdown
+### generateSimplePuzzle
+
+[添加API描述]
+
+```typescript
+export function generateSimplePuzzle( shape: Point[], cutType: "straight" | "diagonal", cutCount: number ): { pieces: PuzzlePiece[]; originalPositions: PuzzlePiece[] } {
 ```
 
 #### 使用示例
@@ -2740,8 +2648,8 @@ export const checkRectOverlap = (rect1: { x: number, y: number, width: number, h
 #### generateCuts
 
 - **类型**: constant
-- **文件**: `utils/puzzle/cutGenerators.ts:85`
-- **签名**: `export const generateCuts = (shape: Point[], count: number, type: "straight" | "diagonal"): CutLine[] => {`
+- **文件**: `utils/puzzle/cutGenerators.ts:49`
+- **签名**: `export const generateCuts = (`
 
 **建议文档结构**:
 ```markdown
@@ -2750,7 +2658,582 @@ export const checkRectOverlap = (rect1: { x: number, y: number, width: number, h
 [添加API描述]
 
 ```typescript
-export const generateCuts = (shape: Point[], count: number, type: "straight" | "diagonal"): CutLine[] => {
+export const generateCuts = (
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### CutValidator
+
+- **类型**: interface
+- **文件**: `utils/puzzle/cutGeneratorTypes.ts:46`
+- **签名**: `export interface CutValidator {`
+
+**建议文档结构**:
+```markdown
+### CutValidator
+
+[添加API描述]
+
+```typescript
+export interface CutValidator {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### Bounds
+
+- **类型**: type
+- **文件**: `utils/puzzle/cutGeneratorTypes.ts:7`
+- **签名**: `export type Bounds = {`
+
+**建议文档结构**:
+```markdown
+### Bounds
+
+[添加API描述]
+
+```typescript
+export type Bounds = {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### CutLine
+
+- **类型**: type
+- **文件**: `utils/puzzle/cutGeneratorTypes.ts:14`
+- **签名**: `export type CutLine = {`
+
+**建议文档结构**:
+```markdown
+### CutLine
+
+[添加API描述]
+
+```typescript
+export type CutLine = {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### CutType
+
+- **类型**: type
+- **文件**: `utils/puzzle/cutGeneratorTypes.ts:22`
+- **签名**: `export type CutType = "straight" | "diagonal";`
+
+**建议文档结构**:
+```markdown
+### CutType
+
+[添加API描述]
+
+```typescript
+export type CutType = "straight" | "diagonal";
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### CutGenerationContext
+
+- **类型**: interface
+- **文件**: `utils/puzzle/cutGeneratorTypes.ts:24`
+- **签名**: `export interface CutGenerationContext {`
+
+**建议文档结构**:
+```markdown
+### CutGenerationContext
+
+[添加API描述]
+
+```typescript
+export interface CutGenerationContext {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### CutGenerationResult
+
+- **类型**: interface
+- **文件**: `utils/puzzle/cutGeneratorTypes.ts:33`
+- **签名**: `export interface CutGenerationResult {`
+
+**建议文档结构**:
+```markdown
+### CutGenerationResult
+
+[添加API描述]
+
+```typescript
+export interface CutGenerationResult {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### CutGenerationStrategy
+
+- **类型**: interface
+- **文件**: `utils/puzzle/cutGeneratorStrategies.ts:15`
+- **签名**: `export interface CutGenerationStrategy {`
+
+**建议文档结构**:
+```markdown
+### CutGenerationStrategy
+
+[添加API描述]
+
+```typescript
+export interface CutGenerationStrategy {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### GeometryUtils
+
+- **类型**: interface
+- **文件**: `utils/puzzle/cutGeneratorTypes.ts:50`
+- **签名**: `export interface GeometryUtils {`
+
+**建议文档结构**:
+```markdown
+### GeometryUtils
+
+[添加API描述]
+
+```typescript
+export interface GeometryUtils {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### SimpleCutStrategy
+
+- **类型**: class
+- **文件**: `utils/puzzle/cutGeneratorStrategies.ts:25`
+- **签名**: `export class SimpleCutStrategy implements CutGenerationStrategy {`
+
+**建议文档结构**:
+```markdown
+### SimpleCutStrategy
+
+[添加API描述]
+
+```typescript
+export class SimpleCutStrategy implements CutGenerationStrategy {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### MediumCutStrategy
+
+- **类型**: class
+- **文件**: `utils/puzzle/cutGeneratorStrategies.ts:32`
+- **签名**: `export class MediumCutStrategy implements CutGenerationStrategy {`
+
+**建议文档结构**:
+```markdown
+### MediumCutStrategy
+
+[添加API描述]
+
+```typescript
+export class MediumCutStrategy implements CutGenerationStrategy {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### HardCutStrategy
+
+- **类型**: class
+- **文件**: `utils/puzzle/cutGeneratorStrategies.ts:47`
+- **签名**: `export class HardCutStrategy implements CutGenerationStrategy {`
+
+**建议文档结构**:
+```markdown
+### HardCutStrategy
+
+[添加API描述]
+
+```typescript
+export class HardCutStrategy implements CutGenerationStrategy {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### CutStrategyFactory
+
+- **类型**: class
+- **文件**: `utils/puzzle/cutGeneratorStrategies.ts:81`
+- **签名**: `export class CutStrategyFactory {`
+
+**建议文档结构**:
+```markdown
+### CutStrategyFactory
+
+[添加API描述]
+
+```typescript
+export class CutStrategyFactory {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### doesCutIntersectShape
+
+- **类型**: constant
+- **文件**: `utils/puzzle/cutGeneratorGeometry.ts:65`
+- **签名**: `export const doesCutIntersectShape = (cut: CutLine, shape: Point[]): number => {`
+
+**建议文档结构**:
+```markdown
+### doesCutIntersectShape
+
+[添加API描述]
+
+```typescript
+export const doesCutIntersectShape = (cut: CutLine, shape: Point[]): number => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### cutsAreTooClose
+
+- **类型**: constant
+- **文件**: `utils/puzzle/cutGeneratorGeometry.ts:80`
+- **签名**: `export const cutsAreTooClose = (cut1: CutLine, cut2: CutLine, minDistance: number = CUT_GENERATOR_CONFIG.MIN_CUT_DISTANCE): boolean => {`
+
+**建议文档结构**:
+```markdown
+### cutsAreTooClose
+
+[添加API描述]
+
+```typescript
+export const cutsAreTooClose = (cut1: CutLine, cut2: CutLine, minDistance: number = CUT_GENERATOR_CONFIG.MIN_CUT_DISTANCE): boolean => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### generateStraightCutLine
+
+- **类型**: constant
+- **文件**: `utils/puzzle/cutGeneratorGeometry.ts:114`
+- **签名**: `export const generateStraightCutLine = (bounds: Bounds): CutLine => {`
+
+**建议文档结构**:
+```markdown
+### generateStraightCutLine
+
+[添加API描述]
+
+```typescript
+export const generateStraightCutLine = (bounds: Bounds): CutLine => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### generateDiagonalCutLine
+
+- **类型**: constant
+- **文件**: `utils/puzzle/cutGeneratorGeometry.ts:141`
+- **签名**: `export const generateDiagonalCutLine = (bounds: Bounds): CutLine => {`
+
+**建议文档结构**:
+```markdown
+### generateDiagonalCutLine
+
+[添加API描述]
+
+```typescript
+export const generateDiagonalCutLine = (bounds: Bounds): CutLine => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### generateCenterCutLine
+
+- **类型**: constant
+- **文件**: `utils/puzzle/cutGeneratorGeometry.ts:159`
+- **签名**: `export const generateCenterCutLine = (shape: Point[], isStraight: boolean, cutType: "straight" | "diagonal"): CutLine => {`
+
+**建议文档结构**:
+```markdown
+### generateCenterCutLine
+
+[添加API描述]
+
+```typescript
+export const generateCenterCutLine = (shape: Point[], isStraight: boolean, cutType: "straight" | "diagonal"): CutLine => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### generateForcedCutLine
+
+- **类型**: constant
+- **文件**: `utils/puzzle/cutGeneratorGeometry.ts:191`
+- **签名**: `export const generateForcedCutLine = (shape: Point[], existingCuts: CutLine[], cutType: "straight" | "diagonal" = "diagonal"): CutLine | null => {`
+
+**建议文档结构**:
+```markdown
+### generateForcedCutLine
+
+[添加API描述]
+
+```typescript
+export const generateForcedCutLine = (shape: Point[], existingCuts: CutLine[], cutType: "straight" | "diagonal" = "diagonal"): CutLine | null => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### CutGeneratorController
+
+- **类型**: class
+- **文件**: `utils/puzzle/cutGeneratorController.ts:16`
+- **签名**: `export class CutGeneratorController {`
+
+**建议文档结构**:
+```markdown
+### CutGeneratorController
+
+[添加API描述]
+
+```typescript
+export class CutGeneratorController {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### CUT_GENERATOR_CONFIG
+
+- **类型**: constant
+- **文件**: `utils/puzzle/cutGeneratorConfig.ts:6`
+- **签名**: `export const CUT_GENERATOR_CONFIG = {`
+
+**建议文档结构**:
+```markdown
+### CUT_GENERATOR_CONFIG
+
+[添加API描述]
+
+```typescript
+export const CUT_GENERATOR_CONFIG = {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### DIFFICULTY_SETTINGS
+
+- **类型**: constant
+- **文件**: `utils/puzzle/cutGeneratorConfig.ts:97`
+- **签名**: `export const DIFFICULTY_SETTINGS = CUT_GENERATOR_CONFIG.DIFFICULTY_SETTINGS;`
+
+**建议文档结构**:
+```markdown
+### DIFFICULTY_SETTINGS
+
+[添加API描述]
+
+```typescript
+export const DIFFICULTY_SETTINGS = CUT_GENERATOR_CONFIG.DIFFICULTY_SETTINGS;
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### MAX_ATTEMPTS
+
+- **类型**: constant
+- **文件**: `utils/puzzle/cutGeneratorConfig.ts:98`
+- **签名**: `export const MAX_ATTEMPTS = CUT_GENERATOR_CONFIG.MAX_ATTEMPTS;`
+
+**建议文档结构**:
+```markdown
+### MAX_ATTEMPTS
+
+[添加API描述]
+
+```typescript
+export const MAX_ATTEMPTS = CUT_GENERATOR_CONFIG.MAX_ATTEMPTS;
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### EARLY_EXIT_THRESHOLD
+
+- **类型**: constant
+- **文件**: `utils/puzzle/cutGeneratorConfig.ts:99`
+- **签名**: `export const EARLY_EXIT_THRESHOLD = CUT_GENERATOR_CONFIG.EARLY_EXIT_THRESHOLD;`
+
+**建议文档结构**:
+```markdown
+### EARLY_EXIT_THRESHOLD
+
+[添加API描述]
+
+```typescript
+export const EARLY_EXIT_THRESHOLD = CUT_GENERATOR_CONFIG.EARLY_EXIT_THRESHOLD;
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### DifficultyLevel
+
+- **类型**: type
+- **文件**: `utils/puzzle/cutGeneratorConfig.ts:101`
+- **签名**: `export type DifficultyLevel = keyof typeof CUT_GENERATOR_CONFIG.DIFFICULTY_SETTINGS;`
+
+**建议文档结构**:
+```markdown
+### DifficultyLevel
+
+[添加API描述]
+
+```typescript
+export type DifficultyLevel = keyof typeof CUT_GENERATOR_CONFIG.DIFFICULTY_SETTINGS;
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### DifficultySettings
+
+- **类型**: type
+- **文件**: `utils/puzzle/cutGeneratorConfig.ts:102`
+- **签名**: `export type DifficultySettings = typeof CUT_GENERATOR_CONFIG.DIFFICULTY_SETTINGS[DifficultyLevel];`
+
+**建议文档结构**:
+```markdown
+### DifficultySettings
+
+[添加API描述]
+
+```typescript
+export type DifficultySettings = typeof CUT_GENERATOR_CONFIG.DIFFICULTY_SETTINGS[DifficultyLevel];
 ```
 
 #### 使用示例
@@ -2763,7 +3246,7 @@ export const generateCuts = (shape: Point[], count: number, type: "straight" | "
 #### rotatePoint
 
 - **类型**: function
-- **文件**: `utils/geometry/puzzleGeometry.ts:62`
+- **文件**: `utils/geometry/puzzleGeometry.ts:59`
 - **签名**: `export function rotatePoint(x: number, y: number, cx: number, cy: number, angle: number): {x: number, y: number} {`
 
 **建议文档结构**:
@@ -2786,7 +3269,7 @@ export function rotatePoint(x: number, y: number, cx: number, cy: number, angle:
 #### calculateAngle
 
 - **类型**: function
-- **文件**: `utils/geometry/puzzleGeometry.ts:79`
+- **文件**: `utils/geometry/puzzleGeometry.ts:76`
 - **签名**: `export function calculateAngle(x1: number, y1: number, x2: number, y2: number): number {`
 
 **建议文档结构**:
@@ -2809,7 +3292,7 @@ export function calculateAngle(x1: number, y1: number, x2: number, y2: number): 
 #### calculatePieceBounds
 
 - **类型**: function
-- **文件**: `utils/geometry/puzzleGeometry.ts:83`
+- **文件**: `utils/geometry/puzzleGeometry.ts:80`
 - **签名**: `export function calculatePieceBounds(piece: { points: Point[] }): { minX: number; maxX: number; minY: number; maxY: number; width: number; height: number; centerX: number; centerY: number } {`
 
 **建议文档结构**:
@@ -2923,7 +3406,7 @@ export function calculatePieceBounds(piece: { points: Point[] }): { minX: number
 - ❌ `useDebugToggle` (function)
 - ❌ `reducer` (constant)
 
-### 工具函数API (68个)
+### 工具函数API (88个)
 
 - ❌ `deviceLogger` (constant)
 - ✅ `adaptationLogger` (constant)
@@ -2945,12 +3428,7 @@ export function calculatePieceBounds(piece: { points: Point[] }): { minX: number
 - ❌ `MIN_SHAPE_DIAMETER` (constant)
 - ❌ `MAX_SHAPE_DIAMETER` (constant)
 - ❌ `MIN_SHAPE_AREA` (constant)
-- ❌ `CanvasSize` (interface)
-- ❌ `AdaptationOptions` (interface)
-- ❌ `adaptShapeToCanvas` (function)
-- ✅ `centerShapeInCanvas` (function)
-- ❌ `scaleShapeToSize` (function)
-- ❌ `isShapeInBounds` (function)
+- ❌ `generateSimpleShape` (function)
 - ❌ `calculatePolygonArea` (constant)
 - ❌ `calculateBounds` (constant)
 - ❌ `createSafeZone` (constant)
@@ -2970,7 +3448,6 @@ export function calculatePieceBounds(piece: { points: Point[] }): { minX: number
 - ✅ `playRotateSound` (constant)
 - ❌ `playCutSound` (constant)
 - ❌ `PuzzlePiece` (interface)
-- ❌ `Point` (interface)
 - ✅ `drawShape` (constant)
 - ❌ `drawPiece` (constant)
 - ✅ `drawHintOutline` (constant)
@@ -2983,11 +3460,37 @@ export function calculatePieceBounds(piece: { points: Point[] }): { minX: number
 - ❌ `appendAlpha` (function)
 - ✅ `RenderOptimizer` (class)
 - ❌ `renderOptimizer` (constant)
+- ❌ `generateSimplePuzzle` (function)
 - ❌ `splitPolygon` (constant)
 - ✅ `splitPieceWithLine` (constant)
 - ❌ `isValidPiece` (constant)
 - ❌ `checkRectOverlap` (constant)
 - ❌ `generateCuts` (constant)
+- ❌ `CutValidator` (interface)
+- ❌ `Bounds` (type)
+- ❌ `CutLine` (type)
+- ❌ `CutType` (type)
+- ❌ `CutGenerationContext` (interface)
+- ❌ `CutGenerationResult` (interface)
+- ❌ `CutGenerationStrategy` (interface)
+- ❌ `GeometryUtils` (interface)
+- ❌ `SimpleCutStrategy` (class)
+- ❌ `MediumCutStrategy` (class)
+- ❌ `HardCutStrategy` (class)
+- ❌ `CutStrategyFactory` (class)
+- ❌ `doesCutIntersectShape` (constant)
+- ❌ `cutsAreTooClose` (constant)
+- ❌ `generateStraightCutLine` (constant)
+- ❌ `generateDiagonalCutLine` (constant)
+- ❌ `generateCenterCutLine` (constant)
+- ❌ `generateForcedCutLine` (constant)
+- ❌ `CutGeneratorController` (class)
+- ❌ `CUT_GENERATOR_CONFIG` (constant)
+- ❌ `DIFFICULTY_SETTINGS` (constant)
+- ❌ `MAX_ATTEMPTS` (constant)
+- ❌ `EARLY_EXIT_THRESHOLD` (constant)
+- ❌ `DifficultyLevel` (type)
+- ❌ `DifficultySettings` (type)
 - ✅ `ScatterPuzzle` (class)
 - ✅ `PuzzleGenerator` (class)
 - ❌ `rotatePoint` (function)

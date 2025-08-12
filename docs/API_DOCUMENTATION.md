@@ -598,10 +598,10 @@ function PuzzleCanvas() {
 
 ### 形状适配
 ```typescript
-import { adaptShapeToCanvas } from '@/utils/shape/shapeAdaptationUtils';
+import { adaptAllElements } from '@/utils/SimpleAdapter';
 
 function adaptPuzzleShape(originalShape: Point[], newCanvasSize: CanvasSize) {
-  const adaptedShape = adaptShapeToCanvas(
+  const adaptedShape = adaptAllElements(
     originalShape,
     { width: 800, height: 600 }, // 原始尺寸
     newCanvasSize,

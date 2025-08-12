@@ -100,8 +100,9 @@ export function interpolate(template: string, values: Record<string, string | nu
 }
 
 // 获取嵌套对象的值
-export function getNestedValue(obj: any, path: string): string {
-  return path.split('.').reduce((current, key) => current?.[key], obj) || path;
+export function getNestedValue(obj: Record<string, any>, path: string): string {
+  const result = path.split('.').reduce((current: any, key) => current?.[key], obj);
+  return typeof result === 'string' ? result : path;
 }
 
 // 随机选择完成消息

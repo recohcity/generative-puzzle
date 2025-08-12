@@ -51,7 +51,7 @@ npm run test:quality
 npm run test:unit -- --coverage --coverageReporters=text
 
 # 单个文件覆盖率检查
-npm run test:unit -- --testPathPatterns="puzzleDrawing" --coverage --coverageReporters=text
+npm run test:unit -- --testPathPatterns="ScatterPuzzle" --coverage --coverageReporters=text
 ```
 
 ### 🔍 代码质量

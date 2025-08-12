@@ -28,7 +28,7 @@ playwright-automation/
 ├── e2e/
 │   └── full_game_flow.spec.ts     # 核心测试脚本
 ├── scripts/
-│   └── archive-test-results.js    # 测试结果归档脚本
+│   └── archive-test-results.cjs    # 测试结果归档脚本
 ├── app/
 │   ├── test/page.tsx              # 可视化测试报告页面
 │   └── api/performance-trend/     # 性能数据API接口
@@ -126,7 +126,7 @@ http://localhost:3000/test
 - **视口**: 1280x800 标准分辨率
 - **报告**: HTML + JSON 双格式输出
 
-### 3. 归档脚本 (`scripts/archive-test-results.js`)
+### 3. 归档脚本 (`scripts/archive-test-results.cjs`)
 
 **功能**:
 - 自动解析测试结果JSON
@@ -371,7 +371,7 @@ const PERFORMANCE_BENCHMARKS = {
 
 ### 3. 报告格式定制
 
-修改 `scripts/archive-test-results.js` 中的报告模板：
+修改 `scripts/archive-test-results.cjs` 中的报告模板：
 
 ```javascript
 // 调整 reportContent 变量的模板内容

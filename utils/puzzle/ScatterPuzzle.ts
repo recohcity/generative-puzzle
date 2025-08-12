@@ -26,8 +26,7 @@ type PuzzlePiece = {
 
 // 声明一个接口描述游戏状态中的画布尺寸
 interface GameContextState {
-  canvasWidth?: number
-  canvasHeight?: number
+  canvasSize?: { width: number; height: number }
   targetShape?: {
     center: { x: number, y: number }
     radius: number
@@ -37,12 +36,12 @@ interface GameContextState {
 export class ScatterPuzzle {
   static scatterPuzzle(pieces: PuzzlePiece[], contextState?: GameContextState): PuzzlePiece[] {
     // 获取画布尺寸信息
-    let canvasWidth = contextState?.canvasWidth || 800;
-    let canvasHeight = contextState?.canvasHeight || 600;
+    let canvasWidth = contextState?.canvasSize?.width || 800;
+    let canvasHeight = contextState?.canvasSize?.height || 600;
     // 目标形状信息
     const targetShape = contextState?.targetShape || null;
     try {
-      if (!contextState?.canvasWidth || !contextState?.canvasHeight) {
+      if (!contextState?.canvasSize?.width || !contextState?.canvasSize?.height) {
         const canvasElements = Array.from(typeof document !== 'undefined' ? document.querySelectorAll('canvas') : []);
         const validCanvases = canvasElements.filter((canvas): canvas is HTMLCanvasElement => canvas instanceof HTMLCanvasElement);
         let mainCanvas: HTMLCanvasElement | null = null;
@@ -66,16 +65,9 @@ export class ScatterPuzzle {
     const { DeviceManager } = require('../../core/DeviceManager');
     const deviceManager = DeviceManager.getInstance();
     const deviceState = deviceManager.getState();
-    
-    const isIPhone = deviceState.isIOS;
-    const isAndroid = deviceState.isAndroid;
-    const isMobile = deviceState.isMobile;
-    const isPortrait = deviceState.isPortrait;
-    const isSmallScreen = canvasWidth < 400 || canvasHeight < 400;
     // === 安全边距重构 ===
     // 统一安全边距为10px，仅用于拼图自动分布/回弹兜底，不影响拼图区大小
     const SAFE_BOUNDARY_MARGIN = 10;
-    const margin = 10;
     // safeWidth/safeHeight 仅用于分布兜底
     const safeWidth = Math.max(canvasWidth - SAFE_BOUNDARY_MARGIN * 2, 200);
     const safeHeight = Math.max(canvasHeight - SAFE_BOUNDARY_MARGIN * 2, 200);
@@ -257,8 +249,8 @@ export class ScatterPuzzle {
         }
       }
       if (!placementFound && minOverlap === Infinity) {
-        const randomX = margin + Math.random() * (canvasWidth - 2 * margin);
-        const randomY = margin + Math.random() * (canvasHeight - 2 * margin);
+        const randomX = SAFE_BOUNDARY_MARGIN + Math.random() * (canvasWidth - 2 * SAFE_BOUNDARY_MARGIN);
+        const randomY = SAFE_BOUNDARY_MARGIN + Math.random() * (canvasHeight - 2 * SAFE_BOUNDARY_MARGIN);
         bestX = randomX;
         bestY = randomY;
       }
@@ -348,7 +340,7 @@ export class ScatterPuzzle {
         }
       }
     }
-    return this.addBounceBackAnimation(finalScatteredPieces, canvasWidth, canvasHeight, SAFE_BOUNDARY_MARGIN);
+    return this.addBounceBackAnimation(finalScatteredPieces, canvasWidth, canvasHeight);
   }
   
   // 辅助函数：计算螺旋位置
@@ -409,8 +401,7 @@ export class ScatterPuzzle {
   static generatePlacementAreas(
     canvasWidth: number, 
     canvasHeight: number, 
-    targetShape: { x: number, y: number, width: number, height: number, center: { x: number, y: number }, radius: number } | null,
-    margin: number
+    targetShape: { x: number, y: number, width: number, height: number, center: { x: number, y: number }, radius: number } | null
   ): Array<{ x: number, y: number, width: number, height: number }> {
     // 安全边距只用于兜底，placementAreas 始终为全画布
     return [{
@@ -491,8 +482,7 @@ export class ScatterPuzzle {
   static addBounceBackAnimation(
     pieces: PuzzlePiece[], 
     canvasWidth: number, 
-    canvasHeight: number, 
-    safeMargin: number
+    canvasHeight: number
   ): PuzzlePiece[] {
     // 兜底安全边距统一为10px
     const strictSafeMargin = 10;

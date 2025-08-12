@@ -22,9 +22,9 @@ const nextConfig = {
     parallelServerCompiles: true,
   },
   reactStrictMode: false,
-  // 静态导出配置
-  output: 'export',
-  trailingSlash: true,
+  // 静态导出配置已禁用以支持API路由
+  // output: 'export',
+  // trailingSlash: true,
   // 使用自定义域名时不需要basePath和assetPrefix
   // basePath: process.env.NODE_ENV === 'production' ? '/generative-puzzle' : '',
   // assetPrefix: process.env.NODE_ENV === 'production' ? '/generative-puzzle/' : '',

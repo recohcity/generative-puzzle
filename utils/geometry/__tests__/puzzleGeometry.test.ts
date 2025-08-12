@@ -1,4 +1,5 @@
-import { calculateCenter, isPointInPolygon, rotatePoint, calculateAngle, calculatePieceBounds, Point } from '../puzzleGeometry';
+import { calculateCenter, isPointInPolygon, rotatePoint, calculateAngle, calculatePieceBounds } from '../puzzleGeometry';
+import type { Point } from '@/types/puzzleTypes';
 
 describe('puzzleGeometry', () => {
   describe('calculateCenter', () => {

@@ -1,6 +1,6 @@
 # 项目结构（Project Structure）
 
-> 自动生成时间：2025/8/9 21:52:09  
+> 自动生成时间：2025/8/13 00:09:00  
 > 生成工具：项目结构文档生成器 v3.1.0 - 开发导航版
 
 **开发者导航工具** - 快速理解项目架构，精准定位代码位置，提升开发效率。
@@ -14,9 +14,9 @@
 
 | 统计项 | 数量 | 说明 |
 |--------|------|------|
-| 总目录数 | 44 | 项目目录结构层次 |
-| 总文件数 | 211 | 代码文件和资源文件总数 |
-| 项目容量 | 4.67 MB | 不包含node_modules的项目大小 |
+| 总目录数 | 45 | 项目目录结构层次 |
+| 总文件数 | 224 | 代码文件和资源文件总数 |
+| 项目容量 | 4.42 MB | 不包含node_modules的项目大小 |
 
 ---
 
@@ -203,7 +203,6 @@ npm run lint                   # 代码检查
 - contexts/
 - core/
 - coverage/
-  - lcov-report/
 - docs/
   - audio/
   - configuration/
@@ -230,9 +229,11 @@ npm run lint                   # 代码检查
   - geometry/
     - __tests__/
   - puzzle/
+    - __tests__/
   - rendering/
     - __tests__/
   - shape/
+    - __tests__/
 ```
 
 </details>
@@ -345,28 +346,12 @@ npm run lint                   # 代码检查
   📄 `ResizeObserverManager.ts`
   📄 `ValidationService.ts`
 📁 **coverage/**
-  📁 **lcov-report/**
-    📄 `base.css`
-    📄 `block-navigation.js`
-    📄 `colorUtils.ts.html`
-    📄 `favicon.png`
-    📄 `index.html`
-    📄 `prettify.css`
-    📄 `prettify.js`
-    📄 `sort-arrow-sprite.png`
-    📄 `sorter.js`
-  📄 `base.css`
-  📄 `block-navigation.js`
-  📄 `colorUtils.ts.html`
+  📄 `coverage-analysis-report.md`
   📄 `coverage-final.json`
+  📄 `coverage-improvement-plan.md`
   📄 `coverage-summary.json`
-  📄 `favicon.png`
-  📄 `index.html`
-  📄 `lcov.info`
-  📄 `prettify.css`
-  📄 `prettify.js`
-  📄 `sort-arrow-sprite.png`
-  📄 `sorter.js`
+  📄 `coverage-summary.md`
+  📄 `technical-analysis.md`
 📁 **docs/**
   📁 **audio/**
     📄 `sound-effects.md`
@@ -390,9 +375,15 @@ npm run lint                   # 代码检查
   📄 `API_DOCUMENTATION.md`
   📄 `api-classification-report.md`
   📄 `api-scan-report.md`
+  📄 `coverage-strategy.md`
   📄 `CURRENT_ADAPTATION_SYSTEM.md`
+  📄 `CUSTOM_DOMAIN_FIX.md`
+  📄 `cutGenerators-migration-guide.md`
+  📄 `cutGenerators-refactoring-report.md`
+  📄 `DEPLOY_SUMMARY.md`
   📄 `difficulty-design.md`
   📄 `GETTING_STARTED.md`
+  📄 `GITHUB_PAGES_SETUP.md`
   📄 `PRD_生成式拼图游戏.md`
   📄 `project_structure.md`
   📄 `README.md` - 项目说明文档
@@ -421,10 +412,8 @@ npm run lint                   # 代码检查
 📁 **quality-reports/**
   📄 `cicd-test-report.json`
   📄 `cicd-test-report.md`
-  📄 `quality-report-2025-07-31.json`
-  📄 `quality-report-2025-08-03.json`
-  📄 `quality-report-2025-08-05.json`
-  📄 `quality-report-2025-08-07.json`
+  📄 `quality-report-2025-08-11.json`
+  📄 `quality-report-2025-08-12.json`
 📁 **scripts/**
   📄 `archive-test-results.cjs`
   📄 `check-architecture-conflicts.ts`
@@ -460,6 +449,8 @@ npm run lint                   # 代码检查
   📄 `puzzleTypes.ts`
 📁 **utils/**
   📁 **__tests__/**
+    📄 `constants.test.ts`
+    📄 `helper.test.ts`
     📄 `SimpleAdapter.test.ts`
   📁 **debug/**
     📄 `wechatTest.js`
@@ -468,27 +459,51 @@ npm run lint                   # 代码检查
       📄 `puzzleGeometry.test.ts`
     📄 `puzzleGeometry.ts`
   📁 **puzzle/**
+    📁 **__tests__/**
+      📄 `cutGeneratorController.test.ts`
+      📄 `cutGenerators-performance.test.ts`
+      📄 `cutGenerators.test.ts`
+      📄 `cutGeneratorTypes.test.ts`
+      📄 `cutGeneratorValidator.test.ts`
+      📄 `PuzzleGenerator.test.ts`
+      📄 `puzzleUtils.test.ts`
+      📄 `simplePuzzleGenerator.test.ts`
+    📄 `cutGeneratorConfig.ts`
+    📄 `cutGeneratorController.ts`
+    📄 `cutGeneratorGeometry.ts`
     📄 `cutGenerators.ts`
+    📄 `cutGeneratorStrategies.ts`
+    📄 `cutGeneratorTypes.ts`
+    📄 `cutGeneratorValidator.ts`
     📄 `PuzzleGenerator.ts`
     📄 `puzzleUtils.ts`
     📄 `ScatterPuzzle.ts`
+    📄 `simplePuzzleGenerator.ts`
   📁 **rendering/**
     📁 **__tests__/**
       📄 `colorUtils.test.ts`
+      📄 `puzzleDrawing.test.ts`
+      📄 `RenderOptimizer.test.ts`
+      📄 `soundEffects.test.ts`
     📄 `colorUtils.ts`
     📄 `puzzleDrawing.ts`
     📄 `RenderOptimizer.ts`
     📄 `soundEffects.ts`
   📁 **shape/**
+    📁 **__tests__/**
+      📄 `geometryUtils.test.ts`
+      📄 `ShapeGenerator.test.ts`
+      📄 `simpleShapeGenerator.test.ts`
     📄 `geometryUtils.ts`
-    📄 `shapeAdaptationUtils.ts`
     📄 `ShapeGenerator.ts`
+    📄 `simpleShapeGenerator.ts`
   📄 `constants.ts`
   📄 `helper.ts`
   📄 `SimpleAdapter.ts`
 📄 `.gitignore` - Git 忽略文件配置
 📄 `CHANGELOG.md` - 版本历史与变更记录
 📄 `components.json` - Shadcn UI 组件配置
+📄 `coverage-setup.js`
 📄 `jest.config.cjs`
 📄 `next.config.mjs` - Next.js 框架配置
 📄 `package-lock.json` - 依赖锁定文件
@@ -536,4 +551,4 @@ npm run generate-structure  # 一键更新项目结构文档
 
 ---
 
-*📅 生成时间：2025/8/9 21:52:09 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*
+*📅 生成时间：2025/8/13 00:09:00 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*

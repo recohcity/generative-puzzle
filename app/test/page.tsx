@@ -344,12 +344,18 @@ const PerformanceTrendPage: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        // 在静态导出模式下使用静态数据文件
-        const res = await fetch('/performance-data.json');
+        console.log('开始获取性能数据...');
+        
+        // 使用API路由读取测试报告数据
+        const apiUrl = '/api/performance-trend';
+        const res = await fetch(apiUrl);
+        
         if (!res.ok) {
           throw new Error(`Failed to fetch: ${res.status} ${res.statusText}`);
         }
+        
         const data = await res.json();
+        
         if (Array.isArray(data)) {
           // 兼容老数据，补齐 resourceLoadTime、e2eLoadTime 字段
           const patched = data.map((item: any) => ({
@@ -361,8 +367,14 @@ const PerformanceTrendPage: React.FC = () => {
         } else {
           throw new Error("API did not return an array");
         }
-      } catch (e: any) {
-        setError(e.message);
+      } catch (e: unknown) {
+        console.error('Fetch error:', e);
+        const message =
+          e instanceof Error ? e.message :
+          typeof e === 'string' ? e :
+          'Unknown error occurred';
+        // 离线友好提示
+        setError(!navigator.onLine ? '网络异常，请检查网络连接' : (message || 'Unknown error occurred'));
         setTrendData([]);
       }
       setLoading(false);
@@ -377,7 +389,13 @@ const PerformanceTrendPage: React.FC = () => {
 
   // 优化：使用 useMemo 缓存分页数据
   const pagedFilteredData = React.useMemo(() => {
-    return filteredData.slice().reverse().slice((currentPage - 1) * pageSize, currentPage * pageSize);
+    // 保险：按 fullTime/time 降序排序后再分页，确保最新数据始终在前
+    const sorted = [...filteredData].sort((a, b) => {
+      const ta = new Date(a.fullTime || a.time).getTime();
+      const tb = new Date(b.fullTime || b.time).getTime();
+      return tb - ta; // DESC - 最新的在前
+    });
+    return sorted.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   }, [filteredData, currentPage, pageSize]);
 
   // 优化：更好的加载和错误状态
@@ -899,6 +917,7 @@ const PerformanceTrendPage: React.FC = () => {
                       { key: 'memoryUsage', value: item.memoryUsage },
                       { key: 'adaptationPassRate', value: item.adaptationPassRate }
                     ].map(({ key, value }) => {
+
                       const grade = getPerformanceGrade(key as MetricKey, value);
                       return (
                         <td key={key} className="border-r border-b border-gray-300 px-2 py-1 text-center">

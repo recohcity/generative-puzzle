@@ -14,7 +14,7 @@ import {
 } from "@/utils/rendering/puzzleDrawing";
 
 import { PuzzlePiece } from "@/types/puzzleTypes";
-import { useDeviceDetection } from '@/hooks/useDeviceDetection';
+
 import { usePuzzleInteractions } from "@/hooks/usePuzzleInteractions";
 import { useDebugToggle } from '@/hooks/useDebugToggle';
 
@@ -69,11 +69,13 @@ function useCanvasResizeObserver(
     };
 
     let observer: ResizeObserver | null = null;
+    let handleWindowResize: (() => void) | null = null;
+
     if (containerRef.current && 'ResizeObserver' in window) {
       observer = new ResizeObserver(() => handleResize());
       observer.observe(containerRef.current);
     } else {
-      const handleWindowResize = () => handleResize();
+      handleWindowResize = () => handleResize();
       window.addEventListener('resize', handleWindowResize);
       window.addEventListener('orientationchange', handleWindowResize);
     }
@@ -83,8 +85,7 @@ function useCanvasResizeObserver(
     return () => {
       if (observer) {
         observer.disconnect();
-      } else {
-        const handleWindowResize = () => handleResize();
+      } else if (handleWindowResize) {
         window.removeEventListener('resize', handleWindowResize);
         window.removeEventListener('orientationchange', handleWindowResize);
       }
@@ -107,8 +108,7 @@ export default function PuzzleCanvas() {
     dispatch({
       type: 'UPDATE_CANVAS_SIZE',
       payload: {
-        canvasWidth: width,
-        canvasHeight: height,
+        canvasSize: { width, height },
         scale: 1,
         orientation: width >= height ? 'landscape' : 'portrait',
         forceUpdate: true,
@@ -134,8 +134,7 @@ export default function PuzzleCanvas() {
       dispatch({
         type: 'UPDATE_CANVAS_SIZE',
         payload: {
-          canvasWidth: safeWidth,
-          canvasHeight: safeHeight,
+          canvasSize: { width: safeWidth, height: safeHeight },
           scale: 1,
           orientation,
           skipAdaptation: needsProtection,
@@ -145,25 +144,18 @@ export default function PuzzleCanvas() {
 
   const [showDebugElements] = useDebugToggle();
   const [isShaking, setIsShaking] = useState(false);
-  const device = useDeviceDetection();
 
   // 画布尺寸计算
   const canvasSize = useMemo(() => {
-    if (state.canvasWidth > 0 && state.canvasHeight > 0) {
-      return { width: state.canvasWidth, height: state.canvasHeight };
-    }
-    return null;
-  }, [state.canvasWidth, state.canvasHeight]);
+    return state.canvasSize || null;
+  }, [state.canvasSize]);
 
   // 适配状态同步
   const lastCanvasSizeRef = useRef<{ width: number; height: number } | null>(null);
   const gameStateRef = useRef<string>('');
 
   useEffect(() => {
-    const currentCanvasSize = {
-      width: state.canvasWidth || 0,
-      height: state.canvasHeight || 0
-    };
+    const currentCanvasSize = state.canvasSize || { width: 0, height: 0 };
 
     if (currentCanvasSize.width <= 0 || currentCanvasSize.height <= 0) {
       return;
@@ -188,7 +180,7 @@ export default function PuzzleCanvas() {
 
     lastCanvasSizeRef.current = currentCanvasSize;
     gameStateRef.current = currentGameState;
-  }, [state.canvasWidth, state.canvasHeight, state.originalShape, state.puzzle, state.originalPositions, state.isScattered, state.isCompleted, state.completedPieces]);
+  }, [state.canvasSize, state.originalShape, state.puzzle, state.originalPositions, state.isScattered, state.isCompleted, state.completedPieces]);
 
   const {
     handleMouseDown,
@@ -214,94 +206,7 @@ export default function PuzzleCanvas() {
     playRotateSound,
   });
 
-  // 手动绑定触摸事件
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
 
-    const nativeHandleTouchStart = (e: TouchEvent) => {
-      // 🔧 关键修复：不要preventDefault，让事件正常传播
-      // e.preventDefault();
-      
-      const syntheticEvent = {
-        preventDefault: () => { },
-        touches: Array.from(e.touches).map(touch => ({
-          clientX: touch.clientX,
-          clientY: touch.clientY
-        })),
-        // 确保length属性正确传递
-        length: e.touches.length
-      } as unknown as React.TouchEvent<HTMLCanvasElement>;
-      
-      // 手动设置touches的length属性
-      Object.defineProperty(syntheticEvent.touches, 'length', {
-        value: e.touches.length,
-        writable: false
-      });
-      
-      handleTouchStart(syntheticEvent);
-    };
-
-    const nativeHandleTouchMove = (e: TouchEvent) => {
-      // 🔧 关键修复：不要preventDefault，让事件正常传播
-      // e.preventDefault();
-      
-      const syntheticEvent = {
-        preventDefault: () => { },
-        touches: Array.from(e.touches).map(touch => ({
-          clientX: touch.clientX,
-          clientY: touch.clientY
-        })),
-        length: e.touches.length
-      } as unknown as React.TouchEvent<HTMLCanvasElement>;
-      
-      // 手动设置touches的length属性
-      Object.defineProperty(syntheticEvent.touches, 'length', {
-        value: e.touches.length,
-        writable: false
-      });
-      
-      handleTouchMove(syntheticEvent);
-    };
-
-    const nativeHandleTouchEnd = (e: TouchEvent) => {
-      // 🔧 关键修复：不要preventDefault，让事件正常传播
-      // e.preventDefault();
-      // e.stopPropagation();
-      
-      const syntheticEvent = {
-        preventDefault: () => { },
-        stopPropagation: () => { },
-        touches: Array.from(e.touches).map(touch => ({
-          clientX: touch.clientX,
-          clientY: touch.clientY
-        })),
-        length: e.touches.length
-      } as unknown as React.TouchEvent<HTMLCanvasElement>;
-      
-      // 手动设置touches的length属性
-      Object.defineProperty(syntheticEvent.touches, 'length', {
-        value: e.touches.length,
-        writable: false
-      });
-      
-      handleTouchEnd(syntheticEvent);
-    };
-
-    // 🔧 修复：禁用原生事件监听器，只使用React合成事件
-    // canvas.addEventListener('touchstart', nativeHandleTouchStart, { passive: false });
-    // canvas.addEventListener('touchmove', nativeHandleTouchMove, { passive: false });
-    // canvas.addEventListener('touchend', nativeHandleTouchEnd, { passive: false });
-    // canvas.addEventListener('touchcancel', nativeHandleTouchEnd, { passive: false });
-
-    return () => {
-      // 🔧 修复：禁用原生事件监听器清理
-      // canvas.removeEventListener('touchstart', nativeHandleTouchStart);
-      // canvas.removeEventListener('touchmove', nativeHandleTouchMove);
-      // canvas.removeEventListener('touchend', nativeHandleTouchEnd);
-      // canvas.removeEventListener('touchcancel', nativeHandleTouchEnd);
-    };
-  }, [handleTouchStart, handleTouchMove, handleTouchEnd, canvasRef]);
 
   // 渲染逻辑
   useEffect(() => {
@@ -330,7 +235,7 @@ export default function PuzzleCanvas() {
     if (state.puzzle) {
       // 获取随机完成消息
       const completionMessage = getRandomCompletionMessage();
-      
+
       drawPuzzle(
         ctx,
         state.puzzle,
@@ -468,10 +373,10 @@ export default function PuzzleCanvas() {
       <canvas
         ref={canvasRef}
         id="puzzle-canvas"
-        style={{ 
-          width: '100%', 
-          height: '100%', 
-          position: 'relative', 
+        style={{
+          width: '100%',
+          height: '100%',
+          position: 'relative',
           cursor: 'pointer',
           touchAction: 'none', // 🔧 关键修复：禁用浏览器默认触摸行为
           userSelect: 'none',

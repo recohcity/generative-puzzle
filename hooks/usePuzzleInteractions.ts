@@ -49,8 +49,8 @@ export function usePuzzleInteractions({
   const lastTouchRef = useRef<Point | null>(null);
   const animationFrameRef = useRef<number | null>(null); // 动画帧引用
 
-  const canvasWidth = state.canvasWidth ?? 0;
-  const canvasHeight = state.canvasHeight ?? 0;
+  const canvasWidth = state.canvasSize ? state.canvasSize.width : 0;
+  const canvasHeight = state.canvasSize ? state.canvasSize.height : 0;
 
   // 定义闪光动画函数
   const animateFlash = useCallback(
@@ -610,7 +610,7 @@ export function usePuzzleInteractions({
         const dy = touchY - lastTouchRef.current.y
 
         // 获取当前拖动的拼图
-        if (!state.puzzle) return;
+        if (!state.puzzle || !state.draggingPiece) return;
         const piece = state.puzzle[state.draggingPiece.index];
         
         // 使用GameContext提供的统一边界处理函数，确保所有拼图使用完全相同的边界设置
