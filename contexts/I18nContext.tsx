@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { SupportedLocale, getStoredLocale, setStoredLocale, DEFAULT_LOCALE } from '@/src/i18n/config';
+import { SupportedLocale, DEFAULT_LOCALE } from '@/src/i18n/config';
 import { TranslationMessages, loadMessages, interpolate, getNestedValue, getRandomCompletionMessage } from '@/src/i18n';
 
 // 预加载默认翻译文件，避免初始渲染时显示翻译键
