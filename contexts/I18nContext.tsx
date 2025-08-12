@@ -4,6 +4,9 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { SupportedLocale, getStoredLocale, setStoredLocale, DEFAULT_LOCALE } from '@/src/i18n/config';
 import { TranslationMessages, loadMessages, interpolate, getNestedValue, getRandomCompletionMessage } from '@/src/i18n';
 
+// 预加载默认翻译文件，避免初始渲染时显示翻译键
+import defaultMessages from '@/src/i18n/locales/zh-CN.json';
+
 interface I18nContextType {
   locale: SupportedLocale;
   messages: TranslationMessages | null;
@@ -22,8 +25,9 @@ interface I18nProviderProps {
 export function I18nProvider({ children }: I18nProviderProps) {
   // 始终从默认语言开始，避免水合错误
   const [locale, setLocale] = useState<SupportedLocale>(DEFAULT_LOCALE);
-  const [messages, setMessages] = useState<TranslationMessages | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // 立即使用预加载的默认翻译文件，避免显示翻译键
+  const [messages, setMessages] = useState<TranslationMessages | null>(defaultMessages as TranslationMessages);
+  const [isLoading, setIsLoading] = useState(false); // 由于已有默认翻译，初始不需要loading状态
   const [isClient, setIsClient] = useState(false);
 
   // 标记客户端已挂载
@@ -31,43 +35,16 @@ export function I18nProvider({ children }: I18nProviderProps) {
     setIsClient(true);
   }, []);
 
-  // 初始化语言设置
+  // 初始化语言设置 - 页面刷新后保持默认中文，不自动切换
   useEffect(() => {
     if (!isClient) return;
-    
-    const initializeLocale = async () => {
-      setIsLoading(true);
-      
-      try {
-        // 获取用户偏好的语言
-        const storedLocale = getStoredLocale();
-        
-        // 加载对应的翻译文件
-        const loadedMessages = await loadMessages(storedLocale);
-        setMessages(loadedMessages);
-        
-        // 如果存储的语言与默认语言不同，更新语言状态
-        if (storedLocale !== DEFAULT_LOCALE) {
-          setLocale(storedLocale);
-        }
-      } catch (error) {
-        console.error('Failed to load initial messages:', error);
-        // 加载失败时使用默认语言
-        try {
-          const fallbackMessages = await loadMessages(DEFAULT_LOCALE);
-          setMessages(fallbackMessages);
-        } catch (fallbackError) {
-          console.error('Failed to load fallback messages:', fallbackError);
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
 
-    initializeLocale();
+    // 页面刷新后默认停留在中文，用户需要手动切换语言
+    // 这样避免了页面刷新时的语言闪烁问题
+    console.log('I18n initialized with default locale (zh-CN)');
   }, [isClient]);
 
-  // 切换语言
+  // 切换语言 - 仅在用户手动切换时保存偏好
   const changeLocale = async (newLocale: SupportedLocale) => {
     if (newLocale === locale) return;
 
@@ -76,7 +53,9 @@ export function I18nProvider({ children }: I18nProviderProps) {
       const newMessages = await loadMessages(newLocale);
       setMessages(newMessages);
       setLocale(newLocale);
-      setStoredLocale(newLocale);
+      // 注释掉自动保存，让每次刷新都回到默认中文
+      // setStoredLocale(newLocale);
+      console.log(`Language switched to: ${newLocale}`);
     } catch (error) {
       console.error('Failed to change locale:', error);
     } finally {
@@ -86,14 +65,18 @@ export function I18nProvider({ children }: I18nProviderProps) {
 
   // 翻译函数
   const t = (key: string, values?: Record<string, string | number>): string => {
-    if (!messages) return key;
+    // 现在我们总是有翻译文件（至少是默认的），所以可以简化逻辑
+    if (!messages) {
+      console.warn('Translation messages not available, returning key:', key);
+      return key;
+    }
 
     const translation = getNestedValue(messages, key);
-    
+
     if (values && typeof translation === 'string') {
       return interpolate(translation, values);
     }
-    
+
     return translation;
   };
 
