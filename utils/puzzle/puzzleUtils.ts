@@ -280,3 +280,33 @@ export const checkRectOverlap = (rect1: { x: number, y: number, width: number, h
   );
 };
 
+/**
+ * 计算两条线段的交点
+ */
+export function findLineIntersections(
+  line1: { start: Point; end: Point },
+  line2: { start: Point; end: Point }
+): Point[] {
+  const { start: p1, end: p2 } = line1;
+  const { start: p3, end: p4 } = line2;
+
+  const denom = (p1.x - p2.x) * (p3.y - p4.y) - (p1.y - p2.y) * (p3.x - p4.x);
+  
+  // 平行线
+  if (Math.abs(denom) < 1e-10) {
+    return [];
+  }
+
+  const t = ((p1.x - p3.x) * (p3.y - p4.y) - (p1.y - p3.y) * (p3.x - p4.x)) / denom;
+  const u = -((p1.x - p2.x) * (p1.y - p3.y) - (p1.y - p2.y) * (p1.x - p3.x)) / denom;
+
+  // 检查交点是否在两条线段上
+  if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
+    return [{
+      x: p1.x + t * (p2.x - p1.x),
+      y: p1.y + t * (p2.y - p1.y)
+    }];
+  }
+
+  return [];
+}

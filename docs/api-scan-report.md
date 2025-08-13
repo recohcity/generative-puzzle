@@ -1,16 +1,16 @@
 # API扫描报告
 
-> 生成时间: 2025/8/13 00:09:08
+> 生成时间: 2025/8/13 13:27:58
 > 扫描工具: API变更扫描器 v1.0
 
 ## 📊 统计概览
 
 | 项目 | 数量 | 说明 |
 |------|------|------|
-| API总数 | 171 | 项目中所有导出的API |
+| API总数 | 172 | 项目中所有导出的API |
 | 已文档化 | 31 | 在API文档中已记录的API |
-| 文档覆盖率 | 18.1% | 文档化程度 |
-| 新增API | 143 | 需要添加到文档的API |
+| 文档覆盖率 | 18.0% | 文档化程度 |
+| 新增API | 144 | 需要添加到文档的API |
 | 可能删除 | 3 | 文档中存在但代码中找不到 |
 
 ## 🆕 新增API详情
@@ -2533,7 +2533,7 @@ export function appendAlpha(color: string, alpha: number = 1): string {
 #### renderOptimizer
 
 - **类型**: constant
-- **文件**: `utils/rendering/RenderOptimizer.ts:175`
+- **文件**: `utils/rendering/RenderOptimizer.ts:293`
 - **签名**: `export const renderOptimizer = RenderOptimizer.getInstance();`
 
 **建议文档结构**:
@@ -2636,6 +2636,29 @@ export const isValidPiece = (piece: Point[]): boolean => {
 
 ```typescript
 export const checkRectOverlap = (rect1: { x: number, y: number, width: number, height: number }, rect2: { x: number, y: number, width: number, height: number }): boolean => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### findLineIntersections
+
+- **类型**: function
+- **文件**: `utils/puzzle/puzzleUtils.ts:286`
+- **签名**: `export function findLineIntersections( line1: { start: Point; end: Point }, line2: { start: Point; end: Point } ): Point[] {`
+
+**建议文档结构**:
+```markdown
+### findLineIntersections
+
+[添加API描述]
+
+```typescript
+export function findLineIntersections( line1: { start: Point; end: Point }, line2: { start: Point; end: Point } ): Point[] {
 ```
 
 #### 使用示例
@@ -3406,7 +3429,7 @@ export function calculatePieceBounds(piece: { points: Point[] }): { minX: number
 - ❌ `useDebugToggle` (function)
 - ❌ `reducer` (constant)
 
-### 工具函数API (88个)
+### 工具函数API (89个)
 
 - ❌ `deviceLogger` (constant)
 - ✅ `adaptationLogger` (constant)
@@ -3465,6 +3488,7 @@ export function calculatePieceBounds(piece: { points: Point[] }): { minX: number
 - ✅ `splitPieceWithLine` (constant)
 - ❌ `isValidPiece` (constant)
 - ❌ `checkRectOverlap` (constant)
+- ❌ `findLineIntersections` (function)
 - ❌ `generateCuts` (constant)
 - ❌ `CutValidator` (interface)
 - ❌ `Bounds` (type)

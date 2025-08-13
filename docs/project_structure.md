@@ -1,6 +1,6 @@
 # 项目结构（Project Structure）
 
-> 自动生成时间：2025/8/13 00:09:00  
+> 自动生成时间：2025/8/13 13:27:47  
 > 生成工具：项目结构文档生成器 v3.1.0 - 开发导航版
 
 **开发者导航工具** - 快速理解项目架构，精准定位代码位置，提升开发效率。
@@ -14,9 +14,9 @@
 
 | 统计项 | 数量 | 说明 |
 |--------|------|------|
-| 总目录数 | 45 | 项目目录结构层次 |
+| 总目录数 | 43 | 项目目录结构层次 |
 | 总文件数 | 224 | 代码文件和资源文件总数 |
-| 项目容量 | 4.42 MB | 不包含node_modules的项目大小 |
+| 项目容量 | 4.48 MB | 不包含node_modules的项目大小 |
 
 ---
 
@@ -190,8 +190,6 @@ npm run lint                   # 代码检查
 
 ```
 - app/
-  - api/
-    - performance-trend/
   - test/
 - components/
   - animate-ui/
@@ -246,9 +244,6 @@ npm run lint                   # 代码检查
 <summary>点击展开详细文件列表 (包含文件描述)</summary>
 
 📁 **app/**
-  📁 **api/**
-    📁 **performance-trend/**
-      📄 `route.ts`
   📁 **test/**
     📄 `page.tsx`
   📄 `globals.css` - 全局 CSS 样式
@@ -346,12 +341,9 @@ npm run lint                   # 代码检查
   📄 `ResizeObserverManager.ts`
   📄 `ValidationService.ts`
 📁 **coverage/**
-  📄 `coverage-analysis-report.md`
   📄 `coverage-final.json`
-  📄 `coverage-improvement-plan.md`
+  📄 `coverage-simple-report.md`
   📄 `coverage-summary.json`
-  📄 `coverage-summary.md`
-  📄 `technical-analysis.md`
 📁 **docs/**
   📁 **audio/**
     📄 `sound-effects.md`
@@ -375,16 +367,17 @@ npm run lint                   # 代码检查
   📄 `API_DOCUMENTATION.md`
   📄 `api-classification-report.md`
   📄 `api-scan-report.md`
+  📄 `coverage-reporting.md`
   📄 `coverage-strategy.md`
   📄 `CURRENT_ADAPTATION_SYSTEM.md`
-  📄 `CUSTOM_DOMAIN_FIX.md`
   📄 `cutGenerators-migration-guide.md`
   📄 `cutGenerators-refactoring-report.md`
   📄 `DEPLOY_SUMMARY.md`
   📄 `difficulty-design.md`
   📄 `GETTING_STARTED.md`
-  📄 `GITHUB_PAGES_SETUP.md`
+  📄 `GITHUB_PAGES_DEPLOYMENT.md`
   📄 `PRD_生成式拼图游戏.md`
+  📄 `PROJECT_HEALTH_REPORT.md`
   📄 `project_structure.md`
   📄 `README.md` - 项目说明文档
   📄 `SUPREME_ADAPTATION_DIRECTIVE.md`
@@ -407,6 +400,7 @@ npm run lint                   # 代码检查
 📁 **playwright-report/**
 📁 **public/**
   📄 `bg-mobile-portrait.png`
+  📄 `performance-data.json`
   📄 `puzzle-pieces.mp3` - 游戏音效文件
   📄 `texture-tile.png` - 拼图材质纹理
 📁 **quality-reports/**
@@ -414,17 +408,20 @@ npm run lint                   # 代码检查
   📄 `cicd-test-report.md`
   📄 `quality-report-2025-08-11.json`
   📄 `quality-report-2025-08-12.json`
+  📄 `quality-report-2025-08-13.json`
 📁 **scripts/**
   📄 `archive-test-results.cjs`
   📄 `check-architecture-conflicts.ts`
   📄 `classify-apis.cjs`
   📄 `cleanup-code.cjs`
+  📄 `generate-performance-data.cjs`
   📄 `generate-project-structure-clean.cjs`
   📄 `generate-project-structure-simple.cjs`
   📄 `generate-project-structure.cjs`
   📄 `organize-docs.cjs`
   📄 `run-comprehensive-tests.cjs`
   📄 `scan-api-changes.cjs`
+  📄 `simple-coverage-report.cjs`
   📄 `test-cicd-integration.cjs`
   📄 `validate-unified-system.ts`
 📁 **src/**
@@ -503,7 +500,6 @@ npm run lint                   # 代码检查
 📄 `.gitignore` - Git 忽略文件配置
 📄 `CHANGELOG.md` - 版本历史与变更记录
 📄 `components.json` - Shadcn UI 组件配置
-📄 `coverage-setup.js`
 📄 `jest.config.cjs`
 📄 `next.config.mjs` - Next.js 框架配置
 📄 `package-lock.json` - 依赖锁定文件
@@ -551,4 +547,4 @@ npm run generate-structure  # 一键更新项目结构文档
 
 ---
 
-*📅 生成时间：2025/8/13 00:09:00 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*
+*📅 生成时间：2025/8/13 13:27:47 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*

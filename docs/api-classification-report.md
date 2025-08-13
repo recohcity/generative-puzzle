@@ -1,6 +1,6 @@
 # API分类报告
 
-> 生成时间: 2025/8/13 00:09:08
+> 生成时间: 2025/8/13 13:27:59
 > 分类工具: API分类器 v1.0
 
 ## 📊 分类统计
@@ -8,8 +8,8 @@
 | 分类 | 数量 | 占比 | 优先级 | 建议 |
 |------|------|------|--------|------|
 | PUBLIC | 6 | 4.2% | 1 | 必须文档化 |
-| TEAM | 19 | 13.3% | 2 | 建议文档化 |
-| INTERNAL | 118 | 82.5% | 3 | 选择性文档化 |
+| TEAM | 19 | 13.2% | 2 | 建议文档化 |
+| INTERNAL | 119 | 82.6% | 3 | 选择性文档化 |
 
 ## 📋 详细分类
 
@@ -56,7 +56,7 @@
 
 **描述**: 模块内部实现细节
 
-**API列表** (118个):
+**API列表** (119个):
 
 - `EVENT_CONFIG`
 - `MEMORY_CONFIG`
@@ -150,6 +150,7 @@
 - `splitPolygon`
 - `isValidPiece`
 - `checkRectOverlap`
+- `findLineIntersections`
 - `generateCuts`
 - `CutValidator`
 - `Bounds`

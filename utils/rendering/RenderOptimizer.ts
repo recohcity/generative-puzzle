@@ -170,6 +170,124 @@ export class RenderOptimizer {
       this.frameId = null;
     }
   }
+
+  /**
+   * 计算点数组的边界框
+   */
+  calculateBounds(points: { x: number; y: number }[]) {
+    if (points.length === 0) {
+      return {
+        minX: 0,
+        maxX: 0,
+        minY: 0,
+        maxY: 0,
+        width: 0,
+        height: 0
+      };
+    }
+
+    const xs = points.map(p => p.x);
+    const ys = points.map(p => p.y);
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+    
+    return {
+      minX,
+      maxX,
+      minY,
+      maxY,
+      width: maxX - minX,
+      height: maxY - minY
+    };
+  }
+
+  /**
+   * 检查是否需要重绘
+   */
+  shouldRedraw(oldPoints: { x: number; y: number }[], newPoints: { x: number; y: number }[]): boolean {
+    if (oldPoints.length !== newPoints.length) {
+      return true;
+    }
+
+    for (let i = 0; i < oldPoints.length; i++) {
+      if (oldPoints[i].x !== newPoints[i].x || oldPoints[i].y !== newPoints[i].y) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * 优化渲染路径
+   */
+  optimizeRenderPath(points: { x: number; y: number }[]): { x: number; y: number }[] {
+    if (points.length <= 2) {
+      return [...points];
+    }
+
+    // 简单的路径优化：移除共线的点
+    const optimized: { x: number; y: number }[] = [points[0]];
+
+    for (let i = 1; i < points.length - 1; i++) {
+      const prev = points[i - 1];
+      const curr = points[i];
+      const next = points[i + 1];
+
+      // 检查是否共线
+      const cross = (curr.x - prev.x) * (next.y - prev.y) - (curr.y - prev.y) * (next.x - prev.x);
+      if (Math.abs(cross) > 0.001) { // 不共线，保留点
+        optimized.push(curr);
+      }
+    }
+
+    optimized.push(points[points.length - 1]);
+    return optimized;
+  }
+
+  /**
+   * 优化Canvas绘制
+   */
+  optimizeCanvasDrawing(ctx: CanvasRenderingContext2D, points: { x: number; y: number }[]) {
+    if (points.length === 0) return;
+
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    
+    for (let i = 1; i < points.length; i++) {
+      ctx.lineTo(points[i].x, points[i].y);
+    }
+    
+    ctx.closePath();
+  }
+
+  /**
+   * 优化Canvas状态管理
+   */
+  optimizeCanvasState(ctx: CanvasRenderingContext2D, points: { x: number; y: number }[]) {
+    ctx.save();
+    
+    // 计算边界并设置裁剪区域
+    const bounds = this.calculateBounds(points);
+    if (bounds.width > 0 && bounds.height > 0) {
+      ctx.rect(bounds.minX, bounds.minY, bounds.width, bounds.height);
+      ctx.clip();
+    }
+    
+    ctx.restore();
+  }
+
+  /**
+   * 清理资源
+   */
+  cleanup() {
+    this.cancelRender();
+    this.clearDirtyRegions();
+    this.renderState.lastRenderTime = 0;
+    this.renderState.isAnimating = false;
+  }
 }
 
 export const renderOptimizer = RenderOptimizer.getInstance();

@@ -17,16 +17,7 @@ module.exports = {
       }
     }],
   },
-  // 自定义覆盖率预处理
-  coveragePathIgnorePatterns: [
-    '/node_modules/',
-    '/__tests__/',
-    '\\.d\\.ts$',
-    // 排除纯接口定义文件
-    'types\\.ts$',
-    // 排除特定的代码模式
-  ],
-  // 禁用源映射支持
+  // 覆盖率收集配置
   collectCoverageFrom: [
     'utils/**/*.{ts,tsx}',
     '!utils/**/*.d.ts',
@@ -43,18 +34,20 @@ module.exports = {
     // 排除复杂UI交互文件（依赖DOM环境，难以单元测试）
     '!utils/**/ScatterPuzzle.ts'
   ],
-  coverageReporters: ['text', 'json-summary'],
-  // 更精确的覆盖率配置
-  coverageProvider: 'v8', // 使用V8覆盖率引擎，更准确
-  // collectCoverageOnlyFrom 已废弃，使用 collectCoverageFrom 替代
-  // 排除特定的代码模式
+  // 覆盖率忽略路径（统一配置）
   coveragePathIgnorePatterns: [
     '/node_modules/',
     '/__tests__/',
     '\\.d\\.ts$',
-    // 排除纯接口定义文件
     'types\\.ts$',
   ],
+  coverageReporters: ['text', 'json-summary'],
+  // 使用V8覆盖率引擎
+  coverageProvider: 'v8',
+  // 强制串行执行以确保覆盖率稳定性
+  maxWorkers: 1,
+  // 禁用缓存以避免覆盖率计算不一致
+  cache: false,
   // 自定义覆盖率忽略模式
   coverageThreshold: {
     global: {
@@ -65,8 +58,7 @@ module.exports = {
     },
     // 全局覆盖率阈值
   },
-  // 使用自定义的覆盖率处理器
-  setupFilesAfterEnv: ['<rootDir>/coverage-setup.js'],
+  // 移除自定义的覆盖率处理器以避免干扰
   // Jest应该搜索测试文件的目录
   testMatch: [
     '<rootDir>/utils/__tests__/**/*.test.ts',

@@ -1,0 +1,2 @@
+# This file ensures the quality-reports directory is tracked by Git
+# while ignoring all quality report files

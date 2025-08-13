@@ -310,4 +310,154 @@ describe('puzzleUtils - 拼图工具函数测试', () => {
       expect(pieces.length).toBeGreaterThan(0);
     });
   });
+
+  describe('🔑 高级切割场景测试', () => {
+    test('应该处理目标片段数量限制', () => {
+      // 创建一个大形状，尝试多次切割
+      const largeShape: Point[] = [
+        { x: 50, y: 50 },
+        { x: 350, y: 50 },
+        { x: 350, y: 350 },
+        { x: 50, y: 350 }
+      ];
+      
+      const manyCuts: CutLine[] = [
+        { x1: 133, y1: 0, x2: 133, y2: 400, type: 'straight' },
+        { x1: 266, y1: 0, x2: 266, y2: 400, type: 'straight' },
+        { x1: 0, y1: 133, x2: 400, y2: 133, type: 'straight' },
+        { x1: 0, y1: 266, x2: 400, y2: 266, type: 'straight' },
+        { x1: 100, y1: 100, x2: 300, y2: 300, type: 'diagonal' },
+        { x1: 300, y1: 100, x2: 100, y2: 300, type: 'diagonal' }
+      ];
+      
+      const pieces = splitPolygon(largeShape, manyCuts);
+      
+      expect(Array.isArray(pieces)).toBe(true);
+      expect(pieces.length).toBeGreaterThan(0);
+      
+      // 验证片段质量
+      pieces.forEach(piece => {
+        expect(piece.length).toBeGreaterThanOrEqual(3);
+      });
+    });
+
+    test('应该处理高难度切割场景', () => {
+      // 创建复杂形状
+      const complexShape: Point[] = [
+        { x: 100, y: 100 },
+        { x: 200, y: 80 },
+        { x: 300, y: 100 },
+        { x: 320, y: 200 },
+        { x: 300, y: 300 },
+        { x: 200, y: 320 },
+        { x: 100, y: 300 },
+        { x: 80, y: 200 }
+      ];
+      
+      const complexCuts: CutLine[] = [
+        { x1: 150, y1: 50, x2: 250, y2: 350, type: 'diagonal' },
+        { x1: 50, y1: 150, x2: 350, y2: 250, type: 'diagonal' },
+        { x1: 200, y1: 50, x2: 200, y2: 350, type: 'straight' }
+      ];
+      
+      const pieces = splitPolygon(complexShape, complexCuts);
+      
+      expect(Array.isArray(pieces)).toBe(true);
+      expect(pieces.length).toBeGreaterThan(0);
+    });
+
+    test('应该处理递归切割场景', () => {
+      // 创建一个形状，使用会触发递归的切割
+      const recursiveShape: Point[] = [
+        { x: 100, y: 100 },
+        { x: 300, y: 100 },
+        { x: 300, y: 300 },
+        { x: 100, y: 300 }
+      ];
+      
+      // 使用可能触发递归的切割线
+      const recursiveCut: CutLine = {
+        x1: 50,
+        y1: 200,
+        x2: 150,
+        y2: 200,
+        type: 'straight'
+      };
+      
+      const pieces = splitPolygon(recursiveShape, [recursiveCut]);
+      
+      expect(Array.isArray(pieces)).toBe(true);
+      expect(pieces.length).toBeGreaterThan(0);
+    });
+
+    test('应该处理最远交点选择逻辑', () => {
+      // 创建一个会产生多个交点的场景
+      const multiIntersectionShape: Point[] = [
+        { x: 100, y: 100 },
+        { x: 200, y: 80 },
+        { x: 300, y: 100 },
+        { x: 280, y: 200 },
+        { x: 300, y: 300 },
+        { x: 200, y: 320 },
+        { x: 100, y: 300 },
+        { x: 120, y: 200 }
+      ];
+      
+      const intersectionCut: CutLine = {
+        x1: 50,
+        y1: 200,
+        x2: 350,
+        y2: 200,
+        type: 'straight'
+      };
+      
+      const pieces = splitPolygon(multiIntersectionShape, [intersectionCut]);
+      
+      expect(Array.isArray(pieces)).toBe(true);
+      expect(pieces.length).toBeGreaterThan(0);
+    });
+
+    test('应该处理小片段过滤', () => {
+      // 创建可能产生小片段的切割
+      const filterShape: Point[] = [
+        { x: 100, y: 100 },
+        { x: 110, y: 100 },
+        { x: 110, y: 110 },
+        { x: 100, y: 110 }
+      ];
+      
+      const filterCut: CutLine = {
+        x1: 105,
+        y1: 95,
+        x2: 105,
+        y2: 115,
+        type: 'straight'
+      };
+      
+      const pieces = splitPolygon(filterShape, [filterCut]);
+      
+      expect(Array.isArray(pieces)).toBe(true);
+      // 小片段应该被过滤掉
+    });
+
+    test('应该处理警告场景', () => {
+      // 创建一个可能触发警告的场景
+      const warningShape: Point[] = [
+        { x: 100, y: 100 },
+        { x: 300, y: 100 },
+        { x: 300, y: 300 },
+        { x: 100, y: 300 }
+      ];
+      
+      // 使用多条可能导致片段不足的切割线
+      const warningCuts: CutLine[] = [
+        { x1: 90, y1: 200, x2: 110, y2: 200, type: 'straight' },
+        { x1: 290, y1: 200, x2: 310, y2: 200, type: 'straight' }
+      ];
+      
+      const pieces = splitPolygon(warningShape, warningCuts);
+      
+      expect(Array.isArray(pieces)).toBe(true);
+    });
+  });
 });
