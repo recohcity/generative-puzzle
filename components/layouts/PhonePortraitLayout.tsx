@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import PuzzleCanvas from "@/components/PuzzleCanvas";
 import PhoneTabPanel from "./PhoneTabPanel";
 import { MOBILE_ADAPTATION } from '@/src/config/adaptationConfig';
@@ -33,11 +33,16 @@ const PhonePortraitLayout: React.FC<PhonePortraitLayoutProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   // 直接使用适配常量计算画布尺寸，不依赖useCanvas
-  const portraitResult = calculateMobilePortraitCanvasSize(device.screenWidth, device.screenHeight);
-  const canvasSizeValue = portraitResult.canvasSize;
-  const canvasWidth = canvasSizeValue;
-  const canvasHeight = canvasSizeValue;
-  const canvasMargin = MOBILE_ADAPTATION.PORTRAIT.CANVAS_MARGIN;
+  // 使用 useMemo 确保屏幕旋转时能够重新计算
+  const { canvasSizeValue, canvasWidth, canvasHeight, canvasMargin } = useMemo(() => {
+    const portraitResult = calculateMobilePortraitCanvasSize(device.screenWidth, device.screenHeight);
+    const canvasSizeValue = portraitResult.canvasSize;
+    const canvasWidth = canvasSizeValue;
+    const canvasHeight = canvasSizeValue;
+    const canvasMargin = MOBILE_ADAPTATION.PORTRAIT.CANVAS_MARGIN;
+    
+    return { canvasSizeValue, canvasWidth, canvasHeight, canvasMargin };
+  }, [device.screenWidth, device.screenHeight]);
 
   // 竖屏画布尺寸计算完成
 

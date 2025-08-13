@@ -182,6 +182,39 @@ export default function PuzzleCanvas() {
     gameStateRef.current = currentGameState;
   }, [state.canvasSize, state.originalShape, state.puzzle, state.originalPositions, state.isScattered, state.isCompleted, state.completedPieces]);
 
+  // 添加屏幕旋转监听，确保画布能够及时响应方向变化
+  useEffect(() => {
+    const handleOrientationChange = (event: CustomEvent) => {
+      const { from, to, deviceState } = event.detail;
+      
+      // 强制触发画布尺寸重新计算
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        const width = Math.round(rect.width);
+        const height = Math.round(rect.height);
+        
+        // 使用 forceUpdate 确保适配逻辑被执行
+        dispatch({
+          type: 'UPDATE_CANVAS_SIZE',
+          payload: {
+            canvasSize: { width, height },
+            scale: 1,
+            orientation: width >= height ? 'landscape' : 'portrait',
+            forceUpdate: true, // 强制更新，跳过保护机制
+          }
+        });
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('deviceOrientationChange', handleOrientationChange as EventListener);
+      
+      return () => {
+        window.removeEventListener('deviceOrientationChange', handleOrientationChange as EventListener);
+      };
+    }
+  }, [dispatch, containerRef]);
+
   const {
     handleMouseDown,
     handleMouseMove,

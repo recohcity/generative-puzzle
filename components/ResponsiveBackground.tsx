@@ -16,13 +16,13 @@ const PORTRAIT_BG = "/bg-mobile-portrait.png";
  */
 export default function ResponsiveBackground({ className = "", style }: { className?: string; style?: React.CSSProperties }) {
   const device = useDeviceDetection();
-  
+
   // 判断是否为移动端横屏
   const isMobileLandscape = device.deviceType === 'phone' && device.layoutMode === 'landscape';
-  
+
   return (
-    <div 
-      className={`absolute inset-0 w-full h-full z-0 pointer-events-none select-none ${className}`} 
+    <div
+      className={`absolute inset-0 w-full h-full z-0 pointer-events-none select-none ${className}`}
       style={{ ...style, overflow: "hidden" }}
     >
       <Image
@@ -30,14 +30,14 @@ export default function ResponsiveBackground({ className = "", style }: { classN
         alt="background"
         fill
         priority
-        style={{ 
+        style={{
           // 核心优化：使用 object-position 和 object-fit 组合
           objectFit: "cover",
-          objectPosition: isMobileLandscape 
+          objectPosition: isMobileLandscape
             ? "center center" // 横屏时居中显示，让图片自然适配
             : "center center", // 竖屏时也居中显示
-          zIndex: 0, 
-          pointerEvents: "none", 
+          zIndex: 0,
+          pointerEvents: "none",
           userSelect: "none",
           // 横屏时的额外优化：通过 transform 微调
           transform: isMobileLandscape ? "scale(1.2)" : "scale(1)",
@@ -46,8 +46,9 @@ export default function ResponsiveBackground({ className = "", style }: { classN
         }}
         sizes="100vw"
       />
-      
-      {/* 开发环境调试信息 */}
+
+      {/* 开发环境调试信息 - 已隐藏 */}
+      {/* 
       {process.env.NODE_ENV === 'development' && (
         <div style={{
           position: 'absolute',
@@ -68,6 +69,7 @@ export default function ResponsiveBackground({ className = "", style }: { classN
           <div>Mode: {isMobileLandscape ? 'Landscape' : 'Portrait'}</div>
         </div>
       )}
+      */}
     </div>
   );
 } 

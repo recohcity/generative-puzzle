@@ -196,44 +196,90 @@ export function useDeviceDetection(): DeviceDetectionState {
 
   useEffect(() => {
     const handleResize = () => {
-      const userAgent = navigator.userAgent;
-      const screenWidth = window.innerWidth;
-      const screenHeight = window.innerHeight;
-      const isPortrait = screenHeight > screenWidth;
-      
-      // 使用增强的设备检测
-      const detection = detectDeviceType(userAgent, screenWidth, screenHeight);
-      
-      let layoutMode: 'portrait' | 'landscape' | 'desktop' = 'desktop';
-      if (detection.isMobile) {
-        layoutMode = isPortrait ? 'portrait' : 'landscape';
-      } else if (detection.isTablet) {
-        // 平板也使用移动端布局
-        layoutMode = isPortrait ? 'portrait' : 'landscape';
-      }
+      // 使用 requestAnimationFrame 确保在浏览器完成布局更新后再获取尺寸
+      requestAnimationFrame(() => {
+        const userAgent = navigator.userAgent;
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+        const isPortrait = screenHeight > screenWidth;
+        
+        // 检查是否是屏幕旋转（方向变化）
+        const currentOrientation = isPortrait ? 'portrait' : 'landscape';
+        const previousOrientation = deviceState.isPortrait ? 'portrait' : 'landscape';
+        const isOrientationChange = currentOrientation !== previousOrientation;
+        
+        // 使用增强的设备检测
+        const detection = detectDeviceType(userAgent, screenWidth, screenHeight);
+        
+        let layoutMode: 'portrait' | 'landscape' | 'desktop' = 'desktop';
+        if (detection.isMobile) {
+          layoutMode = isPortrait ? 'portrait' : 'landscape';
+        } else if (detection.isTablet) {
+          // 平板也使用移动端布局
+          layoutMode = isPortrait ? 'portrait' : 'landscape';
+        }
 
-      // 调试输出已移除
+        // 调试输出已移除
 
-      setDeviceState({
-        isMobile: detection.isMobile,
-        isTablet: detection.isTablet,
-        isDesktop: detection.isDesktop,
-        isPortrait,
-        isAndroid: detection.isAndroid,
-        isIOS: detection.isIOS,
-        screenWidth,
-        screenHeight,
-        deviceType: detection.deviceType,
-        layoutMode,
-        isIPad: detection.isIPad,
-        isWeChat: detection.isWeChat,
-        isMobileBrowser: detection.isMobileBrowser,
-        isTouchDevice: detection.isTouchDevice
+        const newState = {
+          isMobile: detection.isMobile,
+          isTablet: detection.isTablet,
+          isDesktop: detection.isDesktop,
+          isPortrait,
+          isAndroid: detection.isAndroid,
+          isIOS: detection.isIOS,
+          screenWidth,
+          screenHeight,
+          deviceType: detection.deviceType,
+          layoutMode,
+          isIPad: detection.isIPad,
+          isWeChat: detection.isWeChat,
+          isMobileBrowser: detection.isMobileBrowser,
+          isTouchDevice: detection.isTouchDevice
+        };
+
+        setDeviceState(newState);
+
+        // 如果是屏幕旋转，触发自定义事件通知其他组件
+        if (isOrientationChange && typeof window !== 'undefined') {
+          const orientationChangeEvent = new CustomEvent('deviceOrientationChange', {
+            detail: {
+              from: previousOrientation,
+              to: currentOrientation,
+              deviceState: newState
+            }
+          });
+          window.dispatchEvent(orientationChangeEvent);
+        }
       });
     };
 
+    // 添加多个事件监听器以确保捕获所有屏幕变化
+    const handleOrientationChange = () => {
+      // 屏幕方向改变时，使用多重延迟确保浏览器完成所有布局调整
+      // 第一次快速更新（50ms）- 处理快速响应
+      setTimeout(handleResize, 50);
+      // 第二次中等延迟（150ms）- 处理大部分浏览器
+      setTimeout(handleResize, 150);
+      // 第三次较长延迟（300ms）- 确保所有浏览器都完成布局
+      setTimeout(handleResize, 300);
+    };
+
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleOrientationChange);
+    
+    // 添加 visualViewport 支持（现代浏览器）
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleResize);
+    }
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleOrientationChange);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleResize);
+      }
+    };
   }, []);
 
   return deviceState;

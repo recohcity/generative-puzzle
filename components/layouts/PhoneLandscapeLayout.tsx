@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import PuzzleCanvas from "@/components/PuzzleCanvas";
 import PhoneTabPanel from "./PhoneTabPanel";
 import { MOBILE_ADAPTATION } from '@/src/config/adaptationConfig';
@@ -33,18 +33,23 @@ const PhoneLandscapeLayout: React.FC<PhoneLandscapeLayoutProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   // 直接使用适配常量计算画布尺寸，不依赖useCanvas
-  const landscapeResult = calculateMobileLandscapeCanvasSize(device.screenWidth, device.screenHeight);
-  const canvasSizeValue = landscapeResult.canvasSize;
-  const canvasMargin = MOBILE_ADAPTATION.LANDSCAPE.CANVAS_MARGIN;
+  // 使用 useMemo 确保屏幕旋转时能够重新计算
+  const { canvasSizeValue, canvasMargin, panelWidth } = useMemo(() => {
+    const landscapeResult = calculateMobileLandscapeCanvasSize(device.screenWidth, device.screenHeight);
+    const canvasSizeValue = landscapeResult.canvasSize;
+    const canvasMargin = MOBILE_ADAPTATION.LANDSCAPE.CANVAS_MARGIN;
 
-  // 智能计算面板宽度：优先使用画布尺寸，如果空间不够则使用原始计算值
-  const idealPanelWidth = canvasSizeValue; // 理想情况下与画布尺寸一致
-  const totalRequiredWidth = idealPanelWidth + canvasSizeValue + canvasMargin * 3; // 面板 + 画布 + 3个边距
-  const availableWidth = device.screenWidth;
-  const hasEnoughSpace = availableWidth >= totalRequiredWidth;
+    // 智能计算面板宽度：优先使用画布尺寸，如果空间不够则使用原始计算值
+    const idealPanelWidth = canvasSizeValue; // 理想情况下与画布尺寸一致
+    const totalRequiredWidth = idealPanelWidth + canvasSizeValue + canvasMargin * 3; // 面板 + 画布 + 3个边距
+    const availableWidth = device.screenWidth;
+    const hasEnoughSpace = availableWidth >= totalRequiredWidth;
 
-  // 如果空间足够，使用理想宽度；否则使用原始计算的宽度
-  const panelWidth = hasEnoughSpace ? idealPanelWidth : landscapeResult.panelWidth;
+    // 如果空间足够，使用理想宽度；否则使用原始计算的宽度
+    const panelWidth = hasEnoughSpace ? idealPanelWidth : landscapeResult.panelWidth;
+    
+    return { canvasSizeValue, canvasMargin, panelWidth };
+  }, [device.screenWidth, device.screenHeight]);
 
   // 横屏画布尺寸计算调试输出已移除
 
