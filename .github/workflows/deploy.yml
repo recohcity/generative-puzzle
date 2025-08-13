@@ -32,9 +32,7 @@ jobs:
         run: npm ci
 
       - name: Build project
-        run: npm run build
-        env:
-          NODE_ENV: production
+        run: npm run build:github
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
