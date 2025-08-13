@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:github": "NODE_ENV=production BUILD_STATIC=true next build",
+    "build:github": "node scripts/build-for-github.cjs",
     "start": "next start",
     "lint": "next lint",
     "test": "playwright test",

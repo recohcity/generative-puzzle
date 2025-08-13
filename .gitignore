@@ -88,4 +88,7 @@ Desktop.ini
 # Optional eslint cache (ESLint缓存)
 .eslintcache
 
+# API routes (仅在需要时取消注释以支持GitHub Pages静态构建)
+# app/api/
+
 
