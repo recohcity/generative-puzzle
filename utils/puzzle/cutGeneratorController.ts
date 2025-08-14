@@ -28,10 +28,6 @@ export class CutGeneratorController {
     // 计算边界
     const bounds = calculateBounds(shape);
     
-    // 记录开始信息
-    console.log(`${settings.label}：尝试生成${settings.targetCuts}条切割线`);
-    console.log(`难度级别: ${difficulty}, 中心切割概率: ${settings.centerProbability}, 目标切割数: ${settings.targetCuts}`);
-    
     const cuts: CutLine[] = [];
     
     // 获取策略
@@ -43,14 +39,12 @@ export class CutGeneratorController {
       
       if (cut) {
         cuts.push(cut);
-        console.log(`成功生成切割线 ${i + 1}`);
       } else {
+        // 只在无法生成切割线时输出警告
         console.warn(`⚠️ 无法生成第${i + 1}条切割线`);
         break;
       }
     }
-    
-    console.log(`最终生成了${cuts.length}个切割线`);
     return cuts;
   }
   

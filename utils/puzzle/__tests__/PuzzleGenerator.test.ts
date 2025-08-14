@@ -373,4 +373,169 @@ describe('PuzzleGenerator - 完整功能测试', () => {
       expect(uniqueColorSets.size).toBeGreaterThan(1);
     });
   });
+
+  describe('🎯 额外分支覆盖测试', () => {
+    test('应该覆盖高难度切割的随机角度生成分支', () => {
+      // 使用一个特殊形状来强制触发额外切割逻辑
+      const specialShape: Point[] = [
+        { x: 0, y: 0 },
+        { x: 50, y: 0 },
+        { x: 50, y: 50 },
+        { x: 0, y: 50 }
+      ];
+
+      // 多次尝试高难度切割来覆盖随机角度生成分支
+      for (let i = 0; i < 50; i++) {
+        const result = PuzzleGenerator.generatePuzzle(specialShape, 'diagonal', 8);
+        expect(result.pieces.length).toBeGreaterThan(0);
+        expect(result.originalPositions.length).toBe(result.pieces.length);
+      }
+    });
+
+    test('应该覆盖直线切割的水平/垂直选择分支', () => {
+      // 使用一个小形状来强制触发额外切割逻辑
+      const smallShape: Point[] = [
+        { x: 10, y: 10 },
+        { x: 40, y: 10 },
+        { x: 40, y: 40 },
+        { x: 10, y: 40 }
+      ];
+
+      // 多次尝试直线切割来覆盖水平/垂直选择分支
+      for (let i = 0; i < 50; i++) {
+        const result = PuzzleGenerator.generatePuzzle(smallShape, 'straight', 7);
+        expect(result.pieces.length).toBeGreaterThan(0);
+        expect(result.originalPositions.length).toBe(result.pieces.length);
+      }
+    });
+
+    test('应该覆盖对角线切割的额外切割分支', () => {
+      // 使用一个小形状来强制触发额外切割逻辑
+      const tinyShape: Point[] = [
+        { x: 5, y: 5 },
+        { x: 25, y: 5 },
+        { x: 25, y: 25 },
+        { x: 5, y: 25 }
+      ];
+
+      // 多次尝试对角线切割来覆盖额外切割分支
+      for (let i = 0; i < 50; i++) {
+        const result = PuzzleGenerator.generatePuzzle(tinyShape, 'diagonal', 6);
+        expect(result.pieces.length).toBeGreaterThan(0);
+        expect(result.originalPositions.length).toBe(result.pieces.length);
+      }
+    });
+
+    test('应该强制触发额外切割逻辑的所有分支', () => {
+      // 使用一个极小的形状来最大化触发额外切割逻辑的机会
+      const microShape: Point[] = [
+        { x: 1, y: 1 },
+        { x: 11, y: 1 },
+        { x: 11, y: 11 },
+        { x: 1, y: 11 }
+      ];
+
+      // 测试高难度 + 对角线切割
+      for (let i = 0; i < 30; i++) {
+        const result1 = PuzzleGenerator.generatePuzzle(microShape, 'diagonal', 8);
+        expect(result1.pieces.length).toBeGreaterThan(0);
+      }
+
+      // 测试高难度 + 直线切割
+      for (let i = 0; i < 30; i++) {
+        const result2 = PuzzleGenerator.generatePuzzle(microShape, 'straight', 8);
+        expect(result2.pieces.length).toBeGreaterThan(0);
+      }
+
+      // 测试中等难度 + 对角线切割
+      for (let i = 0; i < 30; i++) {
+        const result3 = PuzzleGenerator.generatePuzzle(microShape, 'diagonal', 5);
+        expect(result3.pieces.length).toBeGreaterThan(0);
+      }
+    });
+
+    test('应该测试额外切割线的所有生成路径', () => {
+      // 创建一个线性形状来强制触发额外切割
+      const linearShape: Point[] = [
+        { x: 0, y: 50 },
+        { x: 100, y: 50 },
+        { x: 100, y: 55 },
+        { x: 0, y: 55 }
+      ];
+
+      // 测试所有切割类型和难度组合
+      const testCases = [
+        { cutType: 'straight' as const, cutCount: 7 },
+        { cutType: 'straight' as const, cutCount: 8 },
+        { cutType: 'diagonal' as const, cutCount: 7 },
+        { cutType: 'diagonal' as const, cutCount: 8 },
+        { cutType: 'straight' as const, cutCount: 5 },
+        { cutType: 'diagonal' as const, cutCount: 6 }
+      ];
+
+      testCases.forEach(({ cutType, cutCount }) => {
+        for (let i = 0; i < 20; i++) {
+          const result = PuzzleGenerator.generatePuzzle(linearShape, cutType, cutCount);
+          expect(result.pieces.length).toBeGreaterThan(0);
+          expect(result.originalPositions.length).toBe(result.pieces.length);
+        }
+      });
+    });
+
+    test('应该覆盖随机数生成的不同分支', () => {
+      // 使用一个特殊形状来测试随机数生成的不同分支
+      const rectangularShape: Point[] = [
+        { x: 0, y: 0 },
+        { x: 20, y: 0 },
+        { x: 20, y: 10 },
+        { x: 0, y: 10 }
+      ];
+
+      // 大量测试来覆盖随机数生成的不同分支
+      for (let i = 0; i < 100; i++) {
+        // 测试高难度切割的随机角度生成
+        const result1 = PuzzleGenerator.generatePuzzle(rectangularShape, 'diagonal', 8);
+        expect(result1.pieces.length).toBeGreaterThan(0);
+
+        // 测试直线切割的随机水平/垂直选择
+        const result2 = PuzzleGenerator.generatePuzzle(rectangularShape, 'straight', 7);
+        expect(result2.pieces.length).toBeGreaterThan(0);
+      }
+    });
+
+    test('应该测试额外切割成功和失败的情况', () => {
+      // 使用不同大小的形状来测试额外切割的成功和失败情况
+      const shapes = [
+        // 极小形状 - 更容易触发额外切割逻辑
+        [
+          { x: 0, y: 0 },
+          { x: 5, y: 0 },
+          { x: 5, y: 5 },
+          { x: 0, y: 5 }
+        ],
+        // 细长形状 - 切割困难
+        [
+          { x: 0, y: 0 },
+          { x: 100, y: 0 },
+          { x: 100, y: 2 },
+          { x: 0, y: 2 }
+        ],
+        // 正方形 - 标准形状
+        [
+          { x: 0, y: 0 },
+          { x: 30, y: 0 },
+          { x: 30, y: 30 },
+          { x: 0, y: 30 }
+        ]
+      ];
+
+      shapes.forEach((shape, shapeIndex) => {
+        for (let i = 0; i < 20; i++) {
+          const result = PuzzleGenerator.generatePuzzle(shape, 'diagonal', 8);
+          expect(result.pieces.length).toBeGreaterThan(0);
+          expect(result.originalPositions.length).toBe(result.pieces.length);
+        }
+      });
+    });
+  });
 });

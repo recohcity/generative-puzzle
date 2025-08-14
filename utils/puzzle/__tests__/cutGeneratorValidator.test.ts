@@ -353,6 +353,65 @@ describe('CutValidator - 100%覆盖率测试', () => {
       expect(result).toBe(false);
     });
 
+    test('应该处理真实的几何计算 - 交点不足情况', () => {
+      const validator = new CutValidator();
+      // 不使用mock，测试真实的几何计算
+      // 创建一个完全在形状外部的切割线
+      const outsideCut: CutLine = {
+        x1: 200,
+        y1: 200,
+        x2: 300,
+        y2: 300,
+        type: 'straight'
+      };
+      
+      // 这应该返回false，因为切割线不与形状相交
+      const result = validator.isValid(outsideCut, testShape, []);
+      expect(result).toBe(false);
+    });
+
+    test('应该处理真实的几何计算 - 现有切割线太接近', () => {
+      const validator = new CutValidator();
+      
+      const existingCut: CutLine = {
+        x1: 50,
+        y1: -10,
+        x2: 50,
+        y2: 110,
+        type: 'straight'
+      };
+      
+      // 创建一个非常接近的切割线
+      const closeCut: CutLine = {
+        x1: 51, // 只相差1个单位
+        y1: -10,
+        x2: 51,
+        y2: 110,
+        type: 'straight'
+      };
+      
+      // 测试真实的几何计算
+      const result = validator.isValid(closeCut, testShape, [existingCut]);
+      expect(typeof result).toBe('boolean');
+    });
+
+    test('应该处理真实的几何计算 - 中心检查失败', () => {
+      const validator = new CutValidator();
+      
+      // 创建一个远离中心的切割线
+      const edgeCut: CutLine = {
+        x1: 10,
+        y1: -10,
+        x2: 10,
+        y2: 110,
+        type: 'straight'
+      };
+      
+      // 在严格模式下测试（不使用宽松模式）
+      const result = validator.isValid(edgeCut, testShape, [], false);
+      expect(typeof result).toBe('boolean');
+    });
+
     test('应该处理切割线过于接近现有切割线的情况', () => {
       const validator = new CutValidator();
       const existingCut: CutLine = {

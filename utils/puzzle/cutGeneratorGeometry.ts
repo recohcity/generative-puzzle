@@ -238,7 +238,7 @@ export const generateForcedCutLine = (shape: Point[], existingCuts: CutLine[], c
           break;
         }
       }
-      
+   
       if (!tooClose) return cut;
     }
   }

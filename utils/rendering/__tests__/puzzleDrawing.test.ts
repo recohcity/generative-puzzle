@@ -229,14 +229,14 @@ describe('puzzleDrawing - 渲染功能测试', () => {
       // 创建一个特殊的对象，模拟在执行过程中长度发生变化的情况
       let lengthAccessCount = 0;
       const dynamicShape = {
-        0: { x: 100, y: 100 }, // 确保第47行能访问到第一个元素
+        0: { x: 100, y: 100 }, // 确保能访问到第一个元素
         get length() {
           lengthAccessCount++;
-          // 前几次访问返回1（通过第27行检查），最后一次访问返回0（第49行）
-          if (lengthAccessCount <= 2) {
-            return 1; // 第27行和第47行的console.log中的访问
+          // 第一次访问返回1（通过初始检查），后续访问返回0（触发错误分支）
+          if (lengthAccessCount === 1) {
+            return 1; // 通过初始长度检查
           } else {
-            return 0; // 第49行的if判断
+            return 0; // 在绘制过程中长度变为0
           }
         }
       };

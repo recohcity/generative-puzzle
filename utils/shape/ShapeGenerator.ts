@@ -16,7 +16,7 @@ export class ShapeGenerator {
    * @returns 标准化的形状点集（以STANDARD_SIZE为基准）
    */
   static generateShape(shapeType: ShapeType): Point[] {
-    console.log(`开始生成标准化形状: 类型=${shapeType}`);
+    // 开始生成标准化形状: 类型=${shapeType}
 
     // 计算标准尺寸的中心点
     const centerX = this.STANDARD_SIZE / 2;
@@ -34,7 +34,7 @@ export class ShapeGenerator {
       detail: 200, // 🎯 恢复v1.3.35的高密度点数，用于平滑曲凸
     };
 
-    console.log(`标准形状参数: 中心点(${centerX}, ${centerY}), 半径=${shapeParams.minRadius}-${shapeParams.maxRadius}`);
+    // 标准形状参数: 中心点(${centerX}, ${centerY}), 半径=${shapeParams.minRadius}-${shapeParams.maxRadius}
 
     // 生成标准化形状
     let points: Point[] = [];
@@ -55,7 +55,7 @@ export class ShapeGenerator {
         points = this.generateStandardPolygon(centerX, centerY, shapeParams);
     }
 
-    console.log(`生成标准化形状完成: ${points.length}个点`);
+    // 生成标准化形状完成: ${points.length}个点
     return points;
   }
 
@@ -68,7 +68,7 @@ export class ShapeGenerator {
     const { numPoints, minRadius, maxRadius } = params;
     const actualPoints = 5 + Math.floor(Math.random() * numPoints);
 
-    console.log(`生成标准多边形: ${actualPoints}个点`);
+    // 生成标准多边形: ${actualPoints}个点
 
     const points: Point[] = [];
     for (let i = 0; i < actualPoints; i++) {
@@ -91,7 +91,7 @@ export class ShapeGenerator {
   }): Point[] {
     const { minRadius, maxRadius, amplitude, detail } = params;
 
-    console.log(`生成云朵形状: ${detail}个点, 振幅=${amplitude}`);
+    // 生成云朵形状: ${detail}个点, 振幅=${amplitude}
 
     // 使用1.3.35版本的简单算法生成平滑曲凸
     const r = minRadius + Math.random() * (maxRadius - minRadius);
@@ -101,7 +101,7 @@ export class ShapeGenerator {
     const b = r;
 
     const frequency = 2 + Math.random() * 4;
-    console.log(`云朵形状参数: 频率=${frequency}, 主半径=${a}, 次半径=${b}`);
+    // 云朵形状参数: 频率=${frequency}, 主半径=${a}, 次半径=${b}
 
     // 1.3.35版本的简单噪声函数 - 创造平滑的曲凸效果
     const noise = (angle: number) =>
@@ -131,7 +131,7 @@ export class ShapeGenerator {
   }): Point[] {
     const { minRadius, maxRadius, detail } = params;
 
-    console.log(`生成锯齿形状: ${detail}个点`);
+    // 生成锯齿形状: ${detail}个点
 
     const points: Point[] = [];
     for (let i = 0; i < detail; i++) {

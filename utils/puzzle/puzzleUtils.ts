@@ -46,7 +46,7 @@ export const splitPolygon = (shape: Point[], cuts: CutLine[]): Point[][] => {
   
   // 目标片段数量 = 切割次数 + 1
   const targetPieceCount = cuts.length + 1;
-  console.log(`切割目标: ${cuts.length}条切割线，预期${targetPieceCount}块拼图，最小面积比例: ${minPieceAreaRatio}`);
+  // 切割目标: ${cuts.length}条切割线，预期${targetPieceCount}块拼图
   
   // 切割操作计数
   let cutCount = 0;
@@ -60,7 +60,7 @@ export const splitPolygon = (shape: Point[], cuts: CutLine[]): Point[][] => {
     
     // 如果已经达到或超过目标片段数量，停止切割
     if (pieces.length >= targetPieceCount) {
-      console.log(`已达到目标片段数量(${targetPieceCount})，停止后续切割`);
+      // 已达到目标片段数量，停止后续切割
       break;
     }
     
@@ -88,26 +88,26 @@ export const splitPolygon = (shape: Point[], cuts: CutLine[]): Point[][] => {
         newPieces.push(...pieces.slice(0, i).concat(pieces.slice(i + 1)));
         
         madeValidCut = true;
-        console.log(`切割成功: 切割第${i+1}大片段，产生${validSplitResults.length}个新片段`);
+        // 切割成功: 切割第${i+1}大片段，产生${validSplitResults.length}个新片段
         break;
       }
     }
     
     // 如果没有成功切割任何片段，保留所有原始片段并尝试下一条切割线
     if (!madeValidCut) {
-      console.log(`切割线 ${cutCount + 1} 未能有效切割任何片段，尝试下一条切割线`);
+      // 切割线未能有效切割任何片段，尝试下一条切割线
       cutCount++;
       continue;
     }
     
     // 更新片段集合
     pieces = newPieces;
-    console.log(`切割线 ${cutCount + 1} 后的片段数量: ${pieces.length}`);
+    // 切割线后的片段数量: ${pieces.length}
     cutCount++;
     
     // 高难度时，如果片段已经足够多，可以提前结束
     if (isHighDifficulty && pieces.length >= targetPieceCount * 0.9) {
-      console.log(`高难度模式已达到目标片段数量的90%，可以结束切割`);
+      // 高难度模式已达到目标片段数量的90%，可以结束切割
       break;
     }
   }
@@ -117,11 +117,11 @@ export const splitPolygon = (shape: Point[], cuts: CutLine[]): Point[][] => {
     piece.length >= 3 && calculatePolygonArea(piece) >= minPieceArea
   );
   
-  console.log(`完成切割，最终片段数量: ${finalPieces.length}/${targetPieceCount}`);
+  // 完成切割，最终片段数量: ${finalPieces.length}/${targetPieceCount}
   
   // 如果最终片段数量远少于目标，可以尝试再次随机切割
   if (finalPieces.length < targetPieceCount * 0.7 && isHighDifficulty) {
-    console.log(`警告: 最终片段数量(${finalPieces.length})远少于目标(${targetPieceCount})，尝试添加额外切割`);
+    console.warn(`警告: 最终片段数量(${finalPieces.length})远少于目标(${targetPieceCount})，尝试添加额外切割`);
     // 这里可以添加额外的切割逻辑，或者返回原始片段，让外部处理
   }
   
@@ -146,7 +146,7 @@ const calculatePolygonArea = (vertices: Point[]): number => {
 export const splitPieceWithLine = (piece: Point[], cut: CutLine, recursionDepth: number = 0): Point[][] => {
   // 限制递归深度，防止无限递归
   if (recursionDepth > 2) {
-    console.log(`达到最大递归深度，停止分割`);
+    console.warn(`达到最大递归深度，停止分割`);
     return [piece];
   }
 
@@ -186,7 +186,7 @@ export const splitPieceWithLine = (piece: Point[], cut: CutLine, recursionDepth:
   }
   
   // 处理没有恰好两个交点的情况
-  console.log(`切割线交点数量: ${intersections.length}, 尝试调整切割线`);
+  // 切割线交点数量: ${intersections.length}, 尝试调整切割线
   
   // 如果有多于两个交点，选择最远的两个
   if (intersections.length > 2) {
@@ -208,7 +208,7 @@ export const splitPieceWithLine = (piece: Point[], cut: CutLine, recursionDepth:
     
     // 只保留这两个交点
     intersections.splice(0, intersections.length, intersections[point1], intersections[point2]);
-    console.log(`选择了两个最远的交点`);
+    // 选择了两个最远的交点
     
     // 重新按索引排序
     intersections.sort((a, b) => a.index - b.index);
@@ -261,7 +261,7 @@ export const splitPieceWithLine = (piece: Point[], cut: CutLine, recursionDepth:
   }
   
   // 如果以上都失败，返回原始片段
-  console.log(`无法有效切割，返回原始片段`);
+  // 无法有效切割，返回原始片段
   return [piece];
 }
 

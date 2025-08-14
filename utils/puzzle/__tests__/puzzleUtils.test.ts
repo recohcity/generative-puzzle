@@ -4,7 +4,7 @@
  * 🎯 验证拼图工具函数核心逻辑
  */
 
-import { splitPolygon } from '../puzzleUtils';
+import { splitPolygon, splitPieceWithLine, isValidPiece, checkRectOverlap, findLineIntersections } from '../puzzleUtils';
 import type { Point } from '@/types/puzzleTypes';
 
 // 定义CutLine类型（从puzzleUtils.ts中复制）
@@ -15,6 +15,9 @@ type CutLine = {
   y2: number;
   type: "straight" | "diagonal";
 };
+
+// 导入内部函数进行测试
+const puzzleUtilsModule = require('../puzzleUtils');
 
 describe('puzzleUtils - 拼图工具函数测试', () => {
   
@@ -458,6 +461,504 @@ describe('puzzleUtils - 拼图工具函数测试', () => {
       const pieces = splitPolygon(warningShape, warningCuts);
       
       expect(Array.isArray(pieces)).toBe(true);
+    });
+
+    test('应该触发高难度模式的警告逻辑', () => {
+      // 创建一个高难度场景（8条或更多切割线）
+      const highDifficultyShape: Point[] = [
+        { x: 100, y: 100 },
+        { x: 300, y: 100 },
+        { x: 300, y: 300 },
+        { x: 100, y: 300 }
+      ];
+      
+      // 使用8条切割线触发高难度模式，但大部分无效
+      const highDifficultyCuts: CutLine[] = [
+        { x1: 50, y1: 50, x2: 60, y2: 60, type: 'straight' },   // 无效切割
+        { x1: 50, y1: 50, x2: 60, y2: 60, type: 'straight' },   // 无效切割
+        { x1: 50, y1: 50, x2: 60, y2: 60, type: 'straight' },   // 无效切割
+        { x1: 50, y1: 50, x2: 60, y2: 60, type: 'straight' },   // 无效切割
+        { x1: 50, y1: 50, x2: 60, y2: 60, type: 'straight' },   // 无效切割
+        { x1: 50, y1: 50, x2: 60, y2: 60, type: 'straight' },   // 无效切割
+        { x1: 50, y1: 50, x2: 60, y2: 60, type: 'straight' },   // 无效切割
+        { x1: 200, y1: 50, x2: 200, y2: 350, type: 'straight' } // 有效切割
+      ];
+      
+      const pieces = splitPolygon(highDifficultyShape, highDifficultyCuts);
+      
+      expect(Array.isArray(pieces)).toBe(true);
+      // 应该触发警告逻辑，因为最终片段数量远少于目标
+    });
+
+    test('应该处理已达到目标片段数量的情况', () => {
+      // 创建一个场景，让第一次切割就达到目标
+      const targetShape: Point[] = [
+        { x: 100, y: 100 },
+        { x: 300, y: 100 },
+        { x: 300, y: 300 },
+        { x: 100, y: 300 }
+      ];
+      
+      // 只使用一条有效切割线，但传入多条
+      const targetCuts: CutLine[] = [
+        { x1: 200, y1: 50, x2: 200, y2: 350, type: 'straight' }, // 有效切割
+        { x1: 150, y1: 50, x2: 150, y2: 350, type: 'straight' }  // 第二条切割
+      ];
+      
+      const pieces = splitPolygon(targetShape, targetCuts);
+      
+      expect(Array.isArray(pieces)).toBe(true);
+      expect(pieces.length).toBeGreaterThan(0);
+    });
+
+    test('应该处理高难度模式的90%提前结束逻辑', () => {
+      // 创建一个大形状，使用高难度切割
+      const earlyEndShape: Point[] = [
+        { x: 50, y: 50 },
+        { x: 350, y: 50 },
+        { x: 350, y: 350 },
+        { x: 50, y: 350 }
+      ];
+      
+      // 使用8条有效切割线触发高难度模式
+      const earlyEndCuts: CutLine[] = [
+        { x1: 100, y1: 0, x2: 100, y2: 400, type: 'straight' },
+        { x1: 150, y1: 0, x2: 150, y2: 400, type: 'straight' },
+        { x1: 200, y1: 0, x2: 200, y2: 400, type: 'straight' },
+        { x1: 250, y1: 0, x2: 250, y2: 400, type: 'straight' },
+        { x1: 300, y1: 0, x2: 300, y2: 400, type: 'straight' },
+        { x1: 0, y1: 100, x2: 400, y2: 100, type: 'straight' },
+        { x1: 0, y1: 200, x2: 400, y2: 200, type: 'straight' },
+        { x1: 0, y1: 300, x2: 400, y2: 300, type: 'straight' }
+      ];
+      
+      const pieces = splitPolygon(earlyEndShape, earlyEndCuts);
+      
+      expect(Array.isArray(pieces)).toBe(true);
+      expect(pieces.length).toBeGreaterThan(0);
+    });
+
+    test('应该触发已达到目标片段数量的停止逻辑', () => {
+      // 创建一个场景，让切割快速达到目标数量
+      const stopShape: Point[] = [
+        { x: 100, y: 100 },
+        { x: 300, y: 100 },
+        { x: 300, y: 300 },
+        { x: 100, y: 300 }
+      ];
+      
+      // 使用多条切割线，但第一条就能达到目标
+      const stopCuts: CutLine[] = [
+        { x1: 200, y1: 50, x2: 200, y2: 350, type: 'straight' }, // 有效切割，产生2个片段
+        { x1: 150, y1: 50, x2: 150, y2: 350, type: 'straight' }, // 第二条切割
+        { x1: 250, y1: 50, x2: 250, y2: 350, type: 'straight' }  // 第三条切割
+      ];
+      
+      const pieces = splitPolygon(stopShape, stopCuts);
+      
+      expect(Array.isArray(pieces)).toBe(true);
+      expect(pieces.length).toBeGreaterThan(1);
+    });
+
+    test('应该触发精确的目标片段数量停止逻辑', () => {
+      // 创建一个特殊场景，让第一次切割就达到精确的目标数量
+      const preciseShape: Point[] = [
+        { x: 100, y: 100 },
+        { x: 300, y: 100 },
+        { x: 300, y: 300 },
+        { x: 100, y: 300 }
+      ];
+      
+      // 只使用一条切割线，目标是2个片段
+      const preciseCuts: CutLine[] = [
+        { x1: 200, y1: 50, x2: 200, y2: 350, type: 'straight' } // 产生恰好2个片段
+      ];
+      
+      const pieces = splitPolygon(preciseShape, preciseCuts);
+      
+      expect(Array.isArray(pieces)).toBe(true);
+      expect(pieces.length).toBe(2); // 应该恰好是2个片段
+    });
+  });
+
+  describe('🔑 splitPieceWithLine 函数测试', () => {
+    test('应该正确分割片段', () => {
+      const piece: Point[] = [
+        { x: 100, y: 100 },
+        { x: 300, y: 100 },
+        { x: 300, y: 300 },
+        { x: 100, y: 300 }
+      ];
+      
+      const cut: CutLine = {
+        x1: 200,
+        y1: 50,
+        x2: 200,
+        y2: 350,
+        type: 'straight'
+      };
+      
+      const result = splitPieceWithLine(piece, cut);
+      
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBeGreaterThan(0);
+    });
+
+    test('应该处理递归深度限制', () => {
+      const piece: Point[] = [
+        { x: 100, y: 100 },
+        { x: 300, y: 100 },
+        { x: 300, y: 300 },
+        { x: 100, y: 300 }
+      ];
+      
+      const cut: CutLine = {
+        x1: 50,
+        y1: 50,
+        x2: 60,
+        y2: 60,
+        type: 'straight'
+      };
+      
+      // 直接调用递归深度为3的情况
+      const result = splitPieceWithLine(piece, cut, 3);
+      
+      expect(result).toEqual([piece]); // 应该返回原始片段
+    });
+
+    test('应该处理多于两个交点的情况', () => {
+      // 创建一个复杂形状，可能产生多个交点
+      const complexPiece: Point[] = [
+        { x: 100, y: 100 },
+        { x: 200, y: 80 },
+        { x: 300, y: 100 },
+        { x: 280, y: 200 },
+        { x: 300, y: 300 },
+        { x: 200, y: 320 },
+        { x: 100, y: 300 },
+        { x: 120, y: 200 }
+      ];
+      
+      const cut: CutLine = {
+        x1: 50,
+        y1: 200,
+        x2: 350,
+        y2: 200,
+        type: 'straight'
+      };
+      
+      const result = splitPieceWithLine(complexPiece, cut);
+      
+      expect(Array.isArray(result)).toBe(true);
+    });
+
+    test('应该处理斜线类型的递归切割', () => {
+      const piece: Point[] = [
+        { x: 100, y: 100 },
+        { x: 300, y: 100 },
+        { x: 300, y: 300 },
+        { x: 100, y: 300 }
+      ];
+      
+      const diagonalCut: CutLine = {
+        x1: 50,
+        y1: 50,
+        x2: 60,
+        y2: 60,
+        type: 'diagonal'
+      };
+      
+      const result = splitPieceWithLine(piece, diagonalCut);
+      
+      expect(Array.isArray(result)).toBe(true);
+    });
+  });
+
+  describe('🔑 isValidPiece 函数测试', () => {
+    test('应该验证有效的片段', () => {
+      const validPiece: Point[] = [
+        { x: 100, y: 100 },
+        { x: 200, y: 100 },
+        { x: 200, y: 200 },
+        { x: 100, y: 200 }
+      ];
+      
+      expect(isValidPiece(validPiece)).toBe(true);
+    });
+
+    test('应该拒绝无效的片段', () => {
+      const invalidPiece: Point[] = [
+        { x: 100, y: 100 },
+        { x: 200, y: 100 }
+      ];
+      
+      expect(isValidPiece(invalidPiece)).toBe(false);
+    });
+
+    test('应该处理空片段', () => {
+      const emptyPiece: Point[] = [];
+      
+      expect(isValidPiece(emptyPiece)).toBe(false);
+    });
+  });
+
+  describe('🔑 checkRectOverlap 函数测试', () => {
+    test('应该检测重叠的矩形', () => {
+      const rect1 = { x: 100, y: 100, width: 100, height: 100 };
+      const rect2 = { x: 150, y: 150, width: 100, height: 100 };
+      
+      expect(checkRectOverlap(rect1, rect2)).toBe(true);
+    });
+
+    test('应该检测不重叠的矩形', () => {
+      const rect1 = { x: 100, y: 100, width: 50, height: 50 };
+      const rect2 = { x: 200, y: 200, width: 50, height: 50 };
+      
+      expect(checkRectOverlap(rect1, rect2)).toBe(false);
+    });
+
+    test('应该检测相邻的矩形', () => {
+      const rect1 = { x: 100, y: 100, width: 100, height: 100 };
+      const rect2 = { x: 200, y: 100, width: 100, height: 100 };
+      
+      expect(checkRectOverlap(rect1, rect2)).toBe(false);
+    });
+
+    test('应该检测包含关系的矩形', () => {
+      const rect1 = { x: 100, y: 100, width: 200, height: 200 };
+      const rect2 = { x: 150, y: 150, width: 50, height: 50 };
+      
+      expect(checkRectOverlap(rect1, rect2)).toBe(true);
+    });
+  });
+
+  describe('🔑 内部函数测试', () => {
+    test('应该正确计算多边形面积', () => {
+      // 测试正方形面积计算
+      const square: Point[] = [
+        { x: 0, y: 0 },
+        { x: 100, y: 0 },
+        { x: 100, y: 100 },
+        { x: 0, y: 100 }
+      ];
+      
+      // 通过splitPolygon间接测试calculatePolygonArea
+      const pieces = splitPolygon(square, []);
+      expect(pieces.length).toBe(1);
+      expect(pieces[0]).toEqual(square);
+    });
+
+    test('应该处理空多边形', () => {
+      const emptyShape: Point[] = [];
+      const pieces = splitPolygon(emptyShape, []);
+      expect(pieces).toEqual([]);
+    });
+
+    test('应该处理单点多边形', () => {
+      const singlePoint: Point[] = [{ x: 100, y: 100 }];
+      const pieces = splitPolygon(singlePoint, []);
+      expect(pieces).toEqual([]);
+    });
+
+    test('应该处理两点多边形', () => {
+      const twoPoints: Point[] = [
+        { x: 100, y: 100 },
+        { x: 200, y: 200 }
+      ];
+      const pieces = splitPolygon(twoPoints, []);
+      expect(pieces).toEqual([]);
+    });
+  });
+
+  describe('🔑 findLineIntersections 函数测试', () => {
+    test('应该找到相交线段的交点', () => {
+      const line1 = {
+        start: { x: 100, y: 100 },
+        end: { x: 200, y: 200 }
+      };
+      const line2 = {
+        start: { x: 100, y: 200 },
+        end: { x: 200, y: 100 }
+      };
+      
+      const intersections = findLineIntersections(line1, line2);
+      
+      expect(intersections.length).toBe(1);
+      expect(intersections[0].x).toBeCloseTo(150);
+      expect(intersections[0].y).toBeCloseTo(150);
+    });
+
+    test('应该处理平行线', () => {
+      const line1 = {
+        start: { x: 100, y: 100 },
+        end: { x: 200, y: 100 }
+      };
+      const line2 = {
+        start: { x: 100, y: 200 },
+        end: { x: 200, y: 200 }
+      };
+      
+      const intersections = findLineIntersections(line1, line2);
+      
+      expect(intersections.length).toBe(0);
+    });
+
+    test('应该处理不相交的线段', () => {
+      const line1 = {
+        start: { x: 100, y: 100 },
+        end: { x: 150, y: 150 }
+      };
+      const line2 = {
+        start: { x: 200, y: 200 },
+        end: { x: 250, y: 250 }
+      };
+      
+      const intersections = findLineIntersections(line1, line2);
+      
+      expect(intersections.length).toBe(0);
+    });
+
+    test('应该处理延长线相交但线段不相交的情况', () => {
+      const line1 = {
+        start: { x: 100, y: 100 },
+        end: { x: 120, y: 120 }
+      };
+      const line2 = {
+        start: { x: 180, y: 180 },
+        end: { x: 200, y: 200 }
+      };
+      
+      const intersections = findLineIntersections(line1, line2);
+      
+      expect(intersections.length).toBe(0);
+    });
+
+    test('应该处理垂直和水平线的交点', () => {
+      const line1 = {
+        start: { x: 150, y: 100 },
+        end: { x: 150, y: 200 }
+      };
+      const line2 = {
+        start: { x: 100, y: 150 },
+        end: { x: 200, y: 150 }
+      };
+      
+      const intersections = findLineIntersections(line1, line2);
+      
+      expect(intersections.length).toBe(1);
+      expect(intersections[0].x).toBe(150);
+      expect(intersections[0].y).toBe(150);
+    });
+
+    test('应该处理几乎平行的线（数值精度测试）', () => {
+      const line1 = {
+        start: { x: 100, y: 100 },
+        end: { x: 200, y: 100.0000000001 }
+      };
+      const line2 = {
+        start: { x: 100, y: 200 },
+        end: { x: 200, y: 200 }
+      };
+      
+      const intersections = findLineIntersections(line1, line2);
+      
+      expect(intersections.length).toBe(0); // 应该被识别为平行线
+    });
+  });
+
+  describe('🔑 calculatePolygonArea 函数覆盖测试', () => {
+    test('应该通过面积计算覆盖第133-136行', () => {
+      // 创建一个三角形，测试面积计算的循环逻辑
+      const triangle: Point[] = [
+        { x: 0, y: 0 },
+        { x: 100, y: 0 },
+        { x: 50, y: 100 }
+      ];
+      
+      // 通过splitPolygon间接调用calculatePolygonArea
+      const pieces = splitPolygon(triangle, []);
+      expect(pieces.length).toBe(1);
+      expect(pieces[0]).toEqual(triangle);
+      
+      // 创建一个复杂多边形，确保循环执行多次
+      const complexPolygon: Point[] = [
+        { x: 0, y: 0 },
+        { x: 50, y: 10 },
+        { x: 100, y: 0 },
+        { x: 110, y: 50 },
+        { x: 100, y: 100 },
+        { x: 50, y: 110 },
+        { x: 0, y: 100 },
+        { x: -10, y: 50 }
+      ];
+      
+      // 这会触发calculatePolygonArea函数的循环（第133-136行）
+      const complexPieces = splitPolygon(complexPolygon, []);
+      expect(complexPieces.length).toBe(1);
+      expect(complexPieces[0]).toEqual(complexPolygon);
+      
+      // 测试面积过滤逻辑，这会多次调用calculatePolygonArea
+      const cutLine: CutLine = {
+        x1: 50,
+        y1: -20,
+        x2: 50,
+        y2: 120,
+        type: 'straight'
+      };
+      
+      const splitPieces = splitPolygon(complexPolygon, [cutLine]);
+      expect(Array.isArray(splitPieces)).toBe(true);
+      expect(splitPieces.length).toBeGreaterThan(0);
+      
+      // 每个片段都会通过calculatePolygonArea进行面积计算和过滤
+      splitPieces.forEach(piece => {
+        expect(piece.length).toBeGreaterThanOrEqual(3);
+      });
+    });
+
+    test('应该测试calculatePolygonArea的边界情况', () => {
+      // 测试正方形（简单情况）
+      const square: Point[] = [
+        { x: 0, y: 0 },
+        { x: 10, y: 0 },
+        { x: 10, y: 10 },
+        { x: 0, y: 10 }
+      ];
+      
+      // 通过splitPolygon触发面积计算
+      const squarePieces = splitPolygon(square, []);
+      expect(squarePieces.length).toBe(1);
+      
+      // 测试不规则形状
+      const irregular: Point[] = [
+        { x: 0, y: 0 },
+        { x: 30, y: 5 },
+        { x: 25, y: 25 },
+        { x: 5, y: 30 }
+      ];
+      
+      const irregularPieces = splitPolygon(irregular, []);
+      expect(irregularPieces.length).toBe(1);
+      
+      // 测试大量顶点的多边形，确保循环执行多次
+      const manyVertices: Point[] = [];
+      const sides = 12;
+      const radius = 50;
+      const centerX = 100;
+      const centerY = 100;
+      
+      for (let i = 0; i < sides; i++) {
+        const angle = (i / sides) * 2 * Math.PI;
+        manyVertices.push({
+          x: centerX + Math.cos(angle) * radius,
+          y: centerY + Math.sin(angle) * radius
+        });
+      }
+      
+      // 这会触发calculatePolygonArea的循环执行12次
+      const manyVerticesPieces = splitPolygon(manyVertices, []);
+      expect(manyVerticesPieces.length).toBe(1);
+      expect(manyVerticesPieces[0]).toEqual(manyVertices);
     });
   });
 });

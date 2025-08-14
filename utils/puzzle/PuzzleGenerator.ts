@@ -9,14 +9,10 @@ export class PuzzleGenerator {
     cutCount: number,
     shapeType?: string,
   ): { pieces: PuzzlePiece[]; originalPositions: PuzzlePiece[] } {
-    console.log(`生成拼图，切割类型: ${cutType}，切割次数: ${cutCount}，形状类型: ${shapeType}`);
-
     // 生成切割线
     const cuts = generateCuts(shape, cutCount, cutType);
-    console.log(`生成了${cuts.length}条切割线，目标切割次数: ${cutCount}`);
 
     // 使用多边形分割算法
-    console.log('📐 使用多边形分割算法');
     let splitPieces: Point[][] = splitPolygon(shape, cuts);
 
     // 计算期望的拼图数量（切割线数量+1）
@@ -24,7 +20,7 @@ export class PuzzleGenerator {
 
     // 确保切割有效：如果没有足够的片段，尝试强制切割
     if (splitPieces.length < expectedPieceCount * 0.8) {
-      console.log(`切割后片段数量(${splitPieces.length})少于预期(${expectedPieceCount})的80%，尝试额外切割`);
+      // 切割后片段数量少于预期的80%，尝试额外切割
 
       // 高难度切割次数(难度7-8)需要更多的尝试次数
       const isHighDifficulty = cutCount >= 7;
@@ -34,7 +30,7 @@ export class PuzzleGenerator {
       // 最多尝试几次切割
       while (splitPieces.length < expectedPieceCount * 0.9 && retryCount < maxRetryCount) {
         retryCount++;
-        console.log(`尝试第${retryCount}次额外切割...`);
+        // 尝试第${retryCount}次额外切割
 
         // 计算形状的边界
         const xs = shape.map(p => p.x);
@@ -59,7 +55,7 @@ export class PuzzleGenerator {
         // 计算需要多少额外切割线
         const neededExtraCuts = Math.max(0, Math.min(Math.ceil(expectedPieceCount / 2), expectedPieceCount - splitPieces.length));
 
-        console.log(`需要额外添加${neededExtraCuts}条切割线`);
+        // 需要额外添加${neededExtraCuts}条切割线
 
         // 生成额外切割线
         for (let i = 0; i < neededExtraCuts; i++) {
@@ -99,11 +95,11 @@ export class PuzzleGenerator {
 
         // 使用额外的切割线重新切割
         if (extraCuts.length > 0) {
-          console.log(`使用${extraCuts.length}条额外切割线进行���割`);
+          // 使用${extraCuts.length}条额外切割线进行切割
           const additionalPieces = splitPolygon(shape, [...cuts, ...extraCuts]);
 
           if (additionalPieces.length > splitPieces.length) {
-            console.log(`额外切割成功: 从${splitPieces.length}增加到${additionalPieces.length}个片段`);
+            // 额外切割成功: 从${splitPieces.length}增加到${additionalPieces.length}个片段
             splitPieces = additionalPieces;
           }
         }
@@ -112,7 +108,7 @@ export class PuzzleGenerator {
 
     // 如果片段数量超过预期，只保留最大的几个片段
     if (splitPieces.length > expectedPieceCount) {
-      console.log(`切割后片段数量(${splitPieces.length})超过预期(${expectedPieceCount})，将保留最大的片段`);
+      // 切割后片段数量超过预期，将保留最大的片段
 
       // 按面积排序
       splitPieces.sort((a, b) => {
@@ -124,7 +120,7 @@ export class PuzzleGenerator {
       splitPieces = splitPieces.slice(0, expectedPieceCount);
     }
 
-    console.log(`最终生成了${splitPieces.length}个拼图片段，预期${expectedPieceCount}个`);
+    // 最终生成了${splitPieces.length}个拼图片段，预期${expectedPieceCount}个
 
     // 定义暖色调色板
     const colors = [

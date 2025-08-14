@@ -21,15 +21,14 @@ export interface PuzzlePiece { // Export the interface
 
 // 绘制形状
 export const drawShape = (ctx: CanvasRenderingContext2D, shape: Point[], shapeType: string) => {
-  console.log(`开始绘制形状: ${shape.length}个点, 类型:${shapeType}`);
+  // 开始绘制形状: ${shape.length}个点, 类型:${shapeType}
 
   if (shape.length === 0) {
     console.error('形状没有点，无法绘制');
     return;
   }
 
-  // 记录画布尺寸
-  console.log(`画布尺寸: ${ctx.canvas.width}x${ctx.canvas.height}`);
+  // 记录画布尺寸: ${ctx.canvas.width}x${ctx.canvas.height}
 
   // 先清除画布
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -43,8 +42,7 @@ export const drawShape = (ctx: CanvasRenderingContext2D, shape: Point[], shapeTy
     // 绘制路径
     ctx.beginPath();
 
-    // 记录第一个点
-    console.log(`起始点: (${shape[0].x.toFixed(2)}, ${shape[0].y.toFixed(2)})`);
+    // 记录第一个点: (${shape[0].x.toFixed(2)}, ${shape[0].y.toFixed(2)})
 
     // 移动到第一个点
     if (shape.length > 0) {
@@ -54,7 +52,7 @@ export const drawShape = (ctx: CanvasRenderingContext2D, shape: Point[], shapeTy
         // 多边形使用直线
         for (let i = 1; i < shape.length; i++) {
           ctx.lineTo(shape[i].x, shape[i].y);
-          console.log(`线段到: (${shape[i].x.toFixed(2)}, ${shape[i].y.toFixed(2)})`);
+          // 线段到: (${shape[i].x.toFixed(2)}, ${shape[i].y.toFixed(2)})
         }
 
         // 闭合路径
@@ -87,7 +85,7 @@ export const drawShape = (ctx: CanvasRenderingContext2D, shape: Point[], shapeTy
       // 重置阴影
       ctx.shadowBlur = 0;
 
-      console.log('形状绘制完成');
+      // 形状绘制完成
     } else {
       console.error('没有点可绘制');
     }

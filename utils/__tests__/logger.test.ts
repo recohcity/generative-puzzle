@@ -68,6 +68,53 @@ describe('logger - 日志工具函数测试', () => {
     jest.clearAllMocks();
   });
 
+  describe('🔑 模块初始化', () => {
+    test('应该在模块加载时正确配置日志服务', () => {
+      // 重新导入模块以触发初始化代码
+      jest.resetModules();
+      
+      const mockConfigure = jest.fn();
+      const mockGetInstance = jest.fn(() => ({
+        configure: mockConfigure,
+        createLogger: jest.fn(() => ({
+          info: jest.fn(),
+          debug: jest.fn(),
+          warn: jest.fn(),
+          error: jest.fn()
+        })),
+        info: jest.fn(),
+        debug: jest.fn(),
+        warn: jest.fn(),
+        error: jest.fn(),
+        time: jest.fn(() => jest.fn()),
+        getStats: jest.fn(() => ({ totalLogs: 0, errorCount: 0 })),
+        getLogs: jest.fn(() => []),
+        clearLogs: jest.fn(),
+        exportLogs: jest.fn(() => '[]')
+      }));
+
+      jest.doMock('../../core/LoggingService', () => ({
+        LoggingService: {
+          getInstance: mockGetInstance
+        }
+      }));
+
+      const mockGetLoggingConfig = jest.fn(() => ({ level: 'info' }));
+      jest.doMock('../../src/config/loggingConfig', () => ({
+        getLoggingConfig: mockGetLoggingConfig,
+        COMPONENT_CONTEXTS: {},
+        LOG_PATTERNS: {}
+      }));
+
+      // 重新导入模块，这会触发第9行的配置代码
+      require('../logger');
+
+      expect(mockGetInstance).toHaveBeenCalled();
+      expect(mockConfigure).toHaveBeenCalledWith({ level: 'info' });
+      expect(mockGetLoggingConfig).toHaveBeenCalled();
+    });
+  });
+
   describe('🔑 基础日志功能', () => {
     test('应该正确导出主要日志实例', () => {
       expect(logger).toBeDefined();

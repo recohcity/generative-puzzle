@@ -1,869 +1,586 @@
 /**
- * soundEffects 单元测试
- * 
- * 🎯 验证音效工具函数核心逻辑
+ * 音效系统单元测试
+ * 目标：提升soundEffects.ts的测试覆盖率，特别是分支覆盖率
  */
 
-import { 
-  soundPlayedForTest, 
-  initBackgroundMusic, 
-  toggleBackgroundMusic,
-  getBackgroundMusicStatus,
-  playButtonClickSound,
-  playPieceSelectSound,
-  playPieceSnapSound,
-  playPuzzleCompletedSound,
-  playRotateSound,
-  playCutSound
+import {
+  soundPlayedForTest
 } from '../soundEffects';
 
-// Mock Web Audio API
-const mockAudioContext = {
-  state: 'running',
-  currentTime: 0,
-  resume: jest.fn().mockResolvedValue(undefined),
-  createOscillator: jest.fn(() => ({
-    connect: jest.fn(),
-    start: jest.fn(),
-    stop: jest.fn(),
-    type: 'sine',
-    frequency: { 
-      value: 440,
-      setValueAtTime: jest.fn(),
-      exponentialRampToValueAtTime: jest.fn(),
-      linearRampToValueAtTime: jest.fn()
-    }
-  })),
-  createGain: jest.fn(() => ({
-    connect: jest.fn(),
-    gain: { 
-      value: 1,
-      setValueAtTime: jest.fn(),
-      exponentialRampToValueAtTime: jest.fn(),
-      linearRampToValueAtTime: jest.fn()
-    }
-  })),
-  destination: {}
-};
+// 由于soundEffects.ts使用模块级变量，我们需要动态导入来重置状态
+let soundEffectsModule: any;
 
-// Mock HTMLAudioElement
-const mockAudio = {
-  play: jest.fn().mockResolvedValue(undefined),
-  pause: jest.fn(),
-  load: jest.fn(),
-  loop: false,
-  volume: 1,
-  currentTime: 0,
-  paused: true,
-  addEventListener: jest.fn(),
-  removeEventListener: jest.fn()
-};
+const mockWindow = () => {
+  const mockAudioContext = {
+    state: 'running',
+    currentTime: 0,
+    destination: {},
+    createOscillator: jest.fn(() => ({
+      type: 'sine',
+      frequency: {
+        setValueAtTime: jest.fn(),
+        exponentialRampToValueAtTime: jest.fn(),
+        linearRampToValueAtTime: jest.fn()
+      },
+      connect: jest.fn(),
+      start: jest.fn(),
+      stop: jest.fn()
+    })),
+    createGain: jest.fn(() => ({
+      gain: {
+        setValueAtTime: jest.fn(),
+        exponentialRampToValueAtTime: jest.fn(),
+        linearRampToValueAtTime: jest.fn()
+      },
+      connect: jest.fn()
+    })),
+    resume: jest.fn().mockResolvedValue(undefined)
+  };
 
-// Mock window.Audio
-global.Audio = jest.fn().mockImplementation(() => mockAudio);
+  const mockAudio = {
+    loop: false,
+    volume: 0,
+    play: jest.fn().mockResolvedValue(undefined),
+    pause: jest.fn()
+  };
 
-// Mock AudioContext
-(global as any).AudioContext = jest.fn().mockImplementation(() => mockAudioContext);
-(global as any).webkitAudioContext = jest.fn().mockImplementation(() => mockAudioContext);
-
-// Mock window object
-Object.defineProperty(global, 'window', {
-  value: {
-    AudioContext: (global as any).AudioContext,
-    webkitAudioContext: (global as any).webkitAudioContext
-  },
-  writable: true
-});
-
-describe('soundEffects - 音效工具函数测试', () => {
-  
-  beforeEach(() => {
-    jest.clearAllMocks();
-    // Reset audio state
-    mockAudio.paused = true;
-    mockAudio.currentTime = 0;
-    mockAudioContext.state = 'running';
-    
-    // Reset module state by clearing the module cache
-    jest.resetModules();
+  Object.defineProperty(global, 'window', {
+    value: {
+      AudioContext: jest.fn(() => mockAudioContext),
+      webkitAudioContext: jest.fn(() => mockAudioContext),
+      __SOUND_PLAY_LISTENER__: undefined
+    },
+    writable: true,
+    configurable: true
   });
 
-  describe('🔑 测试音效通知', () => {
-    test('应该正确通知测试环境音效播放', () => {
+  Object.defineProperty(global, 'Audio', {
+    value: jest.fn(() => mockAudio),
+    writable: true,
+    configurable: true
+  });
+
+  return { mockAudioContext, mockAudio };
+};
+
+describe('soundEffects', () => {
+  beforeEach(async () => {
+    // 清除模块缓存以重置模块级变量
+    jest.resetModules();
+    
+    // 设置mock环境
+    mockWindow();
+    
+    // 重新导入模块
+    soundEffectsModule = await import('../soundEffects');
+  });
+
+  describe('soundPlayedForTest', () => {
+    it('应该在有监听器时调用监听器', () => {
       const mockListener = jest.fn();
       (global.window as any).__SOUND_PLAY_LISTENER__ = mockListener;
-
-      soundPlayedForTest('click');
-
-      expect(mockListener).toHaveBeenCalledWith({ soundName: 'click' });
+      
+      soundPlayedForTest('testSound');
+      
+      expect(mockListener).toHaveBeenCalledWith({ soundName: 'testSound' });
     });
 
-    test('应该处理没有监听器的情况', () => {
+    it('应该在没有监听器时不报错', () => {
       delete (global.window as any).__SOUND_PLAY_LISTENER__;
-
-      expect(() => {
-        soundPlayedForTest('click');
-      }).not.toThrow();
+      
+      expect(() => soundPlayedForTest('testSound')).not.toThrow();
     });
 
-    test('应该处理非浏览器环境', () => {
-      const originalWindow = global.window;
-      delete (global as any).window;
-
-      expect(() => {
-        soundPlayedForTest('click');
-      }).not.toThrow();
-
-      global.window = originalWindow;
+    it('应该在非浏览器环境中不报错', () => {
+      Object.defineProperty(global, 'window', {
+        value: undefined,
+        writable: true,
+        configurable: true
+      });
+      
+      expect(() => soundPlayedForTest('testSound')).not.toThrow();
     });
   });
 
-  describe('🔑 背景音乐初始化', () => {
-    test('应该正确初始化背景音乐', () => {
-      expect(() => {
-        initBackgroundMusic();
-      }).not.toThrow();
-
+  describe('initBackgroundMusic', () => {
+    it('应该初始化背景音乐', () => {
+      soundEffectsModule.initBackgroundMusic();
+      
       expect(global.Audio).toHaveBeenCalledWith('/puzzle-pieces.mp3');
     });
 
-    test('应该设置正确的音频属性', () => {
-      initBackgroundMusic();
-
-      expect(mockAudio.loop).toBe(true);
-      expect(mockAudio.volume).toBe(0.5);
-    });
-
-    test('应该只初始化一次背景音乐', () => {
-      expect(() => {
-        initBackgroundMusic();
-        initBackgroundMusic();
-      }).not.toThrow();
+    it('应该只初始化一次背景音乐', () => {
+      soundEffectsModule.initBackgroundMusic();
+      soundEffectsModule.initBackgroundMusic();
+      
+      expect(global.Audio).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe('🔑 背景音乐切换', () => {
-    beforeEach(() => {
-      initBackgroundMusic();
+  describe('toggleBackgroundMusic', () => {
+    it('应该处理背景音乐未初始化的情况', async () => {
+      const result = await soundEffectsModule.toggleBackgroundMusic();
+      expect(result).toBe(false);
     });
 
-    test('应该能够切换背景音乐播放状态', async () => {
-      const result = await toggleBackgroundMusic();
-
-      expect(typeof result).toBe('boolean');
+    it('应该开始播放背景音乐', async () => {
+      soundEffectsModule.initBackgroundMusic();
+      const result = await soundEffectsModule.toggleBackgroundMusic();
+      expect(result).toBe(true);
     });
 
-    test('应该处理音频上下文创建', async () => {
-      const result = await toggleBackgroundMusic();
+    it('应该处理播放错误', async () => {
+      const { mockAudio } = mockWindow();
+      mockAudio.play.mockRejectedValueOnce(new Error('播放失败'));
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
       
-      expect(typeof result).toBe('boolean');
-    });
-
-    test('应该处理音频上下文恢复', async () => {
-      mockAudioContext.state = 'suspended';
-
-      await toggleBackgroundMusic();
-
-      expect(mockAudioContext.resume).toHaveBeenCalled();
-    });
-
-    test('应该处理音频播放错误', async () => {
-      mockAudio.play.mockRejectedValue(new Error('Play failed'));
-
-      expect(async () => {
-        await toggleBackgroundMusic();
-      }).not.toThrow();
-    });
-
-    test('应该处理音频暂停', async () => {
-      mockAudio.paused = false;
-
-      const result = await toggleBackgroundMusic();
-
-      expect(typeof result).toBe('boolean');
+      soundEffectsModule.initBackgroundMusic();
+      const result = await soundEffectsModule.toggleBackgroundMusic();
+      
+      expect(consoleSpy).toHaveBeenCalledWith('Error resuming background music:', expect.any(Error));
+      expect(result).toBe(false);
+      
+      consoleSpy.mockRestore();
     });
   });
 
-  describe('🔑 Web Audio API 支持检测', () => {
-    test('应该处理不支持Web Audio API的浏览器', () => {
-      // 临时移除AudioContext支持
-      const originalAudioContext = (global as any).AudioContext;
-      const originalWebkitAudioContext = (global as any).webkitAudioContext;
+  describe('getBackgroundMusicStatus', () => {
+    it('应该返回正确的播放状态', async () => {
+      expect(soundEffectsModule.getBackgroundMusicStatus()).toBe(false);
       
-      delete (global as any).AudioContext;
-      delete (global as any).webkitAudioContext;
-      delete (global.window as any).AudioContext;
-      delete (global.window as any).webkitAudioContext;
+      soundEffectsModule.initBackgroundMusic();
+      await soundEffectsModule.toggleBackgroundMusic();
+      expect(soundEffectsModule.getBackgroundMusicStatus()).toBe(true);
+    });
+  });
 
-      expect(() => {
-        initBackgroundMusic();
-      }).not.toThrow();
-
-      // 恢复AudioContext支持
-      (global as any).AudioContext = originalAudioContext;
-      (global as any).webkitAudioContext = originalWebkitAudioContext;
-      global.window.AudioContext = originalAudioContext;
-      (global.window as any).webkitAudioContext = originalWebkitAudioContext;
+  describe('音效播放函数', () => {
+    it('应该播放按钮点击音效', async () => {
+      const { mockAudioContext } = mockWindow();
+      
+      await soundEffectsModule.playButtonClickSound();
+      
+      expect(mockAudioContext.createOscillator).toHaveBeenCalled();
+      expect(mockAudioContext.createGain).toHaveBeenCalled();
     });
 
-    test('应该处理AudioContext创建失败', () => {
-      const originalAudioContext = (global as any).AudioContext;
-      (global as any).AudioContext = jest.fn().mockImplementation(() => {
-        throw new Error('AudioContext creation failed');
+    it('应该播放拼图片选择音效', async () => {
+      const { mockAudioContext } = mockWindow();
+      
+      await soundEffectsModule.playPieceSelectSound();
+      
+      expect(mockAudioContext.createOscillator).toHaveBeenCalled();
+      expect(mockAudioContext.createGain).toHaveBeenCalled();
+    });
+
+    it('应该播放拼图片吸附音效', async () => {
+      const { mockAudioContext } = mockWindow();
+      
+      await soundEffectsModule.playPieceSnapSound();
+      
+      expect(mockAudioContext.createOscillator).toHaveBeenCalled();
+      expect(mockAudioContext.createGain).toHaveBeenCalled();
+    });
+
+    it('应该播放拼图完成音效', async () => {
+      const { mockAudioContext } = mockWindow();
+      
+      await soundEffectsModule.playPuzzleCompletedSound();
+      
+      expect(mockAudioContext.createOscillator).toHaveBeenCalledTimes(2); // 两个振荡器
+      expect(mockAudioContext.createGain).toHaveBeenCalled();
+    });
+
+    it('应该播放旋转音效', async () => {
+      const { mockAudioContext } = mockWindow();
+      
+      await soundEffectsModule.playRotateSound();
+      
+      expect(mockAudioContext.createOscillator).toHaveBeenCalled();
+      expect(mockAudioContext.createGain).toHaveBeenCalled();
+    });
+
+    it('应该播放切割音效', async () => {
+      const { mockAudioContext } = mockWindow();
+      
+      await soundEffectsModule.playCutSound();
+      
+      expect(mockAudioContext.createOscillator).toHaveBeenCalled();
+      expect(mockAudioContext.createGain).toHaveBeenCalled();
+    });
+  });
+
+  describe('错误处理', () => {
+    it('应该处理AudioContext创建失败', async () => {
+      Object.defineProperty(global, 'window', {
+        value: {
+          AudioContext: jest.fn(() => {
+            throw new Error('AudioContext创建失败');
+          }),
+          webkitAudioContext: jest.fn(() => {
+            throw new Error('webkitAudioContext创建失败');
+          })
+        },
+        writable: true,
+        configurable: true
       });
-
-      expect(() => {
-        initBackgroundMusic();
-      }).not.toThrow();
-
-      (global as any).AudioContext = originalAudioContext;
-    });
-  });
-
-  describe('🔑 边界条件测试', () => {
-    test('应该处理空的音效名称', () => {
-      expect(() => {
-        soundPlayedForTest('');
-      }).not.toThrow();
-    });
-
-    test('应该处理特殊字符的音效名称', () => {
-      expect(() => {
-        soundPlayedForTest('click-sound_123!@#');
-      }).not.toThrow();
-    });
-
-    test('应该处理非常长的音效名称', () => {
-      const longName = 'a'.repeat(1000);
       
-      expect(() => {
-        soundPlayedForTest(longName);
-      }).not.toThrow();
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      
+      await soundEffectsModule.playButtonClickSound();
+      
+      expect(consoleSpy).toHaveBeenCalledWith('Web Audio API is not supported in this browser:', expect.any(Error));
+      consoleSpy.mockRestore();
     });
 
-    test('应该处理undefined音效名称', () => {
-      expect(() => {
-        soundPlayedForTest(undefined as any);
-      }).not.toThrow();
-    });
-  });
-
-  describe('🔑 性能基准测试', () => {
-    test('音效通知应该高效', () => {
-      const mockListener = jest.fn();
-      (global.window as any).__SOUND_PLAY_LISTENER__ = mockListener;
-
-      const startTime = performance.now();
-      
-      for (let i = 0; i < 1000; i++) {
-        soundPlayedForTest(`sound-${i}`);
-      }
-      
-      const endTime = performance.now();
-      expect(endTime - startTime).toBeLessThan(100); // < 100ms for 1000 notifications
-    });
-
-    test('背景音乐初始化应该快速', () => {
-      const startTime = performance.now();
-      
-      for (let i = 0; i < 10; i++) {
-        initBackgroundMusic();
-      }
-      
-      const endTime = performance.now();
-      expect(endTime - startTime).toBeLessThan(50); // < 50ms for 10 initializations
-    });
-  });
-
-  describe('🔑 错误处理', () => {
-    test('应该处理音频文件加载失败', () => {
-      mockAudio.addEventListener.mockImplementation((event, callback) => {
-        if (event === 'error') {
-          setTimeout(() => callback(new Error('Audio load failed')), 0);
-        }
+    it('应该处理不支持Web Audio API的浏览器', async () => {
+      Object.defineProperty(global, 'window', {
+        value: {
+          AudioContext: undefined,
+          webkitAudioContext: undefined
+        },
+        writable: true,
+        configurable: true
       });
-
-      expect(() => {
-        initBackgroundMusic();
-      }).not.toThrow();
+      
+      await expect(soundEffectsModule.playButtonClickSound()).resolves.not.toThrow();
     });
 
-    test('应该处理音频播放权限被拒绝', async () => {
-      mockAudio.play.mockRejectedValue(new DOMException('NotAllowedError'));
-
-      expect(async () => {
-        await toggleBackgroundMusic();
-      }).not.toThrow();
-    });
-
-    test('应该处理音频上下文状态异常', async () => {
-      mockAudioContext.state = 'closed';
-      mockAudioContext.resume.mockRejectedValue(new Error('Context closed'));
-
-      expect(async () => {
-        await toggleBackgroundMusic();
-      }).not.toThrow();
+    it('应该处理音频播放错误', async () => {
+      const { mockAudioContext } = mockWindow();
+      mockAudioContext.createOscillator.mockImplementationOnce(() => {
+        throw new Error('创建振荡器失败');
+      });
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      
+      await soundEffectsModule.playButtonClickSound();
+      
+      expect(consoleSpy).toHaveBeenCalledWith('Error playing button click sound:', expect.any(Error));
+      consoleSpy.mockRestore();
     });
   });
 
-  describe('🔑 浏览器兼容性', () => {
-    test('应该支持webkit前缀的AudioContext', () => {
-      delete (global as any).AudioContext;
-      
-      expect(() => {
-        initBackgroundMusic();
-      }).not.toThrow();
-    });
-
-    test('应该处理旧版浏览器的音频API', () => {
-      const mockOldAudio = {
-        ...mockAudio,
-        canPlayType: jest.fn(() => 'probably'),
-        preload: 'auto'
+  describe('AudioContext状态管理', () => {
+    it('应该在AudioContext挂起时恢复', async () => {
+      const mockSuspendedAudioContext = {
+        state: 'suspended',
+        currentTime: 0,
+        destination: {},
+        createOscillator: jest.fn(() => ({
+          type: 'sine',
+          frequency: {
+            setValueAtTime: jest.fn(),
+            exponentialRampToValueAtTime: jest.fn(),
+            linearRampToValueAtTime: jest.fn()
+          },
+          connect: jest.fn(),
+          start: jest.fn(),
+          stop: jest.fn()
+        })),
+        createGain: jest.fn(() => ({
+          gain: {
+            setValueAtTime: jest.fn(),
+            exponentialRampToValueAtTime: jest.fn(),
+            linearRampToValueAtTime: jest.fn()
+          },
+          connect: jest.fn()
+        })),
+        resume: jest.fn().mockResolvedValue(undefined)
       };
 
-      global.Audio = jest.fn().mockImplementation(() => mockOldAudio);
-
-      expect(() => {
-        initBackgroundMusic();
-      }).not.toThrow();
-    });
-  });
-
-  describe('🔑 实际使用场景模拟', () => {
-    test('应该支持游戏中的音效播放流程', async () => {
-      const mockListener = jest.fn();
-      (global.window as any).__SOUND_PLAY_LISTENER__ = mockListener;
-
-      // 模拟游戏启动流程
-      initBackgroundMusic();
-      
-      // 模拟用户交互音效
-      soundPlayedForTest('game-start');
-      soundPlayedForTest('piece-move');
-      soundPlayedForTest('piece-snap');
-      soundPlayedForTest('puzzle-complete');
-
-      // 模拟背景音乐控制
-      await toggleBackgroundMusic(); // 开始播放
-      await toggleBackgroundMusic(); // 暂停播放
-
-      expect(mockListener).toHaveBeenCalledTimes(4);
-      expect(mockListener).toHaveBeenCalledWith({ soundName: 'game-start' });
-      expect(mockListener).toHaveBeenCalledWith({ soundName: 'piece-move' });
-      expect(mockListener).toHaveBeenCalledWith({ soundName: 'piece-snap' });
-      expect(mockListener).toHaveBeenCalledWith({ soundName: 'puzzle-complete' });
-    });
-
-    test('应该处理用户快速切换背景音乐', async () => {
-      initBackgroundMusic();
-
-      // 快速切换多次
-      const promises: Promise<void>[] = [];
-      for (let i = 0; i < 5; i++) {
-        promises.push(toggleBackgroundMusic().then(() => {}));
-      }
-
-      expect(async () => {
-        await Promise.all(promises);
-      }).not.toThrow();
-    });
-  });
-
-  describe('🔑 背景音乐状态管理', () => {
-    test('应该正确获取背景音乐状态', () => {
-      const status = getBackgroundMusicStatus();
-      expect(typeof status).toBe('boolean');
-    });
-
-    test('应该在切换后更新状态', async () => {
-      initBackgroundMusic();
-      
-      const initialStatus = getBackgroundMusicStatus();
-      await toggleBackgroundMusic();
-      const newStatus = getBackgroundMusicStatus();
-      
-      expect(typeof initialStatus).toBe('boolean');
-      expect(typeof newStatus).toBe('boolean');
-    });
-  });
-
-  describe('🔑 按钮点击音效', () => {
-    test('应该能播放按钮点击音效', async () => {
-      const mockListener = jest.fn();
-      (global.window as any).__SOUND_PLAY_LISTENER__ = mockListener;
-
-      await playButtonClickSound();
-
-      expect(mockListener).toHaveBeenCalledWith({ soundName: 'buttonClick' });
-    });
-
-    test('应该处理音频上下文不可用的情况', async () => {
-      // 临时移除AudioContext支持
-      const originalAudioContext = (global as any).AudioContext;
-      const originalWebkitAudioContext = (global as any).webkitAudioContext;
-      
-      delete (global as any).AudioContext;
-      delete (global as any).webkitAudioContext;
-      delete (global.window as any).AudioContext;
-      delete (global.window as any).webkitAudioContext;
-
-      expect(async () => {
-        await playButtonClickSound();
-      }).not.toThrow();
-
-      // 恢复AudioContext支持
-      (global as any).AudioContext = originalAudioContext;
-      (global as any).webkitAudioContext = originalWebkitAudioContext;
-      global.window.AudioContext = originalAudioContext;
-      (global.window as any).webkitAudioContext = originalWebkitAudioContext;
-    });
-
-    test('应该处理音频上下文创建错误', async () => {
-      const originalAudioContext = (global as any).AudioContext;
-      (global as any).AudioContext = jest.fn().mockImplementation(() => {
-        throw new Error('AudioContext creation failed');
+      Object.defineProperty(global, 'window', {
+        value: {
+          AudioContext: jest.fn(() => mockSuspendedAudioContext),
+          webkitAudioContext: jest.fn(() => mockSuspendedAudioContext)
+        },
+        writable: true,
+        configurable: true
       });
-
-      expect(async () => {
-        await playButtonClickSound();
-      }).not.toThrow();
-
-      (global as any).AudioContext = originalAudioContext;
+      
+      await soundEffectsModule.playButtonClickSound();
+      
+      expect(mockSuspendedAudioContext.resume).toHaveBeenCalled();
     });
 
-    test('应该处理音频节点创建错误', async () => {
-      const mockBrokenAudioContext = {
-        ...mockAudioContext,
-        createOscillator: jest.fn().mockImplementation(() => {
-          throw new Error('Oscillator creation failed');
-        })
+    it('应该优先使用标准AudioContext', async () => {
+      const mockStandardAudioContext = jest.fn(() => ({
+        state: 'running',
+        currentTime: 0,
+        destination: {},
+        createOscillator: jest.fn(() => ({
+          type: 'sine',
+          frequency: {
+            setValueAtTime: jest.fn(),
+            exponentialRampToValueAtTime: jest.fn(),
+            linearRampToValueAtTime: jest.fn()
+          },
+          connect: jest.fn(),
+          start: jest.fn(),
+          stop: jest.fn()
+        })),
+        createGain: jest.fn(() => ({
+          gain: {
+            setValueAtTime: jest.fn(),
+            exponentialRampToValueAtTime: jest.fn(),
+            linearRampToValueAtTime: jest.fn()
+          },
+          connect: jest.fn()
+        })),
+        resume: jest.fn().mockResolvedValue(undefined)
+      }));
+      const mockWebkitAudioContext = jest.fn();
+      
+      Object.defineProperty(global, 'window', {
+        value: {
+          AudioContext: mockStandardAudioContext,
+          webkitAudioContext: mockWebkitAudioContext
+        },
+        writable: true,
+        configurable: true
+      });
+      
+      await soundEffectsModule.playButtonClickSound();
+      
+      expect(mockStandardAudioContext).toHaveBeenCalled();
+      expect(mockWebkitAudioContext).not.toHaveBeenCalled();
+    });
+
+    it('应该在标准AudioContext不可用时使用webkit版本', async () => {
+      const mockWebkitAudioContext = jest.fn(() => ({
+        state: 'running',
+        currentTime: 0,
+        destination: {},
+        createOscillator: jest.fn(() => ({
+          type: 'sine',
+          frequency: {
+            setValueAtTime: jest.fn(),
+            exponentialRampToValueAtTime: jest.fn(),
+            linearRampToValueAtTime: jest.fn()
+          },
+          connect: jest.fn(),
+          start: jest.fn(),
+          stop: jest.fn()
+        })),
+        createGain: jest.fn(() => ({
+          gain: {
+            setValueAtTime: jest.fn(),
+            exponentialRampToValueAtTime: jest.fn(),
+            linearRampToValueAtTime: jest.fn()
+          },
+          connect: jest.fn()
+        })),
+        resume: jest.fn().mockResolvedValue(undefined)
+      }));
+      
+      Object.defineProperty(global, 'window', {
+        value: {
+          AudioContext: undefined,
+          webkitAudioContext: mockWebkitAudioContext
+        },
+        writable: true,
+        configurable: true
+      });
+      
+      await soundEffectsModule.playButtonClickSound();
+      
+      expect(mockWebkitAudioContext).toHaveBeenCalled();
+    });
+  });
+
+  describe('边界情况', () => {
+    it('应该处理多次快速调用音效函数', async () => {
+      const promises = [
+        soundEffectsModule.playButtonClickSound(),
+        soundEffectsModule.playPieceSelectSound(),
+        soundEffectsModule.playPieceSnapSound(),
+        soundEffectsModule.playRotateSound(),
+        soundEffectsModule.playCutSound()
+      ];
+      
+      await expect(Promise.all(promises)).resolves.not.toThrow();
+    });
+
+    it('应该处理背景音乐暂停和恢复的完整流程', async () => {
+      soundEffectsModule.initBackgroundMusic();
+      
+      // 开始播放
+      let result = await soundEffectsModule.toggleBackgroundMusic();
+      expect(result).toBe(true);
+      expect(soundEffectsModule.getBackgroundMusicStatus()).toBe(true);
+      
+      // 暂停播放
+      result = await soundEffectsModule.toggleBackgroundMusic();
+      expect(result).toBe(false);
+      expect(soundEffectsModule.getBackgroundMusicStatus()).toBe(false);
+      
+      // 再次播放
+      result = await soundEffectsModule.toggleBackgroundMusic();
+      expect(result).toBe(true);
+      expect(soundEffectsModule.getBackgroundMusicStatus()).toBe(true);
+    });
+
+    it('应该处理AudioContext为null的情况', async () => {
+      // 模拟createAudioContext返回null
+      Object.defineProperty(global, 'window', {
+        value: {
+          AudioContext: undefined,
+          webkitAudioContext: undefined
+        },
+        writable: true,
+        configurable: true
+      });
+      
+      // 这些函数应该静默失败，不抛出错误
+      await expect(soundEffectsModule.playButtonClickSound()).resolves.not.toThrow();
+      await expect(soundEffectsModule.playPieceSelectSound()).resolves.not.toThrow();
+      await expect(soundEffectsModule.playPieceSnapSound()).resolves.not.toThrow();
+      await expect(soundEffectsModule.playPuzzleCompletedSound()).resolves.not.toThrow();
+      await expect(soundEffectsModule.playRotateSound()).resolves.not.toThrow();
+      await expect(soundEffectsModule.playCutSound()).resolves.not.toThrow();
+    });
+
+    it('应该处理背景音乐播放时AudioContext挂起的情况', async () => {
+      const mockSuspendedAudioContext = {
+        state: 'suspended',
+        resume: jest.fn().mockResolvedValue(undefined)
+      };
+      
+      const mockAudio = {
+        loop: false,
+        volume: 0,
+        play: jest.fn().mockResolvedValue(undefined),
+        pause: jest.fn()
       };
 
-      (global as any).AudioContext = jest.fn().mockImplementation(() => mockBrokenAudioContext);
+      Object.defineProperty(global, 'window', {
+        value: {
+          AudioContext: jest.fn(() => mockSuspendedAudioContext),
+          webkitAudioContext: jest.fn(() => mockSuspendedAudioContext)
+        },
+        writable: true,
+        configurable: true
+      });
 
-      expect(async () => {
-        await playButtonClickSound();
-      }).not.toThrow();
-
-      (global as any).AudioContext = jest.fn().mockImplementation(() => mockAudioContext);
-    });
-  });
-
-  describe('🔑 拼图片段选择音效', () => {
-    test('应该能播放片段选择音效', async () => {
-      const mockListener = jest.fn();
-      (global.window as any).__SOUND_PLAY_LISTENER__ = mockListener;
-
-      expect(async () => {
-        await playPieceSelectSound();
-      }).not.toThrow();
-
-      expect(mockListener).toHaveBeenCalledWith({ soundName: 'pieceSelect' });
-    });
-
-    test('应该处理音频上下文暂停状态', async () => {
-      mockAudioContext.state = 'suspended';
-
-      expect(async () => {
-        await playPieceSelectSound();
-      }).not.toThrow();
-
-      expect(mockAudioContext.resume).toHaveBeenCalled();
-    });
-
-    test('应该处理音频上下文恢复失败', async () => {
-      mockAudioContext.state = 'suspended';
-      mockAudioContext.resume.mockRejectedValue(new Error('Resume failed'));
-
-      expect(async () => {
-        await playPieceSelectSound();
-      }).not.toThrow();
-    });
-  });
-
-  describe('🔑 音频上下文管理', () => {
-    test('应该正确创建音频上下文', async () => {
-      expect(async () => {
-        await playButtonClickSound();
-      }).not.toThrow();
-    });
-
-    test('应该处理音频上下文状态变化', async () => {
-      // 测试不同的音频上下文状态
-      const states = ['running', 'suspended', 'closed'];
+      Object.defineProperty(global, 'Audio', {
+        value: jest.fn(() => mockAudio),
+        writable: true,
+        configurable: true
+      });
       
-      for (const state of states) {
-        mockAudioContext.state = state;
+      soundEffectsModule.initBackgroundMusic();
+      const result = await soundEffectsModule.toggleBackgroundMusic();
+      
+      expect(mockSuspendedAudioContext.resume).toHaveBeenCalled();
+      expect(result).toBe(true);
+    });
+
+    it('应该处理所有音效函数的错误情况', async () => {
+      const { mockAudioContext } = mockWindow();
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      
+      // 模拟所有音效函数的错误
+      const errorFunctions = [
+        { fn: soundEffectsModule.playButtonClickSound, error: 'Error playing button click sound:' },
+        { fn: soundEffectsModule.playPieceSelectSound, error: 'Error playing piece select sound:' },
+        { fn: soundEffectsModule.playPieceSnapSound, error: 'Error playing piece snap sound:' },
+        { fn: soundEffectsModule.playPuzzleCompletedSound, error: 'Error playing puzzle completed sound:' },
+        { fn: soundEffectsModule.playRotateSound, error: 'Error playing rotate sound:' },
+        { fn: soundEffectsModule.playCutSound, error: 'Error playing cut sound:' }
+      ];
+      
+      for (const { fn, error } of errorFunctions) {
+        mockAudioContext.createOscillator.mockImplementationOnce(() => {
+          throw new Error('测试错误');
+        });
         
-        expect(async () => {
-          await playButtonClickSound();
-          await playPieceSelectSound();
-        }).not.toThrow();
+        await fn();
+        expect(consoleSpy).toHaveBeenCalledWith(error, expect.any(Error));
       }
+      
+      consoleSpy.mockRestore();
     });
 
-    test('应该处理音频上下文解锁', async () => {
-      mockAudioContext.state = 'suspended';
-      
-      await playButtonClickSound();
-      
-      expect(mockAudioContext.resume).toHaveBeenCalled();
-    });
-  });
-
-  describe('🔑 音效系统集成测试', () => {
-    test('应该支持完整的游戏音效流程', async () => {
-      const mockListener = jest.fn();
-      (global.window as any).__SOUND_PLAY_LISTENER__ = mockListener;
-
-      // 模拟完整的游戏音效流程
-      initBackgroundMusic();
-      
-      // 用户交互音效
-      await playButtonClickSound();
-      await playPieceSelectSound();
-      
-      // 背景音乐控制
-      await toggleBackgroundMusic();
-      const status1 = getBackgroundMusicStatus();
-      
-      await toggleBackgroundMusic();
-      const status2 = getBackgroundMusicStatus();
-
-      expect(mockListener).toHaveBeenCalledWith({ soundName: 'buttonClick' });
-      expect(mockListener).toHaveBeenCalledWith({ soundName: 'pieceSelect' });
-      expect(typeof status1).toBe('boolean');
-      expect(typeof status2).toBe('boolean');
-    });
-
-    test('应该处理快速连续的音效播放', async () => {
-      const promises: Promise<void>[] = [];
-      
-      for (let i = 0; i < 10; i++) {
-        promises.push(playButtonClickSound());
-        promises.push(playPieceSelectSound());
-      }
-
-      expect(async () => {
-        await Promise.all(promises);
-      }).not.toThrow();
-    });
-
-    test('应该处理音效播放期间的背景音乐切换', async () => {
-      initBackgroundMusic();
-
-      const promises = [
-        playButtonClickSound(),
-        toggleBackgroundMusic(),
-        playPieceSelectSound(),
-        toggleBackgroundMusic()
-      ];
-
-      expect(async () => {
-        await Promise.all(promises);
-      }).not.toThrow();
-    });
-  });
-
-  describe('🔑 音频资源管理', () => {
-    test('应该正确管理音频资源', () => {
-      // 多次初始化不应该创建多个音频实例
-      initBackgroundMusic();
-      initBackgroundMusic();
-      initBackgroundMusic();
-
-      expect(() => {
-        getBackgroundMusicStatus();
-      }).not.toThrow();
-    });
-
-    test('应该处理音频资源加载失败', () => {
-      const mockFailingAudio = {
-        ...mockAudio,
-        addEventListener: jest.fn((event, callback) => {
-          if (event === 'error') {
-            setTimeout(() => callback(new Error('Audio load failed')), 0);
-          }
-        })
+    it('应该处理AudioContext状态不是suspended的情况', async () => {
+      const mockRunningAudioContext = {
+        state: 'running',
+        currentTime: 0,
+        destination: {},
+        createOscillator: jest.fn(() => ({
+          type: 'sine',
+          frequency: {
+            setValueAtTime: jest.fn(),
+            exponentialRampToValueAtTime: jest.fn(),
+            linearRampToValueAtTime: jest.fn()
+          },
+          connect: jest.fn(),
+          start: jest.fn(),
+          stop: jest.fn()
+        })),
+        createGain: jest.fn(() => ({
+          gain: {
+            setValueAtTime: jest.fn(),
+            exponentialRampToValueAtTime: jest.fn(),
+            linearRampToValueAtTime: jest.fn()
+          },
+          connect: jest.fn()
+        })),
+        resume: jest.fn().mockResolvedValue(undefined)
       };
 
-      global.Audio = jest.fn().mockImplementation(() => mockFailingAudio);
-
-      expect(() => {
-        initBackgroundMusic();
-      }).not.toThrow();
-    });
-
-    test('应该处理内存清理', async () => {
-      // 创建大量音效实例来测试内存管理
-      const promises: Promise<void>[] = [];
-      
-      for (let i = 0; i < 50; i++) {
-        promises.push(playButtonClickSound());
-        promises.push(playPieceSelectSound());
-      }
-
-      expect(async () => {
-        await Promise.all(promises);
-      }).not.toThrow();
-    });
-  });
-
-  describe('🔑 跨浏览器兼容性', () => {
-    test('应该支持不同的AudioContext实现', async () => {
-      // 测试webkit前缀的AudioContext
-      delete (global as any).AudioContext;
-      
-      expect(async () => {
-        await playButtonClickSound();
-      }).not.toThrow();
-    });
-
-    test('应该处理移动端浏览器限制', async () => {
-      // 模拟移动端浏览器的音频限制
-      mockAudio.play.mockRejectedValue(new DOMException('NotAllowedError: play() failed because the user didn\'t interact with the document first'));
-
-      expect(async () => {
-        await toggleBackgroundMusic();
-      }).not.toThrow();
-    });
-
-    test('应该处理Safari的音频限制', async () => {
-      // 模拟Safari的音频上下文限制
-      mockAudioContext.state = 'suspended';
-      mockAudioContext.resume.mockResolvedValue(undefined);
-
-      expect(async () => {
-        await playButtonClickSound();
-        await playPieceSelectSound();
-      }).not.toThrow();
-    });
-  });
-
-  describe('🔑 拼图片段吸附音效', () => {
-    test('应该能播放片段吸附音效', async () => {
-      const mockListener = jest.fn();
-      (global.window as any).__SOUND_PLAY_LISTENER__ = mockListener;
-
-      await playPieceSnapSound();
-
-      expect(mockListener).toHaveBeenCalledWith({ soundName: 'pieceSnap' });
-    });
-
-    test('应该处理音频上下文不可用的情况', async () => {
-      const originalAudioContext = (global as any).AudioContext;
-      delete (global as any).AudioContext;
-      delete (global as any).webkitAudioContext;
-
-      expect(async () => {
-        await playPieceSnapSound();
-      }).not.toThrow();
-
-      (global as any).AudioContext = originalAudioContext;
-    });
-
-    test('应该处理音频节点创建错误', async () => {
-      const mockBrokenAudioContext = {
-        ...mockAudioContext,
-        createOscillator: jest.fn().mockImplementation(() => {
-          throw new Error('Oscillator creation failed');
-        })
-      };
-
-      (global as any).AudioContext = jest.fn().mockImplementation(() => mockBrokenAudioContext);
-
-      expect(async () => {
-        await playPieceSnapSound();
-      }).not.toThrow();
-
-      (global as any).AudioContext = jest.fn().mockImplementation(() => mockAudioContext);
-    });
-  });
-
-  describe('🔑 拼图完成音效', () => {
-    test('应该能播放拼图完成音效', async () => {
-      const mockListener = jest.fn();
-      (global.window as any).__SOUND_PLAY_LISTENER__ = mockListener;
-
-      await playPuzzleCompletedSound();
-
-      expect(mockListener).toHaveBeenCalledWith({ soundName: 'puzzleCompleted' });
-    });
-
-    test('应该处理双振荡器音效', async () => {
-      const mockListener = jest.fn();
-      (global.window as any).__SOUND_PLAY_LISTENER__ = mockListener;
-
-      await playPuzzleCompletedSound();
-
-      expect(mockListener).toHaveBeenCalledWith({ soundName: 'puzzleCompleted' });
-    });
-
-    test('应该处理音频上下文错误', async () => {
-      const originalAudioContext = (global as any).AudioContext;
-      (global as any).AudioContext = jest.fn().mockImplementation(() => {
-        throw new Error('AudioContext creation failed');
+      Object.defineProperty(global, 'window', {
+        value: {
+          AudioContext: jest.fn(() => mockRunningAudioContext),
+          webkitAudioContext: jest.fn(() => mockRunningAudioContext)
+        },
+        writable: true,
+        configurable: true
       });
-
-      expect(async () => {
-        await playPuzzleCompletedSound();
-      }).not.toThrow();
-
-      (global as any).AudioContext = originalAudioContext;
-    });
-  });
-
-  describe('🔑 旋转音效', () => {
-    test('应该能播放旋转音效', async () => {
-      const mockListener = jest.fn();
-      (global.window as any).__SOUND_PLAY_LISTENER__ = mockListener;
-
-      await playRotateSound();
-
-      expect(mockListener).toHaveBeenCalledWith({ soundName: 'rotate' });
-    });
-
-    test('应该使用triangle波形', async () => {
-      const mockListener = jest.fn();
-      (global.window as any).__SOUND_PLAY_LISTENER__ = mockListener;
-
-      await playRotateSound();
-
-      expect(mockListener).toHaveBeenCalledWith({ soundName: 'rotate' });
-    });
-
-    test('应该处理音频上下文暂停状态', async () => {
-      mockAudioContext.state = 'suspended';
-
-      expect(async () => {
-        await playRotateSound();
-      }).not.toThrow();
-
-      expect(mockAudioContext.resume).toHaveBeenCalled();
-    });
-  });
-
-  describe('🔑 切割音效', () => {
-    test('应该能播放切割音效', async () => {
-      const mockListener = jest.fn();
-      (global.window as any).__SOUND_PLAY_LISTENER__ = mockListener;
-
-      await playCutSound();
-
-      expect(mockListener).toHaveBeenCalledWith({ soundName: 'cut' });
-    });
-
-    test('应该使用sawtooth波形', async () => {
-      const mockListener = jest.fn();
-      (global.window as any).__SOUND_PLAY_LISTENER__ = mockListener;
-
-      await playCutSound();
-
-      expect(mockListener).toHaveBeenCalledWith({ soundName: 'cut' });
-    });
-
-    test('应该处理复杂的频率变化', async () => {
-      const mockListener = jest.fn();
-      (global.window as any).__SOUND_PLAY_LISTENER__ = mockListener;
-
-      await playCutSound();
-
-      expect(mockListener).toHaveBeenCalledWith({ soundName: 'cut' });
-    });
-
-    test('应该处理音频节点连接错误', async () => {
-      const mockBrokenGainNode = {
-        connect: jest.fn().mockImplementation(() => {
-          throw new Error('Gain node connection failed');
-        }),
-        gain: { 
-          value: 0,
-          setValueAtTime: jest.fn(),
-          exponentialRampToValueAtTime: jest.fn(),
-          linearRampToValueAtTime: jest.fn()
-        }
-      };
-
-      const mockAudioContextWithBrokenGain = {
-        ...mockAudioContext,
-        createGain: jest.fn(() => mockBrokenGainNode)
-      };
-
-      (global as any).AudioContext = jest.fn().mockImplementation(() => mockAudioContextWithBrokenGain);
-
-      expect(async () => {
-        await playCutSound();
-      }).not.toThrow();
-
-      (global as any).AudioContext = jest.fn().mockImplementation(() => mockAudioContext);
-    });
-  });
-
-  describe('🔑 音效系统完整性测试', () => {
-    test('应该支持所有音效类型的播放', async () => {
-      const mockListener = jest.fn();
-      (global.window as any).__SOUND_PLAY_LISTENER__ = mockListener;
-
-      // 播放所有类型的音效
-      await playButtonClickSound();
-      await playPieceSelectSound();
-      await playPieceSnapSound();
-      await playPuzzleCompletedSound();
-      await playRotateSound();
-      await playCutSound();
-
-      expect(mockListener).toHaveBeenCalledTimes(6);
-      expect(mockListener).toHaveBeenCalledWith({ soundName: 'buttonClick' });
-      expect(mockListener).toHaveBeenCalledWith({ soundName: 'pieceSelect' });
-      expect(mockListener).toHaveBeenCalledWith({ soundName: 'pieceSnap' });
-      expect(mockListener).toHaveBeenCalledWith({ soundName: 'puzzleCompleted' });
-      expect(mockListener).toHaveBeenCalledWith({ soundName: 'rotate' });
-      expect(mockListener).toHaveBeenCalledWith({ soundName: 'cut' });
-    });
-
-    test('应该处理快速连续播放所有音效', async () => {
-      const promises = [
-        playButtonClickSound(),
-        playPieceSelectSound(),
-        playPieceSnapSound(),
-        playPuzzleCompletedSound(),
-        playRotateSound(),
-        playCutSound()
-      ];
-
-      expect(async () => {
-        await Promise.all(promises);
-      }).not.toThrow();
-    });
-
-    test('应该在音频上下文不可用时优雅降级', async () => {
-      const originalAudioContext = (global as any).AudioContext;
-      const originalWebkitAudioContext = (global as any).webkitAudioContext;
       
-      delete (global as any).AudioContext;
-      delete (global as any).webkitAudioContext;
-      delete (global.window as any).AudioContext;
-      delete (global.window as any).webkitAudioContext;
+      await soundEffectsModule.playButtonClickSound();
+      
+      // 当AudioContext状态为running时，不应该调用resume
+      expect(mockRunningAudioContext.resume).not.toHaveBeenCalled();
+    });
 
-      const promises = [
-        playButtonClickSound(),
-        playPieceSelectSound(),
-        playPieceSnapSound(),
-        playPuzzleCompletedSound(),
-        playRotateSound(),
-        playCutSound()
-      ];
-
-      expect(async () => {
-        await Promise.all(promises);
+    it('应该覆盖soundPlayedForTest函数（第8行）', () => {
+      // 测试没有window对象的情况
+      const originalWindow = global.window;
+      delete (global as any).window;
+      
+      // 这应该不会抛出错误
+      expect(() => {
+        soundEffectsModule.soundPlayedForTest('test-sound');
       }).not.toThrow();
-
-      // 恢复AudioContext支持
-      (global as any).AudioContext = originalAudioContext;
-      (global as any).webkitAudioContext = originalWebkitAudioContext;
-      global.window.AudioContext = originalAudioContext;
-      (global.window as any).webkitAudioContext = originalWebkitAudioContext;
+      
+      // 恢复window对象
+      (global as any).window = originalWindow;
+      
+      // 测试有window对象但没有监听器的情况
+      Object.defineProperty(global, 'window', {
+        value: {},
+        writable: true,
+        configurable: true
+      });
+      
+      expect(() => {
+        soundEffectsModule.soundPlayedForTest('test-sound');
+      }).not.toThrow();
+      
+      // 测试有监听器的情况
+      const mockListener = jest.fn();
+      Object.defineProperty(global, 'window', {
+        value: {
+          __SOUND_PLAY_LISTENER__: mockListener
+        },
+        writable: true,
+        configurable: true
+      });
+      
+      soundEffectsModule.soundPlayedForTest('button-click');
+      expect(mockListener).toHaveBeenCalledWith({ soundName: 'button-click' });
+      
+      // 恢复原始window
+      (global as any).window = originalWindow;
     });
   });
 });

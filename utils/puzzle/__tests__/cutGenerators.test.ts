@@ -12,7 +12,9 @@ import {
   generateForcedCutLine,
   CutValidator,
   CutStrategyFactory,
-  CutGeneratorController
+  CutGeneratorController,
+  DIFFICULTY_SETTINGS,
+  CUT_GENERATOR_CONFIG
 } from '../cutGenerators';
 import type { Point } from '@/types/puzzleTypes';
 
@@ -468,6 +470,123 @@ describe('cutGenerators - 切割线生成测试', () => {
       expect(() => {
         validator.isValid(invalidCut, testShape, []);
       }).not.toThrow();
+    });
+  });
+
+  describe('🔑 导出常量和配置测试', () => {
+    test('应该正确导出DIFFICULTY_SETTINGS', () => {
+      expect(DIFFICULTY_SETTINGS).toBeDefined();
+      expect(typeof DIFFICULTY_SETTINGS).toBe('object');
+      
+      // 验证所有难度级别都存在
+      for (let i = 1; i <= 8; i++) {
+        expect(DIFFICULTY_SETTINGS[i as keyof typeof DIFFICULTY_SETTINGS]).toBeDefined();
+      }
+      
+      // 验证配置结构
+      const setting = DIFFICULTY_SETTINGS[1];
+      expect(setting).toHaveProperty('label');
+      expect(setting).toHaveProperty('targetCuts');
+      expect(setting).toHaveProperty('centerProbability');
+      expect(typeof setting.label).toBe('string');
+      expect(typeof setting.targetCuts).toBe('number');
+      expect(typeof setting.centerProbability).toBe('number');
+    });
+
+    test('应该正确导出CUT_GENERATOR_CONFIG', () => {
+      expect(CUT_GENERATOR_CONFIG).toBeDefined();
+      expect(typeof CUT_GENERATOR_CONFIG).toBe('object');
+      
+      // 验证配置包含必要的属性
+      expect(CUT_GENERATOR_CONFIG).toHaveProperty('MAX_ATTEMPTS');
+      expect(CUT_GENERATOR_CONFIG).toHaveProperty('EARLY_EXIT_THRESHOLD');
+      
+      // 验证配置值的类型
+      expect(typeof CUT_GENERATOR_CONFIG.MAX_ATTEMPTS).toBe('number');
+      expect(typeof CUT_GENERATOR_CONFIG.EARLY_EXIT_THRESHOLD).toBe('number');
+      
+      // 验证配置值的合理性
+      expect(CUT_GENERATOR_CONFIG.MAX_ATTEMPTS).toBeGreaterThan(0);
+      expect(CUT_GENERATOR_CONFIG.EARLY_EXIT_THRESHOLD).toBeGreaterThan(0);
+    });
+
+    test('应该验证导出的类型定义可用', () => {
+      // 这个测试确保类型导出正常工作
+      const bounds = calculateBounds(testShape);
+      const cut = generateStraightCutLine(bounds);
+      
+      // 验证返回的对象符合CutLine类型
+      expect(cut).toHaveProperty('x1');
+      expect(cut).toHaveProperty('y1');
+      expect(cut).toHaveProperty('x2');
+      expect(cut).toHaveProperty('y2');
+      expect(cut).toHaveProperty('type');
+      
+      // 验证bounds符合Bounds类型
+      expect(bounds).toHaveProperty('minX');
+      expect(bounds).toHaveProperty('maxX');
+      expect(bounds).toHaveProperty('minY');
+      expect(bounds).toHaveProperty('maxY');
+    });
+
+    test('应该测试所有导出的工具函数', () => {
+      const bounds = calculateBounds(testShape);
+      
+      // 测试所有几何函数
+      const straightCut = generateStraightCutLine(bounds);
+      expect(straightCut.type).toBe('straight');
+      
+      const diagonalCut = generateDiagonalCutLine(bounds);
+      expect(diagonalCut.type).toBe('diagonal');
+      
+      const centerCut = generateCenterCutLine(testShape, true, 'straight');
+      expect(centerCut.type).toBe('straight');
+      
+      const centerCutDiagonal = generateCenterCutLine(testShape, false, 'diagonal');
+      expect(centerCutDiagonal.type).toBe('diagonal');
+      
+      // 测试强制切割线生成
+      const forcedCut1 = generateForcedCutLine(testShape, [], 'straight');
+      if (forcedCut1) {
+        expect(forcedCut1.type).toBe('straight');
+      }
+      
+      const forcedCut2 = generateForcedCutLine(testShape, [straightCut], 'diagonal');
+      if (forcedCut2) {
+        expect(forcedCut2.type).toBe('diagonal');
+      }
+    });
+
+    test('应该测试所有导出的类', () => {
+      // 测试CutValidator
+      const validator = new CutValidator();
+      expect(validator).toBeInstanceOf(CutValidator);
+      
+      // 测试CutStrategyFactory
+      expect(CutStrategyFactory).toBeDefined();
+      expect(typeof CutStrategyFactory.createStrategy).toBe('function');
+      
+      // 测试CutGeneratorController
+      const controller = new CutGeneratorController();
+      expect(controller).toBeInstanceOf(CutGeneratorController);
+      expect(typeof controller.generateCuts).toBe('function');
+    });
+
+    test('应该验证配置的完整性', () => {
+      // 验证所有难度级别的配置都存在且有效
+      for (let difficulty = 1; difficulty <= 8; difficulty++) {
+        const setting = DIFFICULTY_SETTINGS[difficulty as keyof typeof DIFFICULTY_SETTINGS];
+        expect(setting).toBeDefined();
+        expect(setting.targetCuts).toBeGreaterThan(0);
+        expect(setting.centerProbability).toBeGreaterThanOrEqual(0);
+        expect(setting.centerProbability).toBeLessThanOrEqual(1);
+        expect(setting.label).toBeTruthy();
+      }
+      
+      // 验证配置常量的合理性
+      expect(CUT_GENERATOR_CONFIG.MAX_ATTEMPTS).toBeGreaterThan(10);
+      expect(CUT_GENERATOR_CONFIG.EARLY_EXIT_THRESHOLD).toBeGreaterThan(0);
+      expect(CUT_GENERATOR_CONFIG.EARLY_EXIT_THRESHOLD).toBeLessThan(1);
     });
   });
 });

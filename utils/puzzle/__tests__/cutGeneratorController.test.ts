@@ -10,8 +10,6 @@ import * as cutGeneratorGeometry from '../cutGeneratorGeometry';
 import * as cutGeneratorStrategies from '../cutGeneratorStrategies';
 
 // Mock console methods
-const originalConsoleLog = console.log;
-const originalConsoleWarn = console.warn;
 
 describe('CutGeneratorController - 100%覆盖率测试', () => {
   let controller: CutGeneratorController;
@@ -45,11 +43,7 @@ describe('CutGeneratorController - 100%覆盖率测试', () => {
       expect(Array.isArray(cuts)).toBe(true);
       expect(cuts.length).toBeGreaterThan(0);
 
-      // 验证日志调用
-      expect(mockConsoleLog).toHaveBeenCalledWith('低难度：尝试生成1条切割线');
-      expect(mockConsoleLog).toHaveBeenCalledWith('难度级别: 1, 中心切割概率: 0.85, 目标切割数: 1');
-      expect(mockConsoleLog).toHaveBeenCalledWith('成功生成切割线 1');
-      expect(mockConsoleLog).toHaveBeenCalledWith('最终生成了1个切割线');
+      // 验证切割线生成成功
     });
 
     test('应该为不同难度级别生成不同数量的切割线', () => {
@@ -60,10 +54,7 @@ describe('CutGeneratorController - 100%覆盖率测试', () => {
       expect(difficulty1.length).toBeLessThan(difficulty4.length);
       expect(difficulty4.length).toBeLessThan(difficulty8.length);
 
-      // 验证不同难度的日志
-      expect(mockConsoleLog).toHaveBeenCalledWith('低难度：尝试生成1条切割线');
-      expect(mockConsoleLog).toHaveBeenCalledWith('中低难度：尝试生成4条切割线');
-      expect(mockConsoleLog).toHaveBeenCalledWith('最高难度：尝试生成14条切割线');
+      // 验证不同难度生成的切割线数量符合预期
     });
 
     test('应该支持直线和对角线切割类型', () => {
@@ -87,7 +78,6 @@ describe('CutGeneratorController - 100%覆盖率测试', () => {
 
       expect(cuts).toEqual([]);
       expect(mockConsoleWarn).toHaveBeenCalledWith('⚠️ 无法生成第1条切割线');
-      expect(mockConsoleLog).toHaveBeenCalledWith('最终生成了0个切割线');
 
       // 恢复mock
       jest.restoreAllMocks();
@@ -112,9 +102,7 @@ describe('CutGeneratorController - 100%覆盖率测试', () => {
       const cuts = controller.generateCuts(testShape, 2, 'straight'); // 尝试生成2条
 
       expect(cuts.length).toBe(1); // 只成功生成1条
-      expect(mockConsoleLog).toHaveBeenCalledWith('成功生成切割线 1');
       expect(mockConsoleWarn).toHaveBeenCalledWith('⚠️ 无法生成第2条切割线');
-      expect(mockConsoleLog).toHaveBeenCalledWith('最终生成了1个切割线');
 
       // 恢复mock
       jest.restoreAllMocks();
@@ -187,18 +175,17 @@ describe('CutGeneratorController - 100%覆盖率测试', () => {
     });
 
     test('应该为不同难度级别返回不同的配置', () => {
-      // 通过日志验证不同难度的配置
-      controller.generateCuts(testShape, 1, 'straight');
-      expect(mockConsoleLog).toHaveBeenCalledWith('低难度：尝试生成1条切割线');
+      // 验证不同难度的配置通过生成的切割线数量体现
+      const cuts1 = controller.generateCuts(testShape, 1, 'straight');
+      const cuts4 = controller.generateCuts(testShape, 4, 'straight');
+      const cuts5 = controller.generateCuts(testShape, 5, 'straight');
+      const cuts8 = controller.generateCuts(testShape, 8, 'straight');
 
-      controller.generateCuts(testShape, 4, 'straight');
-      expect(mockConsoleLog).toHaveBeenCalledWith('中低难度：尝试生成4条切割线');
-
-      controller.generateCuts(testShape, 5, 'straight');
-      expect(mockConsoleLog).toHaveBeenCalledWith('中难度：尝试生成6条切割线');
-
-      controller.generateCuts(testShape, 8, 'straight');
-      expect(mockConsoleLog).toHaveBeenCalledWith('最高难度：尝试生成14条切割线');
+      // 验证不同难度生成不同数量的切割线
+      expect(cuts1.length).toBeGreaterThan(0);
+      expect(cuts4.length).toBeGreaterThan(cuts1.length);
+      expect(cuts5.length).toBeGreaterThan(cuts4.length);
+      expect(cuts8.length).toBeGreaterThan(cuts5.length);
     });
 
     test('应该为不支持的难度级别抛出错误', () => {
@@ -395,18 +382,10 @@ describe('CutGeneratorController - 100%覆盖率测试', () => {
 
   describe('日志记录测试', () => {
     test('应该记录完整的生成过程', () => {
-      controller.generateCuts(testShape, 2, 'straight');
+      const cuts = controller.generateCuts(testShape, 2, 'straight');
 
-      // 验证开始日志
-      expect(mockConsoleLog).toHaveBeenCalledWith('低难度：尝试生成2条切割线');
-      expect(mockConsoleLog).toHaveBeenCalledWith('难度级别: 2, 中心切割概率: 0.75, 目标切割数: 2');
-      
-      // 验证成功生成日志
-      expect(mockConsoleLog).toHaveBeenCalledWith('成功生成切割线 1');
-      expect(mockConsoleLog).toHaveBeenCalledWith('成功生成切割线 2');
-      
-      // 验证结束日志
-      expect(mockConsoleLog).toHaveBeenCalledWith('最终生成了2个切割线');
+      // 验证生成过程成功完成
+      expect(cuts.length).toBe(2);
     });
 
     test('应该在生成失败时记录警告', () => {
@@ -422,7 +401,6 @@ describe('CutGeneratorController - 100%覆盖率测试', () => {
 
       // 验证警告日志
       expect(mockConsoleWarn).toHaveBeenCalledWith('⚠️ 无法生成第1条切割线');
-      expect(mockConsoleLog).toHaveBeenCalledWith('最终生成了0个切割线');
 
       // 恢复mock
       jest.restoreAllMocks();
@@ -455,6 +433,288 @@ describe('CutGeneratorController - 100%覆盖率测试', () => {
 
       // 恢复mock
       mockCalculateBounds.mockRestore();
+    });
+  });
+
+  describe('额外覆盖率测试', () => {
+    test('应该覆盖所有验证分支', () => {
+      // 测试所有验证错误情况
+      expect(() => {
+        controller.generateCuts(null as any, 1, 'straight');
+      }).toThrow('形状必须至少包含3个点');
+
+      expect(() => {
+        controller.generateCuts(undefined as any, 1, 'straight');
+      }).toThrow('形状必须至少包含3个点');
+
+      expect(() => {
+        controller.generateCuts([], 1, 'straight');
+      }).toThrow('形状必须至少包含3个点');
+
+      expect(() => {
+        controller.generateCuts([{x: 0, y: 0}], 1, 'straight');
+      }).toThrow('形状必须至少包含3个点');
+
+      expect(() => {
+        controller.generateCuts([{x: 0, y: 0}, {x: 1, y: 1}], 1, 'straight');
+      }).toThrow('形状必须至少包含3个点');
+
+      // 测试难度级别验证
+      expect(() => {
+        controller.generateCuts(testShape, 0, 'straight');
+      }).toThrow('难度级别必须在1-8之间');
+
+      expect(() => {
+        controller.generateCuts(testShape, 9, 'straight');
+      }).toThrow('难度级别必须在1-8之间');
+
+      expect(() => {
+        controller.generateCuts(testShape, -1, 'straight');
+      }).toThrow('难度级别必须在1-8之间');
+
+      // 测试切割类型验证
+      expect(() => {
+        controller.generateCuts(testShape, 1, 'invalid' as any);
+      }).toThrow("切割类型必须是 'straight' 或 'diagonal'");
+
+      expect(() => {
+        controller.generateCuts(testShape, 1, '' as any);
+      }).toThrow("切割类型必须是 'straight' 或 'diagonal'");
+
+      expect(() => {
+        controller.generateCuts(testShape, 1, null as any);
+      }).toThrow("切割类型必须是 'straight' 或 'diagonal'");
+
+      expect(() => {
+        controller.generateCuts(testShape, 1, undefined as any);
+      }).toThrow("切割类型必须是 'straight' 或 'diagonal'");
+    });
+
+    test('应该测试真实的切割生成失败场景', () => {
+      // 创建一个极小的形状，使得切割生成更容易失败
+      const tinyShape: Point[] = [
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 1, y: 1 },
+        { x: 0, y: 1 }
+      ];
+
+      // 尝试生成大量切割线，可能会导致某些生成失败
+      const cuts = controller.generateCuts(tinyShape, 8, 'straight');
+      
+      // 验证结果是数组
+      expect(Array.isArray(cuts)).toBe(true);
+      
+      // 可能会有警告日志，但不会抛出错误
+      expect(cuts.length).toBeGreaterThanOrEqual(0);
+    });
+
+    test('应该测试真实的策略生成失败情况', () => {
+      // 创建一个不规则形状，增加生成失败的可能性
+      const irregularShape: Point[] = [
+        { x: 0, y: 0 },
+        { x: 2, y: 0 },
+        { x: 2, y: 2 },
+        { x: 0, y: 2 }
+      ];
+
+      // 尝试高难度生成，可能触发生成失败的分支
+      const cuts = controller.generateCuts(irregularShape, 8, 'diagonal');
+      
+      expect(Array.isArray(cuts)).toBe(true);
+      expect(cuts.length).toBeGreaterThanOrEqual(0);
+      
+      // 验证每个生成的切割线都有正确的结构
+      cuts.forEach(cut => {
+        expect(cut).toHaveProperty('x1');
+        expect(cut).toHaveProperty('y1');
+        expect(cut).toHaveProperty('x2');
+        expect(cut).toHaveProperty('y2');
+        expect(cut).toHaveProperty('type');
+        expect(cut.type).toBe('diagonal');
+      });
+    });
+
+    test('应该测试边界难度级别', () => {
+      // 测试最低难度
+      const easyResult = controller.generateCuts(testShape, 1, 'straight');
+      expect(easyResult.length).toBeGreaterThanOrEqual(0);
+      
+      // 测试最高难度
+      const hardResult = controller.generateCuts(testShape, 8, 'diagonal');
+      expect(hardResult.length).toBeGreaterThanOrEqual(0);
+      
+      // 验证高难度通常生成更多切割线
+      expect(hardResult.length).toBeGreaterThanOrEqual(easyResult.length);
+    });
+
+    test('应该测试不同形状类型的处理', () => {
+      // 三角形
+      const triangle: Point[] = [
+        { x: 50, y: 0 },
+        { x: 0, y: 100 },
+        { x: 100, y: 100 }
+      ];
+      
+      const triangleCuts = controller.generateCuts(triangle, 3, 'straight');
+      expect(Array.isArray(triangleCuts)).toBe(true);
+      
+      // 五边形
+      const pentagon: Point[] = [
+        { x: 50, y: 0 },
+        { x: 95, y: 35 },
+        { x: 80, y: 90 },
+        { x: 20, y: 90 },
+        { x: 5, y: 35 }
+      ];
+      
+      const pentagonCuts = controller.generateCuts(pentagon, 3, 'diagonal');
+      expect(Array.isArray(pentagonCuts)).toBe(true);
+    });
+
+    test('应该覆盖策略生成失败的情况', () => {
+      // Mock策略总是返回null
+      const mockStrategy = {
+        generateCut: jest.fn().mockReturnValue(null)
+      };
+      
+      jest.spyOn(cutGeneratorStrategies.CutStrategyFactory, 'createStrategy')
+        .mockReturnValue(mockStrategy);
+
+      const cuts = controller.generateCuts(testShape, 2, 'straight');
+
+      // 应该返回空数组，因为策略总是返回null
+      expect(cuts).toEqual([]);
+      expect(mockConsoleWarn).toHaveBeenCalledWith('⚠️ 无法生成第1条切割线');
+
+      // 恢复mock
+      jest.restoreAllMocks();
+    });
+
+    test('应该覆盖部分成功的情况', () => {
+      let callCount = 0;
+      const mockStrategy = {
+        generateCut: jest.fn().mockImplementation(() => {
+          callCount++;
+          if (callCount === 1) {
+            return { x1: 0, y1: 0, x2: 100, y2: 100, type: 'straight' };
+          }
+          return null; // 第二次调用返回null
+        })
+      };
+      
+      jest.spyOn(cutGeneratorStrategies.CutStrategyFactory, 'createStrategy')
+        .mockReturnValue(mockStrategy);
+
+      const cuts = controller.generateCuts(testShape, 3, 'straight');
+
+      // 应该只生成1条切割线，然后因为第二次失败而停止
+      expect(cuts.length).toBe(1);
+      expect(mockConsoleWarn).toHaveBeenCalledWith('⚠️ 无法生成第2条切割线');
+
+      // 恢复mock
+      jest.restoreAllMocks();
+    });
+
+    test('应该测试getDifficultySettings的边界情况', () => {
+      // 使用类型断言来访问私有方法进行测试
+      const privateController = controller as any;
+      
+      // 测试所有有效的难度级别
+      for (let i = 1; i <= 8; i++) {
+        expect(() => {
+          privateController.getDifficultySettings(i);
+        }).not.toThrow();
+      }
+
+      // 测试无效的难度级别
+      expect(() => {
+        privateController.getDifficultySettings(0);
+      }).toThrow('不支持的难度级别: 0');
+
+      expect(() => {
+        privateController.getDifficultySettings(9);
+      }).toThrow('不支持的难度级别: 9');
+
+      expect(() => {
+        privateController.getDifficultySettings(-1);
+      }).toThrow('不支持的难度级别: -1');
+
+      expect(() => {
+        privateController.getDifficultySettings(999);
+      }).toThrow('不支持的难度级别: 999');
+    });
+
+    test('应该测试generateSingleCut方法', () => {
+      const mockCut: CutLine = { x1: 0, y1: 0, x2: 100, y2: 100, type: 'straight' };
+      const mockStrategy = {
+        generateCut: jest.fn().mockReturnValue(mockCut)
+      };
+      
+      const privateController = controller as any;
+      const bounds = { minX: 0, maxX: 100, minY: 0, maxY: 100 };
+      const existingCuts: CutLine[] = [];
+
+      const result = privateController.generateSingleCut(bounds, existingCuts, testShape, 'straight', mockStrategy);
+
+      expect(result).toEqual(mockCut);
+      expect(mockStrategy.generateCut).toHaveBeenCalledWith(bounds, existingCuts, testShape, 'straight');
+    });
+
+    test('应该强制触发console.warn分支', () => {
+      // 创建一个总是返回null的策略来强制触发警告
+      const alwaysFailStrategy = {
+        generateCut: jest.fn().mockReturnValue(null)
+      };
+      
+      jest.spyOn(cutGeneratorStrategies.CutStrategyFactory, 'createStrategy')
+        .mockReturnValue(alwaysFailStrategy);
+
+      // 清除之前的mock调用
+      mockConsoleWarn.mockClear();
+
+      // 尝试生成多条切割线，应该在第一条就失败并触发警告
+      const cuts = controller.generateCuts(testShape, 3, 'straight');
+
+      // 验证结果
+      expect(cuts).toEqual([]);
+      expect(mockConsoleWarn).toHaveBeenCalledWith('⚠️ 无法生成第1条切割线');
+      expect(alwaysFailStrategy.generateCut).toHaveBeenCalledTimes(1); // 只调用一次就退出了
+
+      // 恢复mock
+      jest.restoreAllMocks();
+    });
+
+    test('应该强制触发部分成功的console.warn分支', () => {
+      // 创建一个第一次成功，后续失败的策略
+      let callCount = 0;
+      const partialSuccessStrategy = {
+        generateCut: jest.fn().mockImplementation(() => {
+          callCount++;
+          if (callCount === 1) {
+            return { x1: 25, y1: -10, x2: 25, y2: 110, type: 'straight' };
+          }
+          return null; // 第二次及以后返回null
+        })
+      };
+      
+      jest.spyOn(cutGeneratorStrategies.CutStrategyFactory, 'createStrategy')
+        .mockReturnValue(partialSuccessStrategy);
+
+      // 清除之前的mock调用
+      mockConsoleWarn.mockClear();
+
+      // 尝试生成3条切割线，应该只成功1条，然后在第2条失败
+      const cuts = controller.generateCuts(testShape, 3, 'straight');
+
+      // 验证结果
+      expect(cuts.length).toBe(1);
+      expect(cuts[0]).toEqual({ x1: 25, y1: -10, x2: 25, y2: 110, type: 'straight' });
+      expect(mockConsoleWarn).toHaveBeenCalledWith('⚠️ 无法生成第2条切割线');
+      expect(partialSuccessStrategy.generateCut).toHaveBeenCalledTimes(2); // 调用两次：第一次成功，第二次失败
+
+      // 恢复mock
+      jest.restoreAllMocks();
     });
   });
 });
