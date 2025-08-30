@@ -1,0 +1,37 @@
+/* LiveScore 使用统一覆盖元素样式变量 */
+.liveScore {
+  position: absolute;
+  right: var(--overlay-side-margin);
+  z-index: var(--overlay-z-index);
+  background-color: var(--overlay-bg-color);
+  color: var(--overlay-text-color);
+  padding: var(--overlay-padding);
+  border-radius: var(--overlay-border-radius);
+  font-family: var(--overlay-font-family);
+  font-size: var(--overlay-font-size);
+  font-weight: var(--overlay-font-weight);
+  user-select: none;
+  pointer-events: none;
+  backdrop-filter: var(--overlay-backdrop-filter);
+  min-width: 60px;
+  text-align: right;
+  transition: color 0.3s ease;
+}
+
+.liveScore.animating {
+  transition: none;
+}
+
+/* 桌面端响应式 */
+@media (min-width: 769px) {
+  .liveScore {
+    top: var(--overlay-top-desktop);
+  }
+}
+
+/* 移动端响应式 */
+@media (max-width: 768px) {
+  .liveScore {
+    top: var(--overlay-top-mobile);
+  }
+}

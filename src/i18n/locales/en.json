@@ -11,13 +11,15 @@
         "title": "Generative Puzzle",
         "description": "A generative puzzle game project based on Next.js and React",
         "hints": {
-            "selectShape": "Please click to generate your favorite shape",
-            "selectCutType": "Please select cut type",
-            "cutShape": "Please cut the shape",
-            "scatterPuzzle": "Please scatter the puzzle to start the game",
-            "gameInProgress": "Please drag puzzle pieces to correct positions",
-            "completed": "Congratulations! Puzzle completed!",
-            "progress": "{{completed}} / {{total}} pieces completed",
+            "selectShape": "Click to generate shape",
+            "selectCutType": "Select cut type",
+            "cutShape": "Cut the shape",
+            "scatterPuzzle": "Scatter puzzle to start",
+            "gameInProgress": "Drag pieces to place",
+            "completed": "🎉 Complete!",
+            "newRecord": "🌟 New Record!",
+            "progress": "{{completed}}/{{total}} pieces done",
+            "gameStats": "P:{{completed}}/{{total}} H:{{hints}}/{{allowedHints}}",
             "completionMessages": [
                 "Awesome !",
                 "Perfect !",
@@ -28,8 +30,7 @@
                 "Fantastic !",
                 "Outstanding !",
                 "Brilliant !"
-            ],
-            "hintText": "Here"
+            ]
         },
         "shapes": {
             "title": "Select Shape Type",
@@ -65,9 +66,17 @@
             "rotateLeft": "Rotate Left",
             "rotateRight": "Rotate Right",
             "restart": "Restart",
+            "restartConfirm": "Are you sure you want to restart the game?",
             "currentAngle": "Current Angle: {{angle}}°",
             "rotateInstruction": "Use 2 fingers to rotate puzzle pieces",
-            "rotateInstructionDesktop": "(Rotation angle must match target angle to place)"
+            "rotateInstructionDesktop": "(Rotation angle must match target angle to place)",
+            "angleHiddenHint": "Click hint button to view angle info",
+            "angleHidden": "Current Angle: ???",
+            "useHintToReveal": "Use hint to reveal angle",
+            "angleTemporary": "Current Angle: {{angle}}° ✨",
+            "hintRevealedAngle": "(Showing via hint - will hide soon)",
+            "angleDisplayModeChanged": "Angle display mode updated",
+            "temporaryAngleVisible": "Temporary angle display activated"
         },
         "tabs": {
             "shape": "Shape",
@@ -83,6 +92,140 @@
         "fullscreen": {
             "enter": "Fullscreen",
             "exit": "Exit Fullscreen"
+        },
+        "leaderboard": {
+            "title": "Leaderboard",
+            "show": "Show Leaderboard",
+            "close": "Close",
+            "all": "All"
+        },
+        "difficulty": {
+            "easy": "Easy",
+            "medium": "Medium",
+            "hard": "Hard",
+            "extreme": "Extreme"
         }
+    },
+    "score": {
+        "label": "Score",
+        "current": "Current Score",
+        "updated": "Score Updated",
+        "newRecord": "New Record",
+        "status": {
+            "completed": "Completed",
+            "playing": "Playing",
+            "waiting": "Waiting"
+        },
+        "breakdown": {
+            "title": "Score Breakdown",
+            "base": "Difficulty Base",
+            "timeBonus": "Speed Bonus",
+            "rotationScore": "Rotation Skill",
+            "hintScore": "Hint Usage",
+            "dragPenalty": "Drag Penalty",
+            "multiplier": "Difficulty Multiplier",
+            "final": "Final Score",
+            "subtotal": "Subtotal",
+            "gameDuration": "Game Duration",
+            "gameTime": "Game Time"
+        },
+        "final": "Final Score",
+        "timeBonus": "Speed Bonus",
+        "noReward": "No Reward",
+        "speedBonus": {
+            "within10s": "Within 10s",
+            "within30s": "Within 30s",
+            "within1min": "Within 1min",
+            "within1min30s": "Within 1min30s",
+            "within2min": "Within 2min",
+            "over2min": "Over 2min"
+        }
+    },
+    "stats": {
+        "title": "Game Statistics",
+        "noData": "No statistics data",
+        "completed": "Completed",
+        "duration": "Duration",
+        "rotations": "Rotations",
+        "hints": "Hints Used",
+        "drags": "Drag Operations",
+        "difficulty": "Difficulty",
+        "cutType": "Cut Type",
+        "pieces": "Pieces",
+        "piecesUnit": "pieces",
+        "device": "Device",
+        "scoreHistory": "Latest Game Record",
+        "justNow": "Just now",
+        "hoursAgo": "{{hours}} hours ago",
+        "efficiency": {
+            "title": "Efficiency",
+            "rotation": "Rotation Efficiency",
+            "hint": "Hint Efficiency",
+            "short": "Efficiency"
+        },
+        "hide": "Hide Stats",
+        "show": "Show Stats",
+        "viewDetails": "View Details",
+        "tabs": {
+            "score": "Score",
+            "details": "Details",
+            "leaderboard": "Leaderboard"
+        },
+        "overlay": {
+            "title": "Game Statistics",
+            "gameCompleted": "Game Completed",
+            "gameInProgress": "Game In Progress",
+            "gameWaiting": "Waiting to Start",
+            "lastUpdate": "Last Update"
+        },
+        "gameComplete": "Game Complete",
+        "complete": "Complete",
+        "perfectHints": "Perfect Hints",
+        "perfectGame": "Perfect Game",
+        "zeroHintsBonus": "Zero Hints Bonus",
+        "currentGameScore": "Current Game Score",
+        "newRecord": "New Record!"
+    },
+    "leaderboard": {
+        "title": "Leaderboard",
+        "entries": "entries",
+        "filters": "Filters",
+        "sortBy": "Sort By",
+        "difficulty": "Difficulty",
+        "empty": "No leaderboard records",
+        "emptyHint": "Top1 position is waiting for you！",
+        "anonymous": "Anonymous Player",
+        "newRecord": "Congratulations! You got rank {{rank}}",
+        "rank": "Rank {{rank}}",
+        "sort": {
+            "score": "By Score",
+            "time": "By Time",
+            "efficiency": "By Efficiency",
+            "recent": "By Recent"
+        },
+        "difficulty": {
+            "all": "All"
+        },
+        "noRanking": "No Ranking",
+        "rankFormat": "Rank {{rank}}",
+        "speedRankFormat": {
+            "1": "Fastest",
+            "2": "2nd Fastest",
+            "3": "3rd Fastest",
+            "4": "4th Fastest",
+            "5": "5th Fastest"
+        },
+        "backToLeaderboard": "Back to Leaderboard",
+        "timesUnit": ""
+    },
+    "difficulty": {
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard",
+        "extreme": "Extreme"
+    },
+    "cutType": {
+        "straight": "Straight",
+        "diagonal": "Diagonal"
     }
 }

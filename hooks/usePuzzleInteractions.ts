@@ -4,14 +4,14 @@
  */
 
 import { RefObject, useState, useRef, useEffect, useCallback } from "react";
-import { GameState, Point, PuzzlePiece } from "@/types/puzzleTypes"; // 从统一类型文件导入
-import { useGame } from "@/contexts/GameContext"; // 导入 useGame 钩子
+import { GameState, Point, PuzzlePiece } from "@/types/puzzleTypes";
+import { useGame } from "@/contexts/GameContext";
 import { calculateCenter, isPointInPolygon, rotatePoint, calculateAngle } from "@/utils/geometry/puzzleGeometry";
 import { playPieceSelectSound, playPieceSnapSound, playPuzzleCompletedSound, playRotateSound } from "@/utils/rendering/soundEffects";
 import { drawPuzzle } from "@/utils/rendering/puzzleDrawing";
 
 interface UsePuzzleInteractionsProps {
-  canvasRef: RefObject<HTMLCanvasElement>;
+  canvasRef: RefObject<HTMLCanvasElement | null>;
   containerRef: RefObject<HTMLDivElement | null>;
   canvasSize: { width: number; height: number };
   state: GameState; // 直接从 GameContext 获取的状态
@@ -43,7 +43,16 @@ export function usePuzzleInteractions({
   playPuzzleCompletedSound,
   playRotateSound,
 }: UsePuzzleInteractionsProps) {
-  const { state: gameState, dispatch: gameDispatch, ensurePieceInBounds: gameEnsurePieceInBounds, calculatePieceBounds: gameCalculatePieceBounds, rotatePiece: gameRotatePiece } = useGame();
+  const { 
+    state: gameState, 
+    dispatch: gameDispatch, 
+    ensurePieceInBounds: gameEnsurePieceInBounds, 
+    calculatePieceBounds: gameCalculatePieceBounds, 
+    rotatePiece: gameRotatePiece,
+    // 统计方法
+    trackRotation,
+    trackDragOperation
+  } = useGame();
   const isDragging = useRef(false); // 追踪是否正在拖拽
   const [touchStartAngle, setTouchStartAngle] = useState(0); 
   const lastTouchRef = useRef<Point | null>(null);
@@ -181,6 +190,14 @@ export function usePuzzleInteractions({
             startY: y,
         } 
       })
+      
+      // 统计触发：追踪拖拽操作
+      try {
+        trackDragOperation();
+      } catch (error) {
+        console.warn('统计追踪失败 (拖拽):', error);
+      }
+      
       // 播放音效
       playPieceSelectSound()
     } else {
@@ -476,6 +493,13 @@ export function usePuzzleInteractions({
             startY: touchY,
           } 
         })
+        
+        // 统计触发：追踪拖拽操作
+        try {
+          trackDragOperation();
+        } catch (error) {
+          console.warn('统计追踪失败 (触摸拖拽):', error);
+        }
         // 播放音效
         playPieceSelectSound()
       }
@@ -580,6 +604,13 @@ export function usePuzzleInteractions({
           
           // 只执行一次15度旋转
           rotatePiece(isClockwise);
+          
+          // 统计触发：追踪旋转操作
+          try {
+            trackRotation();
+          } catch (error) {
+            console.warn('统计追踪失败 (旋转):', error);
+          }
           
           // 播放旋转音效
           playRotateSound();

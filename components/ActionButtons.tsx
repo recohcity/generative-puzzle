@@ -6,6 +6,7 @@ import { playButtonClickSound, playRotateSound } from "@/utils/rendering/soundEf
 import { useState, useEffect } from "react"
 import { useDeviceDetection } from "@/hooks/useDeviceDetection"
 import { useTranslation } from '@/contexts/I18nContext'
+import { useAngleDisplay } from '@/utils/angleDisplay'
 
 interface ActionButtonsProps {
   layout?: 'mobile' | 'desktop'; // Prop to differentiate layout styles if needed
@@ -17,8 +18,18 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
     state,
     rotatePiece,
     showHintOutline,
+    trackRotation,
+    trackHintUsage,
   } = useGame()
   const { t } = useTranslation()
+  
+  // 角度显示增强功能
+  const {
+    shouldShowAngle,
+    getDisplayState,
+    isTemporaryDisplay,
+    needsHintEnhancement
+  } = useAngleDisplay()
 
   // 使用统一设备检测系统
   const device = useDeviceDetection();
@@ -35,12 +46,27 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
   const handleShowHint = () => {
     playButtonClickSound()
     showHintOutline()
+
+    // 统计触发：追踪提示使用
+    try {
+      trackHintUsage();
+    } catch (error) {
+      console.warn('统计追踪失败 (提示):', error);
+    }
   }
 
   const handleRotatePiece = (clockwise: boolean) => {
     console.log(`[ActionButtons] handleRotatePiece called, clockwise: ${clockwise}`);
     playRotateSound()
     rotatePiece(clockwise)
+
+    // 统计触发：追踪旋转操作
+    try {
+      trackRotation();
+    } catch (error) {
+      console.warn('统计追踪失败 (按钮旋转):', error);
+    }
+
     console.log('[ActionButtons] handleRotatePiece finished');
   }
 
@@ -131,15 +157,30 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
         </Button>
       </div>
 
-      {/* Rotation Info */}
+      {/* 角度显示 - 增强版多语言支持 */}
       {state.selectedPiece !== null && state.puzzle && (
         <div style={{ textAlign: 'center', fontSize: '14px', marginTop: '6px', color: '#FFD5AB', fontWeight: 500 }}>
-          <div>
-            {t('game.controls.currentAngle', { angle: Math.round(state.puzzle[state.selectedPiece].rotation) })}
-          </div>
-          <div style={{ fontSize: '12px', marginTop: '2px', color: '#FFD5AB', fontWeight: 500 }}>
-            {layout === 'mobile' && isPhone ? t('game.controls.rotateInstruction') : t('game.controls.rotateInstructionDesktop')}
-          </div>
+          {shouldShowAngle(state.selectedPiece) ? (
+            <>
+              <div className={isTemporaryDisplay() ? 'animate-pulse' : ''}>
+                {isTemporaryDisplay() 
+                  ? t('game.controls.angleTemporary', { angle: Math.round(state.puzzle[state.selectedPiece].rotation) })
+                  : t('game.controls.currentAngle', { angle: Math.round(state.puzzle[state.selectedPiece].rotation) })
+                }
+              </div>
+              <div style={{ fontSize: '12px', marginTop: '2px', color: '#FFD5AB', fontWeight: 500 }}>
+                {isTemporaryDisplay() 
+                  ? t('game.controls.hintRevealedAngle')
+                  : (layout === 'mobile' ? t('game.controls.rotateInstruction') : t('game.controls.rotateInstructionDesktop'))
+                }
+              </div>
+            </>
+          ) : (
+            <div style={{ fontSize: '12px', marginTop: '2px', color: '#FFD5AB', opacity: 0.6, fontWeight: 500 }}>
+              {needsHintEnhancement() ? t('game.controls.useHintToReveal') : 
+                (layout === 'mobile' ? t('game.controls.rotateInstruction') : t('game.controls.rotateInstructionDesktop'))}
+            </div>
+          )}
         </div>
       )}
     </div>

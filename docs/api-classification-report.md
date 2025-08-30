@@ -1,15 +1,15 @@
 # API分类报告
 
-> 生成时间: 2025/8/14 12:49:14
+> 生成时间: 2025/8/30 12:13:00
 > 分类工具: API分类器 v1.0
 
 ## 📊 分类统计
 
 | 分类 | 数量 | 占比 | 优先级 | 建议 |
 |------|------|------|--------|------|
-| PUBLIC | 6 | 4.2% | 1 | 必须文档化 |
-| TEAM | 19 | 13.2% | 2 | 建议文档化 |
-| INTERNAL | 119 | 82.6% | 3 | 选择性文档化 |
+| PUBLIC | 22 | 9.7% | 1 | 必须文档化 |
+| TEAM | 25 | 11.1% | 2 | 建议文档化 |
+| INTERNAL | 179 | 79.2% | 3 | 选择性文档化 |
 
 ## 📋 详细分类
 
@@ -17,11 +17,27 @@
 
 **描述**: 对外暴露的核心功能API
 
-**API列表** (6个):
+**API列表** (22个):
 
 - `UNIFIED_CONFIG`
 - `DEVICE_THRESHOLDS`
 - `EventManager`
+- `getBaseScore`
+- `getBaseScoreByPieces`
+- `calculateRemainingRotations`
+- `validateScoreParams`
+- `calculateLiveScore`
+- `calculateRotationScoreByEfficiency`
+- `calculateRotationScore`
+- `calculateHintScore`
+- `calculateHintScoreFromStats`
+- `calculateScoreDelta`
+- `calculateLiveScoreWithMonitoring`
+- `safeCalculateScore`
+- `formatScore`
+- `createLiveScoreUpdater`
+- `calculateFinalScore`
+- `calculateScoreWithLeaderboard`
 - `isPointInPolygon`
 - `rotatePoint`
 - `calculateAngle`
@@ -30,7 +46,7 @@
 
 **描述**: 团队内部共享的工具和服务
 
-**API列表** (19个):
+**API列表** (25个):
 
 - `PERFORMANCE_THRESHOLDS`
 - `ERROR_HANDLING`
@@ -38,6 +54,7 @@
 - `ResizeObserverManager`
 - `DeviceLayoutManager`
 - `useResponsiveCanvasSizing`
+- `usePanelState`
 - `useMobileEnhancements`
 - `useKeyboardDetection`
 - `useNetworkStatus`
@@ -51,12 +68,17 @@
 - `useCanvasRefsLogger`
 - `useCanvasEventsLogger`
 - `GeometryUtils`
+- `GameDataManager`
+- `useAngleDisplay`
+- `AngleVisibilityManager`
+- `AngleDisplayService`
+- `angleDisplayService`
 
 ### INTERNAL (优先级3)
 
 **描述**: 模块内部实现细节
 
-**API列表** (119个):
+**API列表** (179个):
 
 - `EVENT_CONFIG`
 - `MEMORY_CONFIG`
@@ -105,6 +127,29 @@
 - `ErrorReport`
 - `ErrorRecoveryStrategy`
 - `ErrorHandlingConfig`
+- `getDeviceMultiplier`
+- `calculateDifficultyMultiplier`
+- `getBaseDifficultyMultiplierByPieces`
+- `getHintAllowance`
+- `getHintAllowanceByCutCount`
+- `calculateMinimumRotationsAtStart`
+- `calculateMinimumRotations`
+- `calculateRotationEfficiency`
+- `formatRotationDisplay`
+- `calculateRotationEfficiencyPercentage`
+- `checkTimeRecord`
+- `calculateTimeBonus`
+- `getRotationRating`
+- `getRotationRatingText`
+- `withPerformanceMonitoring`
+- `formatTime`
+- `debounce`
+- `updateStatsWithOptimalSolution`
+- `formatRankDisplay`
+- `getNewRecordBadge`
+- `calculateLeaderboardStats`
+- `PanelView`
+- `PanelState`
 - `MobileEnhancementState`
 - `MobileEnhancementCallbacks`
 - `UseMobileAdaptationOptions`
@@ -176,5 +221,42 @@
 - `EARLY_EXIT_THRESHOLD`
 - `DifficultyLevel`
 - `DifficultySettings`
+- `LeaderboardSimplifier`
 - `calculatePieceBounds`
+- `calculateDifficultyLevel`
+- `getPieceCountByDifficulty`
+- `getDifficultyMultiplier`
+- `ALL_DIFFICULTY_LEVELS`
+- `isValidDifficultyLevel`
+- `clearAllGameData`
+- `checkGameDataStatus`
+- `GameDataTools`
+- `UseAngleDisplayReturn`
+- `HintEnhancedDisplay`
+- `activateHintWithAngle`
+- `deactivateHintWithAngle`
+- `isAngleTemporaryVisible`
+- `getHintDuration`
+- `needsAngleEnhancement`
+- `HintEnhancedDisplayImpl`
+- `getAngleDisplayState`
+- `updateVisibilityRule`
+- `setTemporaryVisible`
+- `AngleVisibilityManagerImpl`
+- `AngleDisplayModeUpdater`
+- `updateModeOnCutCountChange`
+- `createModeUpdateAction`
+- `shouldClearTemporaryDisplay`
+- `getTransitionEffect`
+- `processCutCountChanges`
+- `createCutCountUpdateActions`
+- `validateCutCount`
+- `getCutCountDifficultyLevel`
+- `AngleDisplayModeUpdaterImpl`
+- `AngleDisplayController`
+- `shouldShowAngle`
+- `getAngleDisplayMode`
+- `isHintTemporaryDisplay`
+- `updateDisplayRule`
+- `AngleDisplayControllerImpl`
 

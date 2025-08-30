@@ -256,8 +256,7 @@ export const drawPiece = (
 export const drawHintOutline = (
   ctx: CanvasRenderingContext2D,
   piece: PuzzlePiece, // Changed to take the puzzle piece object
-  shapeType?: string, // 🔧 添加形状类型参数，确保提示轮廓与拼图形状一致
-  hintText?: string // 添加提示文本参数
+  shapeType?: string // 🔧 添加形状类型参数，确保提示轮廓与拼图形状一致
 ) => {
   if (!piece) return;
 
@@ -298,41 +297,6 @@ export const drawHintOutline = (
   ctx.closePath();
   ctx.fill();
   ctx.stroke();
-
-  // 添加"放在这里"的文本提示
-  const bounds = piece.points.reduce(
-    (acc: { minX: number, maxX: number, minY: number, maxY: number }, point: Point) => ({
-      minX: Math.min(acc.minX, point.x),
-      maxX: Math.max(acc.maxX, point.x),
-      minY: Math.min(acc.minY, point.y),
-      maxY: Math.max(acc.maxY, point.y)
-    }),
-    { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
-  );
-
-  const centerX = (bounds.minX + bounds.maxX) / 2;
-  const centerY = (bounds.minY + bounds.maxY) / 2;
-
-  // 文字使用白色加黑色阴影，确保在任何背景下都清晰可见
-  ctx.fillStyle = "white";
-  ctx.font = "bold 16px Arial";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-
-  // 添加黑色阴影使文字在任何背景下都清晰可见
-  ctx.shadowColor = "black";
-  ctx.shadowBlur = 4;
-  ctx.shadowOffsetX = 2;
-  ctx.shadowOffsetY = 2;
-
-  // 只需绘制一次文字，阴影会自动应用
-  ctx.fillText(hintText || "这里", centerX, centerY);
-
-  // 重置阴影效果，避免影响其他绘制
-  ctx.shadowColor = "transparent";
-  ctx.shadowBlur = 0;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 0;
 
   ctx.restore();
 };

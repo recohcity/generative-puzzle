@@ -1,16 +1,16 @@
 # API扫描报告
 
-> 生成时间: 2025/8/14 12:49:14
+> 生成时间: 2025/8/30 12:13:00
 > 扫描工具: API变更扫描器 v1.0
 
 ## 📊 统计概览
 
 | 项目 | 数量 | 说明 |
 |------|------|------|
-| API总数 | 172 | 项目中所有导出的API |
+| API总数 | 254 | 项目中所有导出的API |
 | 已文档化 | 31 | 在API文档中已记录的API |
-| 文档覆盖率 | 18.0% | 文档化程度 |
-| 新增API | 144 | 需要添加到文档的API |
+| 文档覆盖率 | 12.2% | 文档化程度 |
+| 新增API | 226 | 需要添加到文档的API |
 | 可能删除 | 3 | 文档中存在但代码中找不到 |
 
 ## 🆕 新增API详情
@@ -1284,6 +1284,857 @@ export class DeviceLayoutManager {
 ```
 ```
 
+#### getDeviceMultiplier
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:66`
+- **签名**: `export const getDeviceMultiplier = (): number => {`
+
+**建议文档结构**:
+```markdown
+### getDeviceMultiplier
+
+[添加API描述]
+
+```typescript
+export const getDeviceMultiplier = (): number => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### calculateDifficultyMultiplier
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:100`
+- **签名**: `export const calculateDifficultyMultiplier = (config: DifficultyConfig): number => {`
+
+**建议文档结构**:
+```markdown
+### calculateDifficultyMultiplier
+
+[添加API描述]
+
+```typescript
+export const calculateDifficultyMultiplier = (config: DifficultyConfig): number => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### getBaseScore
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:123`
+- **签名**: `export const getBaseScore = (actualPieces: number): number => {`
+
+**建议文档结构**:
+```markdown
+### getBaseScore
+
+[添加API描述]
+
+```typescript
+export const getBaseScore = (actualPieces: number): number => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### getBaseScoreByPieces
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:136`
+- **签名**: `export const getBaseScoreByPieces = (actualPieces: number): number => {`
+
+**建议文档结构**:
+```markdown
+### getBaseScoreByPieces
+
+[添加API描述]
+
+```typescript
+export const getBaseScoreByPieces = (actualPieces: number): number => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### getBaseDifficultyMultiplierByPieces
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:143`
+- **签名**: `export const getBaseDifficultyMultiplierByPieces = (actualPieces: number): number => {`
+
+**建议文档结构**:
+```markdown
+### getBaseDifficultyMultiplierByPieces
+
+[添加API描述]
+
+```typescript
+export const getBaseDifficultyMultiplierByPieces = (actualPieces: number): number => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### getHintAllowance
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:156`
+- **签名**: `export const getHintAllowance = (difficultyLevel: string): number => {`
+
+**建议文档结构**:
+```markdown
+### getHintAllowance
+
+[添加API描述]
+
+```typescript
+export const getHintAllowance = (difficultyLevel: string): number => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### getHintAllowanceByCutCount
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:163`
+- **签名**: `export const getHintAllowanceByCutCount = (cutCount: number): number => {`
+
+**建议文档结构**:
+```markdown
+### getHintAllowanceByCutCount
+
+[添加API描述]
+
+```typescript
+export const getHintAllowanceByCutCount = (cutCount: number): number => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### calculateMinimumRotationsAtStart
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:182`
+- **签名**: `export const calculateMinimumRotationsAtStart = (pieces: PuzzlePiece[]): number => {`
+
+**建议文档结构**:
+```markdown
+### calculateMinimumRotationsAtStart
+
+[添加API描述]
+
+```typescript
+export const calculateMinimumRotationsAtStart = (pieces: PuzzlePiece[]): number => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### calculateMinimumRotations
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:216`
+- **签名**: `export const calculateMinimumRotations = (pieces: PuzzlePiece[]): number => {`
+
+**建议文档结构**:
+```markdown
+### calculateMinimumRotations
+
+[添加API描述]
+
+```typescript
+export const calculateMinimumRotations = (pieces: PuzzlePiece[]): number => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### calculateRotationEfficiency
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:224`
+- **签名**: `export const calculateRotationEfficiency = (minRotations: number, actualRotations: number): number => {`
+
+**建议文档结构**:
+```markdown
+### calculateRotationEfficiency
+
+[添加API描述]
+
+```typescript
+export const calculateRotationEfficiency = (minRotations: number, actualRotations: number): number => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### formatRotationDisplay
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:240`
+- **签名**: `export const formatRotationDisplay = (`
+
+**建议文档结构**:
+```markdown
+### formatRotationDisplay
+
+[添加API描述]
+
+```typescript
+export const formatRotationDisplay = (
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### calculateRotationEfficiencyPercentage
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:251`
+- **签名**: `export const calculateRotationEfficiencyPercentage = (`
+
+**建议文档结构**:
+```markdown
+### calculateRotationEfficiencyPercentage
+
+[添加API描述]
+
+```typescript
+export const calculateRotationEfficiencyPercentage = (
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### calculateRemainingRotations
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:270`
+- **签名**: `export const calculateRemainingRotations = (pieces: PuzzlePiece[]): number => {`
+
+**建议文档结构**:
+```markdown
+### calculateRemainingRotations
+
+[添加API描述]
+
+```typescript
+export const calculateRemainingRotations = (pieces: PuzzlePiece[]): number => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### checkTimeRecord
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:307`
+- **签名**: `export const checkTimeRecord = (stats: GameStats, currentLeaderboard: GameRecord[]): {`
+
+**建议文档结构**:
+```markdown
+### checkTimeRecord
+
+[添加API描述]
+
+```typescript
+export const checkTimeRecord = (stats: GameStats, currentLeaderboard: GameRecord[]): {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### calculateTimeBonus
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:361`
+- **签名**: `export const calculateTimeBonus = (`
+
+**建议文档结构**:
+```markdown
+### calculateTimeBonus
+
+[添加API描述]
+
+```typescript
+export const calculateTimeBonus = (
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### validateScoreParams
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:409`
+- **签名**: `export const validateScoreParams = (stats: GameStats | null | undefined): stats is GameStats => {`
+
+**建议文档结构**:
+```markdown
+### validateScoreParams
+
+[添加API描述]
+
+```typescript
+export const validateScoreParams = (stats: GameStats | null | undefined): stats is GameStats => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### calculateLiveScore
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:447`
+- **签名**: `export const calculateLiveScore = (stats: GameStats, leaderboard: GameRecord[] = []): number => {`
+
+**建议文档结构**:
+```markdown
+### calculateLiveScore
+
+[添加API描述]
+
+```typescript
+export const calculateLiveScore = (stats: GameStats, leaderboard: GameRecord[] = []): number => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### getRotationRating
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:521`
+- **签名**: `export const getRotationRating = (efficiency: number): RotationRating => {`
+
+**建议文档结构**:
+```markdown
+### getRotationRating
+
+[添加API描述]
+
+```typescript
+export const getRotationRating = (efficiency: number): RotationRating => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### getRotationRatingText
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:577`
+- **签名**: `export const getRotationRatingText = (efficiency: number): string => {`
+
+**建议文档结构**:
+```markdown
+### getRotationRatingText
+
+[添加API描述]
+
+```typescript
+export const getRotationRatingText = (efficiency: number): string => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### calculateRotationScoreByEfficiency
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:590`
+- **签名**: `export const calculateRotationScoreByEfficiency = (efficiency: number): number => {`
+
+**建议文档结构**:
+```markdown
+### calculateRotationScoreByEfficiency
+
+[添加API描述]
+
+```typescript
+export const calculateRotationScoreByEfficiency = (efficiency: number): number => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### calculateRotationScore
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:610`
+- **签名**: `export const calculateRotationScore = (stats: GameStats, pieces?: PuzzlePiece[]): number => {`
+
+**建议文档结构**:
+```markdown
+### calculateRotationScore
+
+[添加API描述]
+
+```typescript
+export const calculateRotationScore = (stats: GameStats, pieces?: PuzzlePiece[]): number => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### calculateHintScore
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:652`
+- **签名**: `export const calculateHintScore = (actualHints: number, allowance: number): number => {`
+
+**建议文档结构**:
+```markdown
+### calculateHintScore
+
+[添加API描述]
+
+```typescript
+export const calculateHintScore = (actualHints: number, allowance: number): number => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### calculateHintScoreFromStats
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:671`
+- **签名**: `export const calculateHintScoreFromStats = (stats: GameStats): number => {`
+
+**建议文档结构**:
+```markdown
+### calculateHintScoreFromStats
+
+[添加API描述]
+
+```typescript
+export const calculateHintScoreFromStats = (stats: GameStats): number => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### calculateScoreDelta
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:690`
+- **签名**: `export const calculateScoreDelta = (`
+
+**建议文档结构**:
+```markdown
+### calculateScoreDelta
+
+[添加API描述]
+
+```typescript
+export const calculateScoreDelta = (
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### withPerformanceMonitoring
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:736`
+- **签名**: `export const withPerformanceMonitoring = <T extends any[], R>(`
+
+**建议文档结构**:
+```markdown
+### withPerformanceMonitoring
+
+[添加API描述]
+
+```typescript
+export const withPerformanceMonitoring = <T extends any[], R>(
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### calculateLiveScoreWithMonitoring
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:758`
+- **签名**: `export const calculateLiveScoreWithMonitoring = withPerformanceMonitoring(`
+
+**建议文档结构**:
+```markdown
+### calculateLiveScoreWithMonitoring
+
+[添加API描述]
+
+```typescript
+export const calculateLiveScoreWithMonitoring = withPerformanceMonitoring(
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### safeCalculateScore
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:767`
+- **签名**: `export const safeCalculateScore = <T>(`
+
+**建议文档结构**:
+```markdown
+### safeCalculateScore
+
+[添加API描述]
+
+```typescript
+export const safeCalculateScore = <T>(
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### formatScore
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:784`
+- **签名**: `export const formatScore = (score: number): string => {`
+
+**建议文档结构**:
+```markdown
+### formatScore
+
+[添加API描述]
+
+```typescript
+export const formatScore = (score: number): string => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### formatTime
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:792`
+- **签名**: `export const formatTime = (seconds: number): string => {`
+
+**建议文档结构**:
+```markdown
+### formatTime
+
+[添加API描述]
+
+```typescript
+export const formatTime = (seconds: number): string => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### debounce
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:802`
+- **签名**: `export const debounce = <T extends (...args: any[]) => any>(`
+
+**建议文档结构**:
+```markdown
+### debounce
+
+[添加API描述]
+
+```typescript
+export const debounce = <T extends (...args: any[]) => any>(
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### createLiveScoreUpdater
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:823`
+- **签名**: `export const createLiveScoreUpdater = (`
+
+**建议文档结构**:
+```markdown
+### createLiveScoreUpdater
+
+[添加API描述]
+
+```typescript
+export const createLiveScoreUpdater = (
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### calculateFinalScore
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:853`
+- **签名**: `export const calculateFinalScore = (`
+
+**建议文档结构**:
+```markdown
+### calculateFinalScore
+
+[添加API描述]
+
+```typescript
+export const calculateFinalScore = (
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### updateStatsWithOptimalSolution
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:929`
+- **签名**: `export const updateStatsWithOptimalSolution = (stats: GameStats, pieces: PuzzlePiece[]): GameStats => {`
+
+**建议文档结构**:
+```markdown
+### updateStatsWithOptimalSolution
+
+[添加API描述]
+
+```typescript
+export const updateStatsWithOptimalSolution = (stats: GameStats, pieces: PuzzlePiece[]): GameStats => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### formatRankDisplay
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:946`
+- **签名**: `export const formatRankDisplay = (rank: number, totalRecords: number): string => {`
+
+**建议文档结构**:
+```markdown
+### formatRankDisplay
+
+[添加API描述]
+
+```typescript
+export const formatRankDisplay = (rank: number, totalRecords: number): string => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### getNewRecordBadge
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:960`
+- **签名**: `export const getNewRecordBadge = (recordInfo: {`
+
+**建议文档结构**:
+```markdown
+### getNewRecordBadge
+
+[添加API描述]
+
+```typescript
+export const getNewRecordBadge = (recordInfo: {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### calculateLeaderboardStats
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:997`
+- **签名**: `export const calculateLeaderboardStats = (`
+
+**建议文档结构**:
+```markdown
+### calculateLeaderboardStats
+
+[添加API描述]
+
+```typescript
+export const calculateLeaderboardStats = (
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### calculateScoreWithLeaderboard
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:1027`
+- **签名**: `export const calculateScoreWithLeaderboard = (`
+
+**建议文档结构**:
+```markdown
+### calculateScoreWithLeaderboard
+
+[添加API描述]
+
+```typescript
+export const calculateScoreWithLeaderboard = (
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
 ### React Hooks API
 
 #### useResponsiveCanvasSizing
@@ -1300,6 +2151,75 @@ export class DeviceLayoutManager {
 
 ```typescript
 export function useResponsiveCanvasSizing({
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### PanelView
+
+- **类型**: type
+- **文件**: `hooks/usePanelState.ts:20`
+- **签名**: `export type PanelView = 'game' | 'leaderboard' | 'details' | 'recent-game';`
+
+**建议文档结构**:
+```markdown
+### PanelView
+
+[添加API描述]
+
+```typescript
+export type PanelView = 'game' | 'leaderboard' | 'details' | 'recent-game';
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### PanelState
+
+- **类型**: interface
+- **文件**: `hooks/usePanelState.ts:22`
+- **签名**: `export interface PanelState {`
+
+**建议文档结构**:
+```markdown
+### PanelState
+
+[添加API描述]
+
+```typescript
+export interface PanelState {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### usePanelState
+
+- **类型**: constant
+- **文件**: `hooks/usePanelState.ts:27`
+- **签名**: `export const usePanelState = () => {`
+
+**建议文档结构**:
+```markdown
+### usePanelState
+
+[添加API描述]
+
+```typescript
+export const usePanelState = () => {
 ```
 
 #### 使用示例
@@ -2142,7 +3062,7 @@ export const distanceToLine = (point: Point, line: CutLine): number => {
 #### isPointInPolygon
 
 - **类型**: function
-- **文件**: `utils/geometry/puzzleGeometry.ts:14`
+- **文件**: `utils/geometry/puzzleGeometry.ts:33`
 - **签名**: `export function isPointInPolygon(x: number, y: number, polygon: Point[]): boolean {`
 
 **建议文档结构**:
@@ -2418,7 +3338,7 @@ export const drawPiece = (
 #### drawCompletionEffect
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:341`
+- **文件**: `utils/rendering/puzzleDrawing.ts:305`
 - **签名**: `export const drawCompletionEffect = (`
 
 **建议文档结构**:
@@ -2441,7 +3361,7 @@ export const drawCompletionEffect = (
 #### drawDistributionArea
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:431`
+- **文件**: `utils/rendering/puzzleDrawing.ts:395`
 - **签名**: `export const drawDistributionArea = (`
 
 **建议文档结构**:
@@ -2464,7 +3384,7 @@ export const drawDistributionArea = (
 #### drawCanvasCenter
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:695`
+- **文件**: `utils/rendering/puzzleDrawing.ts:659`
 - **签名**: `export const drawCanvasCenter = (`
 
 **建议文档结构**:
@@ -2487,7 +3407,7 @@ export const drawCanvasCenter = (
 #### drawShapeCenter
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:729`
+- **文件**: `utils/rendering/puzzleDrawing.ts:693`
 - **签名**: `export const drawShapeCenter = (`
 
 **建议文档结构**:
@@ -3266,10 +4186,33 @@ export type DifficultySettings = typeof CUT_GENERATOR_CONFIG.DIFFICULTY_SETTINGS
 ```
 ```
 
+#### LeaderboardSimplifier
+
+- **类型**: class
+- **文件**: `utils/leaderboard/LeaderboardSimplifier.ts:15`
+- **签名**: `export class LeaderboardSimplifier {`
+
+**建议文档结构**:
+```markdown
+### LeaderboardSimplifier
+
+[添加API描述]
+
+```typescript
+export class LeaderboardSimplifier {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
 #### rotatePoint
 
 - **类型**: function
-- **文件**: `utils/geometry/puzzleGeometry.ts:59`
+- **文件**: `utils/geometry/puzzleGeometry.ts:84`
 - **签名**: `export function rotatePoint(x: number, y: number, cx: number, cy: number, angle: number): {x: number, y: number} {`
 
 **建议文档结构**:
@@ -3292,7 +4235,7 @@ export function rotatePoint(x: number, y: number, cx: number, cy: number, angle:
 #### calculateAngle
 
 - **类型**: function
-- **文件**: `utils/geometry/puzzleGeometry.ts:76`
+- **文件**: `utils/geometry/puzzleGeometry.ts:101`
 - **签名**: `export function calculateAngle(x1: number, y1: number, x2: number, y2: number): number {`
 
 **建议文档结构**:
@@ -3315,7 +4258,7 @@ export function calculateAngle(x1: number, y1: number, x2: number, y2: number): 
 #### calculatePieceBounds
 
 - **类型**: function
-- **文件**: `utils/geometry/puzzleGeometry.ts:80`
+- **文件**: `utils/geometry/puzzleGeometry.ts:105`
 - **签名**: `export function calculatePieceBounds(piece: { points: Point[] }): { minX: number; maxX: number; minY: number; maxY: number; width: number; height: number; centerX: number; centerY: number } {`
 
 **建议文档结构**:
@@ -3326,6 +4269,949 @@ export function calculateAngle(x1: number, y1: number, x2: number, y2: number): 
 
 ```typescript
 export function calculatePieceBounds(piece: { points: Point[] }): { minX: number; maxX: number; minY: number; maxY: number; width: number; height: number; centerX: number; centerY: number } {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### calculateDifficultyLevel
+
+- **类型**: constant
+- **文件**: `utils/difficulty/DifficultyUtils.ts:11`
+- **签名**: `export const calculateDifficultyLevel = (cutCount: number): DifficultyLevel => {`
+
+**建议文档结构**:
+```markdown
+### calculateDifficultyLevel
+
+[添加API描述]
+
+```typescript
+export const calculateDifficultyLevel = (cutCount: number): DifficultyLevel => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### getPieceCountByDifficulty
+
+- **类型**: constant
+- **文件**: `utils/difficulty/DifficultyUtils.ts:21`
+- **签名**: `export const getPieceCountByDifficulty = (difficulty: DifficultyLevel): number => {`
+
+**建议文档结构**:
+```markdown
+### getPieceCountByDifficulty
+
+[添加API描述]
+
+```typescript
+export const getPieceCountByDifficulty = (difficulty: DifficultyLevel): number => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### getDifficultyMultiplier
+
+- **类型**: constant
+- **文件**: `utils/difficulty/DifficultyUtils.ts:33`
+- **签名**: `export const getDifficultyMultiplier = (difficulty: DifficultyLevel): number => {`
+
+**建议文档结构**:
+```markdown
+### getDifficultyMultiplier
+
+[添加API描述]
+
+```typescript
+export const getDifficultyMultiplier = (difficulty: DifficultyLevel): number => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### ALL_DIFFICULTY_LEVELS
+
+- **类型**: constant
+- **文件**: `utils/difficulty/DifficultyUtils.ts:45`
+- **签名**: `export const ALL_DIFFICULTY_LEVELS: DifficultyLevel[] = ['easy', 'medium', 'hard', 'extreme'];`
+
+**建议文档结构**:
+```markdown
+### ALL_DIFFICULTY_LEVELS
+
+[添加API描述]
+
+```typescript
+export const ALL_DIFFICULTY_LEVELS: DifficultyLevel[] = ['easy', 'medium', 'hard', 'extreme'];
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### isValidDifficultyLevel
+
+- **类型**: constant
+- **文件**: `utils/difficulty/DifficultyUtils.ts:50`
+- **签名**: `export const isValidDifficultyLevel = (difficulty: string): difficulty is DifficultyLevel => {`
+
+**建议文档结构**:
+```markdown
+### isValidDifficultyLevel
+
+[添加API描述]
+
+```typescript
+export const isValidDifficultyLevel = (difficulty: string): difficulty is DifficultyLevel => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### clearAllGameData
+
+- **类型**: function
+- **文件**: `utils/data-tools/clearGameData.ts:4`
+- **签名**: `export function clearAllGameData() {`
+
+**建议文档结构**:
+```markdown
+### clearAllGameData
+
+[添加API描述]
+
+```typescript
+export function clearAllGameData() {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### checkGameDataStatus
+
+- **类型**: function
+- **文件**: `utils/data-tools/clearGameData.ts:24`
+- **签名**: `export function checkGameDataStatus() {`
+
+**建议文档结构**:
+```markdown
+### checkGameDataStatus
+
+[添加API描述]
+
+```typescript
+export function checkGameDataStatus() {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### GameDataTools
+
+- **类型**: class
+- **文件**: `utils/data-tools/GameDataTools.ts:9`
+- **签名**: `export class GameDataTools {`
+
+**建议文档结构**:
+```markdown
+### GameDataTools
+
+[添加API描述]
+
+```typescript
+export class GameDataTools {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### GameDataManager
+
+- **类型**: class
+- **文件**: `utils/data/GameDataManager.ts:8`
+- **签名**: `export class GameDataManager {`
+
+**建议文档结构**:
+```markdown
+### GameDataManager
+
+[添加API描述]
+
+```typescript
+export class GameDataManager {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### UseAngleDisplayReturn
+
+- **类型**: interface
+- **文件**: `utils/angleDisplay/useAngleDisplay.ts:11`
+- **签名**: `export interface UseAngleDisplayReturn {`
+
+**建议文档结构**:
+```markdown
+### UseAngleDisplayReturn
+
+[添加API描述]
+
+```typescript
+export interface UseAngleDisplayReturn {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### useAngleDisplay
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/useAngleDisplay.ts:31`
+- **签名**: `export const useAngleDisplay = (): UseAngleDisplayReturn => {`
+
+**建议文档结构**:
+```markdown
+### useAngleDisplay
+
+[添加API描述]
+
+```typescript
+export const useAngleDisplay = (): UseAngleDisplayReturn => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### HintEnhancedDisplay
+
+- **类型**: interface
+- **文件**: `utils/angleDisplay/HintEnhancedDisplay.ts:6`
+- **签名**: `export interface HintEnhancedDisplay {`
+
+**建议文档结构**:
+```markdown
+### HintEnhancedDisplay
+
+[添加API描述]
+
+```typescript
+export interface HintEnhancedDisplay {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### activateHintWithAngle
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/HintEnhancedDisplay.ts:19`
+- **签名**: `export const activateHintWithAngle = (`
+
+**建议文档结构**:
+```markdown
+### activateHintWithAngle
+
+[添加API描述]
+
+```typescript
+export const activateHintWithAngle = (
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### deactivateHintWithAngle
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/HintEnhancedDisplay.ts:37`
+- **签名**: `export const deactivateHintWithAngle = (pieceId: number): { pieceId: number } => {`
+
+**建议文档结构**:
+```markdown
+### deactivateHintWithAngle
+
+[添加API描述]
+
+```typescript
+export const deactivateHintWithAngle = (pieceId: number): { pieceId: number } => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### isAngleTemporaryVisible
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/HintEnhancedDisplay.ts:47`
+- **签名**: `export const isAngleTemporaryVisible = (`
+
+**建议文档结构**:
+```markdown
+### isAngleTemporaryVisible
+
+[添加API描述]
+
+```typescript
+export const isAngleTemporaryVisible = (
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### getHintDuration
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/HintEnhancedDisplay.ts:59`
+- **签名**: `export const getHintDuration = (cutCount: number): number => {`
+
+**建议文档结构**:
+```markdown
+### getHintDuration
+
+[添加API描述]
+
+```typescript
+export const getHintDuration = (cutCount: number): number => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### needsAngleEnhancement
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/HintEnhancedDisplay.ts:75`
+- **签名**: `export const needsAngleEnhancement = (cutCount: number): boolean => {`
+
+**建议文档结构**:
+```markdown
+### needsAngleEnhancement
+
+[添加API描述]
+
+```typescript
+export const needsAngleEnhancement = (cutCount: number): boolean => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### HintEnhancedDisplayImpl
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/HintEnhancedDisplay.ts:82`
+- **签名**: `export const HintEnhancedDisplayImpl: HintEnhancedDisplay = {`
+
+**建议文档结构**:
+```markdown
+### HintEnhancedDisplayImpl
+
+[添加API描述]
+
+```typescript
+export const HintEnhancedDisplayImpl: HintEnhancedDisplay = {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### AngleVisibilityManager
+
+- **类型**: interface
+- **文件**: `utils/angleDisplay/AngleVisibilityManager.ts:12`
+- **签名**: `export interface AngleVisibilityManager {`
+
+**建议文档结构**:
+```markdown
+### AngleVisibilityManager
+
+[添加API描述]
+
+```typescript
+export interface AngleVisibilityManager {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### getAngleDisplayState
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/AngleVisibilityManager.ts:25`
+- **签名**: `export const getAngleDisplayState = (`
+
+**建议文档结构**:
+```markdown
+### getAngleDisplayState
+
+[添加API描述]
+
+```typescript
+export const getAngleDisplayState = (
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### updateVisibilityRule
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/AngleVisibilityManager.ts:54`
+- **签名**: `export const updateVisibilityRule = (cutCount: number): 'always' | 'conditional' => {`
+
+**建议文档结构**:
+```markdown
+### updateVisibilityRule
+
+[添加API描述]
+
+```typescript
+export const updateVisibilityRule = (cutCount: number): 'always' | 'conditional' => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### setTemporaryVisible
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/AngleVisibilityManager.ts:64`
+- **签名**: `export const setTemporaryVisible = (`
+
+**建议文档结构**:
+```markdown
+### setTemporaryVisible
+
+[添加API描述]
+
+```typescript
+export const setTemporaryVisible = (
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### AngleVisibilityManagerImpl
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/AngleVisibilityManager.ts:74`
+- **签名**: `export const AngleVisibilityManagerImpl: AngleVisibilityManager = {`
+
+**建议文档结构**:
+```markdown
+### AngleVisibilityManagerImpl
+
+[添加API描述]
+
+```typescript
+export const AngleVisibilityManagerImpl: AngleVisibilityManager = {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### AngleDisplayService
+
+- **类型**: interface
+- **文件**: `utils/angleDisplay/AngleDisplayService.ts:10`
+- **签名**: `export interface AngleDisplayService {`
+
+**建议文档结构**:
+```markdown
+### AngleDisplayService
+
+[添加API描述]
+
+```typescript
+export interface AngleDisplayService {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### angleDisplayService
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/AngleDisplayService.ts:61`
+- **签名**: `export const angleDisplayService = new AngleDisplayServiceImpl();`
+
+**建议文档结构**:
+```markdown
+### angleDisplayService
+
+[添加API描述]
+
+```typescript
+export const angleDisplayService = new AngleDisplayServiceImpl();
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### AngleDisplayModeUpdater
+
+- **类型**: interface
+- **文件**: `utils/angleDisplay/AngleDisplayModeUpdater.ts:8`
+- **签名**: `export interface AngleDisplayModeUpdater {`
+
+**建议文档结构**:
+```markdown
+### AngleDisplayModeUpdater
+
+[添加API描述]
+
+```typescript
+export interface AngleDisplayModeUpdater {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### updateModeOnCutCountChange
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/AngleDisplayModeUpdater.ts:20`
+- **签名**: `export const updateModeOnCutCountChange = (cutCount: number): 'always' | 'conditional' => {`
+
+**建议文档结构**:
+```markdown
+### updateModeOnCutCountChange
+
+[添加API描述]
+
+```typescript
+export const updateModeOnCutCountChange = (cutCount: number): 'always' | 'conditional' => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### createModeUpdateAction
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/AngleDisplayModeUpdater.ts:29`
+- **签名**: `export const createModeUpdateAction = (cutCount: number): GameAction => {`
+
+**建议文档结构**:
+```markdown
+### createModeUpdateAction
+
+[添加API描述]
+
+```typescript
+export const createModeUpdateAction = (cutCount: number): GameAction => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### shouldClearTemporaryDisplay
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/AngleDisplayModeUpdater.ts:42`
+- **签名**: `export const shouldClearTemporaryDisplay = (oldCutCount: number, newCutCount: number): boolean => {`
+
+**建议文档结构**:
+```markdown
+### shouldClearTemporaryDisplay
+
+[添加API描述]
+
+```typescript
+export const shouldClearTemporaryDisplay = (oldCutCount: number, newCutCount: number): boolean => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### getTransitionEffect
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/AngleDisplayModeUpdater.ts:56`
+- **签名**: `export const getTransitionEffect = (`
+
+**建议文档结构**:
+```markdown
+### getTransitionEffect
+
+[添加API描述]
+
+```typescript
+export const getTransitionEffect = (
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### processCutCountChanges
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/AngleDisplayModeUpdater.ts:80`
+- **签名**: `export const processCutCountChanges = (`
+
+**建议文档结构**:
+```markdown
+### processCutCountChanges
+
+[添加API描述]
+
+```typescript
+export const processCutCountChanges = (
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### createCutCountUpdateActions
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/AngleDisplayModeUpdater.ts:112`
+- **签名**: `export const createCutCountUpdateActions = (newCutCount: number): GameAction[] => {`
+
+**建议文档结构**:
+```markdown
+### createCutCountUpdateActions
+
+[添加API描述]
+
+```typescript
+export const createCutCountUpdateActions = (newCutCount: number): GameAction[] => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### validateCutCount
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/AngleDisplayModeUpdater.ts:129`
+- **签名**: `export const validateCutCount = (cutCount: number): boolean => {`
+
+**建议文档结构**:
+```markdown
+### validateCutCount
+
+[添加API描述]
+
+```typescript
+export const validateCutCount = (cutCount: number): boolean => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### getCutCountDifficultyLevel
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/AngleDisplayModeUpdater.ts:138`
+- **签名**: `export const getCutCountDifficultyLevel = (cutCount: number): string => {`
+
+**建议文档结构**:
+```markdown
+### getCutCountDifficultyLevel
+
+[添加API描述]
+
+```typescript
+export const getCutCountDifficultyLevel = (cutCount: number): string => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### AngleDisplayModeUpdaterImpl
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/AngleDisplayModeUpdater.ts:148`
+- **签名**: `export const AngleDisplayModeUpdaterImpl: AngleDisplayModeUpdater = {`
+
+**建议文档结构**:
+```markdown
+### AngleDisplayModeUpdaterImpl
+
+[添加API描述]
+
+```typescript
+export const AngleDisplayModeUpdaterImpl: AngleDisplayModeUpdater = {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### AngleDisplayController
+
+- **类型**: interface
+- **文件**: `utils/angleDisplay/AngleDisplayController.ts:6`
+- **签名**: `export interface AngleDisplayController {`
+
+**建议文档结构**:
+```markdown
+### AngleDisplayController
+
+[添加API描述]
+
+```typescript
+export interface AngleDisplayController {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### shouldShowAngle
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/AngleDisplayController.ts:19`
+- **签名**: `export const shouldShowAngle = (`
+
+**建议文档结构**:
+```markdown
+### shouldShowAngle
+
+[添加API描述]
+
+```typescript
+export const shouldShowAngle = (
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### getAngleDisplayMode
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/AngleDisplayController.ts:43`
+- **签名**: `export const getAngleDisplayMode = (cutCount: number): 'always' | 'conditional' => {`
+
+**建议文档结构**:
+```markdown
+### getAngleDisplayMode
+
+[添加API描述]
+
+```typescript
+export const getAngleDisplayMode = (cutCount: number): 'always' | 'conditional' => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### isHintTemporaryDisplay
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/AngleDisplayController.ts:53`
+- **签名**: `export const isHintTemporaryDisplay = (`
+
+**建议文档结构**:
+```markdown
+### isHintTemporaryDisplay
+
+[添加API描述]
+
+```typescript
+export const isHintTemporaryDisplay = (
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### updateDisplayRule
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/AngleDisplayController.ts:66`
+- **签名**: `export const updateDisplayRule = (cutCount: number): 'always' | 'conditional' => {`
+
+**建议文档结构**:
+```markdown
+### updateDisplayRule
+
+[添加API描述]
+
+```typescript
+export const updateDisplayRule = (cutCount: number): 'always' | 'conditional' => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### AngleDisplayControllerImpl
+
+- **类型**: constant
+- **文件**: `utils/angleDisplay/AngleDisplayController.ts:73`
+- **签名**: `export const AngleDisplayControllerImpl: AngleDisplayController = {`
+
+**建议文档结构**:
+```markdown
+### AngleDisplayControllerImpl
+
+[添加API描述]
+
+```typescript
+export const AngleDisplayControllerImpl: AngleDisplayController = {
 ```
 
 #### 使用示例
@@ -3379,7 +5265,7 @@ export function calculatePieceBounds(piece: { points: Point[] }): { minX: number
 - ❌ `AdaptationResult` (interface)
 - ❌ `CanvasSizeResult` (interface)
 
-### 核心管理器API (26个)
+### 核心管理器API (63个)
 
 - ❌ `ValidationRule` (interface)
 - ❌ `ValidationSchema` (interface)
@@ -3407,11 +5293,51 @@ export function calculatePieceBounds(piece: { points: Point[] }): { minX: number
 - ✅ `DeviceManager` (class)
 - ❌ `DeviceLayoutManager` (class)
 - ✅ `CanvasManager` (class)
+- ❌ `getDeviceMultiplier` (constant)
+- ❌ `calculateDifficultyMultiplier` (constant)
+- ❌ `getBaseScore` (constant)
+- ❌ `getBaseScoreByPieces` (constant)
+- ❌ `getBaseDifficultyMultiplierByPieces` (constant)
+- ❌ `getHintAllowance` (constant)
+- ❌ `getHintAllowanceByCutCount` (constant)
+- ❌ `calculateMinimumRotationsAtStart` (constant)
+- ❌ `calculateMinimumRotations` (constant)
+- ❌ `calculateRotationEfficiency` (constant)
+- ❌ `formatRotationDisplay` (constant)
+- ❌ `calculateRotationEfficiencyPercentage` (constant)
+- ❌ `calculateRemainingRotations` (constant)
+- ❌ `checkTimeRecord` (constant)
+- ❌ `calculateTimeBonus` (constant)
+- ❌ `validateScoreParams` (constant)
+- ❌ `calculateLiveScore` (constant)
+- ❌ `getRotationRating` (constant)
+- ❌ `getRotationRatingText` (constant)
+- ❌ `calculateRotationScoreByEfficiency` (constant)
+- ❌ `calculateRotationScore` (constant)
+- ❌ `calculateHintScore` (constant)
+- ❌ `calculateHintScoreFromStats` (constant)
+- ❌ `calculateScoreDelta` (constant)
+- ❌ `withPerformanceMonitoring` (constant)
+- ❌ `calculateLiveScoreWithMonitoring` (constant)
+- ❌ `safeCalculateScore` (constant)
+- ❌ `formatScore` (constant)
+- ❌ `formatTime` (constant)
+- ❌ `debounce` (constant)
+- ❌ `createLiveScoreUpdater` (constant)
+- ❌ `calculateFinalScore` (constant)
+- ❌ `updateStatsWithOptimalSolution` (constant)
+- ❌ `formatRankDisplay` (constant)
+- ❌ `getNewRecordBadge` (constant)
+- ❌ `calculateLeaderboardStats` (constant)
+- ❌ `calculateScoreWithLeaderboard` (constant)
 
-### React Hooks API (18个)
+### React Hooks API (21个)
 
 - ❌ `useResponsiveCanvasSizing` (function)
 - ✅ `usePuzzleInteractions` (function)
+- ❌ `PanelView` (type)
+- ❌ `PanelState` (interface)
+- ❌ `usePanelState` (constant)
 - ❌ `MobileEnhancementState` (interface)
 - ❌ `MobileEnhancementCallbacks` (interface)
 - ❌ `useMobileEnhancements` (function)
@@ -3429,7 +5355,7 @@ export function calculatePieceBounds(piece: { points: Point[] }): { minX: number
 - ❌ `useDebugToggle` (function)
 - ❌ `reducer` (constant)
 
-### 工具函数API (89个)
+### 工具函数API (131个)
 
 - ❌ `deviceLogger` (constant)
 - ✅ `adaptationLogger` (constant)
@@ -3517,7 +5443,49 @@ export function calculatePieceBounds(piece: { points: Point[] }): { minX: number
 - ❌ `DifficultySettings` (type)
 - ✅ `ScatterPuzzle` (class)
 - ✅ `PuzzleGenerator` (class)
+- ❌ `LeaderboardSimplifier` (class)
 - ❌ `rotatePoint` (function)
 - ❌ `calculateAngle` (function)
 - ❌ `calculatePieceBounds` (function)
+- ❌ `calculateDifficultyLevel` (constant)
+- ❌ `getPieceCountByDifficulty` (constant)
+- ❌ `getDifficultyMultiplier` (constant)
+- ❌ `ALL_DIFFICULTY_LEVELS` (constant)
+- ❌ `isValidDifficultyLevel` (constant)
+- ❌ `clearAllGameData` (function)
+- ❌ `checkGameDataStatus` (function)
+- ❌ `GameDataTools` (class)
+- ❌ `GameDataManager` (class)
+- ❌ `UseAngleDisplayReturn` (interface)
+- ❌ `useAngleDisplay` (constant)
+- ❌ `HintEnhancedDisplay` (interface)
+- ❌ `activateHintWithAngle` (constant)
+- ❌ `deactivateHintWithAngle` (constant)
+- ❌ `isAngleTemporaryVisible` (constant)
+- ❌ `getHintDuration` (constant)
+- ❌ `needsAngleEnhancement` (constant)
+- ❌ `HintEnhancedDisplayImpl` (constant)
+- ❌ `AngleVisibilityManager` (interface)
+- ❌ `getAngleDisplayState` (constant)
+- ❌ `updateVisibilityRule` (constant)
+- ❌ `setTemporaryVisible` (constant)
+- ❌ `AngleVisibilityManagerImpl` (constant)
+- ❌ `AngleDisplayService` (interface)
+- ❌ `angleDisplayService` (constant)
+- ❌ `AngleDisplayModeUpdater` (interface)
+- ❌ `updateModeOnCutCountChange` (constant)
+- ❌ `createModeUpdateAction` (constant)
+- ❌ `shouldClearTemporaryDisplay` (constant)
+- ❌ `getTransitionEffect` (constant)
+- ❌ `processCutCountChanges` (constant)
+- ❌ `createCutCountUpdateActions` (constant)
+- ❌ `validateCutCount` (constant)
+- ❌ `getCutCountDifficultyLevel` (constant)
+- ❌ `AngleDisplayModeUpdaterImpl` (constant)
+- ❌ `AngleDisplayController` (interface)
+- ❌ `shouldShowAngle` (constant)
+- ❌ `getAngleDisplayMode` (constant)
+- ❌ `isHintTemporaryDisplay` (constant)
+- ❌ `updateDisplayRule` (constant)
+- ❌ `AngleDisplayControllerImpl` (constant)
 

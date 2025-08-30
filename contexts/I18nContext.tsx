@@ -35,8 +35,7 @@ const defaultMessages = {
         "超赞的！",
         "好样的！",
         "绝绝子！"
-      ],
-      "hintText": "这里"
+      ]
     },
     "shapes": {
       "title": "选择形状类型",
@@ -72,9 +71,11 @@ const defaultMessages = {
       "rotateLeft": "左转",
       "rotateRight": "右转",
       "restart": "重新开始",
+      "restartConfirm": "确定要重新开始游戏吗？",
       "currentAngle": "当前角度: {{angle}}°",
       "rotateInstruction": "可以使用2只手指旋转拼图",
-      "rotateInstructionDesktop": "(旋转角度需与目标角度匹配才能放置)"
+      "rotateInstructionDesktop": "(旋转角度需与目标角度匹配才能放置)",
+      "angleHiddenHint": "点击提示按钮查看角度信息"
     },
     "tabs": {
       "shape": "形状",
@@ -90,7 +91,125 @@ const defaultMessages = {
     "fullscreen": {
       "enter": "全屏",
       "exit": "退出全屏"
+    },
+    "score": {
+      "label": "分数",
+      "current": "当前分数",
+      "updated": "分数更新",
+      "newRecord": "新纪录",
+      "status": {
+        "completed": "已完成",
+        "playing": "游戏中",
+        "waiting": "等待中"
+      },
+      "breakdown": {
+        "title": "分数详情",
+        "base": "基础分数",
+        "timeBonus": "时间奖励",
+        "rotationScore": "旋转分数",
+        "hintScore": "提示分数",
+        "dragPenalty": "拖拽扣分",
+        "multiplier": "难度倍数",
+        "final": "最终分数",
+        "subtotal": "小计"
+      },
+      "final": "最终分数",
+      "timeBonus": "时间奖励",
+      "gameComplete": "游戏完成",
+      "finalScore": "最终得分",
+      "rotationEfficiency": "旋转效率",
+      "hintPenalty": "提示扣分"
+    },
+    "leaderboard": {
+      "title": "排行榜",
+      "show": "显示排行榜",
+      "close": "关闭",
+      "comingSoon": "排行榜功能即将推出",
+      "all": "全部",
+      "noRecords": "暂无记录",
+      "button": "榜单",
+      "back": "返回游戏",
+      "top5": "Top 5 排行榜",
+      "recent3": "最近3次游戏",
+      "viewDetails": "查看详情",
+      "gameDetails": "游戏详情",
+      "backToLeaderboard": "返回榜单",
+      "empty": "暂无排行榜记录",
+      "emptyHint": "Top1 位置等你来挑战！"
+    },
+    "stats": {
+      "title": "游戏统计",
+      "noData": "暂无统计数据",
+      "completed": "已完成",
+      "duration": "游戏时长",
+      "rotations": "旋转次数",
+      "hints": "使用提示",
+      "drags": "拖拽次数",
+      "difficulty": "难度等级",
+      "cutType": "切割类型",
+      "pieces": "拼图块数",
+      "piecesUnit": "片",
+      "device": "设备类型",
+      "scoreHistory": "最近一次游戏记录",
+      "hide": "隐藏统计",
+      "show": "显示统计",
+      "viewDetails": "查看详情",
+      "gameComplete": "游戏完成",
+      "complete": "完成",
+      "perfectHints": "完美提示",
+      "perfectGame": "完美游戏",
+      "zeroHintsBonus": "零提示奖励"
+    },
+    "difficulty": {
+      "easy": "简单",
+      "medium": "中等",
+      "hard": "困难",
+      "extreme": "极难"
     }
+  },
+  "leaderboard": {
+    "title": "排行榜",
+    "entries": "条记录",
+    "filters": "筛选器",
+    "sortBy": "排序方式",
+    "empty": "暂无排行榜记录",
+    "emptyHint": "Top1 位置等你来挑战！",
+    "anonymous": "匿名玩家",
+    "newRecord": "恭喜！您获得第 {{rank}} 名",
+    "rank": "第{{rank}}名",
+    "sort": {
+      "score": "按分数",
+      "time": "按时间",
+      "efficiency": "按效率",
+      "recent": "按时间"
+    },
+    "difficulty": {
+      "label": "难度",
+      "all": "全部"
+    }
+  },
+  "stats": {
+    "title": "游戏统计",
+    "noData": "暂无统计数据",
+    "completed": "已完成",
+    "duration": "游戏时长",
+    "rotations": "旋转次数",
+    "hints": "使用提示",
+    "drags": "拖拽次数",
+    "difficulty": "难度等级",
+    "cutType": "切割类型",
+    "pieces": "拼图块数",
+    "piecesUnit": "片",
+    "device": "设备类型",
+    "scoreHistory": "最近一次游戏记录",
+    "hide": "隐藏统计",
+    "show": "显示统计",
+    "viewDetails": "查看详情",
+    "gameComplete": "游戏完成",
+    "complete": "完成",
+    "perfectHints": "完美提示",
+    "perfectGame": "完美游戏",
+    "zeroHintsBonus": "零提示奖励"
   }
 };
 
@@ -126,8 +245,21 @@ export function I18nProvider({ children }: I18nProviderProps) {
   useEffect(() => {
     if (!isClient) return;
     
-    // 页面刷新后默认停留在中文，用户需要手动切换语言
-    console.log('I18n initialized with default locale (zh-CN)');
+    // 首次加载时立即加载完整的中文翻译文件，确保所有键值都能正确显示
+    const loadInitialTranslations = async () => {
+      try {
+        const zhMessages = await loadMessages('zh-CN');
+        if (zhMessages) {
+          setMessages(zhMessages);
+          console.log('I18n initialized with complete zh-CN translations');
+        }
+      } catch (error) {
+        console.warn('Failed to load initial translations, using default:', error);
+        // 保持使用默认翻译
+      }
+    };
+    
+    loadInitialTranslations();
   }, [isClient]);
 
   // 切换语言 - 不保存用户偏好，每次刷新回到默认中文
@@ -137,11 +269,16 @@ export function I18nProvider({ children }: I18nProviderProps) {
     setIsLoading(true);
     try {
       const newMessages = await loadMessages(newLocale);
+      if (!newMessages) {
+        throw new Error(`Failed to load messages for locale: ${newLocale}`);
+      }
       setMessages(newMessages);
       setLocale(newLocale);
-      console.log(`Language switched to: ${newLocale}`);
+      console.log(`Language switched to: ${newLocale}`, newMessages);
     } catch (error) {
       console.error('Failed to change locale:', error);
+      // 保持当前语言和翻译，不要设置为null
+      console.log('Keeping current locale and messages due to error');
     } finally {
       setIsLoading(false);
     }
@@ -157,7 +294,13 @@ export function I18nProvider({ children }: I18nProviderProps) {
 
     const translation = getNestedValue(messages, key);
 
-    if (values && typeof translation === 'string') {
+    // 确保总是返回字符串
+    if (typeof translation !== 'string') {
+      console.warn('Translation not found or not a string for key:', key, 'returning key');
+      return key;
+    }
+
+    if (values) {
       return interpolate(translation, values);
     }
 

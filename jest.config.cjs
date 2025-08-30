@@ -1,10 +1,12 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
   preset: 'ts-jest',
-  testEnvironment: 'node',
+  testEnvironment: 'jsdom',
   moduleNameMapper: {
     // 确保 @/utils/rendering/colorUtils 能够被正确解析
     '^@/(.*)$': '<rootDir>/$1',
+    // Mock CSS files
+    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
   },
   transform: {
     // 使用 ts-jest 处理 .ts 和 .tsx 文件，新配置格式
@@ -14,6 +16,7 @@ module.exports = {
         sourceMap: false,
         inlineSourceMap: false,
         isolatedModules: true,
+        jsx: 'react-jsx'
       }
     }],
   },
@@ -32,7 +35,9 @@ module.exports = {
     '!utils/**/*-original-backup.ts',
     '!utils/**/*.backup.ts',
     // 排除复杂UI交互文件（依赖DOM环境，难以单元测试）
-    '!utils/**/ScatterPuzzle.ts'
+    '!utils/**/ScatterPuzzle.ts',
+    // 排除数据工具（用于管理删除历史游戏成绩，不需要测试）
+    '!utils/data-tools/**'
   ],
   // 覆盖率忽略路径（统一配置）
   coveragePathIgnorePatterns: [
@@ -68,6 +73,13 @@ module.exports = {
     '<rootDir>/utils/shape/__tests__/**/*.test.ts',
     '<rootDir>/utils/adaptation/__tests__/**/*.test.ts',
     '<rootDir>/utils/mobile/__tests__/**/*.test.ts',
+    '<rootDir>/utils/leaderboard/__tests__/**/*.test.ts',
+    '<rootDir>/utils/angleDisplay/__tests__/**/*.test.ts',
+    '<rootDir>/utils/data/__tests__/**/*.test.ts',
+    '<rootDir>/utils/score/__tests__/**/*.test.ts',
+    '<rootDir>/utils/difficulty/__tests__/**/*.test.ts',
+    '<rootDir>/components/**/__tests__/**/*.test.tsx',
+    '<rootDir>/contexts/__tests__/**/*.test.tsx',
     '<rootDir>/src/quality-system/__tests__/**/*.test.ts',
     '<rootDir>/src/quality-system/logging/__tests__/**/*.test.ts',
     '<rootDir>/src/quality-system/error-handling/__tests__/basic-error-handling.test.ts',

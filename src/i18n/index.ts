@@ -1,83 +1,8 @@
 import { SupportedLocale } from './config';
 
-// 翻译文件类型定义
+// 翻译文件类型定义 - 使用更灵活的类型定义
 export interface TranslationMessages {
-  common: {
-    loading: string;
-    error: string;
-    success: string;
-    cancel: string;
-    confirm: string;
-    close: string;
-  };
-  game: {
-    title: string;
-    description: string;
-    hints: {
-      selectShape: string;
-      selectCutType: string;
-      cutShape: string;
-      scatterPuzzle: string;
-      gameInProgress: string;
-      completed: string;
-      progress: string;
-      completionMessages: string[];
-      hintText: string;
-    };
-    shapes: {
-      title: string;
-      polygon: string;
-      curve: string;
-      irregular: string;
-    };
-    cutType: {
-      title: string;
-      straight: string;
-      diagonal: string;
-    };
-    cutCount: {
-      title: string;
-      difficulty: {
-        easy: string;
-        hard: string;
-      };
-      button: string;
-      hints: {
-        selectCutType: string;
-        selectCount: string;
-      };
-    };
-    scatter: {
-      title: string;
-      button: string;
-      completed: string;
-    };
-    controls: {
-      title: string;
-      hint: string;
-      rotateLeft: string;
-      rotateRight: string;
-      restart: string;
-      currentAngle: string;
-      rotateInstruction: string;
-      rotateInstructionDesktop: string;
-    };
-    tabs: {
-      shape: string;
-      puzzle: string;
-      cut: string;
-      scatter: string;
-      controls: string;
-    };
-    audio: {
-      toggleOn: string;
-      toggleOff: string;
-    };
-    fullscreen: {
-      enter: string;
-      exit: string;
-    };
-  };
+  [key: string]: any;
 }
 
 // 动态导入翻译文件
@@ -101,8 +26,18 @@ export function interpolate(template: string, values: Record<string, string | nu
 
 // 获取嵌套对象的值
 export function getNestedValue(obj: Record<string, any>, path: string): string {
-  const result = path.split('.').reduce((current: any, key) => current?.[key], obj);
-  return typeof result === 'string' ? result : path;
+  try {
+    const result = path.split('.').reduce((current: any, key) => {
+      if (current === null || current === undefined) {
+        return undefined;
+      }
+      return current[key];
+    }, obj);
+    return typeof result === 'string' ? result : path;
+  } catch (error) {
+    console.warn('Error getting nested value for path:', path, error);
+    return path;
+  }
 }
 
 // 随机选择完成消息

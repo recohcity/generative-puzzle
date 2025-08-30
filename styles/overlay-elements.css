@@ -1,0 +1,92 @@
+/* 覆盖元素统一样式变量 */
+:root {
+  /* 覆盖元素基础样式 */
+  --overlay-bg-color: rgba(0, 0, 0, 0.3);
+  --overlay-text-color: #ffffff;
+  --overlay-font-size: 12px;
+  --overlay-font-weight: 500;
+  --overlay-font-family: monospace;
+  --overlay-padding: 4px 12px;
+  --overlay-border-radius: 9999px;
+  --overlay-backdrop-filter: blur(4px);
+  --overlay-z-index: 10;
+  
+  /* 响应式对齐参数 */
+  --overlay-top-desktop: 12px;
+  --overlay-top-mobile: 8px;
+  --overlay-side-margin: 8px;
+  
+  /* 智能提示区特定样式 */
+  --smart-hints-max-width-portrait: 80%;
+  --smart-hints-max-width-landscape: 70%;
+}
+
+/* 覆盖元素基础样式类 */
+.overlay-element {
+  position: absolute;
+  z-index: var(--overlay-z-index);
+  background-color: var(--overlay-bg-color);
+  color: var(--overlay-text-color);
+  padding: var(--overlay-padding);
+  border-radius: var(--overlay-border-radius);
+  font-family: var(--overlay-font-family);
+  font-size: var(--overlay-font-size);
+  font-weight: var(--overlay-font-weight);
+  user-select: none;
+  pointer-events: none;
+  backdrop-filter: var(--overlay-backdrop-filter);
+}
+
+/* 桌面端响应式 */
+@media (min-width: 769px) {
+  .overlay-element {
+    top: var(--overlay-top-desktop);
+  }
+}
+
+/* 移动端响应式 */
+@media (max-width: 768px) {
+  .overlay-element {
+    top: var(--overlay-top-mobile);
+  }
+}
+
+/* 智能提示区特定样式 */
+.smart-hints-overlay {
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 移动端智能提示区响应式宽度 */
+@media (max-width: 768px) and (orientation: portrait) {
+  .smart-hints-overlay {
+    max-width: var(--smart-hints-max-width-portrait);
+  }
+}
+
+@media (max-width: 768px) and (orientation: landscape) {
+  .smart-hints-overlay {
+    max-width: var(--smart-hints-max-width-landscape);
+  }
+}
+
+/* 计时器特定样式 */
+.timer-overlay {
+  left: var(--overlay-side-margin);
+}
+
+/* 计分器特定样式 */
+.score-overlay {
+  right: var(--overlay-side-margin);
+  min-width: 60px;
+  text-align: right;
+  transition: color 0.3s ease;
+}
+
+.score-overlay.animating {
+  transition: none;
+}

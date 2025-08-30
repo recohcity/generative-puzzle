@@ -17,6 +17,9 @@ import { PuzzlePiece } from "@/types/puzzleTypes";
 
 import { usePuzzleInteractions } from "@/hooks/usePuzzleInteractions";
 import { useDebugToggle } from '@/hooks/useDebugToggle';
+import GameTimer from '@/components/GameTimer';
+import LiveScore from '@/components/LiveScore';
+import ScoreDisplay from '@/components/score/ScoreDisplay';
 
 // 画布尺寸边界常量
 const MIN_CANVAS_WIDTH = 400;
@@ -121,8 +124,8 @@ export default function PuzzleCanvas() {
     (width, height) => {
       const safeWidth = Math.max(MIN_CANVAS_WIDTH, Math.min(width, MAX_CANVAS_WIDTH));
       const safeHeight = Math.max(MIN_CANVAS_HEIGHT, Math.min(height, MAX_CANVAS_HEIGHT));
-      const prevWidth = state.canvasWidth;
-      const prevHeight = state.canvasHeight;
+      const prevWidth = state.canvasSize?.width || 0;
+      const prevHeight = state.canvasSize?.height || 0;
       const orientation = safeWidth >= safeHeight ? 'landscape' : 'portrait';
 
       // 冻结保护：检查是否需要冻结适配
@@ -283,8 +286,7 @@ export default function PuzzleCanvas() {
       if (state.showHint && state.selectedPiece !== null && (state.originalPositions as PuzzlePiece[]).length > 0) {
         const hintPiece = state.originalPositions[state.selectedPiece];
         if (hintPiece) {
-          const hintText = t('game.hints.hintText');
-          drawHintOutline(ctx, hintPiece, state.shapeType, hintText);
+          drawHintOutline(ctx, hintPiece, state.shapeType);
         }
       }
 
@@ -427,6 +429,49 @@ export default function PuzzleCanvas() {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       />
+      
+      {/* 实时显示组件 - 始终显示 */}
+      <GameTimer />
+      <LiveScore />
+
+
+
+      {/* 调试信息 - 添加测试按钮 */}
+      {showDebugElements && (
+        <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white p-2 rounded text-xs z-50">
+          <div>Pieces: {state.puzzle?.length || 0}</div>
+          <div>Completed: {(state.completedPieces as number[])?.length || 0}</div>
+          <div>Active: {state.isGameActive ? 'Yes' : 'No'}</div>
+          <div>Completed: {state.isCompleted ? 'Yes' : 'No'}</div>
+          <div>Score: {state.currentScore}</div>
+          <button 
+            onClick={() => {
+              // 先确保游戏处于活跃状态
+              if (!state.isGameActive && state.puzzle) {
+                dispatch({ type: 'SCATTER_PUZZLE' });
+                setTimeout(() => {
+                  // 设置所有拼图为完成状态
+                  const allPieceIndices = Array.from({ length: state.puzzle!.length }, (_, i) => i);
+                  dispatch({ type: 'SET_COMPLETED_PIECES', payload: allPieceIndices });
+                }, 100);
+              } else if (state.puzzle) {
+                // 直接设置所有拼图为完成状态
+                const allPieceIndices = Array.from({ length: state.puzzle.length }, (_, i) => i);
+                dispatch({ type: 'SET_COMPLETED_PIECES', payload: allPieceIndices });
+              }
+            }}
+            className="mt-2 px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
+          >
+            Auto Complete
+          </button>
+          <button 
+            onClick={() => dispatch({ type: 'GAME_COMPLETED' })}
+            className="mt-1 px-2 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600"
+          >
+            Force Complete
+          </button>
+        </div>
+      )}
     </div>
   );
 }

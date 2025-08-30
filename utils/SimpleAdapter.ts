@@ -12,7 +12,7 @@ interface Size {
 interface Scalable {
   x: number;
   y: number;
-  points?: Array<{ x: number; y: number; [key: string]: unknown }>;
+  points?: Array<{ x: number; y: number;[key: string]: unknown }>;
   originalX?: number;
   originalY?: number;
   rotation?: number;
@@ -25,8 +25,22 @@ interface Scalable {
 // Point接口已在其他地方定义，移除重复定义
 
 /**
- * 🎯 以画布中心为原点的缩放 - 修复偏移问题
- * 确保缩放时形状始终保持居中
+ * 🎯 以画布中心为原点的缩放算法 - 核心适配引擎
+ * 
+ * 算法原理：
+ * 1. 计算缩放比例：基于画布最小边长确保形状不变形
+ * 2. 中心点对齐：将所有元素相对于旧画布中心的偏移量按比例缩放
+ * 3. 重新定位：将缩放后的偏移量应用到新画布中心
+ * 
+ * 这种方法确保：
+ * - 形状在缩放后保持居中
+ * - 相对位置关系不变
+ * - 避免因画布尺寸变化导致的偏移问题
+ * 
+ * @param elements 需要适配的元素数组
+ * @param fromSize 原始画布尺寸
+ * @param toSize 目标画布尺寸
+ * @returns 适配后的元素数组
  */
 function scaleFromCanvasCenter<T extends Scalable>(
   elements: T[],
@@ -35,34 +49,39 @@ function scaleFromCanvasCenter<T extends Scalable>(
 ): T[] {
   if (elements.length === 0) return elements;
 
-  // 🔑 关键：画布是正方形，缩放因子基于边长
+  // 🔑 步骤1：计算缩放比例
+  // 使用最小边长确保形状在任何画布比例下都不会变形
   const fromCanvasSize = Math.min(fromSize.width, fromSize.height);
   const toCanvasSize = Math.min(toSize.width, toSize.height);
   const scale = toCanvasSize / fromCanvasSize;
 
-  // 🔑 关键修复：计算旧画布和新画布的中心点
+  // 🔑 步骤2：计算画布中心点坐标
+  // 这些中心点将作为缩放的参考原点
   const fromCenterX = fromSize.width / 2;
   const fromCenterY = fromSize.height / 2;
   const toCenterX = toSize.width / 2;
   const toCenterY = toSize.height / 2;
 
-  // 缩放参数计算完成
-
-  // 🔑 正确的缩放公式：以画布中心为原点缩放
+  // 🔑 步骤3：对每个元素应用中心缩放变换
   return elements.map((element, index) => {
-    // 计算相对于旧画布中心的偏移
+    // 3.1 计算元素相对于旧画布中心的偏移量
+    // 这个偏移量表示元素距离画布中心的相对位置
     const offsetX = element.x - fromCenterX;
     const offsetY = element.y - fromCenterY;
 
-    // 缩放偏移量，然后重新定位到新画布中心
+    // 3.2 应用缩放变换并重新定位到新画布中心
+    // 公式：新位置 = 新中心 + (旧偏移 × 缩放比例)
     const newX = toCenterX + offsetX * scale;
     const newY = toCenterY + offsetY * scale;
 
-    // 元素变换计算完成
-
+    // 3.3 对元素的所有点应用相同的缩放变换
+    // 确保形状的每个顶点都按相同比例和中心进行缩放
     const newPoints = element.points?.map(point => {
+      // 计算点相对于旧画布中心的偏移
       const pointOffsetX = point.x - fromCenterX;
       const pointOffsetY = point.y - fromCenterY;
+
+      // 应用缩放并重新定位到新画布中心
       return {
         ...point,
         x: toCenterX + pointOffsetX * scale,

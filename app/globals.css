@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 导入覆盖元素统一样式 */
+@import '../styles/overlay-elements.css';
+
 /* 禁用游戏界面所有文本选择 */
 * {
   -webkit-user-select: none;

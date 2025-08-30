@@ -1,0 +1,183 @@
+/* 分数显示组件动画样式 */
+
+/* 新记录闪烁动画 */
+@keyframes newRecordBlink {
+  0%, 50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  25% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+  75% {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.newRecordAnimation {
+  animation: newRecordBlink 2s ease-in-out infinite;
+}
+
+/* 零提示奖励特殊动画 */
+@keyframes perfectGameGlow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(255, 193, 7, 0.3);
+    background-color: rgba(255, 248, 225, 0.8);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(255, 193, 7, 0.6);
+    background-color: rgba(255, 248, 225, 1);
+  }
+}
+
+.perfectGameHighlight {
+  animation: perfectGameGlow 3s ease-in-out infinite;
+}
+
+/* 分数滚动动画 */
+@keyframes scoreCountUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.scoreCountUpAnimation {
+  animation: scoreCountUp 0.8s ease-out;
+}
+
+/* 排名徽章动画 */
+@keyframes rankBadgeBounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+.rankBadgeAnimation {
+  animation: rankBadgeBounce 2s ease-in-out;
+}
+
+/* 时间奖励高亮动画 */
+@keyframes timeBonusHighlight {
+  0% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: rgba(59, 130, 246, 0.1);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.timeBonusAnimation {
+  animation: timeBonusHighlight 1.5s ease-in-out;
+}
+
+/* 效率指标动画 */
+@keyframes efficiencyFill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: var(--target-width);
+  }
+}
+
+.efficiencyBarAnimation {
+  animation: efficiencyFill 1.2s ease-out;
+}
+
+/* 统计卡片入场动画 */
+@keyframes statsCardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.statsCardAnimation {
+  animation: statsCardSlideIn 0.6s ease-out;
+}
+
+/* 延迟动画类 */
+.animationDelay1 { animation-delay: 0.1s; }
+.animationDelay2 { animation-delay: 0.2s; }
+.animationDelay3 { animation-delay: 0.3s; }
+.animationDelay4 { animation-delay: 0.4s; }
+.animationDelay5 { animation-delay: 0.5s; }
+
+/* 悬停效果 */
+.interactiveCard {
+  transition: all 0.3s ease;
+}
+
+.interactiveCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* 响应式动画调整 */
+@media (max-width: 768px) {
+  .newRecordAnimation,
+  .perfectGameHighlight,
+  .rankBadgeAnimation {
+    animation-duration: 1.5s;
+  }
+}
+
+@media (max-width: 480px) {
+  .scoreCountUpAnimation,
+  .statsCardAnimation {
+    animation-duration: 0.5s;
+  }
+}
+
+/* 减少动画偏好支持 */
+@media (prefers-reduced-motion: reduce) {
+  .newRecordAnimation,
+  .perfectGameHighlight,
+  .scoreCountUpAnimation,
+  .rankBadgeAnimation,
+  .timeBonusAnimation,
+  .efficiencyBarAnimation,
+  .statsCardAnimation {
+    animation: none;
+  }
+  
+  .interactiveCard:hover {
+    transform: none;
+  }
+}
+
+/* 高对比度模式调整 */
+@media (prefers-contrast: high) {
+  .perfectGameHighlight {
+    background-color: rgba(255, 255, 0, 0.3);
+    border: 2px solid #000;
+  }
+  
+  .newRecordAnimation {
+    border: 2px solid #ff0000;
+  }
+}

@@ -67,6 +67,8 @@ npm run test:unit -- --coverage --silent
 npm run coverage:report
 
 # 单个文件覆盖率检查
+npm run test:unit -- --testPathPatterns="soundEffects" --verbose
+npm run test:unit -- utils/angleDisplay/__tests__/
 npm run test:unit -- --testPathPatterns="puzzleUtils" --coverage --coverageReporters=text
 
 
@@ -121,8 +123,9 @@ npm run classify-apis
 # 整理文档结构
 npm run organize-docs
 
-# 确认所有自动生成文件被正确忽略
-./scripts/check-gitignore.sh
+# 检查 .gitignore 配置检查脚本
+bash scripts/check-gitignore.sh
+
 ```
 ## 📁 目录结构
 

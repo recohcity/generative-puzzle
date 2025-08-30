@@ -11,8 +11,28 @@ export const calculateCenter = (points: Point[]) => {
   )
 }
 
+/**
+ * 点在多边形内检测算法 - 射线投射法优化版本
+ * 
+ * 算法原理：
+ * 1. 边界框预检查：快速排除明显在外部的点
+ * 2. 射线投射：从目标点向右发射射线，计算与多边形边的交点数
+ * 3. 奇偶规则：交点数为奇数则点在内部，偶数则在外部
+ * 4. 边界处理：特殊处理点在多边形边上的情况
+ * 
+ * 性能优化：
+ * - 边界框预检查可以快速排除大部分情况
+ * - 避免不必要的浮点运算
+ * - 特殊处理共线情况
+ * 
+ * @param x 目标点X坐标
+ * @param y 目标点Y坐标  
+ * @param polygon 多边形顶点数组
+ * @returns 点是否在多边形内部（包括边界）
+ */
 export function isPointInPolygon(x: number, y: number, polygon: Point[]): boolean {
-  // 快速边界框预检查 - 大幅提升性能
+  // 步骤1：边界框预检查优化
+  // 计算多边形的最小外接矩形，快速排除明显在外部的点
   let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
   for (let i = 0; i < polygon.length; i++) {
     const point = polygon[i];
@@ -22,36 +42,41 @@ export function isPointInPolygon(x: number, y: number, polygon: Point[]): boolea
     if (point.y > maxY) maxY = point.y;
   }
   
-  // 如果点在边界框外，直接返回false
+  // 如果点在边界框外，直接返回false（性能优化）
   if (x < minX || x > maxX || y < minY || y > maxY) {
     return false;
   }
 
-  // Helper function to check if a point is on a line segment
+  // 步骤2：边界点检测辅助函数
+  // 检查点是否恰好在线段上（边界情况处理）
   const onSegment = (px: number, py: number, qx: number, qy: number, rx: number, ry: number) => {
-    // Check if r is collinear with p and q
+    // 首先检查三点是否共线（叉积为0）
     if (((qy - py) * (rx - qx) - (qx - px) * (ry - qy)) !== 0) return false;
     
-    // Check if r is within the bounding box of segment pq
+    // 然后检查点是否在线段的边界框内
     return (
       rx <= Math.max(px, qx) && rx >= Math.min(px, qx) &&
       ry <= Math.max(py, qy) && ry >= Math.min(py, qy)
     );
   };
 
+  // 步骤3：射线投射算法主循环
+  // 从目标点向右发射射线，计算与多边形边的交点数
   let inside = false;
   for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
     const xi = polygon[i].x, yi = polygon[i].y;
     const xj = polygon[j].x, yj = polygon[j].y;
 
-    // Check if the point is on the current segment
+    // 步骤3.1：检查点是否在当前边上
     if (onSegment(xi, yi, xj, yj, x, y)) {
-      return true; // Point is on the boundary
+      return true; // 点在边界上，视为内部
     }
     
+    // 步骤3.2：射线相交检测
+    // 检查从点向右的射线是否与当前边相交
     const intersect = ((yi > y) !== (yj > y))
         && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-    if (intersect) inside = !inside;
+    if (intersect) inside = !inside; // 奇偶规则：每次相交切换内外状态
   }
   return inside;
 }

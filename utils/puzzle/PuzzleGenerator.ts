@@ -3,22 +3,43 @@ import { generateCuts } from "@/utils/puzzle/cutGenerators"
 import { splitPolygon } from "@/utils/puzzle/puzzleUtils"
 
 export class PuzzleGenerator {
+  /**
+   * 生成拼图的核心算法
+   * 
+   * 算法流程：
+   * 1. 生成切割线：根据难度和类型创建切割路径
+   * 2. 多边形分割：使用线段相交算法将形状切割成片段
+   * 3. 质量控制：确保生成足够数量的有效拼图片段
+   * 4. 颜色分配：为每个片段分配暖色调颜色
+   * 5. 位置计算：确定每个片段的中心点和初始位置
+   * 
+   * @param shape 原始形状的顶点数组
+   * @param cutType 切割类型：直线或斜线
+   * @param cutCount 切割线数量（决定拼图难度）
+   * @param shapeType 形状类型（影响渲染方式）
+   * @returns 包含拼图片段和原始位置的对象
+   */
   static generatePuzzle(
     shape: Point[],
     cutType: "straight" | "diagonal",
     cutCount: number,
     shapeType?: string,
   ): { pieces: PuzzlePiece[]; originalPositions: PuzzlePiece[] } {
-    // 生成切割线
+    // 步骤1：生成切割线
+    // 根据形状边界、难度级别和切割类型生成优化的切割路径
     const cuts = generateCuts(shape, cutCount, cutType);
 
-    // 使用多边形分割算法
+    // 步骤2：执行多边形分割
+    // 使用线段相交检测算法将原始形状切割成独立的拼图片段
     let splitPieces: Point[][] = splitPolygon(shape, cuts);
 
-    // 计算期望的拼图数量（切割线数量+1）
+    // 步骤3：质量控制 - 验证切割效果
+    // 理论上N条切割线应该产生N+1个拼图片段
     const expectedPieceCount = cuts.length + 1;
 
-    // 确保切割有效：如果没有足够的片段，尝试强制切割
+    // 步骤4：智能补偿算法
+    // 如果实际片段数量少于预期的80%，启动补偿机制
+    // 这种情况通常发生在复杂形状或高难度切割中
     if (splitPieces.length < expectedPieceCount * 0.8) {
       // 切割后片段数量少于预期的80%，尝试额外切割
 

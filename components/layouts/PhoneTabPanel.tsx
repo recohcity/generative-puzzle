@@ -3,14 +3,16 @@ import ShapeControls from "@/components/ShapeControls";
 import PuzzleControlsCutType from "@/components/PuzzleControlsCutType";
 import PuzzleControlsCutCount from "@/components/PuzzleControlsCutCount";
 import PuzzleControlsScatter from "@/components/PuzzleControlsScatter";
-import PuzzleControlsGamepad from "@/components/PuzzleControlsGamepad";
 import GlobalUtilityButtons from "@/components/GlobalUtilityButtons";
 import RestartButton from "@/components/RestartButton";
 import { Button } from "@/components/ui/button";
-import { Lightbulb, RotateCcw, RotateCw } from "lucide-react";
+import MobileScoreLayout from "@/components/score/MobileScoreLayout";
+import { GameDataManager } from '@/utils/data/GameDataManager';
+import { Lightbulb, RotateCcw, RotateCw, Trophy } from "lucide-react";
 import { useGame } from "@/contexts/GameContext";
 import { playRotateSound, playButtonClickSound } from "@/utils/rendering/soundEffects";
 import { useTranslation } from '@/contexts/I18nContext';
+import { useAngleDisplay } from '@/utils/angleDisplay';
 
 interface PhoneTabPanelProps {
   activeTab: 'shape' | 'puzzle' | 'cut' | 'scatter' | 'controls';
@@ -22,7 +24,7 @@ interface PhoneTabPanelProps {
   onToggleMusic: () => void;
   onToggleFullscreen: () => void;
   style?: React.CSSProperties;
-  isLandscape?: boolean; // 新增横竖屏标志
+  isLandscape?: boolean;
 }
 
 // tabLabels 将通过翻译函数动态获取
@@ -90,8 +92,49 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
   isLandscape = false
 }) => {
   // 新增：引入游戏核心逻辑和翻译
-  const { state, rotatePiece, showHintOutline, resetGame } = useGame();
+  const { state, rotatePiece, showHintOutline, resetGame, trackHintUsage, trackRotation } = useGame();
   const { t } = useTranslation();
+  
+  // 角度显示增强功能
+  const {
+    shouldShowAngle,
+    getDisplayState,
+    isTemporaryDisplay,
+    needsHintEnhancement
+  } = useAngleDisplay();
+
+  // 榜单显示状态
+  const [showLeaderboard, setShowLeaderboard] = React.useState(false);
+  const [leaderboardData, setLeaderboardData] = React.useState<any[]>([]);
+  const [historyData, setHistoryData] = React.useState<any[]>([]);
+
+  // 加载排行榜数据
+  React.useEffect(() => {
+    const data = GameDataManager.getLeaderboard();
+    const history = GameDataManager.getGameHistory();
+    setLeaderboardData(data);
+    setHistoryData(history);
+  }, []);
+
+  // 处理榜单切换
+  const handleToggleLeaderboard = () => {
+    if (showLeaderboard) {
+      // 关闭排行榜
+      setShowLeaderboard(false);
+    } else {
+      // 打开排行榜，加载最新数据
+      const data = GameDataManager.getLeaderboard();
+      const history = GameDataManager.getGameHistory();
+      setLeaderboardData(data);
+      setHistoryData(history);
+      setShowLeaderboard(true);
+    }
+  };
+
+  // 处理榜单关闭（保留用于排行榜内部的关闭按钮）
+  const handleCloseLeaderboard = () => {
+    setShowLeaderboard(false);
+  };
 
   // 动态获取tab标签
   const getTabLabel = (tab: string) => {
@@ -106,16 +149,49 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
   const handleShowHint = () => {
     playButtonClickSound();
     showHintOutline();
+    
+    // 统计追踪：记录提示使用
+    try {
+      trackHintUsage();
+    } catch (error) {
+      // 静默处理统计追踪错误
+    }
   };
   const handleRotateLeft = () => {
     playRotateSound();
     rotatePiece(false);
+    
+    // 统计追踪：记录旋转操作
+    try {
+      trackRotation();
+    } catch (error) {
+      // 静默处理统计追踪错误
+    }
   };
   const handleRotateRight = () => {
     playRotateSound();
     rotatePiece(true);
+    
+    // 统计追踪：记录旋转操作
+    try {
+      trackRotation();
+    } catch (error) {
+      // 静默处理统计追踪错误
+    }
   };
   const handleRestart = () => {
+    // 检查是否在游戏过程中（需要确认）
+    const isGameInProgress = state.isGameActive && state.puzzle && state.isScattered && !state.isCompleted;
+    
+    if (isGameInProgress) {
+      // 游戏过程中需要确认
+      const confirmed = window.confirm(t('game.controls.restartConfirm'));
+      if (!confirmed) {
+        return; // 用户取消，不执行重新开始
+      }
+    }
+    
+    // 执行重新开始
     resetGame();
     if (goToFirstTab) goToFirstTab();
     // 防止 tab 切换后形状按钮卡住 active 状态（移动端）
@@ -131,6 +207,11 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
     }, 0);
   };
 
+  // 移动端不使用独立的排行榜面板，而是直接在控制面板中显示
+
+  // 游戏完成时的特殊处理 - 保留基本功能
+  const isGameCompleted = state.isCompleted && state.gameStats;
+
   return (
     <div
       className={`${PANEL_CLASS_BASE} ${isLandscape ? PANEL_PADDING_LANDSCAPE : PANEL_PADDING_PORTRAIT}`}
@@ -144,183 +225,148 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
           isFullscreen={isFullscreen}
           onToggleMusic={onToggleMusic}
           onToggleFullscreen={onToggleFullscreen}
+          onToggleLeaderboard={handleToggleLeaderboard}
+          isLeaderboardOpen={showLeaderboard}
         />
       </div>
-      {/* Tab按钮与内容区间距最小化 */}
-      <div
-        className="mb-0"
-        style={{
-          paddingLeft: CONTENT_HORIZONTAL_PADDING,
-          paddingRight: CONTENT_HORIZONTAL_PADDING,
-        }}
-      >
-        <div
-          className="flex w-full bg-[#2A283E] rounded-xl overflow-x-hidden whitespace-nowrap scrollbar-hide"
-          style={{
-            height: isLandscape ? TAB_BUTTON_HEIGHT_LANDSCAPE : TAB_BUTTON_HEIGHT,
-            minHeight: isLandscape ? TAB_BUTTON_HEIGHT_LANDSCAPE : TAB_BUTTON_HEIGHT,
-            maxHeight: isLandscape ? TAB_BUTTON_HEIGHT_LANDSCAPE : TAB_BUTTON_HEIGHT,
-          }}
-        >
-          {(['shape', 'puzzle', 'cut', 'scatter', 'controls'] as const).map((tab) => (
-            <button
-              key={tab}
-              className={
-                TAB_BUTTON_CLASS +
-                (activeTab === tab
-                  ? ' bg-[#F68E5F] text-white shadow'
-                  : ' text-[#FFD5AB] hover:bg-[#463E50]')
-              }
-              data-testid={`tab-${tab}-button`}
-              onClick={() => onTabChange(tab)}
-              style={{
-                outline: 'none',
-                border: 'none',
-                height: '100%',
-                minHeight: 0,
-                maxHeight: '100%',
-                borderRadius: 0,
-                padding: 0,
-                fontSize: isLandscape ? TAB_BUTTON_FONT_SIZE_LANDSCAPE : TAB_BUTTON_FONT_SIZE,
-                fontWeight: 500,
-                lineHeight: 1,
-                overflow: 'hidden',
-              }}
-            >
-              {getTabLabel(tab)}
-            </button>
-          ))}
-        </div>
-      </div>
-      {/* 拼图设置分区内容，应用可调padding */}
-      <div style={{ paddingLeft: CONTENT_HORIZONTAL_PADDING, paddingRight: CONTENT_HORIZONTAL_PADDING, width: '100%', marginTop: 0 }}>
-        {(activeTab === 'shape' || activeTab === 'puzzle' || activeTab === 'cut' || activeTab === 'scatter') && (
-          <div className={SECTION_CLASS + ' mt-0'}>
-            {/* 分区标题已上移，这里不再渲染 */}
-            {activeTab === 'shape' && (
-              <div className="flex flex-col items-center">
-                <h4 className={CARD_TITLE_CLASS}>{t('game.shapes.title')}</h4>
-                <ShapeControls goToNextTab={goToNextTab} buttonHeight={SHAPE_BUTTON_HEIGHT} fontSize={MOBILE_SHAPE_BUTTON_FONT_SIZE} />
+      
+      {/* 排行榜显示区域 - 点击奖杯后在游戏名称下方显示 */}
+      {showLeaderboard && (
+        <div className="mb-1">
+          <div className="bg-[#2A2A2A] rounded-lg p-2">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-1">
+                <Trophy className="w-4 h-4 text-yellow-400" />
+                <span className="text-[#FFD5AB] text-sm font-medium">{t('leaderboard.title')}</span>
               </div>
-            )}
-            {activeTab === 'puzzle' && (
-              <div className="flex flex-col items-center">
-                <h4 className={CARD_TITLE_CLASS}>{t('game.cutType.title')}</h4>
-                <PuzzleControlsCutType goToNextTab={goToNextTab} buttonHeight={CUT_TYPE_BUTTON_HEIGHT} />
-              </div>
-            )}
-            {activeTab === 'cut' && (
-              <div className="flex flex-col items-center px-3">
-                <h4 className={CARD_TITLE_CLASS}>{t('game.cutCount.title')}</h4>
-                <div className="max-w-[290px] w-full mx-auto">
-                  <PuzzleControlsCutCount goToNextTab={goToNextTab} buttonHeight={NUMBER_BUTTON_HEIGHT} actionButtonHeight={ACTION_BUTTON_HEIGHT} />
-                </div>
-              </div>
-            )}
-            {activeTab === 'scatter' && (
-              <div className="flex flex-col items-center">
-                <h4 className={CARD_TITLE_CLASS}>{t('game.scatter.title')}</h4>
-                <PuzzleControlsScatter goToNextTab={goToNextTab} buttonHeight={ACTION_BUTTON_HEIGHT} />
-              </div>
-            )}
-          </div>
-        )}
-        {/* 游戏控制分区 */}
-        {activeTab === 'controls' && (
-          <div className={SECTION_CLASS + ' mt-0'}>
-            <div className="flex flex-col items-center">
-              {/* 控制按钮组（移动端专用，使用与桌面端一致的图标） */}
-              <div className="flex w-full mb-2" style={{ gap: '8px' }}>
-                <Button
-                  style={{
-                    height: MOBILE_CONTROL_BUTTON_HEIGHT,
-                    minHeight: 0,
-                    fontSize: MOBILE_CONTROL_BUTTON_FONT_SIZE,
-                    borderRadius: 14,
-                    padding: 0,
-                    lineHeight: '18px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flex: '1 1 0%', // 确保等宽分布
-                    width: 0, // 重置宽度让flex生效
-                  }}
-                  className={
-                    `bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md min-h-0 p-0 leading-none` +
-                    ` disabled:opacity-30 disabled:pointer-events-none disabled:hover:bg-[#F68E5F]`
-                  }
-                  variant="ghost"
-                  onClick={handleShowHint}
-                  disabled={isHintDisabled}
-                  title={t('game.controls.hint')}
-                >
-                  <Lightbulb style={{ width: '16px', height: '16px' }} className="text-white shrink-0" strokeWidth={2} />
-                </Button>
-                <Button
-                  style={{
-                    height: MOBILE_CONTROL_BUTTON_HEIGHT,
-                    minHeight: 0,
-                    fontSize: MOBILE_CONTROL_BUTTON_FONT_SIZE,
-                    borderRadius: 14,
-                    padding: 0,
-                    lineHeight: '18px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flex: '1 1 0%', // 确保等宽分布
-                    width: 0, // 重置宽度让flex生效
-                  }}
-                  className={
-                    `bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md min-h-0 p-0 leading-none` +
-                    ` disabled:opacity-30 disabled:pointer-events-none disabled:hover:bg-[#F68E5F]`
-                  }
-                  variant="ghost"
-                  onClick={handleRotateLeft}
-                  disabled={isRotateDisabled}
-                  title={t('game.controls.rotateLeft')}
-                >
-                  <RotateCcw style={{ width: '16px', height: '16px' }} className="text-white shrink-0" strokeWidth={2} />
-                </Button>
-                <Button
-                  style={{
-                    height: MOBILE_CONTROL_BUTTON_HEIGHT,
-                    minHeight: 0,
-                    fontSize: MOBILE_CONTROL_BUTTON_FONT_SIZE,
-                    borderRadius: 14,
-                    padding: 0,
-                    lineHeight: '18px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flex: '1 1 0%', // 确保等宽分布
-                    width: 0, // 重置宽度让flex生效
-                  }}
-                  className={
-                    `bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md min-h-0 p-0 leading-none` +
-                    ` disabled:opacity-30 disabled:pointer-events-none disabled:hover:bg-[#F68E5F]`
-                  }
-                  variant="ghost"
-                  onClick={handleRotateRight}
-                  disabled={isRotateDisabled}
-                  title={t('game.controls.rotateRight')}
-                >
-                  <RotateCw style={{ width: '16px', height: '16px' }} className="text-white shrink-0" strokeWidth={2} />
-                </Button>
-              </div>
-
-              {/* 拼图角度提示信息 */}
-              {state.selectedPiece !== null && state.puzzle && (
-                <div style={{ textAlign: 'center', fontSize: '14px', marginTop: '10px', color: '#FFD5AB', fontWeight: 500 }}>
-                  <div>
-                    {t('game.controls.currentAngle', { angle: Math.round(state.puzzle[state.selectedPiece].rotation) })}
+              <button
+                onClick={handleToggleLeaderboard}
+                className="text-[#FFD5AB] hover:text-white text-xs px-2 py-1 rounded transition-colors"
+              >
+{t('common.close')}
+              </button>
+            </div>
+            {/* 排行榜条目 - 显示名次、分数、时间、难度、拼图数量 */}
+            <div className="space-y-0.5">
+              {leaderboardData.slice(0, 5).map((record, index) => {
+                const rank = index + 1;
+                const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank.toString();
+                
+                // 格式化时间显示
+                const formatTime = (duration: number) => {
+                  const minutes = Math.floor(duration / 60);
+                  const seconds = Math.floor(duration % 60);
+                  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                };
+                
+                // 获取难度显示文本
+                const getDifficultyText = (difficulty: string): string => {
+                  return t(`difficulty.${difficulty}`);
+                };
+                
+                return (
+                  <div key={record.id || record.timestamp} className="flex items-center gap-2 py-1 px-2 bg-[#1A1A1A] rounded border border-[#333]">
+                    {/* 排名图标 */}
+                    <div className="flex items-center justify-center w-8 h-8">
+                      <span className="text-xl">
+                        {rankIcon}
+                      </span>
+                    </div>
+                    
+                    {/* 游戏信息 - 一行布局 */}
+                    <div className="flex-1 min-w-0 text-xs text-[#FFD5AB] opacity-70">
+                      {formatTime(record.totalDuration || 0)} • {getDifficultyText(record.difficulty?.difficultyLevel || 'easy')} • {record.difficulty?.actualPieces || 0}{t('stats.piecesUnit')}
+                    </div>
+                    
+                    {/* 分数 - 加粗大号 */}
+                    <div className="text-[#FFD5AB] text-base font-bold">
+                      {record.finalScore?.toLocaleString() || 0}
+                    </div>
                   </div>
-                  <div style={{ fontSize: '12px', marginTop: '2px', marginBottom: '10px', color: '#FFD5AB', fontWeight: 500 }}>
-                    {t('game.controls.rotateInstruction')}
-                  </div>
+                );
+              })}
+              
+              {leaderboardData.length === 0 && (
+                <div className="text-[#FFD5AB] opacity-60 text-xs text-center py-4">
+                  {t('leaderboard.empty')}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+      
 
-              {/* 重新开始按钮（移动端专用） */}
+      {/* Tab按钮与内容区间距最小化 - 游戏完成时或显示排行榜时隐藏 */}
+      {!isGameCompleted && !showLeaderboard && (
+        <div
+          className="mb-0"
+          style={{
+            paddingLeft: CONTENT_HORIZONTAL_PADDING,
+            paddingRight: CONTENT_HORIZONTAL_PADDING,
+          }}
+        >
+          <div
+            className="flex w-full bg-[#2A283E] rounded-xl overflow-x-hidden whitespace-nowrap scrollbar-hide"
+            style={{
+              height: isLandscape ? TAB_BUTTON_HEIGHT_LANDSCAPE : TAB_BUTTON_HEIGHT,
+              minHeight: isLandscape ? TAB_BUTTON_HEIGHT_LANDSCAPE : TAB_BUTTON_HEIGHT,
+              maxHeight: isLandscape ? TAB_BUTTON_HEIGHT_LANDSCAPE : TAB_BUTTON_HEIGHT,
+            }}
+          >
+            {(['shape', 'puzzle', 'cut', 'scatter', 'controls'] as const).map((tab) => (
+              <button
+                key={tab}
+                className={
+                  TAB_BUTTON_CLASS +
+                  (activeTab === tab
+                    ? ' bg-[#F68E5F] text-white shadow'
+                    : ' text-[#FFD5AB] hover:bg-[#463E50]')
+                }
+                data-testid={`tab-${tab}-button`}
+                onClick={() => onTabChange(tab)}
+                style={{
+                  outline: 'none',
+                  border: 'none',
+                  height: '100%',
+                  minHeight: 0,
+                  maxHeight: '100%',
+                  borderRadius: 0,
+                  padding: 0,
+                  fontSize: isLandscape ? TAB_BUTTON_FONT_SIZE_LANDSCAPE : TAB_BUTTON_FONT_SIZE,
+                  fontWeight: 500,
+                  lineHeight: 1,
+                  overflow: 'hidden',
+                }}
+              >
+                {getTabLabel(tab)}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      {/* 显示排行榜时隐藏游戏控制，否则显示正常的游戏控制或完成成绩 */}
+      {!showLeaderboard && (
+        <div style={{ 
+          paddingLeft: CONTENT_HORIZONTAL_PADDING, 
+          paddingRight: CONTENT_HORIZONTAL_PADDING, 
+          width: '100%', 
+          marginTop: isGameCompleted ? 8 : 0  // 游戏完成时增加上边距，因为没有tab菜单
+        }}>
+          {isGameCompleted ? (
+          /* 游戏完成时显示成绩 - 移动端紧凑样式 */
+          <div className="flex flex-col h-full">
+            {/* 成绩显示区域 - 紧凑布局 */}
+            <div className="flex-1 overflow-y-auto">
+              <MobileScoreLayout
+                gameStats={state.gameStats!}
+                currentScore={state.currentScore}
+                scoreBreakdown={state.scoreBreakdown || undefined}
+                isNewRecord={state.isNewRecord}
+              />
+            </div>
+            {/* 重新开始按钮 - 固定在底部，减少间距 */}
+            <div className="mt-1 flex-shrink-0">
               <RestartButton
                 onClick={handleRestart}
                 height={MOBILE_RESTART_BUTTON_HEIGHT}
@@ -329,15 +375,170 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                 style={{ width: '100%', minHeight: 0, paddingTop: 0, paddingBottom: 0, lineHeight: 1 }}
                 className="min-h-0 p-0 leading-none"
               />
-
             </div>
           </div>
+        ) : (
+          /* 正常游戏流程的控制面板 */
+          <>
+            {(activeTab === 'shape' || activeTab === 'puzzle' || activeTab === 'cut' || activeTab === 'scatter') && (
+              <div className={SECTION_CLASS + ' mt-0'}>
+                {/* 分区标题已上移，这里不再渲染 */}
+                {activeTab === 'shape' && (
+                  <div className="flex flex-col items-center">
+                    <h4 className={CARD_TITLE_CLASS}>{t('game.shapes.title')}</h4>
+                    <ShapeControls goToNextTab={goToNextTab} buttonHeight={SHAPE_BUTTON_HEIGHT} fontSize={MOBILE_SHAPE_BUTTON_FONT_SIZE} />
+                  </div>
+                )}
+                {activeTab === 'puzzle' && (
+                  <div className="flex flex-col items-center">
+                    <h4 className={CARD_TITLE_CLASS}>{t('game.cutType.title')}</h4>
+                    <PuzzleControlsCutType goToNextTab={goToNextTab} buttonHeight={CUT_TYPE_BUTTON_HEIGHT} />
+                  </div>
+                )}
+                {activeTab === 'cut' && (
+                  <div className="flex flex-col items-center px-3">
+                    <h4 className={CARD_TITLE_CLASS}>{t('game.cutCount.title')}</h4>
+                    <div className="max-w-[290px] w-full mx-auto">
+                      <PuzzleControlsCutCount goToNextTab={goToNextTab} buttonHeight={NUMBER_BUTTON_HEIGHT} actionButtonHeight={ACTION_BUTTON_HEIGHT} />
+                    </div>
+                  </div>
+                )}
+                {activeTab === 'scatter' && (
+                  <div className="flex flex-col items-center">
+                    <h4 className={CARD_TITLE_CLASS}>{t('game.scatter.title')}</h4>
+                    <PuzzleControlsScatter goToNextTab={goToNextTab} buttonHeight={ACTION_BUTTON_HEIGHT} />
+                  </div>
+                )}
+              </div>
+            )}
+            {/* 游戏控制分区 */}
+            {activeTab === 'controls' && (
+              <div className={SECTION_CLASS + ' mt-0'}>
+                <div className="flex flex-col items-center">
+                  {/* 控制按钮组（移动端专用，使用与桌面端一致的图标） */}
+                  <div className="flex w-full mb-2" style={{ gap: '8px' }}>
+                    <Button
+                      style={{
+                        height: MOBILE_CONTROL_BUTTON_HEIGHT,
+                        minHeight: 0,
+                        fontSize: MOBILE_CONTROL_BUTTON_FONT_SIZE,
+                        borderRadius: 14,
+                        padding: 0,
+                        lineHeight: '18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flex: '1 1 0%', // 确保等宽分布
+                        width: 0, // 重置宽度让flex生效
+                      }}
+                      className={
+                        `bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md min-h-0 p-0 leading-none` +
+                        ` disabled:opacity-30 disabled:pointer-events-none disabled:hover:bg-[#F68E5F]`
+                      }
+                      variant="ghost"
+                      onClick={handleShowHint}
+                      disabled={isHintDisabled}
+                      title={t('game.controls.hint')}
+                    >
+                      <Lightbulb style={{ width: '16px', height: '16px' }} className="text-white shrink-0" strokeWidth={2} />
+                    </Button>
+                    <Button
+                      style={{
+                        height: MOBILE_CONTROL_BUTTON_HEIGHT,
+                        minHeight: 0,
+                        fontSize: MOBILE_CONTROL_BUTTON_FONT_SIZE,
+                        borderRadius: 14,
+                        padding: 0,
+                        lineHeight: '18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flex: '1 1 0%', // 确保等宽分布
+                        width: 0, // 重置宽度让flex生效
+                      }}
+                      className={
+                        `bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md min-h-0 p-0 leading-none` +
+                        ` disabled:opacity-30 disabled:pointer-events-none disabled:hover:bg-[#F68E5F]`
+                      }
+                      variant="ghost"
+                      onClick={handleRotateLeft}
+                      disabled={isRotateDisabled}
+                      title={t('game.controls.rotateLeft')}
+                    >
+                      <RotateCcw style={{ width: '16px', height: '16px' }} className="text-white shrink-0" strokeWidth={2} />
+                    </Button>
+                    <Button
+                      style={{
+                        height: MOBILE_CONTROL_BUTTON_HEIGHT,
+                        minHeight: 0,
+                        fontSize: MOBILE_CONTROL_BUTTON_FONT_SIZE,
+                        borderRadius: 14,
+                        padding: 0,
+                        lineHeight: '18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flex: '1 1 0%', // 确保等宽分布
+                        width: 0, // 重置宽度让flex生效
+                      }}
+                      className={
+                        `bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md min-h-0 p-0 leading-none` +
+                        ` disabled:opacity-30 disabled:pointer-events-none disabled:hover:bg-[#F68E5F]`
+                      }
+                      variant="ghost"
+                      onClick={handleRotateRight}
+                      disabled={isRotateDisabled}
+                      title={t('game.controls.rotateRight')}
+                    >
+                      <RotateCw style={{ width: '16px', height: '16px' }} className="text-white shrink-0" strokeWidth={2} />
+                    </Button>
+                  </div>
+
+                  {/* 拼图角度提示信息 - 增强版 */}
+                  {state.selectedPiece !== null && state.puzzle && (
+                    <div style={{ textAlign: 'center', fontSize: '14px', marginTop: '10px', color: '#FFD5AB', fontWeight: 500 }}>
+                      {shouldShowAngle(state.selectedPiece) ? (
+                        <>
+                          <div className={isTemporaryDisplay() ? 'animate-pulse' : ''}>
+                            {isTemporaryDisplay() 
+                              ? t('game.controls.angleTemporary', { angle: Math.round(state.puzzle[state.selectedPiece].rotation) })
+                              : t('game.controls.currentAngle', { angle: Math.round(state.puzzle[state.selectedPiece].rotation) })
+                            }
+                          </div>
+                          <div style={{ fontSize: '12px', marginTop: '2px', marginBottom: '10px', color: '#FFD5AB', fontWeight: 500 }}>
+                            {isTemporaryDisplay() 
+                              ? t('game.controls.hintRevealedAngle')
+                              : t('game.controls.rotateInstruction')
+                            }
+                          </div>
+                        </>
+                      ) : (
+                        <div style={{ fontSize: '12px', marginTop: '2px', marginBottom: '10px', color: '#FFD5AB', opacity: 0.6, fontWeight: 500 }}>
+                          {needsHintEnhancement() ? t('game.controls.useHintToReveal') : t('game.controls.rotateInstruction')}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 重新开始按钮（移动端专用） */}
+                  <RestartButton
+                    onClick={handleRestart}
+                    height={MOBILE_RESTART_BUTTON_HEIGHT}
+                    fontSize={MOBILE_RESTART_BUTTON_FONT_SIZE}
+                    iconSize={MOBILE_RESTART_ICON_SIZE}
+                    style={{ width: '100%', minHeight: 0, paddingTop: 0, paddingBottom: 0, lineHeight: 1 }}
+                    className="min-h-0 p-0 leading-none"
+                  />
+
+                </div>
+              </div>
+            )}
+          </>
         )}
-        {/* 统一传递给 RestartButton，onClick 用 goToFirstTab 或 goToNextTab 或 () => {} 占位 */}
-        {/* <RestartButton onClick={goToFirstTab} height={MOBILE_BUTTON_HEIGHT} /> */}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default PhoneTabPanel; 
+export default PhoneTabPanel;

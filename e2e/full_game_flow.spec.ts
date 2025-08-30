@@ -618,7 +618,7 @@ test('完整自动化游戏流程', async ({ page }) => {
     // 获取 puzzle 长度
     const puzzle = await page.evaluate(() => (window as any).__gameStateForTests__.puzzle);
     console.log('[E2E-debugLOG] puzzle 长度', puzzle ? puzzle.length : puzzle);
-    await waitForTip(page, `0 / ${puzzle.length} 块拼图已完成`);
+    await waitForTip(page, `拼图0/${puzzle.length}`);
     metrics.scatterTime = Date.now() - scatterStartTime;
     console.log(`步骤 4: 点击散开拼图 - 完成。`);
 
@@ -706,7 +706,7 @@ test('完整自动化游戏流程', async ({ page }) => {
           console.log(`[E2E-debugLOG] UI进度提示验证: "${progressText}"`);
         } catch (error) {
           console.log(`[E2E-debugLOG] UI进度提示验证失败，尝试其他选择器...`);
-          const alternativeText = await page.textContent('text=块拼图已完成', { timeout: 5000 }).catch(() => 'UI提示未找到');
+          const alternativeText = await page.textContent('text=拼图', { timeout: 5000 }).catch(() => 'UI提示未找到');
           console.log(`[E2E-debugLOG] 备用UI进度提示验证: "${alternativeText}"`);
         }
         

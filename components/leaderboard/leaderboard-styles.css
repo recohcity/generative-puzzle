@@ -1,0 +1,161 @@
+/* 排行榜样式 - 玩家新入榜成绩高亮效果 */
+
+/* 柔和的发光动画 */
+@keyframes gentle-glow {
+  0% { 
+    box-shadow: 0 0 20px rgba(246, 142, 95, 0.3);
+  }
+  50% { 
+    box-shadow: 0 0 30px rgba(246, 142, 95, 0.5);
+  }
+  100% { 
+    box-shadow: 0 0 20px rgba(246, 142, 95, 0.3);
+  }
+}
+
+/* 脉冲发光效果 */
+@keyframes pulse-glow {
+  0%, 100% { 
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+}
+
+/* 新入榜标识弹跳动画 */
+@keyframes new-entry-bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-4px);
+  }
+  60% {
+    transform: translateY(-2px);
+  }
+}
+
+/* 渐变背景动画 */
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* 应用动画的CSS类 */
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-gentle-glow {
+  animation: gentle-glow 3s ease-in-out infinite;
+}
+
+.animate-new-entry-bounce {
+  animation: new-entry-bounce 1s ease-in-out infinite;
+}
+
+.animate-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+/* 玩家新入榜成绩的完整样式类 */
+.leaderboard-item-player-new {
+  background: linear-gradient(135deg, 
+    rgba(246, 142, 95, 0.3) 0%, 
+    rgba(255, 213, 171, 0.2) 50%,
+    rgba(246, 142, 95, 0.3) 100%);
+  border: 2px solid rgba(246, 142, 95, 0.6);
+  box-shadow: 0 0 20px rgba(246, 142, 95, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.leaderboard-item-player-new::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.1), 
+    transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* 普通成绩样式 */
+.leaderboard-item-normal {
+  background: rgba(42, 42, 42, 0.8);
+  border: 1px solid rgba(255, 213, 171, 0.2);
+  transition: all 0.3s ease;
+}
+
+.leaderboard-item-normal:hover {
+  background: rgba(42, 42, 42, 0.9);
+  border-color: rgba(255, 213, 171, 0.3);
+  transform: translateY(-1px);
+}
+
+/* 排名特殊样式 */
+.rank-1 {
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+}
+
+.rank-2 {
+  box-shadow: 0 0 15px rgba(192, 192, 192, 0.3);
+}
+
+.rank-3 {
+  box-shadow: 0 0 15px rgba(205, 127, 50, 0.3);
+}
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+  .leaderboard-item-player-new {
+    border-width: 1px;
+    box-shadow: 0 0 15px rgba(246, 142, 95, 0.2);
+  }
+  
+  .animate-pulse-glow {
+    animation-duration: 3s; /* 移动端动画稍慢一些 */
+  }
+  
+  .animate-gentle-glow {
+    animation-duration: 4s;
+  }
+}
+
+/* 减少动画效果（用户偏好） */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse-glow,
+  .animate-gentle-glow,
+  .animate-new-entry-bounce,
+  .animate-gradient-shift {
+    animation: none;
+  }
+  
+  .leaderboard-item-player-new::before {
+    animation: none;
+  }
+}

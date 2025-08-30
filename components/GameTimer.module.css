@@ -1,0 +1,30 @@
+/* GameTimer 使用统一覆盖元素样式变量 */
+.gameTimer {
+  position: absolute;
+  left: var(--overlay-side-margin);
+  z-index: var(--overlay-z-index);
+  background-color: var(--overlay-bg-color);
+  color: var(--overlay-text-color);
+  padding: var(--overlay-padding);
+  border-radius: var(--overlay-border-radius);
+  font-family: var(--overlay-font-family);
+  font-size: var(--overlay-font-size);
+  font-weight: var(--overlay-font-weight);
+  user-select: none;
+  pointer-events: none;
+  backdrop-filter: var(--overlay-backdrop-filter);
+}
+
+/* 桌面端响应式 */
+@media (min-width: 769px) {
+  .gameTimer {
+    top: var(--overlay-top-desktop);
+  }
+}
+
+/* 移动端响应式 */
+@media (max-width: 768px) {
+  .gameTimer {
+    top: var(--overlay-top-mobile);
+  }
+}

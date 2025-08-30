@@ -3,6 +3,7 @@
 import React, { useRef, useMemo } from 'react';
 import PuzzleCanvas from "@/components/PuzzleCanvas";
 import PhoneTabPanel from "./PhoneTabPanel";
+import MobileSmartHints from "@/components/MobileSmartHints";
 import { MOBILE_ADAPTATION } from '@/src/config/adaptationConfig';
 import { calculateMobilePortraitCanvasSize } from '@/constants/canvasAdaptation';
 import { useDeviceDetection } from '@/hooks/useDeviceDetection';
@@ -73,6 +74,10 @@ const PhonePortraitLayout: React.FC<PhonePortraitLayoutProps> = ({
           padding: 0,
         }}
       >
+        {/* 智能提示区域 - 使用统一覆盖元素样式 */}
+        <div className="overlay-element smart-hints-overlay top-2">
+          <MobileSmartHints />
+        </div>
         <PuzzleCanvas />
       </div>
       {}

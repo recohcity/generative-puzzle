@@ -16,8 +16,10 @@
             "cutShape": "请切割形状",
             "scatterPuzzle": "请散开拼图，开始游戏",
             "gameInProgress": "请选择拼图拖到正确位置",
-            "completed": "恭喜！拼图完成！",
+            "completed": "🎉 游戏完成！",
+            "newRecord": "🌟 新纪录！",
             "progress": "{{completed}} / {{total}} 块拼图已完成",
+            "gameStats": "拼图{{completed}}/{{total}} 提示{{hints}}/{{allowedHints}}",
             "completionMessages": [
                 "你好犀利吖！",
                 "太棒了！",
@@ -28,8 +30,7 @@
                 "超赞的！",
                 "好样的！",
                 "绝绝子！"
-            ],
-            "hintText": "这里"
+            ]
         },
         "shapes": {
             "title": "选择形状类型",
@@ -65,9 +66,17 @@
             "rotateLeft": "左转",
             "rotateRight": "右转",
             "restart": "重新开始",
+            "restartConfirm": "确定要重新开始游戏吗？",
             "currentAngle": "当前角度: {{angle}}°",
             "rotateInstruction": "可以使用2只手指旋转拼图",
-            "rotateInstructionDesktop": "(旋转角度需与目标角度匹配才能放置)"
+            "rotateInstructionDesktop": "(旋转角度需与目标角度匹配才能放置)",
+            "angleHiddenHint": "点击提示按钮查看角度信息",
+            "angleHidden": "当前角度：???",
+            "useHintToReveal": "点击提示按钮查看角度",
+            "angleTemporary": "当前角度：{{angle}}° ✨",
+            "hintRevealedAngle": "（提示显示中 - 即将隐藏）",
+            "angleDisplayModeChanged": "角度显示模式已更新",
+            "temporaryAngleVisible": "角度临时显示已激活"
         },
         "tabs": {
             "shape": "形状",
@@ -83,6 +92,151 @@
         "fullscreen": {
             "enter": "全屏",
             "exit": "退出全屏"
+        },
+        "leaderboard": {
+            "title": "排行榜",
+            "show": "显示排行榜",
+            "close": "关闭",
+            "all": "全部"
+        },
+        "difficulty": {
+            "easy": "简单",
+            "medium": "中等",
+            "hard": "困难",
+            "extreme": "极难"
         }
+    },
+    "score": {
+        "label": "分数",
+        "current": "当前分数",
+        "updated": "分数更新",
+        "newRecord": "新纪录",
+        "status": {
+            "completed": "已完成",
+            "playing": "游戏中",
+            "waiting": "等待中"
+        },
+        "breakdown": {
+            "title": "分数详情",
+            "base": "难度基础",
+            "timeBonus": "速度奖励",
+            "rotationScore": "旋转技巧",
+            "hintScore": "提示使用",
+            "dragPenalty": "拖拽扣分",
+            "multiplier": "难度系数",
+            "final": "最终得分",
+            "subtotal": "小计",
+            "gameDuration": "游戏时长",
+            "gameTime": "游戏时间"
+        },
+        "final": "最终分数",
+        "timeBonus": "速度奖励",
+        "noReward": "无奖励",
+        "speedBonus": {
+            "within10s": "10秒内完成",
+            "within30s": "30秒内完成",
+            "within1min": "1分钟内完成",
+            "within1min30s": "1分30秒内完成",
+            "within2min": "2分钟内完成",
+            "over2min": "超过2分钟"
+        }
+    },
+    "stats": {
+        "title": "游戏统计",
+        "noData": "暂无统计数据",
+        "completed": "已完成",
+        "duration": "游戏时长",
+        "rotations": "旋转次数",
+        "hints": "使用提示",
+        "drags": "拖拽次数",
+        "difficulty": "难度等级",
+        "cutType": "切割类型",
+        "pieces": "拼图块数",
+        "piecesUnit": "片",
+        "device": "设备类型",
+        "scoreHistory": "最近一次游戏成绩",
+        "justNow": "刚刚",
+        "hoursAgo": "{{hours}}小时前",
+        "efficiency": {
+            "title": "效率指标",
+            "rotation": "旋转效率",
+            "hint": "提示效率"
+        },
+        "hide": "隐藏统计",
+        "show": "显示统计",
+        "viewDetails": "查看详情",
+        "tabs": {
+            "score": "分数",
+            "details": "详细统计",
+            "leaderboard": "排行榜"
+        },
+        "overlay": {
+            "title": "游戏统计",
+            "gameCompleted": "游戏已完成",
+            "gameInProgress": "游戏进行中",
+            "gameWaiting": "等待开始",
+            "lastUpdate": "最后更新"
+        },
+        "gameComplete": "游戏完成",
+        "complete": "完成",
+        "perfectHints": "完美",
+        "perfectGame": "完美游戏",
+        "zeroHintsBonus": "零提示奖励",
+        "efficiency": {
+            "short": "效率"
+        },
+        "gameComplete": "游戏完成",
+        "complete": "完成",
+        "perfectHints": "完美提示",
+        "perfectGame": "完美游戏",
+        "zeroHintsBonus": "零提示奖励",
+        "currentGameScore": "本局成绩",
+        "newRecord": "新纪录!",
+        "efficiency": {
+            "short": "效率"
+        }
+    },
+    "leaderboard": {
+        "title": "排行榜",
+        "entries": "条记录",
+        "filters": "筛选器",
+        "sortBy": "排序方式",
+        "difficulty": "难度",
+        "empty": "暂无排行榜记录",
+        "emptyHint": "Top1 位置等你来挑战！",
+        "anonymous": "匿名玩家",
+        "newRecord": "恭喜！您获得第 {{rank}} 名",
+        "rank": "第{{rank}}名",
+        "rank": "第{{rank}}名",
+        "sort": {
+            "score": "按分数",
+            "time": "按时间",
+            "efficiency": "按效率",
+            "recent": "按时间"
+        },
+        "difficulty": {
+            "all": "全部"
+        },
+        "noRanking": "无排名",
+        "rankFormat": "第{{rank}}名",
+        "speedRankFormat": {
+            "1": "最快",
+            "2": "第2快",
+            "3": "第3快",
+            "4": "第4快",
+            "5": "第5快"
+        },
+        "backToLeaderboard": "返回榜单",
+        "timesUnit": "次"
+    },
+    "difficulty": {
+        "easy": "简单",
+        "medium": "中等",
+        "hard": "困难",
+        "extreme": "极难"
+    },
+    "cutType": {
+        "straight": "直线",
+        "diagonal": "斜线"
     }
 }

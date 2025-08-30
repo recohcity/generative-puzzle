@@ -21,7 +21,7 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
 
   // 同步全局状态到本地状态，但仅当本地状态为空且全局状态有值时才同步
   useEffect(() => {
-    if (state.cutType && localCutType === "" && state.cutType !== localCutType) {
+    if (state.cutType !== "" && localCutType === "") {
       setLocalCutType(state.cutType);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -3,6 +3,7 @@
 import React, { useRef, useMemo } from 'react';
 import PuzzleCanvas from "@/components/PuzzleCanvas";
 import PhoneTabPanel from "./PhoneTabPanel";
+import MobileSmartHints from "@/components/MobileSmartHints";
 import { MOBILE_ADAPTATION } from '@/src/config/adaptationConfig';
 import { calculateMobileLandscapeCanvasSize } from '@/constants/canvasAdaptation';
 import { useDeviceDetection } from '@/hooks/useDeviceDetection';
@@ -84,6 +85,10 @@ const PhoneLandscapeLayout: React.FC<PhoneLandscapeLayoutProps> = ({
           position: 'relative',
         }}
       >
+        {/* 智能提示区域 - 使用统一覆盖元素样式 */}
+        <div className="overlay-element smart-hints-overlay top-2">
+          <MobileSmartHints />
+        </div>
         <PuzzleCanvas />
       </div>
       {/* 🎯 优化：控制面板移至右侧，符合移动端交互习惯 */}

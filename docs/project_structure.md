@@ -1,6 +1,6 @@
 # 项目结构（Project Structure）
 
-> 自动生成时间：2025/8/14 12:49:08  
+> 自动生成时间：2025/8/30 12:33:20  
 > 生成工具：项目结构文档生成器 v3.1.0 - 开发导航版
 
 **开发者导航工具** - 快速理解项目架构，精准定位代码位置，提升开发效率。
@@ -14,9 +14,9 @@
 
 | 统计项 | 数量 | 说明 |
 |--------|------|------|
-| 总目录数 | 44 | 项目目录结构层次 |
-| 总文件数 | 219 | 代码文件和资源文件总数 |
-| 项目容量 | 4.51 MB | 不包含node_modules的项目大小 |
+| 总目录数 | 60 | 项目目录结构层次 |
+| 总文件数 | 272 | 代码文件和资源文件总数 |
+| 项目容量 | 5.07 MB | 不包含node_modules的项目大小 |
 
 ---
 
@@ -192,12 +192,16 @@ npm run lint                   # 代码检查
 - app/
   - api/
     - performance-trend/
+  - i18n-test/
+  - scores/
   - test/
 - components/
   - animate-ui/
     - backgrounds/
   - layouts/
+  - leaderboard/
   - loading/
+  - score/
   - ui/
 - constants/
 - contexts/
@@ -220,16 +224,28 @@ npm run lint                   # 代码检查
   - i18n/
     - locales/
   - quality-system/
+- styles/
 - test-results/
 - types/
 - utils/
   - __tests__/
-  - debug/
+  - angleDisplay/
+    - __tests__/
+  - data/
+    - __tests__/
+  - data-tools/
+  - difficulty/
+    - __tests__/
   - geometry/
+    - __tests__/
+  - leaderboard/
     - __tests__/
   - puzzle/
     - __tests__/
   - rendering/
+    - __tests__/
+  - responsive/
+  - score/
     - __tests__/
   - shape/
     - __tests__/
@@ -248,6 +264,9 @@ npm run lint                   # 代码检查
   📁 **api/**
     📁 **performance-trend/**
       📄 `route.ts`
+  📁 **i18n-test/**
+  📁 **scores/**
+    📄 `page.tsx`
   📁 **test/**
     📄 `page.tsx`
   📄 `globals.css` - 全局 CSS 样式
@@ -262,8 +281,18 @@ npm run lint                   # 代码检查
     📄 `PhoneLandscapeLayout.tsx`
     📄 `PhonePortraitLayout.tsx`
     📄 `PhoneTabPanel.tsx`
+  📁 **leaderboard/**
+    📄 `leaderboard-styles.css`
+    📄 `LeaderboardItemStyles.tsx`
+    📄 `LeaderboardPanel.tsx`
+    📄 `SimplifiedLeaderboardPanel.tsx`
   📁 **loading/**
     📄 `LoadingScreen.tsx`
+  📁 **score/**
+    📄 `animations.css`
+    📄 `DesktopScoreLayout.tsx`
+    📄 `MobileScoreLayout.tsx`
+    📄 `ScoreDisplay.tsx`
   📁 **ui/**
     📄 `accordion.tsx`
     📄 `alert.tsx`
@@ -316,15 +345,25 @@ npm run lint                   # 代码检查
   📄 `DynamicTitle.tsx`
   📄 `EnvModeClient.tsx`
   📄 🔥 `GameInterface.tsx` - 核心游戏界面
+  📄 `GameRecordDetails.tsx`
+  📄 `GameTimer.module.css`
+  📄 `GameTimer.tsx`
   📄 `GlobalUtilityButtons.tsx`
   📄 `LanguageSwitcher.tsx`
+  📄 `LeaderboardButton.tsx`
+  📄 `LeaderboardPanel.tsx`
+  📄 `LiveScore.module.css`
+  📄 `LiveScore.tsx`
+  📄 `MobileSmartHints.tsx`
   📄 `PuzzleCanvas.tsx` - 主画布组件
   📄 `PuzzleControlsCutCount.tsx`
   📄 `PuzzleControlsCutType.tsx`
   📄 `PuzzleControlsGamepad.tsx`
   📄 `PuzzleControlsScatter.tsx`
+  📄 `RecentGameDetails.tsx`
   📄 `ResponsiveBackground.tsx`
   📄 `RestartButton.tsx`
+  📄 `RotationCounter.tsx`
   📄 `ShapeControls.tsx`
   📄 `theme-provider.tsx`
 📁 **constants/**
@@ -375,13 +414,16 @@ npm run lint                   # 代码检查
   📄 `cutGenerators-refactoring-report.md`
   📄 `DEPLOY_SUMMARY.md`
   📄 `difficulty-design.md`
+  📄 `Generative Puzzle 项目代码质量全面体检报告.md`
   📄 `GETTING_STARTED.md`
   📄 `GITHUB_PAGES_DEPLOYMENT.md`
   📄 `GITIGNORE_OPTIMIZATION_SUMMARY.md`
+  📄 `hint-reward-impact.md`
   📄 `PRD_生成式拼图游戏.md`
   📄 `PROJECT_HEALTH_REPORT.md`
   📄 `project_structure.md`
   📄 `README.md` - 项目说明文档
+  📄 `score-system-design.md`
   📄 `SUPREME_ADAPTATION_DIRECTIVE.md`
 📁 **e2e/**
   📄 `full_game_flow.spec.ts`
@@ -392,6 +434,7 @@ npm run lint                   # 代码检查
   📄 `useDeviceDetection.ts`
   📄 `useMobileAdaptation.ts`
   📄 `useMobileEnhancements.ts`
+  📄 `usePanelState.ts`
   📄 `usePuzzleInteractions.ts`
   📄 `useResponsiveCanvasSizing.ts`
 📁 **lib/**
@@ -437,6 +480,8 @@ npm run lint                   # 代码检查
     📄 `quality-checker.cjs`
     📄 `README.md` - 项目说明文档
     📄 `test-trigger.md`
+📁 **styles/**
+  📄 `overlay-elements.css`
 📁 **test-results/**
 📁 **types/**
   📄 `global.d.ts`
@@ -446,11 +491,44 @@ npm run lint                   # 代码检查
     📄 `constants.test.ts`
     📄 `helper.test.ts`
     📄 `SimpleAdapter.test.ts`
-  📁 **debug/**
+  📁 **angleDisplay/**
+    📁 **__tests__/**
+      📄 `AngleDisplayController.test.ts`
+      📄 `AngleDisplayModeUpdater.test.ts`
+      📄 `AngleDisplayService.test.ts`
+      📄 `AngleVisibilityManager.test.ts`
+      📄 `HintEnhancedDisplay.test.ts`
+      📄 `index.test.ts`
+      📄 `README.md` - 项目说明文档
+      📄 `useAngleDisplay.test.ts`
+    📄 `AngleDisplayController.ts`
+    📄 `AngleDisplayModeUpdater.ts`
+    📄 `AngleDisplayService.ts`
+    📄 `AngleVisibilityManager.ts`
+    📄 `HintEnhancedDisplay.ts`
+    📄 `index.ts`
+    📄 `README.md` - 项目说明文档
+    📄 `useAngleDisplay.ts`
+  📁 **data/**
+    📁 **__tests__/**
+      📄 `GameDataManager.test.ts`
+    📄 `GameDataManager.ts`
+  📁 **data-tools/**
+    📄 `clearGameData.ts`
+    📄 `GameDataTools.ts`
+    📄 `manualClear.md`
+  📁 **difficulty/**
+    📁 **__tests__/**
+      📄 `DifficultyUtils.test.ts`
+    📄 `DifficultyUtils.ts`
   📁 **geometry/**
     📁 **__tests__/**
       📄 `puzzleGeometry.test.ts`
     📄 `puzzleGeometry.ts`
+  📁 **leaderboard/**
+    📁 **__tests__/**
+      📄 `LeaderboardSimplifier.test.ts`
+    📄 `LeaderboardSimplifier.ts`
   📁 **puzzle/**
     📁 **__tests__/**
       📄 `cutGeneratorController.test.ts`
@@ -483,6 +561,11 @@ npm run lint                   # 代码检查
     📄 `puzzleDrawing.ts`
     📄 `RenderOptimizer.ts`
     📄 `soundEffects.ts`
+  📁 **responsive/**
+  📁 **score/**
+    📁 **__tests__/**
+      📄 `ScoreCalculator.test.ts`
+    📄 `ScoreCalculator.ts`
   📁 **shape/**
     📁 **__tests__/**
       📄 `geometryUtils.test.ts`
@@ -497,8 +580,10 @@ npm run lint                   # 代码检查
 📄 `.gitignore` - Git 忽略文件配置
 📄 `CHANGELOG.md` - 版本历史与变更记录
 📄 `components.json` - Shadcn UI 组件配置
+📄 `generative-puzzle-game@1.3.49`
 📄 `jest.config.cjs`
 📄 `next.config.mjs` - Next.js 框架配置
+📄 `node`
 📄 `package-lock.json` - 依赖锁定文件
 📄 `package.json` - 项目依赖和脚本配置
 📄 `playwright.config.ts` - Playwright E2E 测试配置
@@ -544,4 +629,4 @@ npm run generate-structure  # 一键更新项目结构文档
 
 ---
 
-*📅 生成时间：2025/8/14 12:49:08 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*
+*📅 生成时间：2025/8/30 12:33:20 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*

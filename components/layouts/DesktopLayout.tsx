@@ -17,6 +17,10 @@ import { DESKTOP_ADAPTATION } from '@/src/config/adaptationConfig';
 import { calculateDesktopCanvasSize } from '@/constants/canvasAdaptation';
 import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 import { useTranslation } from '@/contexts/I18nContext';
+import ScoreDisplay from '@/components/score/ScoreDisplay';
+import LeaderboardPanel from '@/components/leaderboard/LeaderboardPanel';
+import RecentGameDetails from '@/components/RecentGameDetails';
+import { GameDataManager } from '@/utils/data/GameDataManager';
 
 interface DesktopLayoutProps {
   isMusicPlaying: boolean;
@@ -40,7 +44,14 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
 
   // 从GameContext获取state和resetGame函数，以及翻译函数
   const { state, resetGame } = useGame();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+  
+  // 排行榜显示状态
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showRecentGameDetails, setShowRecentGameDetails] = useState(false);
+  const [selectedGameRecord, setSelectedGameRecord] = useState<any>(null);
+  const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
+  const [historyData, setHistoryData] = useState<any[]>([]);
 
   // 计算拼图完成进度
   const totalPieces = (state.puzzle ?? []).length;
@@ -57,14 +68,46 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
     progressTip = t('game.hints.cutShape');
   } else if (state.puzzle !== null && !state.isScattered) {
     progressTip = t('game.hints.scatterPuzzle');
-  } else if (state.puzzle !== null && state.isScattered) {
-    progressTip = t('game.hints.progress', { completed: completedPiecesCount, total: totalPieces });
+  } else if (state.puzzle !== null && state.isScattered && !state.isCompleted) {
+    // 游戏进行中 - 使用翻译的统计信息格式（隐藏旋转次数以增强挑战性）
+    const usedHints = state.gameStats?.hintUsageCount || 0;
+    const allowedHints = state.gameStats?.hintAllowance || 0;
+    progressTip = t('game.hints.gameStats', {
+      completed: completedPiecesCount,
+      total: totalPieces,
+      hints: usedHints,
+      allowedHints: allowedHints
+    });
+  } else if (state.isCompleted) {
+    // 游戏完成时显示完成提示 - 优先显示新纪录
+    if (state.isNewRecord) {
+      progressTip = t('game.hints.newRecord');
+    } else {
+      progressTip = t('game.hints.completed');
+    }
   }
 
   // 处理重新开始按钮点击
   const handleDesktopResetGame = () => {
     playButtonClickSound();
     resetGame();
+  };
+
+  // 获取速度奖励显示文本 - 基于新的速度奖励规则
+  const getSpeedBonusText = (duration: number): string => {
+    if (duration <= 10) {
+      return t('score.speedBonus.within10s');
+    } else if (duration <= 30) {
+      return t('score.speedBonus.within30s');
+    } else if (duration <= 60) {
+      return t('score.speedBonus.within1min');
+    } else if (duration <= 90) {
+      return t('score.speedBonus.within1min30s');
+    } else if (duration <= 120) {
+      return t('score.speedBonus.within2min');
+    } else {
+      return t('score.speedBonus.over2min');
+    }
   };
 
   // 新增：桌面端控制按钮和重置按钮高度常量
@@ -198,13 +241,8 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
           <div style={{ width: '100%', height: '100%', position: 'relative', zIndex: 2 }}>
             {progressTip && (
               <div
-                className="absolute font-medium text-white bg-black/30 px-4 py-2 rounded-full z-10"
+                className="overlay-element smart-hints-overlay"
                 style={{
-                  fontSize: 12,
-                  top: 16,
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  pointerEvents: 'none',
                   display: 'flex',
                   justifyContent: 'center',
                   width: 'auto',
@@ -241,21 +279,202 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                   isFullscreen={isFullscreen}
                   onToggleMusic={onToggleMusic}
                   onToggleFullscreen={onToggleFullscreen}
+                  onToggleLeaderboard={() => {
+                    if (showLeaderboard) {
+                      // 关闭
+                      console.log('[DesktopLayout] 关闭');
+                      setShowLeaderboard(false);
+                    } else {
+                      // 打开排行榜，加载最新数据
+                      console.log('[DesktopLayout] 打开排行榜，加载数据...');
+                      const data = GameDataManager.getLeaderboard();
+                      const history = GameDataManager.getGameHistory();
+                      console.log('[DesktopLayout] 排行榜数据:', data);
+                      console.log('[DesktopLayout] 历史数据:', history);
+                      setLeaderboardData(data);
+                      setHistoryData(history);
+                      setShowLeaderboard(true);
+                    }
+                  }}
+                  isLeaderboardOpen={showLeaderboard}
                 />
               </div>
 
             </div>
             <div className="space-y-4 flex-1 pr-1 -mr-1">
-              <ShapeControls goToNextTab={goToNextTab} />
-              <PuzzleControlsCutType goToNextTab={goToNextTab} />
-              <PuzzleControlsCutCount goToNextTab={goToNextTab} />
-              <PuzzleControlsScatter goToNextTab={goToNextTab} />
-              <h3 className="font-medium mt-4 mb-3 text-[#FFD5AB]" style={{ fontSize: panelScale <= 0.5 ? 16 : 'calc(0.9rem * var(--panel-scale))' }}>{t('game.controls.title')}</h3>
-              <ActionButtons layout="desktop" buttonHeight={DESKTOP_CONTROL_BUTTON_HEIGHT} />
-              <RestartButton
-                onClick={handleDesktopResetGame}
-                style={{ height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 14 : 'calc(0.95rem * var(--panel-scale))' }}
-              />
+              {/* 根据状态显示不同的面板内容 */}
+              {showRecentGameDetails ? (
+                // 最近游戏详情显示
+                <RecentGameDetails
+                  record={selectedGameRecord}
+                  onBack={() => {
+                    setShowRecentGameDetails(false);
+                    setSelectedGameRecord(null);
+                    setShowLeaderboard(true);
+                  }}
+                />
+              ) : showLeaderboard ? (
+                // 排行榜显示 - 隐藏所有游戏设置，只显示排行榜
+                <LeaderboardPanel
+                  key={`desktop-leaderboard-${t('game.leaderboard.title')}`}
+                  leaderboard={leaderboardData}
+                  history={historyData}
+                  onClose={() => setShowLeaderboard(false)}
+                  panelScale={panelScale}
+                  isMusicPlaying={isMusicPlaying}
+                  isFullscreen={isFullscreen}
+                  onToggleMusic={onToggleMusic}
+                  onToggleFullscreen={onToggleFullscreen}
+                  onShowLeaderboard={() => {
+                    if (showLeaderboard) {
+                      // 关闭
+                      console.log('[DesktopLayout] 关闭');
+                      setShowLeaderboard(false);
+                    } else {
+                      // 打开排行榜，加载最新数据
+                      console.log('[DesktopLayout] 打开排行榜，加载数据...');
+                      const data = GameDataManager.getLeaderboard();
+                      const history = GameDataManager.getGameHistory();
+                      console.log('[DesktopLayout] 排行榜数据:', data);
+                      console.log('[DesktopLayout] 历史数据:', history);
+                      setLeaderboardData(data);
+                      setHistoryData(history);
+                      setShowLeaderboard(true);
+                    }
+                  }}
+                  onViewRecentGame={(record) => {
+                    console.log('[DesktopLayout] 显示最近游戏详情:', record);
+                    setSelectedGameRecord(record);
+                    setShowLeaderboard(false);
+                    setShowRecentGameDetails(true);
+                  }}
+                />
+              ) : state.isCompleted && state.gameStats ? (
+                // 游戏完成时 - 隐藏所有游戏控制按钮，显示完整成绩详情
+                <div className="flex flex-col h-full">
+                  {/* 成绩详情直接在游戏名称下展示 */}
+                  <div className="mb-4">
+                    <h3 className="font-medium text-[#FFD5AB] mb-2" style={{ fontSize: panelScale <= 0.5 ? 16 : 'calc(0.9rem * var(--panel-scale))' }}>
+                      🏆 {t('stats.gameComplete')}
+                    </h3>
+                  </div>
+                  
+                  {/* 滚动内容区域 */}
+                  <div className="flex-1 overflow-y-auto space-y-3 mb-4" style={{ fontSize: panelScale <= 0.5 ? 12 : 'calc(0.75rem * var(--panel-scale))' }}>
+                    {/* 本局成绩 */}
+                    <div className="bg-[#2A2A2A] rounded-lg p-3">
+                      <h4 className="text-[#FFD5AB] font-medium mb-3 text-sm flex items-center gap-1">
+                        🏆 {t('stats.currentGameScore')}
+                      </h4>
+                      
+                      {/* 最终得分和游戏时长 - 统一格式 */}
+                      <div className="text-center mb-4 p-3 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg border border-blue-400/30">
+                        <div className="text-3xl font-bold text-blue-300 mb-1 tracking-wider">
+                          {(state.scoreBreakdown?.finalScore || state.currentScore).toLocaleString()}
+                        </div>
+                        <div className="text-sm text-blue-200 opacity-90 font-medium">
+                          {t('score.breakdown.gameDuration')}：{Math.floor(state.gameStats.totalDuration / 60).toString().padStart(2, '0')}:
+                          {(state.gameStats.totalDuration % 60).toString().padStart(2, '0')}
+                        </div>
+                        {state.isNewRecord && (
+                          <div className="mt-2">
+                            <div className="inline-flex items-center gap-1 bg-yellow-500/30 text-yellow-300 px-3 py-1 rounded-full text-xs font-medium animate-pulse">
+                              🌟 {t('stats.newRecord')}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* 分数构成 - 统一格式 */}
+                      {state.scoreBreakdown && (
+                        <div className="bg-white/5 rounded-lg p-3 border border-white/10">
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-[#FFD5AB]">{t('score.breakdown.base')}：{t(`difficulty.${state.gameStats.difficulty.difficultyLevel}`)}</span>
+                              <span className="text-[#FFD5AB]">{state.scoreBreakdown.baseScore}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[#FFD5AB]">
+                                {t('score.breakdown.timeBonus')}：{state.scoreBreakdown.timeBonus > 0 ? getSpeedBonusText(state.gameStats.totalDuration) : t('score.noReward')}
+                              </span>
+                              <span className="text-green-400">+{state.scoreBreakdown.timeBonus}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[#FFD5AB]">
+                                {t('score.breakdown.rotationScore')}：{state.gameStats.totalRotations}/{state.scoreBreakdown.minRotations || '?'}{t('leaderboard.timesUnit')}
+                              </span>
+                              <span className={state.scoreBreakdown.rotationScore >= 0 ? "text-green-400" : "text-red-400"}>
+                                {state.scoreBreakdown.rotationScore >= 0 ? '+' : ''}{state.scoreBreakdown.rotationScore}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[#FFD5AB]">
+                                {t('score.breakdown.hintScore')}：{state.gameStats.hintUsageCount}/{state.scoreBreakdown.hintAllowance || 0}{t('leaderboard.timesUnit')}
+                              </span>
+                              <span className={state.scoreBreakdown.hintScore >= 0 ? "text-green-400" : "text-red-400"}>
+                                {state.scoreBreakdown.hintScore >= 0 ? '+' : ''}{state.scoreBreakdown.hintScore}
+                              </span>
+                            </div>
+                            <div className="border-t border-white/20 pt-2 mt-3">
+                              <div className="flex justify-between mb-1">
+                                <span className="text-[#FFD5AB]">{t('score.breakdown.subtotal')}：</span>
+                                <span className="text-[#FFD5AB]">{(state.scoreBreakdown.baseScore + state.scoreBreakdown.timeBonus + state.scoreBreakdown.rotationScore + state.scoreBreakdown.hintScore)}</span>
+                              </div>
+                              <div className="flex justify-between mb-2">
+                                <span className="text-[#FFD5AB]">{t('score.breakdown.multiplier')}：</span>
+                                <span className="text-[#FFD5AB]">×{state.scoreBreakdown.difficultyMultiplier}</span>
+                              </div>
+                              <div className="flex justify-between font-medium">
+                                <span className="text-[#FFD5AB]">{t('score.breakdown.final')}：</span>
+                                <span className="text-blue-300">{state.currentScore.toLocaleString()}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* 游戏时间 */}
+                      <div className="mt-3 text-center">
+                        <div className="text-sm text-[#FFD5AB] opacity-80">
+                          {t('score.breakdown.gameTime')}：{new Date(state.gameStats.gameStartTime).toLocaleString(locale === 'zh-CN' ? 'zh-CN' : 'en-US', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit'
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                    
+
+                  </div>
+                  
+                  {/* 重新开始按钮 */}
+                  <RestartButton
+                    onClick={handleDesktopResetGame}
+                    style={{ height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 14 : 'calc(0.95rem * var(--panel-scale))' }}
+                  />
+                </div>
+              ) : (
+                // 正常游戏状态显示控制面板
+                <>
+                  {/* 游戏设置部分 */}
+                  <ShapeControls goToNextTab={goToNextTab} />
+                  <PuzzleControlsCutType goToNextTab={goToNextTab} />
+                  <PuzzleControlsCutCount goToNextTab={goToNextTab} />
+                  <PuzzleControlsScatter goToNextTab={goToNextTab} />
+                  
+                  {/* 控制按钮部分 */}
+                  <h3 className="font-medium mt-4 mb-3 text-[#FFD5AB]" style={{ fontSize: panelScale <= 0.5 ? 16 : 'calc(0.9rem * var(--panel-scale))' }}>{t('game.controls.title')}</h3>
+                  <ActionButtons layout="desktop" buttonHeight={DESKTOP_CONTROL_BUTTON_HEIGHT} />
+                  <RestartButton
+                    onClick={handleDesktopResetGame}
+                    style={{ height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 14 : 'calc(0.95rem * var(--panel-scale))' }}
+                  />
+                </>
+              )}
             </div>
           </div>
         </div>

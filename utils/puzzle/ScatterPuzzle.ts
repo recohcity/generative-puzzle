@@ -34,11 +34,34 @@ interface GameContextState {
 }
 
 export class ScatterPuzzle {
+  /**
+   * 拼图散布算法 - 智能分布系统
+   * 
+   * 算法核心功能：
+   * 1. 智能网格分布：根据拼图数量动态计算最优网格布局
+   * 2. 碰撞检测：确保拼图片段之间不重叠
+   * 3. 边界保护：防止拼图超出画布边界
+   * 4. 旋转随机化：为每个拼图应用15°倍数的随机旋转
+   * 5. 回弹动画：为超出边界的拼图添加回弹效果
+   * 
+   * 分布策略：
+   * - 使用网格系统确保均匀分布
+   * - 根据难度调整分布密度
+   * - 避开目标形状区域
+   * - 优先放置大片段，后放置小片段
+   * 
+   * @param pieces 待散布的拼图片段数组
+   * @param contextState 游戏上下文状态（画布尺寸、目标形状等）
+   * @returns 散布后的拼图片段数组
+   */
   static scatterPuzzle(pieces: PuzzlePiece[], contextState?: GameContextState): PuzzlePiece[] {
-    // 获取画布尺寸信息
+    // 步骤1：获取画布尺寸信息
+    // 优先使用上下文提供的尺寸，否则使用默认值
     let canvasWidth = contextState?.canvasSize?.width || 800;
     let canvasHeight = contextState?.canvasSize?.height || 600;
-    // 目标形状信息
+    
+    // 步骤2：获取目标形状信息
+    // 目标形状区域需要避开，不能放置拼图片段
     const targetShape = contextState?.targetShape || null;
     try {
       if (!contextState?.canvasSize?.width || !contextState?.canvasSize?.height) {

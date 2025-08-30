@@ -112,7 +112,7 @@ test.describe('最终验收测试', () => {
       const puzzle = await page.evaluate(() => (window as any).__gameStateForTests__.puzzle);
       const originalPositions = await page.evaluate(() => (window as any).__gameStateForTests__.originalPositions);
       
-      await waitForTip(page, `0 / ${puzzle.length} 块拼图已完成`);
+      await waitForTip(page, `拼图0/${puzzle.length}`);
       testResults['拼图散开'] = true;
       console.log(`✅ 拼图散开完成 - ${puzzle.length}块拼图`);
       
