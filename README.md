@@ -1,8 +1,10 @@
 # Generative Puzzle
 
 
-
+<div align="center">
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/recohcity/generative-puzzle)
+<a href="https://www.citylivepark.com/“> <img src="https://img.shields.io/badge/🚀-Live_Demo-brightgreen" alt="Live Demo"> </a>
+</div>
 
 基于 Next.js 和 React 构建的高可维护、可测试的3端统一适配生成式拼图游戏。
 
