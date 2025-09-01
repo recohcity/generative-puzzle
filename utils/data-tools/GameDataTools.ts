@@ -63,12 +63,12 @@ export class GameDataTools {
    * 打印当前排行榜状态
    */
   static printLeaderboard(difficulty?: DifficultyLevel) {
-    console.group('🏆 排行榜状态');
+    console.group('🏆 个人最佳成绩状态');
     
     const leaderboard = GameDataManager.getLeaderboard(difficulty);
     
     if (leaderboard.length === 0) {
-      console.log('📭 暂无排行榜数据');
+      console.log('📭 暂无个人最佳成绩数据');
     } else {
       console.log(`📊 共有 ${leaderboard.length} 条记录${difficulty ? ` (难度: ${difficulty})` : ''}`);
       

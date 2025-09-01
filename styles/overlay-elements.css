@@ -37,15 +37,15 @@
   backdrop-filter: var(--overlay-backdrop-filter);
 }
 
-/* 桌面端响应式 */
-@media (min-width: 769px) {
+/* 桌面端响应式 - 只有真正的桌面设备才使用桌面端样式 */
+@media (min-width: 1025px) and (pointer: fine) {
   .overlay-element {
     top: var(--overlay-top-desktop);
   }
 }
 
-/* 移动端响应式 */
-@media (max-width: 768px) {
+/* 移动端响应式 - 包括移动端横屏模式 */
+@media (max-width: 1024px), (pointer: coarse) {
   .overlay-element {
     top: var(--overlay-top-mobile);
   }
@@ -62,13 +62,13 @@
 }
 
 /* 移动端智能提示区响应式宽度 */
-@media (max-width: 768px) and (orientation: portrait) {
+@media (max-width: 1024px) and (orientation: portrait), (pointer: coarse) and (orientation: portrait) {
   .smart-hints-overlay {
     max-width: var(--smart-hints-max-width-portrait);
   }
 }
 
-@media (max-width: 768px) and (orientation: landscape) {
+@media (max-width: 1024px) and (orientation: landscape), (pointer: coarse) and (orientation: landscape) {
   .smart-hints-overlay {
     max-width: var(--smart-hints-max-width-landscape);
   }

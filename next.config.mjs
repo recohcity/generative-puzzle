@@ -5,6 +5,12 @@ try {
   // ignore error
 }
 
+// 读取package.json获取版本号
+import { readFileSync } from 'fs'
+import { join } from 'path'
+
+const packageJson = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8'))
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // ✅ 遵循监督指令：启用构建时质量检查
@@ -13,6 +19,10 @@ const nextConfig = {
   },
   typescript: {
     ignoreBuildErrors: false,   // 构建时执行TypeScript检查
+  },
+  // 添加环境变量
+  env: {
+    APP_VERSION: packageJson.version,
   },
   images: {
     unoptimized: true,

@@ -47,7 +47,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   const { state, resetGame } = useGame();
   const { t, locale } = useTranslation();
   
-  // 排行榜显示状态
+  // 个人最佳成绩显示状态
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showRecentGameDetails, setShowRecentGameDetails] = useState(false);
   const [selectedGameRecord, setSelectedGameRecord] = useState<any>(null);
@@ -295,11 +295,11 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                       console.log('[DesktopLayout] 关闭');
                       setShowLeaderboard(false);
                     } else {
-                      // 打开排行榜，加载最新数据
-                      console.log('[DesktopLayout] 打开排行榜，加载数据...');
+                      // 打开个人最佳成绩，加载最新数据
+                      console.log('[DesktopLayout] 打开个人最佳成绩，加载数据...');
                       const data = GameDataManager.getLeaderboard();
                       const history = GameDataManager.getGameHistory();
-                      console.log('[DesktopLayout] 排行榜数据:', data);
+                      console.log('[DesktopLayout] 个人最佳成绩数据:', data);
                       console.log('[DesktopLayout] 历史数据:', history);
                       setLeaderboardData(data);
                       setHistoryData(history);
@@ -324,7 +324,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                   }}
                 />
               ) : showLeaderboard ? (
-                // 排行榜显示 - 隐藏所有游戏设置，只显示排行榜
+                // 个人最佳成绩显示 - 隐藏所有游戏设置，只显示个人最佳成绩
                 <LeaderboardPanel
                   key={`desktop-leaderboard-${t('game.leaderboard.title')}`}
                   leaderboard={leaderboardData}
@@ -341,11 +341,11 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                       console.log('[DesktopLayout] 关闭');
                       setShowLeaderboard(false);
                     } else {
-                      // 打开排行榜，加载最新数据
-                      console.log('[DesktopLayout] 打开排行榜，加载数据...');
+                      // 打开个人最佳成绩，加载最新数据
+                      console.log('[DesktopLayout] 打开个人最佳成绩，加载数据...');
                       const data = GameDataManager.getLeaderboard();
                       const history = GameDataManager.getGameHistory();
-                      console.log('[DesktopLayout] 排行榜数据:', data);
+                      console.log('[DesktopLayout] 个人最佳成绩数据:', data);
                       console.log('[DesktopLayout] 历史数据:', history);
                       setLeaderboardData(data);
                       setHistoryData(history);

@@ -100,7 +100,7 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
     >
       {/* 滚动内容区域 */}
       <div className="flex-1 overflow-y-auto space-y-1">
-        {/* 简化的Top5排行榜 */}
+        {/* 简化的Top5个人最佳成绩 */}
         <div className="bg-[#2A2A2A] rounded-lg p-2 relative">
           {/* 关闭按钮 */}
           <Button
@@ -135,7 +135,7 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
                         <div className="flex items-center gap-3 flex-1">
                           {/* 排名图标 - 按2行高度显示 */}
                           <div className="flex items-center justify-center w-8 h-10">
-                            <span className="text-lg">
+                            <span className="text-lg text-white">
                               {LeaderboardSimplifier.getRankIcon(rank)}
                             </span>
                           </div>
@@ -182,7 +182,7 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
             </div>
           ) : (
             <div className="text-[#FFD5AB] opacity-60 text-xs text-center py-4">
-              暂无排行榜数据
+              暂无个人最佳成绩数据
             </div>
           )}
         </div>

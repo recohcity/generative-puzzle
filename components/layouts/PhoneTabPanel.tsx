@@ -108,7 +108,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
   const [leaderboardData, setLeaderboardData] = React.useState<any[]>([]);
   const [historyData, setHistoryData] = React.useState<any[]>([]);
 
-  // 加载排行榜数据
+  // 加载个人最佳成绩数据
   React.useEffect(() => {
     const data = GameDataManager.getLeaderboard();
     const history = GameDataManager.getGameHistory();
@@ -119,10 +119,10 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
   // 处理榜单切换
   const handleToggleLeaderboard = () => {
     if (showLeaderboard) {
-      // 关闭排行榜
+      // 关闭个人最佳成绩
       setShowLeaderboard(false);
     } else {
-      // 打开排行榜，加载最新数据
+      // 打开个人最佳成绩，加载最新数据
       const data = GameDataManager.getLeaderboard();
       const history = GameDataManager.getGameHistory();
       setLeaderboardData(data);
@@ -131,7 +131,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
     }
   };
 
-  // 处理榜单关闭（保留用于排行榜内部的关闭按钮）
+  // 处理榜单关闭（保留用于个人最佳成绩内部的关闭按钮）
   const handleCloseLeaderboard = () => {
     setShowLeaderboard(false);
   };
@@ -207,7 +207,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
     }, 0);
   };
 
-  // 移动端不使用独立的排行榜面板，而是直接在控制面板中显示
+  // 移动端不使用独立的个人最佳成绩面板，而是直接在控制面板中显示
 
   // 游戏完成时的特殊处理 - 保留基本功能
   const isGameCompleted = state.isCompleted && state.gameStats;
@@ -230,7 +230,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
         />
       </div>
       
-      {/* 排行榜显示区域 - 点击奖杯后在游戏名称下方显示 */}
+      {/* 个人最佳成绩显示区域 - 点击奖杯后在游戏名称下方显示 */}
       {showLeaderboard && (
         <div className="mb-1">
           <div className="bg-[#2A2A2A] rounded-lg p-2">
@@ -246,7 +246,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
 {t('common.close')}
               </button>
             </div>
-            {/* 排行榜条目 - 显示名次、分数、时间、难度、拼图数量 */}
+            {/* 个人最佳成绩条目 - 显示名次、分数、时间、难度、拼图数量 */}
             <div className="space-y-0.5">
               {leaderboardData.slice(0, 5).map((record, index) => {
                 const rank = index + 1;
@@ -268,7 +268,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                   <div key={record.id || record.timestamp} className="flex items-center gap-2 py-1 px-2 bg-[#1A1A1A] rounded border border-[#333]">
                     {/* 排名图标 */}
                     <div className="flex items-center justify-center w-8 h-8">
-                      <span className="text-xl">
+                      <span className="text-xl text-white">
                         {rankIcon}
                       </span>
                     </div>
@@ -297,7 +297,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
       )}
       
 
-      {/* Tab按钮与内容区间距最小化 - 游戏完成时或显示排行榜时隐藏 */}
+      {/* Tab按钮与内容区间距最小化 - 游戏完成时或显示个人最佳成绩时隐藏 */}
       {!isGameCompleted && !showLeaderboard && (
         <div
           className="mb-0"
@@ -345,7 +345,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
           </div>
         </div>
       )}
-      {/* 显示排行榜时隐藏游戏控制，否则显示正常的游戏控制或完成成绩 */}
+      {/* 显示个人最佳成绩时隐藏游戏控制，否则显示正常的游戏控制或完成成绩 */}
       {!showLeaderboard && (
         <div style={{ 
           paddingLeft: CONTENT_HORIZONTAL_PADDING, 

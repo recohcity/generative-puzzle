@@ -171,18 +171,18 @@ export default function ScoreManagementPage() {
 
       {/* 数据展示区域 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* 排行榜 */}
+        {/* 个人最佳成绩 */}
         <div className="bg-white rounded-lg border shadow-sm">
           <div className="p-4 border-b">
             <h2 className="text-xl font-semibold flex items-center">
-              🏆 排行榜
+              🏆 个人最佳成绩
               <span className="ml-2 text-sm font-normal text-gray-500">({leaderboard.length} 条记录)</span>
             </h2>
           </div>
           <div className="p-4 max-h-96 overflow-y-auto">
             {leaderboard.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-gray-500">暂无排行榜数据</p>
+                <p className="text-gray-500">暂无个人最佳成绩数据</p>
                 <p className="text-sm text-gray-400 mt-1">完成游戏后将显示最佳成绩</p>
               </div>
             ) : (

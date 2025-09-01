@@ -332,8 +332,8 @@ div[class*="rounded"] {
   order: 1 !important;
 }
 
-/* 改善移动设备触摸体验 */
-@media (max-width: 768px) {
+/* 改善移动设备触摸体验 - 包括移动端横屏 */
+@media (max-width: 1024px), (pointer: coarse) {
   :root {
     touch-action: none;
   }
@@ -446,60 +446,6 @@ div[class*="rounded"] {
     transform: translateX(-20px);
     transition: opacity 300ms, transform 300ms;
   }
-}
-
-/* 解决之前的order-swap样式 */
-.order-swap .order-1 {
-  order: 2 !important;
-}
-
-.order-swap .order-2 {
-  order: 1 !important;
-}
-
-/* 改善移动设备触摸体验 */
-@media (max-width: 768px) {
-  :root {
-    touch-action: none;
-  }
-  
-  html, body {
-    overscroll-behavior: none;
-    touch-action: pan-y;
-  }
-  
-  .prevent-overscroll {
-    overscroll-behavior: none;
-  }
-  
-  /* 竖屏模式下的布局调整 */
-  @media (orientation: portrait) {
-    /* 增加主控制面板的最小高度 */
-    .order-2 {
-      min-height: 50vh !important;
-    }
-    
-    /* 确保画布容器有足够高度 */
-    .order-1 {
-      min-height: 45vh !important;
-    }
-  }
-  
-  /* 交互优化 */
-  canvas {
-    touch-action: none;
-  }
-  
-  /* 移动设备上隐藏鼠标交互的提示文本 */
-  .mouse-hint {
-    display: none;
-  }
-  
-  /* 移动设备上增大按钮点击区域 */
-  button {
-    min-height: 44px;
-    min-width: 44px;
-  }
   
   /* 确保所有可交互元素有足够的点击范围 */
   .cursor-pointer {
@@ -593,4 +539,3 @@ svg {
     min-width: 300px !important;
   }
 }
-

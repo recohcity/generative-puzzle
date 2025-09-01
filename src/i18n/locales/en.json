@@ -47,7 +47,7 @@
             "title": "Select Cut Count",
             "difficulty": {
                 "easy": "Easy",
-                "hard": "Hard"
+                "hard": "Extreme"
             },
             "button": "Cut Shape",
             "hints": {
@@ -94,8 +94,8 @@
             "exit": "Exit Fullscreen"
         },
         "leaderboard": {
-            "title": "Leaderboard",
-            "show": "Show Leaderboard",
+            "title": "Personal Best",
+            "show": "Show Personal Best",
             "close": "Close",
             "all": "All"
         },
@@ -169,7 +169,7 @@
         "tabs": {
             "score": "Score",
             "details": "Details",
-            "leaderboard": "Leaderboard"
+            "leaderboard": "Personal Best"
         },
         "overlay": {
             "title": "Game Statistics",
@@ -187,12 +187,12 @@
         "newRecord": "New Record!"
     },
     "leaderboard": {
-        "title": "Leaderboard",
+        "title": "Personal Best",
         "entries": "entries",
         "filters": "Filters",
         "sortBy": "Sort By",
         "difficulty": "Difficulty",
-        "empty": "No leaderboard records",
+        "empty": "No personal best records",
         "emptyHint": "Top1 position is waiting for you！",
         "anonymous": "Anonymous Player",
         "newRecord": "Congratulations! You got rank {rank}",
@@ -215,7 +215,7 @@
             "4": "4th Fastest",
             "5": "5th Fastest"
         },
-        "backToLeaderboard": "Back to Leaderboard",
+        "backToLeaderboard": "Back to Personal Best",
         "timesUnit": ""
     },
     "difficulty": {

@@ -134,7 +134,7 @@ const defaultMessages = {
       "viewDetails": "查看详情",
       "gameDetails": "游戏详情",
       "backToLeaderboard": "返回榜单",
-      "empty": "暂无排行榜记录",
+      "empty": "暂无个人最佳成绩记录",
       "emptyHint": "Top1 位置等你来挑战！"
     },
     "stats": {
@@ -172,7 +172,7 @@ const defaultMessages = {
     "entries": "条记录",
     "filters": "筛选器",
     "sortBy": "排序方式",
-    "empty": "暂无排行榜记录",
+    "empty": "暂无个人最佳成绩记录",
     "emptyHint": "Top1 位置等你来挑战！",
     "anonymous": "匿名玩家",
     "newRecord": "恭喜！您获得第 {{rank}} 名",

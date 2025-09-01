@@ -78,10 +78,10 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
     return null;
   };
 
-  // 原始排行榜数据
+  // 原始个人最佳成绩数据
   const [originalLeaderboard, setOriginalLeaderboard] = useState<StoredGameRecord[]>([]);
 
-  // 筛选后的排行榜数据
+  // 筛选后的个人最佳成绩数据
   const filteredLeaderboard = useMemo(() => {
     if (selectedDifficulty === 'all') {
       return originalLeaderboard;
@@ -92,15 +92,15 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
   }, [originalLeaderboard, selectedDifficulty]);
 
   useEffect(() => {
-    // 加载排行榜数据
+    // 加载个人最佳成绩数据
     console.log('[LeaderboardPanel] 开始加载数据...');
     const topRecords = GameDataManager.getLeaderboard();
     const lastGame = GameDataManager.getLastGameRecord();
 
-    console.log('[LeaderboardPanel] 排行榜数据:', topRecords);
+    console.log('[LeaderboardPanel] 个人最佳成绩数据:', topRecords);
     console.log('[LeaderboardPanel] 最近游戏记录:', lastGame);
 
-    // 转换排行榜数据
+    // 转换个人最佳成绩数据
     const convertedLeaderboard = topRecords.map(record => convertGameRecord(record)).filter(Boolean) as StoredGameRecord[];
     setOriginalLeaderboard(convertedLeaderboard);
 
@@ -162,7 +162,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
 
       {/* 滚动内容区域 */}
       <div className="flex-1 overflow-y-auto space-y-4">
-        {/* Top5 排行榜 */}
+        {/* Top5 个人最佳成绩 */}
         <div className="bg-[#2A2A2A] rounded-lg p-3 relative">
           {/* 关闭按钮 - 移动到卡片右上角 */}
           <Button
@@ -216,7 +216,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
                     <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${index === 0 ? 'bg-yellow-500 text-black' :
                       index === 1 ? 'bg-gray-400 text-black' :
                         index === 2 ? 'bg-orange-600 text-white' :
-                          'bg-[#555] text-[#FFD5AB]'
+                          'bg-[#555] text-white'
                       }`}>
                       {getRankIcon(index)}
                     </span>
@@ -235,7 +235,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
             </div>
           ) : (
             <div className="text-[#FFD5AB] opacity-60 text-xs text-center py-4">
-              暂无排行榜数据
+              暂无个人最佳成绩数据
             </div>
           )}
         </div>

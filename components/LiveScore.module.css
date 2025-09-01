@@ -22,15 +22,15 @@
   transition: none;
 }
 
-/* 桌面端响应式 */
-@media (min-width: 769px) {
+/* 桌面端响应式 - 只有真正的桌面设备才使用桌面端样式 */
+@media (min-width: 1025px) and (pointer: fine) {
   .liveScore {
     top: var(--overlay-top-desktop);
   }
 }
 
-/* 移动端响应式 */
-@media (max-width: 768px) {
+/* 移动端响应式 - 包括移动端横屏模式 */
+@media (max-width: 1024px), (pointer: coarse) {
   .liveScore {
     top: var(--overlay-top-mobile);
   }

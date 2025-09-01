@@ -559,14 +559,14 @@ export const calculateRotationScore = (stats: GameStats, pieces?: PuzzlePiece[])
   try {
     // 使用新算法计算旋转分数
     const newScore = calculateNewRotationScore(stats.totalRotations, minRotations);
-    
+
     console.log(`[calculateRotationScore] 新算法计算结果: 最小${minRotations}次, 实际${stats.totalRotations}次, 分数${newScore}`);
-    
+
     return newScore;
   } catch (error) {
     // 降级机制：新算法失败时回退到旧算法
     console.warn('[calculateRotationScore] 新算法失败，降级到旧算法:', error);
-    
+
     try {
       return calculateLegacyRotationScore(stats, minRotations);
     } catch (legacyError) {

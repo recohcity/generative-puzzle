@@ -47,7 +47,7 @@
             "title": "选择切割次数",
             "difficulty": {
                 "easy": "简单",
-                "hard": "困难"
+                "hard": "极难"
             },
             "button": "切割形状",
             "hints": {
@@ -94,8 +94,8 @@
             "exit": "退出全屏"
         },
         "leaderboard": {
-            "title": "排行榜",
-            "show": "显示排行榜",
+            "title": "个人最佳成绩",
+            "show": "显示个人最佳成绩",
             "close": "关闭",
             "all": "全部"
         },
@@ -168,7 +168,7 @@
         "tabs": {
             "score": "分数",
             "details": "详细统计",
-            "leaderboard": "排行榜"
+            "leaderboard": "个人最佳成绩"
         },
         "overlay": {
             "title": "游戏统计",
@@ -197,12 +197,12 @@
         }
     },
     "leaderboard": {
-        "title": "排行榜",
+        "title": "个人最佳成绩",
         "entries": "条记录",
         "filters": "筛选器",
         "sortBy": "排序方式",
         "difficulty": "难度",
-        "empty": "暂无排行榜记录",
+        "empty": "暂无个人最佳成绩记录",
         "emptyHint": "Top1 位置等你来挑战！",
         "anonymous": "匿名玩家",
         "newRecord": "恭喜！您获得第 {rank} 名",

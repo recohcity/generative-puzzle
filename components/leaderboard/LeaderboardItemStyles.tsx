@@ -129,7 +129,7 @@ export const LeaderboardItemContent: React.FC<LeaderboardItemContentProps> = ({
           rank === 1 ? 'bg-yellow-500 text-black' :
           rank === 2 ? 'bg-gray-400 text-black' :
           rank === 3 ? 'bg-orange-600 text-white' :
-          'bg-[#555] text-[#FFD5AB]'
+          'bg-[#555] text-white'
         }`}>
           {getRankIcon(rank)}
         </div>

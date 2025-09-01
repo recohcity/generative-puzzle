@@ -46,7 +46,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
     return t(`difficulty.${difficulty}`);
   };
 
-  // 统一所有难度的排行榜数据，只显示前5名
+  // 统一所有难度的个人最佳成绩数据，只显示前5名
   const filteredLeaderboard = useMemo(() => {
     return leaderboard.slice(0, 5);
   }, [leaderboard]);
@@ -177,9 +177,9 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
       key={`leaderboard-${locale}`}
       className="flex flex-col h-full"
     >
-      {/* 排行榜列表 */}
+      {/* 个人最佳成绩列表 */}
       <div className="flex-1 overflow-auto space-y-4">
-        {/* Top 5 排行榜 */}
+        {/* Top 5 个人最佳成绩 */}
         <div className="bg-[#2A2A2A] rounded-lg p-3 relative">
           {/* 关闭按钮 - 移动到卡片右上角 */}
           <Button
@@ -217,7 +217,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                 >
                   {/* 排名图标 */}
                   <div className="flex items-center justify-center w-10 h-10">
-                    <span className="text-2xl">
+                    <span className="text-2xl text-white">
                       {getRankIcon(index + 1)}
                     </span>
                   </div>
