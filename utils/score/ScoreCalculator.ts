@@ -1,4 +1,5 @@
-import { GameStats, DifficultyConfig, ScoreBreakdown, GameRecord, PuzzlePiece, RotationRating } from '@/types/puzzleTypes';
+import { GameStats, DifficultyConfig, ScoreBreakdown, GameRecord, PuzzlePiece } from '@/types/puzzleTypes';
+import { calculateNewRotationScore } from './RotationEfficiencyCalculator';
 
 /**
  * 分数计算引擎
@@ -514,98 +515,19 @@ export const calculateLiveScore = (stats: GameStats, leaderboard: GameRecord[] =
   }, 0, 'calculateLiveScore');
 };
 
-/**
- * 获取旋转效率评级（严格按V2文档规则）
- * 基于效率百分比返回评级信息
- */
-export const getRotationRating = (efficiency: number): RotationRating => {
-  if (efficiency >= 100) {
-    return {
-      rating: '完美',
-      description: '完美旋转',
-      color: 'gold',
-      score: 200
-    };
-  } else if (efficiency >= 80) {
-    return {
-      rating: '接近完美',
-      description: '接近完美',
-      color: 'green',
-      score: 100
-    };
-  } else if (efficiency >= 60) {
-    return {
-      rating: '旋转有点多',
-      description: '旋转有点多',
-      color: 'orange',
-      score: 50
-    };
-  } else if (efficiency >= 40) {
-    return {
-      rating: '旋转太多了',
-      description: '旋转太多了',
-      color: 'red',
-      score: -50
-    };
-  } else if (efficiency >= 20) {
-    return {
-      rating: '请减少旋转',
-      description: '请减少旋转',
-      color: 'darkred',
-      score: -100
-    };
-  } else if (efficiency >= 0) {
-    return {
-      rating: '看清楚再旋转',
-      description: '看清楚再旋转',
-      color: 'darkred',
-      score: -200
-    };
-  } else {
-    return {
-      rating: '效率过低',
-      description: '效率过低',
-      color: 'darkred',
-      score: -200
-    };
-  }
-};
-
-/**
- * 获取旋转效率评级文本（严格按V2文档规则）
- */
-export const getRotationRatingText = (efficiency: number): string => {
-  if (efficiency >= 100) return '完美';
-  if (efficiency >= 80) return '接近完美';
-  if (efficiency >= 60) return '旋转有点多';
-  if (efficiency >= 40) return '旋转太多了';
-  if (efficiency >= 20) return '请减少旋转';
-  if (efficiency >= 0) return '看清楚再旋转';
-  return '效率过低';
-};
-
-/**
- * 基于旋转效率计算分数（严格按V2文档规则）
- */
-export const calculateRotationScoreByEfficiency = (efficiency: number): number => {
-  if (efficiency >= 100) return 200;      // 完美：+200分
-  if (efficiency >= 80) return 100;       // 接近完美：+100分
-  if (efficiency >= 60) return 50;        // 旋转有点多：+50分
-  if (efficiency >= 40) return -50;       // 旋转太多了：-50分
-  if (efficiency >= 20) return -100;      // 请减少旋转：-100分
-  if (efficiency >= 0) return -200;       // 看清楚再旋转：-200分
-  // 效率过低：扣分
-  const excessRotations = Math.ceil((100 - efficiency) / 10);
-  return -excessRotations * 10; // 每10%效率损失扣10分
-};
+// 注意：旧的旋转效率评分函数已移除
+// 现在使用 RotationEfficiencyCalculator 中的新算法
+// 新算法：完美旋转+500分，每超出1次-10分
 
 
 
 
 
 /**
- * 计算旋转效率分数
+ * 计算旋转效率分数（已更新为新算法）
+ * 新算法：完美旋转+500分，每超出1次-10分
  * 支持传入拼图片段数组来计算最小旋转次数，或使用已计算的minRotations
+ * 保持函数签名不变，确保向后兼容性，添加降级机制
  */
 export const calculateRotationScore = (stats: GameStats, pieces?: PuzzlePiece[]): number => {
   // 参数验证
@@ -634,15 +556,53 @@ export const calculateRotationScore = (stats: GameStats, pieces?: PuzzlePiece[])
     return 0;
   }
 
+  try {
+    // 使用新算法计算旋转分数
+    const newScore = calculateNewRotationScore(stats.totalRotations, minRotations);
+    
+    console.log(`[calculateRotationScore] 新算法计算结果: 最小${minRotations}次, 实际${stats.totalRotations}次, 分数${newScore}`);
+    
+    return newScore;
+  } catch (error) {
+    // 降级机制：新算法失败时回退到旧算法
+    console.warn('[calculateRotationScore] 新算法失败，降级到旧算法:', error);
+    
+    try {
+      return calculateLegacyRotationScore(stats, minRotations);
+    } catch (legacyError) {
+      console.error('[calculateRotationScore] 旧算法也失败:', legacyError);
+      return 0;
+    }
+  }
+};
+
+/**
+ * 旧的旋转效率分数计算算法（降级方案）
+ * 简化的降级算法，避免依赖已删除的函数
+ */
+const calculateLegacyRotationScore = (stats: GameStats, minRotations: number): number => {
   // 计算旋转效率百分比
   const rotationEfficiency = (minRotations / stats.totalRotations) * 100;
 
-  console.log(`[calculateRotationScore] 旋转数据: 最小${minRotations}次, 实际${stats.totalRotations}次, 效率${rotationEfficiency.toFixed(1)}%`);
+  console.log(`[calculateLegacyRotationScore] 降级算法计算: 最小${minRotations}次, 实际${stats.totalRotations}次, 效率${rotationEfficiency.toFixed(1)}%`);
 
-  // 使用评级系统计算分数
-  const rotationScore = calculateRotationScoreByEfficiency(rotationEfficiency);
-  console.log(`[calculateRotationScore] 旋转分数: ${rotationScore}`);
+  // 简化的降级评分逻辑
+  let rotationScore = 0;
+  if (rotationEfficiency >= 100) {
+    rotationScore = 200;      // 完美：+200分
+  } else if (rotationEfficiency >= 80) {
+    rotationScore = 100;      // 接近完美：+100分
+  } else if (rotationEfficiency >= 60) {
+    rotationScore = 50;       // 旋转有点多：+50分
+  } else if (rotationEfficiency >= 40) {
+    rotationScore = -50;      // 旋转太多了：-50分
+  } else if (rotationEfficiency >= 20) {
+    rotationScore = -100;     // 请减少旋转：-100分
+  } else {
+    rotationScore = -200;     // 看清楚再旋转：-200分
+  }
 
+  console.log(`[calculateLegacyRotationScore] 降级算法分数: ${rotationScore}`);
   return rotationScore;
 };
 

@@ -2,6 +2,9 @@ import React from 'react';
 import { useTranslation } from '@/contexts/I18nContext';
 import { GameStats, ScoreBreakdown } from '@/types/puzzleTypes';
 import { Trophy, Clock, RotateCw, Lightbulb, Move, X, Star } from 'lucide-react';
+import { calculateRotationEfficiencyPercentage } from '@/utils/score/ScoreCalculator';
+import { RotationEfficiencyCalculator } from '@/utils/score/RotationEfficiencyCalculator';
+
 import './animations.css';
 
 interface DesktopScoreLayoutProps {
@@ -56,16 +59,23 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
     return Math.round((optimal / actual) * 100);
   };
 
-  // 获取旋转效率评级文本
-  const getRotationRatingText = (actual: number, optimal: number): string => {
+  // 获取旋转效率评级文本 - 使用新算法
+  const getRotationRatingTextForDisplay = (actual: number, optimal: number): string => {
     if (!optimal || optimal === 0) return '未知';
-    const efficiency = (optimal / actual) * 100;
     
-    if (efficiency >= 100) return '完美';
-    if (efficiency >= 80) return '接近完美';
-    if (efficiency >= 60) return '旋转有点多';
-    if (efficiency >= 40) return '旋转太多了';
-    return '请减少旋转';
+    try {
+      const result = RotationEfficiencyCalculator.calculateScore(actual, optimal);
+      return result.isPerfect ? '完美' : `超出${result.excessRotations}次`;
+    } catch (error) {
+      // 降级到简化的显示方式
+      const efficiency = calculateRotationEfficiencyPercentage(actual, optimal);
+      if (efficiency >= 100) return '完美';
+      if (efficiency >= 80) return '接近完美';
+      if (efficiency >= 60) return '旋转有点多';
+      if (efficiency >= 40) return '旋转太多了';
+      if (efficiency >= 20) return '请减少旋转';
+      return '看清楚再旋转';
+    }
   };
 
   // 获取难度描述
@@ -92,20 +102,22 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
     return '桌面端';
   };
 
-  // 获取速度奖励显示文本 - 基于新的速度奖励规则
+  // 获取速度奖励显示文本 - 显示实际游戏时长和奖励条件
   const getSpeedBonusText = (duration: number): string => {
+    const actualTime = formatDuration(duration);
+    
     if (duration <= 10) {
-      return t('score.speedBonus.within10s');
+      return `${actualTime} (${t('score.speedBonus.within10s')})`;
     } else if (duration <= 30) {
-      return t('score.speedBonus.within30s');
+      return `${actualTime} (${t('score.speedBonus.within30s')})`;
     } else if (duration <= 60) {
-      return t('score.speedBonus.within1min');
+      return `${actualTime} (${t('score.speedBonus.within1min')})`;
     } else if (duration <= 90) {
-      return t('score.speedBonus.within1min30s');
+      return `${actualTime} (${t('score.speedBonus.within1min30s')})`;
     } else if (duration <= 120) {
-      return t('score.speedBonus.within2min');
+      return `${actualTime} (${t('score.speedBonus.within2min')})`;
     } else {
-      return t('score.speedBonus.over2min');
+      return `${actualTime} (${t('score.speedBonus.over2min')})`;
     }
   };
 
@@ -237,7 +249,7 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
               </div>
               <div className="text-gray-700">
                 旋转评分：{scoreBreakdown.rotationScore > 0 ? '+' : ''}{formatScore(scoreBreakdown.rotationScore)}
-                （{gameStats.totalRotations}/{gameStats.minRotations || '?'}次，{getRotationRatingText(gameStats.totalRotations, gameStats.minRotations)}）
+                （{gameStats.totalRotations}/{gameStats.minRotations || '?'}，{getRotationRatingTextForDisplay(gameStats.totalRotations, gameStats.minRotations)}）
               </div>
               <div className="text-gray-700">
                 提示使用：{scoreBreakdown.hintScore > 0 ? '+' : ''}{formatScore(scoreBreakdown.hintScore)}

@@ -52,6 +52,33 @@ describe('AngleDisplayController', () => {
     });
   });
 
+  describe('updateDisplayRule 函数测试', () => {
+    it('应该返回与 getAngleDisplayMode 相同的结果', () => {
+      expect(updateDisplayRule(1)).toBe('always');
+      expect(updateDisplayRule(3)).toBe('always');
+      expect(updateDisplayRule(4)).toBe('conditional');
+      expect(updateDisplayRule(8)).toBe('conditional');
+    });
+
+    it('应该与 getAngleDisplayMode 保持一致', () => {
+      const testCases = [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, -1, NaN, Infinity, -Infinity];
+      
+      testCases.forEach(cutCount => {
+        expect(updateDisplayRule(cutCount)).toBe(getAngleDisplayMode(cutCount));
+      });
+    });
+
+    it('应该正确处理边界值和异常输入', () => {
+      expect(updateDisplayRule(0)).toBe('always');
+      expect(updateDisplayRule(-1)).toBe('always');
+      expect(updateDisplayRule(3.5)).toBe('conditional');
+      expect(updateDisplayRule(2.9)).toBe('always');
+      expect(updateDisplayRule(NaN)).toBe('conditional');
+      expect(updateDisplayRule(Infinity)).toBe('conditional');
+      expect(updateDisplayRule(-Infinity)).toBe('always');
+    });
+  });
+
   describe('AngleDisplayControllerImpl 接口实现测试', () => {
     it('应该正确实现接口', () => {
       expect(AngleDisplayControllerImpl).toBeDefined();

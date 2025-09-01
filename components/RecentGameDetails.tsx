@@ -26,8 +26,8 @@ interface RecentGameDetailsProps {
   onBack: () => void;
 }
 
-const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({ 
-  record, 
+const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
+  record,
   onBack
 }) => {
   const { t, locale } = useTranslation();
@@ -43,25 +43,27 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  // 获取速度奖励显示文本 - 基于新的速度奖励规则，显示时间区间
+  // 获取速度奖励显示文本 - 显示实际游戏时长和奖励条件
   const getSpeedBonusText = (duration: number): string => {
+    const actualTime = formatTime(duration);
+
     if (duration <= 10) {
-      return t('score.speedBonus.within10s');
+      return `${actualTime} (${t('score.speedBonus.within10s')})`;
     } else if (duration <= 30) {
-      return t('score.speedBonus.within30s');
+      return `${actualTime} (${t('score.speedBonus.within30s')})`;
     } else if (duration <= 60) {
-      return t('score.speedBonus.within1min');
+      return `${actualTime} (${t('score.speedBonus.within1min')})`;
     } else if (duration <= 90) {
-      return t('score.speedBonus.within1min30s');
+      return `${actualTime} (${t('score.speedBonus.within1min30s')})`;
     } else if (duration <= 120) {
-      return t('score.speedBonus.within2min');
+      return `${actualTime} (${t('score.speedBonus.within2min')})`;
     } else {
-      return t('score.speedBonus.over2min');
+      return `${actualTime} (${t('score.speedBonus.over2min')})`;
     }
   };
 
   return (
-    <div className="p-3 rounded-2xl shadow-[0_4px_10px_rgba(0,0,0,0.2)] space-y-3 h-full flex flex-col">
+    <div className="flex flex-col h-full">
       {/* 滚动内容区域 */}
       <div className="flex-1 overflow-y-auto space-y-3 text-xs">
         {/* 本局成绩 - 与GameRecordDetails完全一致 */}
@@ -69,7 +71,7 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
           <h4 className="text-[#FFD5AB] font-medium mb-3 text-sm flex items-center gap-1">
             🏆 最近一次游戏成绩
           </h4>
-          
+
           {/* 最终得分和游戏时长 - 统一格式 */}
           <div className="text-center mb-4 p-3 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg border border-blue-400/30">
             <div className="text-3xl font-bold text-blue-300 mb-1 tracking-wider">
@@ -79,7 +81,7 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
               {t('score.breakdown.gameDuration')}：{formatTime(record.totalDuration)}
             </div>
           </div>
-          
+
           {/* 分数构成 - 统一格式 */}
           {record.scoreBreakdown && (
             <div className="bg-white/5 rounded-lg p-3 border border-white/10">
@@ -94,11 +96,12 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
                   </span>
                   <span className="text-green-400">+{record.scoreBreakdown.timeBonus}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-[#FFD5AB]">
-                    {t('score.breakdown.rotationScore')}：{record.totalRotations}/{record.scoreBreakdown.minRotations || '?'}{t('leaderboard.timesUnit')}
+                <div className="flex justify-between items-start">
+                  <span className="text-[#FFD5AB] flex-1 min-w-0">
+                    <span className="block">{t('score.breakdown.rotationScore')}：{record.totalRotations}/{record.scoreBreakdown.minRotations}（{record.totalRotations === record.scoreBreakdown.minRotations ? t('rotation.perfect') : t('rotation.excess', { count: record.totalRotations - record.scoreBreakdown.minRotations })}）
+                    </span>
                   </span>
-                  <span className={record.scoreBreakdown.rotationScore >= 0 ? "text-green-400" : "text-red-400"}>
+                  <span className={`${record.scoreBreakdown.rotationScore >= 0 ? "text-green-400" : "text-red-400"} ml-2 flex-shrink-0`}>
                     {record.scoreBreakdown.rotationScore >= 0 ? '+' : ''}{record.scoreBreakdown.rotationScore}
                   </span>
                 </div>
@@ -127,7 +130,7 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
               </div>
             </div>
           )}
-          
+
           {/* 游戏时间 */}
           <div className="mt-3 text-center">
             <div className="text-sm text-[#FFD5AB] opacity-80">
@@ -143,7 +146,7 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
           </div>
         </div>
       </div>
-      
+
       {/* 返回按钮 - 与切割形状按钮样式完全一致 */}
       <Button
         onClick={handleBack}
@@ -154,8 +157,13 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
           minHeight: 36,
           height: 36,
           padding: '0 16px',
-          lineHeight: '18px'
+          lineHeight: '18px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
         }}
+        variant="ghost"
       >
         <ArrowLeft style={{ width: '20px', height: '20px', marginRight: '8px', flexShrink: 0 }} strokeWidth={2} />
         <span style={{ fontSize: '14px' }}>{t('leaderboard.backToLeaderboard')}</span>

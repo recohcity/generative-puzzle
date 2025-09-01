@@ -1,6 +1,6 @@
 {
   "name": "generative-puzzle-game",
-  "version": "1.3.49",
+  "version": "1.3.50",
   "type": "module",
   "private": true,
   "scripts": {
@@ -29,7 +29,11 @@
     "quality:report": "node src/quality-system/quality-checker.cjs && echo '\\n📊 查看详细报告: quality-reports/'",
     "quality:verbose": "VERBOSE=true node src/quality-system/quality-checker.cjs",
     "quality:ci": "CI=true SILENT=true node src/quality-system/quality-checker.cjs",
-    "test:quality": "playwright test e2e/ --grep='quality|performance'"
+    "quality:update-report": "node scripts/update-health-report.cjs",
+    "quality:lint-report": "node scripts/generate-lint-report.cjs",
+    "test:quality": "playwright test e2e/ --grep='quality|performance'",
+    "analyze:unused-deps": "node scripts/analyze-unused-deps.cjs",
+    "analyze:bundle": "ANALYZE=true npm run build"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -133,6 +137,7 @@
     "tailwindcss": "^3.4.17",
     "ts-jest": "^29.4.0",
     "tsx": "^4.20.3",
-    "typescript": "^5"
+    "typescript": "^5",
+    "webpack-bundle-analyzer": "^4.10.2"
   }
 }

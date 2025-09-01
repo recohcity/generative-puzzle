@@ -1,15 +1,15 @@
 # API分类报告
 
-> 生成时间: 2025/8/30 12:13:00
+> 生成时间: 2025/9/1 17:08:50
 > 分类工具: API分类器 v1.0
 
 ## 📊 分类统计
 
 | 分类 | 数量 | 占比 | 优先级 | 建议 |
 |------|------|------|--------|------|
-| PUBLIC | 22 | 9.7% | 1 | 必须文档化 |
-| TEAM | 25 | 11.1% | 2 | 建议文档化 |
-| INTERNAL | 179 | 79.2% | 3 | 选择性文档化 |
+| PUBLIC | 24 | 10.3% | 1 | 必须文档化 |
+| TEAM | 25 | 10.7% | 2 | 建议文档化 |
+| INTERNAL | 184 | 79.0% | 3 | 选择性文档化 |
 
 ## 📋 详细分类
 
@@ -17,7 +17,7 @@
 
 **描述**: 对外暴露的核心功能API
 
-**API列表** (22个):
+**API列表** (24个):
 
 - `UNIFIED_CONFIG`
 - `DEVICE_THRESHOLDS`
@@ -27,7 +27,6 @@
 - `calculateRemainingRotations`
 - `validateScoreParams`
 - `calculateLiveScore`
-- `calculateRotationScoreByEfficiency`
 - `calculateRotationScore`
 - `calculateHintScore`
 - `calculateHintScoreFromStats`
@@ -38,6 +37,9 @@
 - `createLiveScoreUpdater`
 - `calculateFinalScore`
 - `calculateScoreWithLeaderboard`
+- `RotationScoreErrorHandler`
+- `calculateNewRotationScore`
+- `calculateNewRotationScoreWithI18n`
 - `isPointInPolygon`
 - `rotatePoint`
 - `calculateAngle`
@@ -78,7 +80,7 @@
 
 **描述**: 模块内部实现细节
 
-**API列表** (179个):
+**API列表** (184个):
 
 - `EVENT_CONFIG`
 - `MEMORY_CONFIG`
@@ -139,8 +141,6 @@
 - `calculateRotationEfficiencyPercentage`
 - `checkTimeRecord`
 - `calculateTimeBonus`
-- `getRotationRating`
-- `getRotationRatingText`
 - `withPerformanceMonitoring`
 - `formatTime`
 - `debounce`
@@ -148,6 +148,11 @@
 - `formatRankDisplay`
 - `getNewRecordBadge`
 - `calculateLeaderboardStats`
+- `RotationEfficiencyResult`
+- `TranslationFunction`
+- `RotationDataValidator`
+- `RotationEfficiencyCalculator`
+- `formatNewRotationDisplay`
 - `PanelView`
 - `PanelState`
 - `MobileEnhancementState`
@@ -176,10 +181,12 @@
 - `distanceToLine`
 - `isPointNearLine`
 - `ShapeGenerator`
+- `OptimizedShapeGenerator`
 - `soundPlayedForTest`
 - `initBackgroundMusic`
 - `toggleBackgroundMusic`
 - `getBackgroundMusicStatus`
+- `autoStartBackgroundMusic`
 - `playButtonClickSound`
 - `playPieceSnapSound`
 - `playCutSound`

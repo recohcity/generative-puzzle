@@ -2,7 +2,7 @@
 // export { ShapeType, CutType } from "./types"
 
 // 难度级别类型
-export type DifficultyLevel = 'easy' | 'medium' | 'hard' | 'extreme';
+export type DifficultyLevel = 'easy' | 'medium' | 'hard' | 'extreme' | 'expert';
 
 // Define types
 export interface Point {
@@ -190,6 +190,7 @@ export enum ShapeType {
 export enum CutType {
   Straight = "straight",
   Diagonal = "diagonal",
+  Curve = "curve",
 }
 
 import React from 'react';
@@ -235,7 +236,7 @@ export interface GameStats {
   finalScore: number;
 
   // 设备信息
-  deviceType: 'desktop' | 'mobile-portrait' | 'mobile-landscape' | 'ipad';
+  deviceType: 'desktop' | 'mobile-portrait' | 'mobile-landscape' | 'ipad' | 'mobile' | 'tablet';
   canvasSize: { width: number; height: number };
 }
 

@@ -7,7 +7,9 @@
 ### 📖 核心文档
 - **[快速开始](./GETTING_STARTED.md)** - 5分钟上手指南
 - **[API文档](./API_DOCUMENTATION.md)** - 完整的API参考手册 (151个API)
-- **[项目体检报告](./PROJECT_HEALTH_REPORT.md)** - 🏥 最高级别全面体检 (A+级别)
+- **[项目体检报告](./Generative%20Puzzle%20项目代码质量全面体检报告.md)** - 🏥 最高级别全面体检 (A+级别)
+- **[代码质量检查报告](./code-quality-report.md)** - 📋 ESLint和TypeScript检查详情
+- **[依赖分析报告](./dependency-analysis-report.md)** - 📦 项目依赖使用情况分析
 - **[当前适配系统](./CURRENT_ADAPTATION_SYSTEM.md)** - 最新适配技术方案详解
 - **[项目结构](./project_structure.md)** - 完整的项目架构
 - **[配置指南](./configuration/)** - 环境配置和部署
@@ -19,7 +21,10 @@
 - **[最高级别监督指令](./SUPREME_ADAPTATION_DIRECTIVE.md)** - 项目开发的最高指导原则
 
 ### 🏥 项目健康报告
-- **[项目全面体检报告](./PROJECT_HEALTH_REPORT.md)** - 最高级别全面分析 (A+级别，99/100分)
+- **[🏥 项目全面体检报告](./Generative%20Puzzle%20项目代码质量全面体检报告.md)** - 企业级标准全面分析
+- **[代码质量检查报告](./code-quality-report.md)** - ESLint和TypeScript详细检查结果
+- **[依赖分析报告](./dependency-analysis-report.md)** - 项目依赖使用情况和优化建议
+- **[测试覆盖率改进总结](./test-coverage-improvement-summary.md)** - 测试覆盖率提升专项成果
 
 ## 🛠️ NPM 指令完整说明
 
@@ -65,19 +70,27 @@ npm run test:unit -- --coverage --silent
 
 # 单元测试覆盖率报告生成
 npm run coverage:report
+npm run test:coverage
 
 # 单个文件覆盖率检查
 npm run test:unit -- --testPathPatterns="soundEffects" --verbose
 npm run test:unit -- utils/angleDisplay/__tests__/
 npm run test:unit -- --testPathPatterns="puzzleUtils" --coverage --coverageReporters=text
-
-
 ```
+
+````bash
+# 分析项目依赖使用情况
+npm run analyze:unused-deps
+```
+
 ### 🔍 代码质量
 ```bash
 # ESLint 代码检查
 npm run lint
 npx tsc --noEmit
+
+# 生成代码质量检查报告（ESLint + TypeScript）
+npm run quality:lint-report
 
 # 格式化代码
 npm run format
@@ -102,6 +115,23 @@ npm run quality:verbose
 
 # CI/CD 静默模式质量检查
 npm run quality:ci
+```
+
+### 🏥 项目体检报告生成
+```bash
+# 🎯 一键生成完整项目体检报告（推荐）
+npm run quality:update-report
+
+# 📊 体检报告包含的数据：
+# ✅ 整体质量检查数据
+# ✅ ESLint+TypeScript检查数据  
+# ✅ E2E测试性能数据
+# ✅ 测试覆盖率数据
+# ✅ API分析数据
+# ✅ 项目结构数据
+# ✅ 依赖分析数据
+# ✅ 版本变更数据
+
 ```
 
 ### 📚 文档管理
@@ -243,8 +273,57 @@ npm run start
 # 4. 构建GitHub Pages版本
 npm run build:github
 
-# 5. 生成最终质量报告
-npm run quality:report
+# 5. 更新项目体检报告（版本完成后必做）⭐
+npm run quality:update-report
+```
+
+### 🏥 版本完成后质量检查工作流
+```bash
+# 版本功能开发完成后的标准流程
+# 1. 运行代码质量检查
+npm run quality:lint-report
+
+# 2. 运行全面质量检查
+npm run quality:check
+
+# 3. 运行完整测试套件
+npm run test:e2e
+
+# 4. 🎯 更新项目体检报告（自动更新时间戳和版本号）
+npm run quality:update-report
+
+# 5. 检查并提交更新
+git add docs/ quality-reports/
+git commit -m "更新项目体检报告 - v$(node -p "require('./package.json').version")"
+```
+
+### 🏥 项目体检报告详细说明
+```bash
+# 🎯 项目体检报告生成流程
+npm run quality:update-report
+
+# 📊 报告生成过程：
+# 1. 🔍 运行最新质量检查
+# 2. 📋 运行代码质量检查（ESLint + TypeScript）
+# 3. 🎮 获取最新E2E测试数据
+# 4. 🧪 获取测试覆盖率数据
+# 5. 📊 获取API分析数据
+# 6. 🏗️ 获取项目结构数据
+# 7. 📦 获取依赖分析数据
+# 8. 📝 获取版本变更日志
+# 9. 📄 生成标准化体检报告
+
+# 📈 报告内容包括：
+# - 核心质量指标（代码质量、测试覆盖率、性能表现等）
+# - 详细质量分析（架构质量、测试分析、性能分析等）
+# - 优化建议和改进方向
+# - 相关报告链接和版本变更信息
+
+# 🕐 自动功能：
+# - 自动更新时间戳（精确到秒）
+# - 自动读取项目版本号
+# - 自动计算质量评分和等级
+# - 自动生成下次体检建议日期
 ```
 
 ### 🚀 GitHub Pages部署工作流
@@ -271,7 +350,17 @@ git push origin main
 - **`npm run docs:check`** - API 分析（合并了扫描和分类）
 - **`npm run test:e2e`** - 完整测试（包含性能数据归档）
 - **`npm run quality:check`** - 日常质量检查
+- **`npm run quality:lint-report`** - 生成代码质量检查报告 ⭐
+- **`npm run quality:update-report`** - 🏥 更新项目体检报告（自动时间戳+版本号）⭐
 - **`npm run build:github`** - GitHub Pages部署构建
+
+### 🏥 体检报告相关命令
+- **`npm run quality:update-report`** - 🎯 一键生成完整项目体检报告
+  - ✅ 自动更新时间戳（日期+时间）
+  - ✅ 自动读取项目版本号
+  - ✅ 自动收集所有质量数据
+  - ✅ 生成企业级标准化报告
+- **查看报告**: `docs/Generative Puzzle 项目代码质量全面体检报告.md`
 
 ### 🔧 调试和排查
 - **`npm run quality:verbose`** - 详细质量检查信息
@@ -317,7 +406,46 @@ git push origin main
 
 ---
 
-**📅 最后更新**: 2025年8月13日  
-**📦 项目版本**: v1.3.45  
+## 🏥 项目体检报告快速指南
+
+### � 体检报*告生成步骤
+1. **运行体检命令**:
+   ```bash
+   npm run quality:update-report
+   ```
+
+2. **查看生成的报告**:
+   ```bash
+   # 报告位置
+   docs/Generative Puzzle 项目代码质量全面体检报告.md
+   ```
+
+3. **报告包含内容**:
+   - 🎯 核心质量指标（代码质量、测试覆盖率、性能表现）
+   - 🔍 详细质量分析（架构、测试、性能、文档、开发流程）
+   - 📊 测试覆盖率详细数据
+   - 🎮 E2E测试性能数据
+   - 🎯 优化建议和改进方向
+   - 🔗 相关报告链接
+
+### 🕐 自动化特性
+- ✅ **自动时间戳**: 每次生成都会更新为当前时间（精确到秒）
+- ✅ **自动版本号**: 从package.json自动读取最新版本
+- ✅ **自动评分**: 基于实际数据自动计算质量等级
+- ✅ **标准格式**: 企业级标准化报告格式
+
+### 📈 当前项目健康状况
+- **整体评分**: 88/100 (B级企业标准)
+- **代码质量**: 100/100 (A+级别)
+- **测试覆盖率**: 98.74% (A+级别)
+- **性能表现**: 66/100 (C级别)
+- **TypeScript错误**: 0个
+- **ESLint错误**: 0个
+
+---
+
+**📅 最后更新**: 2025年9月1日  
+**📦 项目版本**: v1.3.50  
 **🛠️ 维护团队**: Generative Puzzle Development Team  
-**🌐 部署状态**: ✅ GitHub Pages 正常运行
+**🌐 部署状态**: ✅ GitHub Pages 正常运行  
+**🏥 体检状态**: ✅ 企业级B标准 (88/100分)

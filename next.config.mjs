@@ -7,11 +7,12 @@ try {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // ✅ 遵循监督指令：启用构建时质量检查
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,  // 构建时执行ESLint检查
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,   // 构建时执行TypeScript检查
   },
   images: {
     unoptimized: true,

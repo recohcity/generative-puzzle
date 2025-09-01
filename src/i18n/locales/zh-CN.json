@@ -18,8 +18,8 @@
             "gameInProgress": "请选择拼图拖到正确位置",
             "completed": "🎉 游戏完成！",
             "newRecord": "🌟 新纪录！",
-            "progress": "{{completed}} / {{total}} 块拼图已完成",
-            "gameStats": "拼图{{completed}}/{{total}} 提示{{hints}}/{{allowedHints}}",
+            "progress": "{completed} / {total} 块拼图已完成",
+            "gameStats": "拼图{completed}/{total} 提示{hints}/{allowedHints}",
             "completionMessages": [
                 "你好犀利吖！",
                 "太棒了！",
@@ -67,13 +67,13 @@
             "rotateRight": "右转",
             "restart": "重新开始",
             "restartConfirm": "确定要重新开始游戏吗？",
-            "currentAngle": "当前角度: {{angle}}°",
+            "currentAngle": "当前角度: {angle}°",
             "rotateInstruction": "可以使用2只手指旋转拼图",
             "rotateInstructionDesktop": "(旋转角度需与目标角度匹配才能放置)",
             "angleHiddenHint": "点击提示按钮查看角度信息",
             "angleHidden": "当前角度：???",
             "useHintToReveal": "点击提示按钮查看角度",
-            "angleTemporary": "当前角度：{{angle}}° ✨",
+            "angleTemporary": "当前角度：{angle}° ✨",
             "hintRevealedAngle": "（提示显示中 - 即将隐藏）",
             "angleDisplayModeChanged": "角度显示模式已更新",
             "temporaryAngleVisible": "角度临时显示已激活"
@@ -156,7 +156,7 @@
         "device": "设备类型",
         "scoreHistory": "最近一次游戏成绩",
         "justNow": "刚刚",
-        "hoursAgo": "{{hours}}小时前",
+        "hoursAgo": "{hours}小时前",
         "efficiency": {
             "title": "效率指标",
             "rotation": "旋转效率",
@@ -205,9 +205,8 @@
         "empty": "暂无排行榜记录",
         "emptyHint": "Top1 位置等你来挑战！",
         "anonymous": "匿名玩家",
-        "newRecord": "恭喜！您获得第 {{rank}} 名",
-        "rank": "第{{rank}}名",
-        "rank": "第{{rank}}名",
+        "newRecord": "恭喜！您获得第 {rank} 名",
+        "rank": "第{rank}名",
         "sort": {
             "score": "按分数",
             "time": "按时间",
@@ -218,7 +217,7 @@
             "all": "全部"
         },
         "noRanking": "无排名",
-        "rankFormat": "第{{rank}}名",
+        "rankFormat": "第{rank}名",
         "speedRankFormat": {
             "1": "最快",
             "2": "第2快",
@@ -238,5 +237,15 @@
     "cutType": {
         "straight": "直线",
         "diagonal": "斜线"
+    },
+    "rotation": {
+        "label": "旋转",
+        "perfect": "完美",
+        "excess": "超出{count}次",
+        "count": "{actual}/{min}次",
+        "score": {
+            "perfect": "完美旋转，+500分",
+            "excess": "超出{count}次，-{penalty}分"
+        }
     }
 }

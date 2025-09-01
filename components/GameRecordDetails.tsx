@@ -6,6 +6,7 @@ import { playButtonClickSound } from "@/utils/rendering/soundEffects";
 import { useTranslation } from '@/contexts/I18nContext';
 import { GameRecord } from '@/types/puzzleTypes';
 
+
 interface GameRecordDetailsProps {
   record: GameRecord;
   onBack: () => void;
@@ -86,7 +87,7 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[#FFD5AB]">
-                    {t('score.breakdown.rotationScore')}：{record.totalRotations}/{record.scoreBreakdown.minRotations || '?'}{t('leaderboard.timesUnit')}
+                    {t('score.breakdown.rotationScore')}：{record.totalRotations}/{record.scoreBreakdown.minRotations}（{record.totalRotations === record.scoreBreakdown.minRotations ? t('rotation.perfect') : t('rotation.excess', { count: record.totalRotations - record.scoreBreakdown.minRotations })}）
                   </span>
                   <span className={record.scoreBreakdown.rotationScore >= 0 ? "text-green-400" : "text-red-400"}>
                     {record.scoreBreakdown.rotationScore >= 0 ? '+' : ''}{record.scoreBreakdown.rotationScore}
@@ -141,8 +142,8 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({
         style={{
           fontSize: '14px',
           borderRadius: '14px',
-          minHeight: 48,
-          height: 48,
+          minHeight: 36,
+          height: 36,
           padding: '0 16px',
           lineHeight: '18px',
           display: 'flex',
@@ -152,7 +153,7 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({
         }}
         variant="ghost"
       >
-        <ArrowLeft style={{ width: '16px', height: '16px', marginRight: '6px', flexShrink: 0 }} strokeWidth={2} />
+        <ArrowLeft style={{ width: '20px', height: '20px', marginRight: '8px', flexShrink: 0 }} strokeWidth={2} />
         {t('leaderboard.backToLeaderboard')}
       </Button>
     </div>

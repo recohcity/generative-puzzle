@@ -1,6 +1,6 @@
 # 项目结构（Project Structure）
 
-> 自动生成时间：2025/8/30 12:33:20  
+> 自动生成时间：2025/9/1 17:08:50  
 > 生成工具：项目结构文档生成器 v3.1.0 - 开发导航版
 
 **开发者导航工具** - 快速理解项目架构，精准定位代码位置，提升开发效率。
@@ -14,9 +14,9 @@
 
 | 统计项 | 数量 | 说明 |
 |--------|------|------|
-| 总目录数 | 60 | 项目目录结构层次 |
-| 总文件数 | 272 | 代码文件和资源文件总数 |
-| 项目容量 | 5.07 MB | 不包含node_modules的项目大小 |
+| 总目录数 | 62 | 项目目录结构层次 |
+| 总文件数 | 289 | 代码文件和资源文件总数 |
+| 项目容量 | 5.52 MB | 不包含node_modules的项目大小 |
 
 ---
 
@@ -202,6 +202,7 @@ npm run lint                   # 代码检查
   - leaderboard/
   - loading/
   - score/
+    - __tests__/
   - ui/
 - constants/
 - contexts/
@@ -225,6 +226,7 @@ npm run lint                   # 代码检查
     - locales/
   - quality-system/
 - styles/
+- temp/
 - test-results/
 - types/
 - utils/
@@ -289,9 +291,15 @@ npm run lint                   # 代码检查
   📁 **loading/**
     📄 `LoadingScreen.tsx`
   📁 **score/**
+    📁 **__tests__/**
+      📄 `RotationScoreDisplay.test.tsx`
     📄 `animations.css`
     📄 `DesktopScoreLayout.tsx`
     📄 `MobileScoreLayout.tsx`
+    📄 `README.md` - 项目说明文档
+    📄 `RotationScoreDisplay.example.tsx`
+    📄 `RotationScoreDisplay.module.css`
+    📄 `RotationScoreDisplay.tsx`
     📄 `ScoreDisplay.tsx`
   📁 **ui/**
     📄 `accordion.tsx`
@@ -407,24 +415,29 @@ npm run lint                   # 代码检查
   📄 `API_DOCUMENTATION.md`
   📄 `api-classification-report.md`
   📄 `api-scan-report.md`
-  📄 `coverage-reporting.md`
+  📄 `code-quality-report.md`
   📄 `coverage-strategy.md`
   📄 `CURRENT_ADAPTATION_SYSTEM.md`
   📄 `cutGenerators-migration-guide.md`
   📄 `cutGenerators-refactoring-report.md`
+  📄 `dependency-analysis-report.md`
   📄 `DEPLOY_SUMMARY.md`
   📄 `difficulty-design.md`
+  📄 `dynamic-report-optimization-summary.md`
   📄 `Generative Puzzle 项目代码质量全面体检报告.md`
   📄 `GETTING_STARTED.md`
   📄 `GITHUB_PAGES_DEPLOYMENT.md`
   📄 `GITIGNORE_OPTIMIZATION_SUMMARY.md`
   📄 `hint-reward-impact.md`
+  📄 `performance-optimization-plan.md`
+  📄 `performance-optimization-results.md`
   📄 `PRD_生成式拼图游戏.md`
   📄 `PROJECT_HEALTH_REPORT.md`
   📄 `project_structure.md`
   📄 `README.md` - 项目说明文档
   📄 `score-system-design.md`
   📄 `SUPREME_ADAPTATION_DIRECTIVE.md`
+  📄 `test-coverage-improvement-summary.md`
 📁 **e2e/**
   📄 `full_game_flow.spec.ts`
 📁 **hooks/**
@@ -448,12 +461,14 @@ npm run lint                   # 代码检查
   📄 `texture-tile.png` - 拼图材质纹理
 📁 **quality-reports/**
 📁 **scripts/**
+  📄 `analyze-unused-deps.cjs`
   📄 `archive-test-results.cjs`
   📄 `build-for-github.cjs`
   📄 `check-architecture-conflicts.ts`
   📄 `check-gitignore.sh`
   📄 `classify-apis.cjs`
   📄 `cleanup-code.cjs`
+  📄 `generate-lint-report.cjs`
   📄 `generate-performance-data.cjs`
   📄 `generate-project-structure-clean.cjs`
   📄 `generate-project-structure-simple.cjs`
@@ -463,6 +478,7 @@ npm run lint                   # 代码检查
   📄 `scan-api-changes.cjs`
   📄 `simple-coverage-report.cjs`
   📄 `test-cicd-integration.cjs`
+  📄 `update-health-report.cjs`
   📄 `validate-unified-system.ts`
 📁 **src/**
   📁 **config/**
@@ -482,6 +498,9 @@ npm run lint                   # 代码检查
     📄 `test-trigger.md`
 📁 **styles/**
   📄 `overlay-elements.css`
+📁 **temp/**
+  📄 `rotation-algorithm-demo.js`
+  📄 `RotationEfficiencyCalculator.js`
 📁 **test-results/**
 📁 **types/**
   📄 `global.d.ts`
@@ -564,14 +583,18 @@ npm run lint                   # 代码检查
   📁 **responsive/**
   📁 **score/**
     📁 **__tests__/**
+      📄 `RotationEfficiencyCalculator.test.ts`
       📄 `ScoreCalculator.test.ts`
+    📄 `RotationEfficiencyCalculator.ts`
     📄 `ScoreCalculator.ts`
   📁 **shape/**
     📁 **__tests__/**
       📄 `geometryUtils.test.ts`
+      📄 `OptimizedShapeGenerator.test.ts`
       📄 `ShapeGenerator.test.ts`
       📄 `simpleShapeGenerator.test.ts`
     📄 `geometryUtils.ts`
+    📄 `OptimizedShapeGenerator.ts`
     📄 `ShapeGenerator.ts`
     📄 `simpleShapeGenerator.ts`
   📄 `constants.ts`
@@ -580,10 +603,8 @@ npm run lint                   # 代码检查
 📄 `.gitignore` - Git 忽略文件配置
 📄 `CHANGELOG.md` - 版本历史与变更记录
 📄 `components.json` - Shadcn UI 组件配置
-📄 `generative-puzzle-game@1.3.49`
 📄 `jest.config.cjs`
 📄 `next.config.mjs` - Next.js 框架配置
-📄 `node`
 📄 `package-lock.json` - 依赖锁定文件
 📄 `package.json` - 项目依赖和脚本配置
 📄 `playwright.config.ts` - Playwright E2E 测试配置
@@ -629,4 +650,4 @@ npm run generate-structure  # 一键更新项目结构文档
 
 ---
 
-*📅 生成时间：2025/8/30 12:33:20 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*
+*📅 生成时间：2025/9/1 17:08:50 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*

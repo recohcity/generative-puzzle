@@ -58,11 +58,12 @@ describe('DifficultyUtils', () => {
       expect(getDifficultyMultiplier('medium')).toBe(1.2);
       expect(getDifficultyMultiplier('hard')).toBe(1.5);
       expect(getDifficultyMultiplier('extreme')).toBe(2.0);
+      expect(getDifficultyMultiplier('expert')).toBe(2.5);
     });
 
     it('应该覆盖所有难度级别的switch分支', () => {
-      const difficulties: DifficultyLevel[] = ['easy', 'medium', 'hard', 'extreme'];
-      const expectedMultipliers = [1.0, 1.2, 1.5, 2.0];
+      const difficulties: DifficultyLevel[] = ['easy', 'medium', 'hard', 'extreme', 'expert'];
+      const expectedMultipliers = [1.0, 1.2, 1.5, 2.0, 2.5];
       
       difficulties.forEach((difficulty, index) => {
         expect(getDifficultyMultiplier(difficulty)).toBe(expectedMultipliers[index]);
@@ -72,14 +73,14 @@ describe('DifficultyUtils', () => {
 
   describe('ALL_DIFFICULTY_LEVELS', () => {
     it('应该包含所有支持的难度级别', () => {
-      expect(ALL_DIFFICULTY_LEVELS).toEqual(['easy', 'medium', 'hard', 'extreme']);
-      expect(ALL_DIFFICULTY_LEVELS).toHaveLength(4);
+      expect(ALL_DIFFICULTY_LEVELS).toEqual(['easy', 'medium', 'hard', 'extreme', 'expert']);
+      expect(ALL_DIFFICULTY_LEVELS).toHaveLength(5);
     });
 
     it('应该包含正确的类型', () => {
       ALL_DIFFICULTY_LEVELS.forEach(level => {
         expect(typeof level).toBe('string');
-        expect(['easy', 'medium', 'hard', 'extreme']).toContain(level);
+        expect(['easy', 'medium', 'hard', 'extreme', 'expert']).toContain(level);
       });
     });
   });

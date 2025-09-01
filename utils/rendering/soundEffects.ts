@@ -3,7 +3,7 @@
 
 let audioContext: AudioContext | null = null;
 let backgroundMusic: HTMLAudioElement | null = null;
-let isBackgroundMusicPlaying: boolean = false;
+let isBackgroundMusicPlaying: boolean = true;
 let audioUnlocked = false;
 
 // Test-specific global flag/listener for Playwright
@@ -41,6 +41,39 @@ export const initBackgroundMusic = () => {
     backgroundMusic = new Audio('/puzzle-pieces.mp3');
     backgroundMusic.loop = true;
     backgroundMusic.volume = 0.5;
+    
+    // 默认开启背景音乐，但需要用户交互后才能播放
+    // 设置为准备播放状态
+    isBackgroundMusicPlaying = true;
+    
+    // 添加全局点击监听器，在第一次用户交互时自动启动背景音乐
+    const handleFirstInteraction = async (event?: Event) => {
+      // 确保这是真正的用户交互，而不是程序触发的事件
+      const isTrustedEvent = !event || event.isTrusted !== false;
+      if (isTrustedEvent && isBackgroundMusicPlaying && backgroundMusic && backgroundMusic.paused && !audioUnlocked) {
+        try {
+          await backgroundMusic.play();
+          audioUnlocked = true;
+          console.log('Background music auto-started on first interaction');
+          // 成功启动后移除所有监听器
+          removeFirstInteractionListeners();
+        } catch (error) {
+          console.log('Auto-start failed, waiting for manual activation:', error);
+        }
+      }
+    };
+    
+    // 移除监听器的辅助函数
+    const removeFirstInteractionListeners = () => {
+      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('touchstart', handleFirstInteraction);
+      document.removeEventListener('keydown', handleFirstInteraction);
+    };
+    
+    // 监听多种用户交互事件
+    document.addEventListener('click', handleFirstInteraction, { once: true });
+    document.addEventListener('touchstart', handleFirstInteraction, { once: true });
+    document.addEventListener('keydown', handleFirstInteraction, { once: true });
   }
 };
 
@@ -52,6 +85,20 @@ export const toggleBackgroundMusic = async (): Promise<boolean> => {
       await audioContext.resume();
       audioUnlocked = true;
     }
+    
+    // 如果是第一次交互且音乐应该播放，自动开始播放
+    if (isBackgroundMusicPlaying && backgroundMusic.paused && !audioUnlocked) {
+      try {
+        await backgroundMusic.play();
+        audioUnlocked = true;
+        return true;
+      } catch (error) {
+        console.error('Error starting background music:', error);
+        isBackgroundMusicPlaying = false;
+        return false;
+      }
+    }
+    
     if (isBackgroundMusicPlaying) {
       backgroundMusic.pause();
       isBackgroundMusicPlaying = false;
@@ -73,6 +120,24 @@ export const getBackgroundMusicStatus = (): boolean => {
   return isBackgroundMusicPlaying;
 };
 
+// Auto-start background music on first user interaction
+export const autoStartBackgroundMusic = async (): Promise<void> => {
+  if (backgroundMusic && isBackgroundMusicPlaying && backgroundMusic.paused) {
+    try {
+      const audioContext = createAudioContext();
+      if (audioContext && audioContext.state === 'suspended') {
+        await audioContext.resume();
+      }
+      await backgroundMusic.play();
+      audioUnlocked = true;
+      console.log('Background music auto-started via button interaction');
+    } catch (error) {
+      console.error('Error auto-starting background music:', error);
+      // 如果自动播放失败，保持状态为true，等待用户手动开启
+    }
+  }
+};
+
 // Play a click sound for buttons
 export const playButtonClickSound = async (): Promise<void> => {
   const audioContext = createAudioContext();
@@ -81,6 +146,9 @@ export const playButtonClickSound = async (): Promise<void> => {
   try {
     // 确保AudioContext正在运行
     await ensureAudioContextRunning(audioContext);
+    
+    // 尝试自动启动背景音乐（如果应该播放的话）
+    await autoStartBackgroundMusic();
 
     // Create oscillator and gain node
     soundPlayedForTest('buttonClick');

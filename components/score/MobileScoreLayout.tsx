@@ -2,6 +2,7 @@ import React from 'react';
 import { GameStats, ScoreBreakdown } from '@/types/puzzleTypes';
 import { useTranslation } from '@/contexts/I18nContext';
 
+
 interface MobileScoreLayoutProps {
   gameStats: GameStats;
   currentScore: number;
@@ -37,20 +38,29 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
     return multiplier.toFixed(2);
   };
 
-  // 获取速度奖励显示文本 - 基于新的速度奖励规则
+  // 获取速度奖励显示文本 - 显示实际游戏时长和奖励条件
   const getSpeedRankText = (duration: number): string => {
+    // 格式化时间显示
+    const formatDuration = (seconds: number): string => {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+    
+    const actualTime = formatDuration(duration);
+    
     if (duration <= 10) {
-      return t('score.speedBonus.within10s');
+      return `${actualTime} (${t('score.speedBonus.within10s')})`;
     } else if (duration <= 30) {
-      return t('score.speedBonus.within30s');
+      return `${actualTime} (${t('score.speedBonus.within30s')})`;
     } else if (duration <= 60) {
-      return t('score.speedBonus.within1min');
+      return `${actualTime} (${t('score.speedBonus.within1min')})`;
     } else if (duration <= 90) {
-      return t('score.speedBonus.within1min30s');
+      return `${actualTime} (${t('score.speedBonus.within1min30s')})`;
     } else if (duration <= 120) {
-      return t('score.speedBonus.within2min');
+      return `${actualTime} (${t('score.speedBonus.within2min')})`;
     } else {
-      return t('score.speedBonus.over2min');
+      return `${actualTime} (${t('score.speedBonus.over2min')})`;
     }
   };
 
@@ -82,7 +92,7 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
 
             {/* 旋转技巧 */}
             <div className="flex justify-between items-center">
-              <span className="text-[#FFD5AB] text-xs">{t('score.breakdown.rotationScore')}：{gameStats.totalRotations}/{scoreBreakdown.minRotations}{t('leaderboard.timesUnit')}</span>
+              <span className="text-[#FFD5AB] text-xs">{t('score.breakdown.rotationScore')}：{gameStats.totalRotations}/{gameStats.minRotations}（{gameStats.totalRotations === gameStats.minRotations ? t('rotation.perfect') : t('rotation.excess', { count: gameStats.totalRotations - gameStats.minRotations })}）</span>
               <span className={`text-xs font-medium ${scoreBreakdown.rotationScore >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                 {scoreBreakdown.rotationScore >= 0 ? '+' : ''}{formatScore(scoreBreakdown.rotationScore)}
               </span>

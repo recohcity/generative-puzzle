@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { useGame } from "@/contexts/GameContext";
 import { playButtonClickSound } from "@/utils/rendering/soundEffects";
+
 import { DESKTOP_ADAPTATION } from '@/src/config/adaptationConfig';
 import { calculateDesktopCanvasSize } from '@/constants/canvasAdaptation';
 import { useDeviceDetection } from '@/hooks/useDeviceDetection';
@@ -93,20 +94,29 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
     resetGame();
   };
 
-  // 获取速度奖励显示文本 - 基于新的速度奖励规则
+  // 格式化时间显示
+  const formatDuration = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // 获取速度奖励显示文本 - 显示实际游戏时长和奖励条件
   const getSpeedBonusText = (duration: number): string => {
+    const actualTime = formatDuration(duration);
+    
     if (duration <= 10) {
-      return t('score.speedBonus.within10s');
+      return `${actualTime} (${t('score.speedBonus.within10s')})`;
     } else if (duration <= 30) {
-      return t('score.speedBonus.within30s');
+      return `${actualTime} (${t('score.speedBonus.within30s')})`;
     } else if (duration <= 60) {
-      return t('score.speedBonus.within1min');
+      return `${actualTime} (${t('score.speedBonus.within1min')})`;
     } else if (duration <= 90) {
-      return t('score.speedBonus.within1min30s');
+      return `${actualTime} (${t('score.speedBonus.within1min30s')})`;
     } else if (duration <= 120) {
-      return t('score.speedBonus.within2min');
+      return `${actualTime} (${t('score.speedBonus.within2min')})`;
     } else {
-      return t('score.speedBonus.over2min');
+      return `${actualTime} (${t('score.speedBonus.over2min')})`;
     }
   };
 
@@ -401,7 +411,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                             </div>
                             <div className="flex justify-between">
                               <span className="text-[#FFD5AB]">
-                                {t('score.breakdown.rotationScore')}：{state.gameStats.totalRotations}/{state.scoreBreakdown.minRotations || '?'}{t('leaderboard.timesUnit')}
+                                {t('score.breakdown.rotationScore')}：{state.gameStats.totalRotations}/{state.gameStats.minRotations}（{state.gameStats.totalRotations === state.gameStats.minRotations ? t('rotation.perfect') : t('rotation.excess', { count: state.gameStats.totalRotations - state.gameStats.minRotations })}）
                               </span>
                               <span className={state.scoreBreakdown.rotationScore >= 0 ? "text-green-400" : "text-red-400"}>
                                 {state.scoreBreakdown.rotationScore >= 0 ? '+' : ''}{state.scoreBreakdown.rotationScore}

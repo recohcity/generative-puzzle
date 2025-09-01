@@ -24,6 +24,7 @@ export const getPieceCountByDifficulty = (difficulty: DifficultyLevel): number =
     case 'medium': return 6;
     case 'hard': return 8;
     case 'extreme': return 12;
+    case 'expert': return 16;
   }
 };
 
@@ -36,13 +37,14 @@ export const getDifficultyMultiplier = (difficulty: DifficultyLevel): number => 
     case 'medium': return 1.2;
     case 'hard': return 1.5;
     case 'extreme': return 2.0;
+    case 'expert': return 2.5;
   }
 };
 
 /**
  * 所有支持的难度级别
  */
-export const ALL_DIFFICULTY_LEVELS: DifficultyLevel[] = ['easy', 'medium', 'hard', 'extreme'];
+export const ALL_DIFFICULTY_LEVELS: DifficultyLevel[] = ['easy', 'medium', 'hard', 'extreme', 'expert'];
 
 /**
  * 验证难度级别是否有效

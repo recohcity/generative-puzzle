@@ -17,9 +17,9 @@ export async function loadMessages(locale: SupportedLocale): Promise<Translation
   }
 }
 
-// 简单的插值函数
+// 简单的插值函数 - 支持单大括号格式 {key}
 export function interpolate(template: string, values: Record<string, string | number>): string {
-  return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
+  return template.replace(/\{(\w+)\}/g, (match, key) => {
     return values[key]?.toString() || match;
   });
 }
