@@ -81,7 +81,7 @@ export default function LoadingScreen({ onLoadComplete }: LoadingScreenProps) {
           Generative<br className="md:hidden" /> Puzzle
         </h1>
         <div className="w-80 h-3 bg-white/30 rounded-full overflow-hidden border-2 border-white">
-          <div 
+          <div
             className="h-full bg-white transition-[width] duration-300 ease-out"
             style={{ width: `${done ? 100 : displayProgress}%`, willChange: 'width', transform: 'translateZ(0)' }}
           />
@@ -90,7 +90,7 @@ export default function LoadingScreen({ onLoadComplete }: LoadingScreenProps) {
           {done ? '100% 加载完成！' : `${Math.floor(displayProgress)}% ${displayProgress >= 100 ? '加载完成！' : '加载中...'}`}
         </p>
       </div>
-      
+
       {/* 版权信息 */}
       <div className="absolute bottom-6 left-0 right-0 flex justify-center">
         <div className="text-white text-xs text-center leading-relaxed">

@@ -618,6 +618,15 @@ export default function CurveTestOptimized() {
         )}
         <DynamicTitle />
         {layoutToRender}
+        
+        {/* 版权信息 - 仅桌面端显示，移动端在控制面板中显示 */}
+        {shouldUseDesktopLayout && (
+          <div className="absolute bottom-2 left-0 right-0 flex justify-center z-10">
+            <div className="text-white text-xs text-center leading-relaxed">
+              <div>recoh AI project | generative-puzzle V{process.env.APP_VERSION || '1.3.51'}</div>
+            </div>
+          </div>
+        )}
       </div>
       </GameProvider>
     </I18nProvider>
