@@ -34,20 +34,12 @@ export class OptimizedShapeGenerator {
    * @returns 优化后的形状点数组
    */
   static generateOptimizedShape(shapeType: ShapeType, canvasSize: CanvasSize): Point[] {
-    // 生成缓存键
-    const cacheKey = `${shapeType}-${canvasSize.width}x${canvasSize.height}`;
-    
-    // 检查缓存
-    if (this.cache.has(cacheKey)) {
-      return this.cache.get(cacheKey)!;
-    }
+    // 移除缓存机制，确保每次都生成新的随机形状
+    // 这样用户每次点击形状按钮都能得到不同的形状
     
     // 生成新形状
     const shape = this.generateShapeInternal(shapeType);
     const optimizedShape = this.optimizeShapeForCanvas(shape, canvasSize);
-    
-    // 更新缓存（带大小限制）
-    this.updateCache(cacheKey, optimizedShape);
     
     return optimizedShape;
   }

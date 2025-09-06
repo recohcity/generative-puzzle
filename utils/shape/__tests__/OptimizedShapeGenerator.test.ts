@@ -80,51 +80,60 @@ describe('OptimizedShapeGenerator - 性能优化测试', () => {
     });
   });
 
-  describe('性能优化测试', () => {
-    test('缓存机制应该工作正常', () => {
+  describe('随机性测试', () => {
+    test('每次生成的形状应该不同（随机性验证）', () => {
       const canvasSize = { width: 800, height: 600 };
       
-      // 第一次生成
+      // 生成多个相同类型的形状
       const shape1 = OptimizedShapeGenerator.generateOptimizedShape(ShapeType.Polygon, canvasSize);
-      const stats1 = OptimizedShapeGenerator.getCacheStats();
-      expect(stats1.size).toBe(1);
-      
-      // 第二次生成相同参数，应该使用缓存
       const shape2 = OptimizedShapeGenerator.generateOptimizedShape(ShapeType.Polygon, canvasSize);
-      const stats2 = OptimizedShapeGenerator.getCacheStats();
-      expect(stats2.size).toBe(1);
+      const shape3 = OptimizedShapeGenerator.generateOptimizedShape(ShapeType.Polygon, canvasSize);
       
-      // 缓存的形状应该完全相同
-      expect(shape1).toEqual(shape2);
+      // 形状应该不完全相同（由于随机性）
+      expect(shape1).not.toEqual(shape2);
+      expect(shape2).not.toEqual(shape3);
+      expect(shape1).not.toEqual(shape3);
     });
 
-    test('不同参数应该生成不同的缓存条目', () => {
-      const canvasSize1 = { width: 800, height: 600 };
-      const canvasSize2 = { width: 1024, height: 768 };
+    test('云朵形状每次生成应该有不同的频率和半径', () => {
+      const canvasSize = { width: 800, height: 600 };
       
-      OptimizedShapeGenerator.generateOptimizedShape(ShapeType.Polygon, canvasSize1);
-      OptimizedShapeGenerator.generateOptimizedShape(ShapeType.Polygon, canvasSize2);
-      OptimizedShapeGenerator.generateOptimizedShape(ShapeType.Cloud, canvasSize1);
+      const shape1 = OptimizedShapeGenerator.generateOptimizedShape(ShapeType.Cloud, canvasSize);
+      const shape2 = OptimizedShapeGenerator.generateOptimizedShape(ShapeType.Cloud, canvasSize);
       
-      const stats = OptimizedShapeGenerator.getCacheStats();
-      expect(stats.size).toBe(3);
-      expect(stats.keys).toContain('polygon-800x600');
-      expect(stats.keys).toContain('polygon-1024x768');
-      expect(stats.keys).toContain('cloud-800x600');
+      // 计算形状的"指纹"（基于前几个点的位置）
+      const getShapeFingerprint = (shape: any[]) => 
+        shape.slice(0, 5).map(p => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join('|');
+      
+      const fingerprint1 = getShapeFingerprint(shape1);
+      const fingerprint2 = getShapeFingerprint(shape2);
+      
+      expect(fingerprint1).not.toBe(fingerprint2);
     });
 
-    test('缓存大小限制应该工作', () => {
-      // 生成超过最大缓存大小的条目
-      for (let i = 0; i < 55; i++) {
-        const canvasSize = { width: 800 + i, height: 600 + i };
-        OptimizedShapeGenerator.generateOptimizedShape(ShapeType.Polygon, canvasSize);
-      }
+    test('锯齿形状每次生成应该有不同的半径分布', () => {
+      const canvasSize = { width: 800, height: 600 };
       
-      const stats = OptimizedShapeGenerator.getCacheStats();
-      expect(stats.size).toBeLessThanOrEqual(50); // 不应该超过最大缓存大小
+      const shape1 = OptimizedShapeGenerator.generateOptimizedShape(ShapeType.Jagged, canvasSize);
+      const shape2 = OptimizedShapeGenerator.generateOptimizedShape(ShapeType.Jagged, canvasSize);
+      
+      // 计算半径分布
+      const getRadiusDistribution = (shape: any[]) => {
+        const centerX = canvasSize.width / 2;
+        const centerY = canvasSize.height / 2;
+        return shape.slice(0, 10).map(p => 
+          Math.sqrt(Math.pow(p.x - centerX, 2) + Math.pow(p.y - centerY, 2))
+        );
+      };
+      
+      const radii1 = getRadiusDistribution(shape1);
+      const radii2 = getRadiusDistribution(shape2);
+      
+      // 半径分布应该不同
+      expect(radii1).not.toEqual(radii2);
     });
 
-    test('性能应该优于原始实现', () => {
+    test('性能应该保持在合理范围内', () => {
       const canvasSize = { width: 800, height: 600 };
       
       // 测试优化版本的性能
@@ -134,8 +143,8 @@ describe('OptimizedShapeGenerator - 性能优化测试', () => {
       }
       const optimizedTime = performance.now() - startTime;
       
-      // 由于缓存，第2-10次调用应该非常快
-      expect(optimizedTime).toBeLessThan(100); // 应该在100ms内完成10次调用
+      // 每次生成都是新的，但仍应保持合理性能
+      expect(optimizedTime).toBeLessThan(500); // 应该在500ms内完成10次调用
     });
   });
 
@@ -256,30 +265,28 @@ describe('OptimizedShapeGenerator - 性能优化测试', () => {
     });
   });
 
-  describe('缓存管理测试', () => {
-    test('clearCache应该清空所有缓存', () => {
+  describe('兼容性测试', () => {
+    test('应该保持与原始实现的兼容性', () => {
       const canvasSize = { width: 800, height: 600 };
       
-      // 生成一些缓存条目
-      OptimizedShapeGenerator.generateOptimizedShape(ShapeType.Polygon, canvasSize);
-      OptimizedShapeGenerator.generateOptimizedShape(ShapeType.Cloud, canvasSize);
+      // 测试所有形状类型都能正常生成
+      const polygonShape = OptimizedShapeGenerator.generateOptimizedShape(ShapeType.Polygon, canvasSize);
+      const cloudShape = OptimizedShapeGenerator.generateOptimizedShape(ShapeType.Cloud, canvasSize);
+      const jaggedShape = OptimizedShapeGenerator.generateOptimizedShape(ShapeType.Jagged, canvasSize);
       
-      expect(OptimizedShapeGenerator.getCacheStats().size).toBe(2);
-      
-      // 清空缓存
-      OptimizedShapeGenerator.clearCache();
-      
-      expect(OptimizedShapeGenerator.getCacheStats().size).toBe(0);
+      expect(polygonShape.length).toBeGreaterThan(4);
+      expect(cloudShape.length).toBe(200);
+      expect(jaggedShape.length).toBe(200);
     });
 
-    test('getCacheStats应该返回正确的统计信息', () => {
+    test('缓存统计功能应该返回空状态', () => {
       const stats = OptimizedShapeGenerator.getCacheStats();
       
       expect(stats).toHaveProperty('size');
       expect(stats).toHaveProperty('maxSize');
       expect(stats).toHaveProperty('keys');
       expect(Array.isArray(stats.keys)).toBe(true);
-      expect(stats.maxSize).toBe(50);
+      expect(stats.size).toBe(0); // 缓存已禁用，应该始终为0
     });
   });
 });
