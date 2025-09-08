@@ -104,14 +104,8 @@ export class ScatterPuzzle {
       gridCols = Math.ceil(pieces.length / gridRows);
     }
     const difficulty = pieces.length;
-    let distributionFactor;
-    if (difficulty <= 3) {
-      distributionFactor = 0.6;
-    } else if (difficulty <= 6) {
-      distributionFactor = 0.7;
-    } else {
-      distributionFactor = 0.75;
-    }
+    // 覆盖全画布分布，避免集中收缩
+    const distributionFactor = 1.0;
     const adjustedSafeWidth = safeWidth * distributionFactor;
     const adjustedSafeHeight = safeHeight * distributionFactor;
     const cellWidth = adjustedSafeWidth / gridCols;
@@ -229,13 +223,15 @@ export class ScatterPuzzle {
       for (let attempt = 0; attempt < MAX_PLACEMENT_ATTEMPTS; attempt++) {
         const areaIndex = Math.floor(Math.random() * placementAreas.length);
         const area = placementAreas[areaIndex];
-        const gridX = Math.floor((0.2 + 0.6 * Math.random()) * gridCols);
-        const gridY = Math.floor((0.2 + 0.6 * Math.random()) * gridRows);
-        const extraMargin = 20;
+        // 全画布范围内均匀采样网格索引
+        const gridX = Math.floor(Math.random() * gridCols);
+        const gridY = Math.floor(Math.random() * gridRows);
+        const extraMargin = SAFE_BOUNDARY_MARGIN;
         const gridCenterX = area.x + extraMargin + gridX * cellWidth + cellWidth / 2;
         const gridCenterY = area.y + extraMargin + gridY * cellHeight + cellHeight / 2;
-        const offsetX = (Math.random() - 0.5) * cellWidth * 0.5;
-        const offsetY = (Math.random() - 0.5) * cellHeight * 0.5;
+        // 增大抖动，提升覆盖度（仍受安全边距与画布边界约束）
+        const offsetX = (Math.random() - 0.5) * cellWidth * 0.9;
+        const offsetY = (Math.random() - 0.5) * cellHeight * 0.9;
         const posX = gridCenterX + offsetX;
         const posY = gridCenterY + offsetY;
         const adjustedX = Math.max(SAFE_BOUNDARY_MARGIN + rotatedBounds.width/2, Math.min(canvasWidth - SAFE_BOUNDARY_MARGIN - rotatedBounds.width/2, posX));
@@ -315,11 +311,12 @@ export class ScatterPuzzle {
         bestX += correctionDx;
         bestY += correctionDy;
       }
+      // 记录已放置区域时使用旋转后的宽高，避免后续重叠检测误差
       placedPieceBounds.push({
-        x: bestX - bounds.width/2,
-        y: bestY - bounds.height/2,
-        width: bounds.width,
-        height: bounds.height
+        x: bestX - rotatedBounds.width/2,
+        y: bestY - rotatedBounds.height/2,
+        width: rotatedBounds.width,
+        height: rotatedBounds.height
       });
     }
     const finalScatteredPieces = [...scatteredPieces];

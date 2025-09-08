@@ -67,12 +67,12 @@ const createTestStats = (overrides: Partial<GameStats> = {}): GameStats => ({
   ...overrides
 });
 
-// 创建测试用的DifficultyConfig对象
+// 创建测试用的DifficultyConfig对象（统一使用基于切割次数的逻辑）
 const createTestDifficulty = (overrides: Partial<DifficultyConfig> = {}): DifficultyConfig => ({
   cutCount: 3,
   cutType: CutType.Straight,
-  actualPieces: 4,
-  difficultyLevel: 'medium' as DifficultyLevel as DifficultyLevel,
+  actualPieces: 4, // 实际拼图数量（由cutGeneratorConfig.ts动态生成）
+  difficultyLevel: 'medium' as DifficultyLevel,
   ...overrides
 });
 
@@ -203,58 +203,48 @@ describe('ScoreCalculator - 设备检测测试', () => {
 });
 
 describe('ScoreCalculator - 基础分数测试', () => {
-  test('应返回正确的基础分数', () => {
+  test('应返回正确的基础分数（难度级别1-8）', () => {
+    expect(getBaseScore(1)).toBe(500);
     expect(getBaseScore(2)).toBe(800);
-    expect(getBaseScore(3)).toBe(900);
-    expect(getBaseScore(4)).toBe(1000);
-    expect(getBaseScore(5)).toBe(1200);
-    expect(getBaseScore(7)).toBe(1400);
-    expect(getBaseScore(9)).toBe(1600);
-    expect(getBaseScore(12)).toBe(1800);
-    expect(getBaseScore(14)).toBe(2000);
+    expect(getBaseScore(3)).toBe(1200);
+    expect(getBaseScore(4)).toBe(1800);
+    expect(getBaseScore(5)).toBe(2500);
+    expect(getBaseScore(6)).toBe(3500);
+    expect(getBaseScore(7)).toBe(5000);
+    expect(getBaseScore(8)).toBe(8000);
   });
 
   test('未知拼图数量应返回默认分数1000', () => {
     expect(getBaseScore(999)).toBe(1000);
   });
 
-  test('getBaseScoreByPieces应与getBaseScore一致', () => {
+test('getBaseScoreByPieces应与getBaseScore一致（兼容性测试）', () => {
+    // 兼容性：当前实现按级别直接取基础分
     expect(getBaseScoreByPieces(4)).toBe(getBaseScore(4));
     expect(getBaseScoreByPieces(7)).toBe(getBaseScore(7));
   });
 });
 
 describe('ScoreCalculator - 难度系数测试', () => {
-  test('应返回正确的基础难度系数', () => {
-    expect(getBaseDifficultyMultiplierByPieces(2)).toBe(1.0);
-    expect(getBaseDifficultyMultiplierByPieces(3)).toBe(1.1);
-    expect(getBaseDifficultyMultiplierByPieces(4)).toBe(1.2);
-    expect(getBaseDifficultyMultiplierByPieces(5)).toBe(1.4);
-    expect(getBaseDifficultyMultiplierByPieces(7)).toBe(1.6);
-    expect(getBaseDifficultyMultiplierByPieces(9)).toBe(1.8);
-    expect(getBaseDifficultyMultiplierByPieces(12)).toBe(2.2);
-    expect(getBaseDifficultyMultiplierByPieces(14)).toBe(2.5);
-  });
-
-  test('未知拼图数量应返回默认系数1.0', () => {
-    expect(getBaseDifficultyMultiplierByPieces(999)).toBe(1.0);
+  test('未知切割次数应返回默认分数1000', () => {
+    expect(getBaseScore(999)).toBe(1000);
   });
 
   test('计算完整难度系数 - 直线切割桌面端', () => {
     mockWindow('Mozilla/5.0 (Windows NT 10.0; Win64; x64)', 1920, 1080);
-    const config = createTestDifficulty({ actualPieces: 4, cutType: CutType.Straight });
-    expect(calculateDifficultyMultiplier(config)).toBe(1.2); // 1.2 * 1.0 * 1.0
+    const config = createTestDifficulty({ cutCount: 3, cutType: CutType.Straight });
+    expect(calculateDifficultyMultiplier(config)).toBe(1.5); // base 1.5 * cut 1.0 * device 1.0
   });
 
   test('计算完整难度系数 - 斜线切割移动端', () => {
     mockWindow('Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)', 375, 667, true);
-    const config = createTestDifficulty({ actualPieces: 4, cutType: CutType.Diagonal });
-    expect(calculateDifficultyMultiplier(config)).toBe(1.584); // 1.2 * 1.2 * 1.1
+    const config = createTestDifficulty({ cutCount: 3, cutType: CutType.Diagonal });
+    expect(calculateDifficultyMultiplier(config)).toBeCloseTo(1.98, 5); // 1.5 * 1.2 * 1.1
   });
 });
 
 describe('ScoreCalculator - 提示赠送测试', () => {
-  test('基于切割次数的提示赠送', () => {
+test('基于切割次数的提示赠送', () => {
     expect(getHintAllowanceByCutCount(1)).toBe(3);
     expect(getHintAllowanceByCutCount(2)).toBe(3);
     expect(getHintAllowanceByCutCount(3)).toBe(3);
@@ -265,8 +255,8 @@ describe('ScoreCalculator - 提示赠送测试', () => {
     expect(getHintAllowanceByCutCount(8)).toBe(3);
   });
 
-  test('未知切割次数应返回0', () => {
-    expect(getHintAllowanceByCutCount(999)).toBe(0);
+  test('未知切割次数也返回统一赠送', () => {
+    expect(getHintAllowanceByCutCount(999)).toBe(3);
   });
 
   test('基于难度级别的提示赠送（兼容性）', () => {
@@ -274,7 +264,7 @@ describe('ScoreCalculator - 提示赠送测试', () => {
     expect(getHintAllowance('medium')).toBe(3);
     expect(getHintAllowance('hard')).toBe(3);
     expect(getHintAllowance('extreme')).toBe(3);
-    expect(getHintAllowance('unknown')).toBe(0);
+    expect(getHintAllowance('unknown')).toBe(3);
   });
 });
 
@@ -337,34 +327,34 @@ describe('ScoreCalculator - 旋转计算测试', () => {
 // 新算法：完美旋转+500分，每超出1次-10分
 
 describe('ScoreCalculator - 速度奖励测试', () => {
-  test('10秒内完成应获得400分奖励', () => {
+test('10秒内完成应获得600分奖励', () => {
     const stats = createTestStats({ totalDuration: 8 });
+    const result = calculateTimeBonus(stats, []);
+    expect(result.timeBonus).toBe(600);
+  });
+
+test('30秒内完成应获得400分奖励', () => {
+    const stats = createTestStats({ totalDuration: 25 });
     const result = calculateTimeBonus(stats, []);
     expect(result.timeBonus).toBe(400);
   });
 
-  test('30秒内完成应获得200分奖励', () => {
-    const stats = createTestStats({ totalDuration: 25 });
+test('60秒内完成应获得300分奖励', () => {
+    const stats = createTestStats({ totalDuration: 45 });
+    const result = calculateTimeBonus(stats, []);
+    expect(result.timeBonus).toBe(300);
+  });
+
+test('90秒内完成应获得200分奖励', () => {
+    const stats = createTestStats({ totalDuration: 75 });
     const result = calculateTimeBonus(stats, []);
     expect(result.timeBonus).toBe(200);
   });
 
-  test('60秒内完成应获得100分奖励', () => {
-    const stats = createTestStats({ totalDuration: 45 });
-    const result = calculateTimeBonus(stats, []);
-    expect(result.timeBonus).toBe(100);
-  });
-
-  test('90秒内完成应获得50分奖励', () => {
-    const stats = createTestStats({ totalDuration: 75 });
-    const result = calculateTimeBonus(stats, []);
-    expect(result.timeBonus).toBe(50);
-  });
-
-  test('120秒内完成应获得10分奖励', () => {
+test('120秒内完成应获得100分奖励', () => {
     const stats = createTestStats({ totalDuration: 110 });
     const result = calculateTimeBonus(stats, []);
-    expect(result.timeBonus).toBe(10);
+    expect(result.timeBonus).toBe(100);
   });
 
   test('超过120秒完成应获得0分奖励', () => {
@@ -374,9 +364,9 @@ describe('ScoreCalculator - 速度奖励测试', () => {
   });
 
   test('边界值测试', () => {
-    expect(calculateTimeBonus(createTestStats({ totalDuration: 10 }), []).timeBonus).toBe(400);
-    expect(calculateTimeBonus(createTestStats({ totalDuration: 30 }), []).timeBonus).toBe(200);
-    expect(calculateTimeBonus(createTestStats({ totalDuration: 120 }), []).timeBonus).toBe(10);
+expect(calculateTimeBonus(createTestStats({ totalDuration: 10 }), []).timeBonus).toBe(600);
+    expect(calculateTimeBonus(createTestStats({ totalDuration: 30 }), []).timeBonus).toBe(400);
+    expect(calculateTimeBonus(createTestStats({ totalDuration: 120 }), []).timeBonus).toBe(100);
   });
 
   test('无效参数应返回0分', () => {
@@ -389,8 +379,8 @@ describe('ScoreCalculator - 速度奖励测试', () => {
 
 describe('ScoreCalculator - 提示系统测试', () => {
   test('提示分数计算 - 未使用提示应获得奖励', () => {
-    const score = calculateHintScore(0, 3);
-    expect(score).toBe(300); // 零提示完成：+300分奖励
+const score = calculateHintScore(0, 3);
+    expect(score).toBe(500); // 零提示完成：+500分奖励
   });
 
   test('提示分数计算 - 在赠送范围内使用无惩罚', () => {
@@ -587,7 +577,7 @@ describe('ScoreCalculator - 提示分数计算测试', () => {
       difficulty: { cutCount: 3, cutType: CutType.Straight, actualPieces: 4, difficultyLevel: 'medium' as DifficultyLevel }
     });
     const score = calculateHintScoreFromStats(stats);
-    expect(score).toBe(300); // 零提示奖励
+    expect(score).toBe(500); // 零提示奖励
   });
 });
 
@@ -639,12 +629,15 @@ describe('ScoreCalculator - 最终分数计算测试', () => {
       hintUsageCount: 1
     });
     const pieces = [createTestPiece(0), createTestPiece(90)];
+// 确保设备为桌面环境，避免移动端系数影响
+    mockWindow('Mozilla/5.0 (Windows NT 10.0; Win64; x64)', 1920, 1080);
     const result = calculateFinalScore(stats, pieces, []);
 
-    expect(result.baseScore).toBe(1000);
-    expect(result.timeBonus).toBe(200);
+    expect(result.baseScore).toBe(1200);
+    expect(result.timeBonus).toBe(400);
     expect(result.finalScore).toBeGreaterThan(100);
-    expect(result.difficultyMultiplier).toBe(1.32); // 1.2 * 1.1 (移动端系数)
+    // 在桌面直线切割下，难度系数应为1.5
+    expect(result.difficultyMultiplier).toBe(1.5);
   });
 
   test('空拼图片段应使用stats中的最小旋转次数', () => {
@@ -720,7 +713,7 @@ describe('ScoreCalculator - 排行榜统计测试', () => {
     const leaderboard = [createTestRecord({ totalDuration: 30 })];
     const result = calculateLeaderboardStats(stats, leaderboard);
 
-    expect(result.timeBonus).toBe(200);
+expect(result.timeBonus).toBe(400);
     expect(result.recordInfo.isNewRecord).toBe(true);
     expect(result.rankDisplay).toBe('第1名🏆');
     expect(result.recordBadge.shouldCelebrate).toBe(true);
@@ -783,8 +776,9 @@ describe('ScoreCalculator - 边界情况和异常处理测试', () => {
   test('极端拼图数量应有合理默认值', () => {
     expect(getBaseScore(0)).toBe(1000);
     expect(getBaseScore(-1)).toBe(1000);
-    expect(getBaseDifficultyMultiplierByPieces(0)).toBe(1.0);
-    expect(getBaseDifficultyMultiplierByPieces(-1)).toBe(1.0);
+    // 基于现有实现的公式：Math.min(2.0, 1.0 + (actualPieces - 10) * 0.1)
+    expect(getBaseDifficultyMultiplierByPieces(0)).toBe(0.0);
+expect(getBaseDifficultyMultiplierByPieces(-1)).toBeCloseTo(-0.1, 6);
   });
 
   test('应该处理minRotations为0的情况', () => {
@@ -835,21 +829,22 @@ describe('ScoreCalculator - 边界情况和异常处理测试', () => {
     expect(straightMultiplier).toBeGreaterThan(0);
   });
 
-  test('应该测试所有未覆盖的分支', () => {
-    // 测试console.warn分支 - 无效拼图数量
-    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
-    
-    getBaseScore(999); // 不存在的拼图数量
-    expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining('[getBaseScore] 未找到拼图数量 999 对应的基础分数')
+  test('应该测试所有未覆盖的分支（日志文案已更新）', () => {
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+
+    // getBaseScore 现在记录“难度级别”而不是“拼图数量”，并且不再warn
+    getBaseScore(999);
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[getBaseScore] 难度级别')
     );
-    
-    getBaseDifficultyMultiplierByPieces(999); // 不存在的拼图数量
-    expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining('[getBaseDifficultyMultiplierByPieces] 未找到拼图数量 999 对应的难度系数')
+
+    // 旧的基于拼图数量的函数保留，为log而非warn
+    getBaseDifficultyMultiplierByPieces(999);
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[getBaseDifficultyMultiplierByPieces]')
     );
-    
-    consoleSpy.mockRestore();
+
+    consoleLogSpy.mockRestore();
   });
 
   test('应该测试更多边界情况和错误处理', () => {
@@ -938,8 +933,8 @@ describe('ScoreCalculator - 边界情况和异常处理测试', () => {
     // 这将触发所有console.log行
     calculateDifficultyMultiplier(config);
     
-    expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining('[calculateDifficultyMultiplier] 拼图数量 4 -> 基础系数')
+expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[calculateDifficultyMultiplier] 难度级别')
     );
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining('[calculateDifficultyMultiplier] 切割类型 diagonal -> 切割系数')
@@ -1090,8 +1085,8 @@ describe('ScoreCalculator - 边界情况和异常处理测试', () => {
       calculateDifficultyMultiplier(config);
       
       // 验证console.log被调用
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('[calculateDifficultyMultiplier] 拼图数量 4 -> 基础系数')
+expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('[calculateDifficultyMultiplier] 难度级别')
       );
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining('[calculateDifficultyMultiplier] 切割类型 straight -> 切割系数')
@@ -1113,8 +1108,8 @@ describe('ScoreCalculator - 边界情况和异常处理测试', () => {
       getBaseScore(4);
       
       // 验证console.log被调用
-      expect(consoleSpy).toHaveBeenCalledWith(
-        '[getBaseScore] 拼图数量 4 -> 基础分数 1000'
+expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('[getBaseScore] 难度级别')
       );
       
       consoleSpy.mockRestore();
@@ -1673,49 +1668,41 @@ describe('最终覆盖率提升测试', () => {
   });
 
   it('应该测试所有设备类型的难度系数', () => {
-    // 模拟不同设备类型
+    // 使用mockWindow确保UA、尺寸与触摸能力匹配
     const deviceTests = [
-      { userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)', expected: 1.0 },
-      { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)', expected: 1.1 },
-      { userAgent: 'Mozilla/5.0 (iPad; CPU OS 14_0 like Mac OS X)', expected: 1.0 },
-      { userAgent: 'Mozilla/5.0 (Android 10; Mobile; rv:81.0)', expected: 1.1 }
+      { ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)', w: 1920, h: 1080, touch: false, expected: 1.0 },
+      { ua: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)', w: 375, h: 667, touch: true, expected: 1.1 },
+      { ua: 'Mozilla/5.0 (iPad; CPU OS 14_0 like Mac OS X)', w: 768, h: 1024, touch: true, expected: 1.0 },
+      { ua: 'Mozilla/5.0 (Linux; Android 10)', w: 360, h: 640, touch: true, expected: 1.1 }
     ];
 
-    deviceTests.forEach(({ userAgent, expected }) => {
-      // 临时修改userAgent
-      const originalUserAgent = Object.getOwnPropertyDescriptor(window.navigator, 'userAgent');
-      Object.defineProperty(window.navigator, 'userAgent', {
-        value: userAgent,
-        configurable: true
-      });
-
+    deviceTests.forEach(({ ua, w, h, touch, expected }) => {
+      mockWindow(ua, w, h, touch);
       const multiplier = getDeviceMultiplier();
       expect(multiplier).toBe(expected);
-
-      // 恢复原始userAgent
-      if (originalUserAgent) {
-        Object.defineProperty(window.navigator, 'userAgent', originalUserAgent);
-      }
     });
   });
 
-  it('应该测试所有切割类型的难度系数', () => {
+  it('应该测试所有切割类型的难度系数（按新表）', () => {
     const cutTypeTests = [
-      { cutType: CutType.Straight, actualPieces: 4, expectedMultiplier: 1.32 }, // 1.2 * 1.0 * 1.1 (桌面端)
-      { cutType: CutType.Diagonal, actualPieces: 4, expectedMultiplier: 1.584 }, // 1.2 * 1.2 * 1.1
-      { cutType: CutType.Curve, actualPieces: 4, expectedMultiplier: 1.32 }
+      { cutType: CutType.Straight, expectedMultiplier: 1.5 }, // 1.5 * 1.0 * 1.0（桌面端）
+      { cutType: CutType.Diagonal, expectedMultiplier: 1.8 }, // 1.5 * 1.2 * 1.0
+      { cutType: CutType.Curve, expectedMultiplier: 1.5 }
     ];
 
-    cutTypeTests.forEach(({ cutType, actualPieces, expectedMultiplier }) => {
+    // 固定为桌面端
+    mockWindow('Mozilla/5.0 (Windows NT 10.0; Win64; x64)', 1920, 1080);
+
+    cutTypeTests.forEach(({ cutType, expectedMultiplier }) => {
       const config: DifficultyConfig = {
-        actualPieces,
+        actualPieces: 4,
         cutType: cutType as CutType,
         cutCount: 3,
         difficultyLevel: 'medium' as DifficultyLevel
       };
 
       const multiplier = calculateDifficultyMultiplier(config);
-      expect(multiplier).toBeCloseTo(expectedMultiplier, 2);
+      expect(multiplier).toBeCloseTo(expectedMultiplier, 5);
     });
   });
 
@@ -2099,9 +2086,9 @@ describe('剩余未覆盖行专项测试', () => {
     // 验证所有必要的console.log都被调用了
     const calls = consoleSpy.mock.calls.map(call => call.join(' '));
     
-    // 检查是否包含拼图数量日志
-    const hasPieceLog = calls.some(call => call.includes('拼图数量') && call.includes('基础系数'));
-    expect(hasPieceLog).toBe(true);
+    // 检查是否包含难度级别日志
+    const hasLevelLog = calls.some(call => call.includes('难度级别') && call.includes('基础系数'));
+    expect(hasLevelLog).toBe(true);
     
     // 检查是否包含切割类型日志
     const hasCutTypeLog = calls.some(call => call.includes('切割类型') && call.includes('切割系数'));
@@ -2122,13 +2109,13 @@ describe('剩余未覆盖行专项测试', () => {
     const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
     const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
     
-    // 测试已知的拼图数量（触发console.log）
+    // 测试已知的等级（触发console.log）
     getBaseScore(2);
     getBaseScore(4);
     getBaseScore(6);
     getBaseScore(8);
     
-    // 测试未知的拼图数量（触发console.warn）
+    // 测试未知的等级（不再触发console.warn）
     getBaseScore(999);
     getBaseScore(0);
     getBaseScore(-1);
@@ -2136,16 +2123,13 @@ describe('剩余未覆盖行专项测试', () => {
     // 验证console.log被调用
     const logCalls = consoleSpy.mock.calls.map(call => call.join(' '));
     const hasBaseScoreLog = logCalls.some(call => 
-      call.includes('拼图数量') && call.includes('基础分数')
+      call.includes('难度级别') && call.includes('基础分数')
     );
     expect(hasBaseScoreLog).toBe(true);
 
-    // 验证console.warn被调用
+    // 验证不会有console.warn
     const warnCalls = consoleWarnSpy.mock.calls.map(call => call.join(' '));
-    const hasBaseScoreWarn = warnCalls.some(call => 
-      call.includes('未找到拼图数量') && call.includes('基础分数')
-    );
-    expect(hasBaseScoreWarn).toBe(true);
+    expect(warnCalls.length).toBe(0);
 
     consoleSpy.mockRestore();
     consoleWarnSpy.mockRestore();

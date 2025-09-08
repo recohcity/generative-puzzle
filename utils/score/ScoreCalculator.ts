@@ -6,57 +6,52 @@ import { calculateNewRotationScore } from './RotationEfficiencyCalculator';
  * 提供完整的分数计算功能，包括难度系数、实时分数和最终分数计算
  */
 
-// 难度系数映射表（基于实际拼图数量）- 按设计文档v2更新
-const PIECE_MULTIPLIERS: Record<number, number> = {
-  2: 1.0,   // 1次切割 -> 2片 (简单)
-  3: 1.1,   // 2次切割 -> 3片 (简单)
-  4: 1.2,   // 3次切割 -> 4片 (简单)
-  5: 1.4,   // 4次切割 -> 5片 (中等)
-  7: 1.6,   // 5次切割 -> 7片 (中等)
-  9: 1.8,   // 6次切割 -> 9片 (中等)
-  12: 2.2,  // 7次切割 -> 12片 (困难)
-  14: 2.5   // 8次切割 -> 14片 (极难)
+// 🔧 修复：基于切割次数的动态分数计算系统
+// 移除硬编码的拼图数量映射表，改为基于切割次数的动态计算
+
+// 🔧 重新设计：基于难度级别的基础分数表（与cutGeneratorConfig.ts保持一致）
+const BASE_SCORES_BY_DIFFICULTY: Record<number, number> = {
+  1: 500,    // 难度1 -> 基础分500
+  2: 800,    // 难度2 -> 基础分800
+  3: 1200,   // 难度3 -> 基础分1200
+  4: 1800,   // 难度4 -> 基础分1800
+  5: 2500,   // 难度5 -> 基础分2500
+  6: 3500,   // 难度6 -> 基础分3500
+  7: 5000,   // 难度7 -> 基础分5000
+  8: 8000    // 难度8 -> 基础分8000
 };
 
-// 基础分数映射表（按设计文档v2）
-const BASE_SCORES: Record<number, number> = {
-  2: 800,    // 1次切割 -> 2片
-  3: 900,    // 2次切割 -> 3片
-  4: 1000,   // 3次切割 -> 4片
-  5: 1200,   // 4次切割 -> 5片
-  7: 1400,   // 5次切割 -> 7片
-  9: 1600,   // 6次切割 -> 9片
-  12: 1800,  // 7次切割 -> 12片
-  14: 2000   // 8次切割 -> 14片
+// 🔧 重新设计：基于难度级别的难度系数表
+const DIFFICULTY_MULTIPLIERS_BY_LEVEL: Record<number, number> = {
+  1: 1.0,    // 难度1 -> 系数1.0
+  2: 1.2,    // 难度2 -> 系数1.2
+  3: 1.5,    // 难度3 -> 系数1.5
+  4: 1.8,    // 难度4 -> 系数1.8
+  5: 2.2,    // 难度5 -> 系数2.2
+  6: 2.8,    // 难度6 -> 系数2.8
+  7: 3.5,    // 难度7 -> 系数3.5
+  8: 5.0     // 难度8 -> 系数5.0
 };
 
 // 速度奖励分数表（基于完成时间）
 const TIME_BONUS_THRESHOLDS = [
-  { maxTime: 10, bonus: 400, description: '10秒内完成' },
-  { maxTime: 30, bonus: 200, description: '30秒内完成' },
-  { maxTime: 60, bonus: 100, description: '60秒内完成' },
-  { maxTime: 90, bonus: 50, description: '1分30秒内完成' },
-  { maxTime: 120, bonus: 10, description: '2分钟内完成' },
+  { maxTime: 10, bonus: 600, description: '10秒内完成' },
+  { maxTime: 30, bonus: 400, description: '30秒内完成' },
+  { maxTime: 60, bonus: 300, description: '60秒内完成' },
+  { maxTime: 90, bonus: 200, description: '1分30秒内完成' },
+  { maxTime: 120, bonus: 100, description: '2分钟内完成' },
 ] as const;
 
-// 提示次数赠送表（基于切割次数）
-const HINT_ALLOWANCES_BY_CUT_COUNT: Record<number, number> = {
-  1: 3,  // 1次切割 -> 3次提示
-  2: 3,  // 2次切割 -> 3次提示
-  3: 3,  // 3次切割 -> 3次提示
-  4: 3,  // 4次切割 -> 3次提示
-  5: 3,  // 5次切割 -> 3次提示
-  6: 3,  // 6次切割 -> 3次提示
-  7: 3,  // 7次切割 -> 3次提示
-  8: 3   // 8次切割 -> 3次提示
+// 提示系统可配置参数（全局统一）
+let HINT_CONFIG = {
+  freeHintsPerGame: 3,      // 所有难度的免费提示次数
+  zeroHintBonus: 500,       // 零提示奖励分数
+  excessHintPenalty: 25     // 超出每次的扣分
 };
 
-// 兼容性：基于难度级别的提示赠送表
-const HINT_ALLOWANCES: Record<string, number> = {
-  'easy': 3,     // 简单：3次
-  'medium': 3,   // 中等：3次
-  'hard': 3,     // 困难：3次
-  'extreme': 3   // 极难：3次
+// 对外暴露配置更新方法，便于运行时或测试时调整
+export const setHintConfig = (config: Partial<typeof HINT_CONFIG>) => {
+  HINT_CONFIG = { ...HINT_CONFIG, ...config };
 };
 
 /**
@@ -99,8 +94,8 @@ export const getDeviceMultiplier = (): number => {
  * 计算难度系数（严格按v2文档表格1）
  */
 export const calculateDifficultyMultiplier = (config: DifficultyConfig): number => {
-  // 基础难度系数（直接从表格获取）
-  const pieceMultiplier = PIECE_MULTIPLIERS[config.actualPieces] || 1.0;
+  // 🔧 重新设计：基于难度级别获取基础系数
+  const baseMultiplier = DIFFICULTY_MULTIPLIERS_BY_LEVEL[config.cutCount] || 1.0;
 
   // 切割类型系数
   const cutTypeMultiplier = config.cutType === 'diagonal' ? 1.2 : 1.0;
@@ -108,9 +103,9 @@ export const calculateDifficultyMultiplier = (config: DifficultyConfig): number 
   // 设备适配系数
   const deviceMultiplier = getDeviceMultiplier();
 
-  const finalMultiplier = pieceMultiplier * cutTypeMultiplier * deviceMultiplier;
+  const finalMultiplier = baseMultiplier * cutTypeMultiplier * deviceMultiplier;
 
-  console.log(`[calculateDifficultyMultiplier] 拼图数量 ${config.actualPieces} -> 基础系数 ${pieceMultiplier}`);
+  console.log(`[calculateDifficultyMultiplier] 难度级别 ${config.cutCount} -> 基础系数 ${baseMultiplier}`);
   console.log(`[calculateDifficultyMultiplier] 切割类型 ${config.cutType} -> 切割系数 ${cutTypeMultiplier}`);
   console.log(`[calculateDifficultyMultiplier] 设备系数 ${deviceMultiplier}`);
   console.log(`[calculateDifficultyMultiplier] 最终系数 ${finalMultiplier}`);
@@ -121,14 +116,11 @@ export const calculateDifficultyMultiplier = (config: DifficultyConfig): number 
 /**
  * 获取基础分数（严格按v2文档表格1）
  */
-export const getBaseScore = (actualPieces: number): number => {
-  const score = BASE_SCORES[actualPieces];
-  if (!score) {
-    console.warn(`[getBaseScore] 未找到拼图数量 ${actualPieces} 对应的基础分数，使用默认值1000`);
-    return 1000;
-  }
-  console.log(`[getBaseScore] 拼图数量 ${actualPieces} -> 基础分数 ${score}`);
-  return score;
+export const getBaseScore = (difficultyLevel: number): number => {
+  // 🔧 重新设计：基于难度级别获取基础分数
+  const baseScore = BASE_SCORES_BY_DIFFICULTY[difficultyLevel] || 1000;
+  console.log(`[getBaseScore] 难度级别 ${difficultyLevel} -> 基础分数 ${baseScore}`);
+  return baseScore;
 };
 
 /**
@@ -142,11 +134,8 @@ export const getBaseScoreByPieces = (actualPieces: number): number => {
  * 基于拼图数量获取基础难度系数（严格按v2文档表格1）
  */
 export const getBaseDifficultyMultiplierByPieces = (actualPieces: number): number => {
-  const multiplier = PIECE_MULTIPLIERS[actualPieces];
-  if (!multiplier) {
-    console.warn(`[getBaseDifficultyMultiplierByPieces] 未找到拼图数量 ${actualPieces} 对应的难度系数，使用默认值1.0`);
-    return 1.0;
-  }
+  // 简化处理，基于拼图数量计算难度系数
+  const multiplier = Math.min(2.0, 1.0 + (actualPieces - 10) * 0.1); // 拼图越多，难度系数越高，最高2.0
   console.log(`[getBaseDifficultyMultiplierByPieces] 拼图数量 ${actualPieces} -> 难度系数 ${multiplier}`);
   return multiplier;
 };
@@ -154,20 +143,18 @@ export const getBaseDifficultyMultiplierByPieces = (actualPieces: number): numbe
 /**
  * 获取提示次数赠送（兼容性函数 - 基于难度级别）
  */
-export const getHintAllowance = (difficultyLevel: string): number => {
-  return HINT_ALLOWANCES[difficultyLevel] || 0;
+export const getHintAllowance = (_difficultyLevel: string): number => {
+  // 统一为全局配置，不再区分难度
+  return HINT_CONFIG.freeHintsPerGame;
 };
 
 /**
  * 基于切割次数获取提示赠送次数（严格按v2文档表格1）
  */
-export const getHintAllowanceByCutCount = (cutCount: number): number => {
-  const allowance = HINT_ALLOWANCES_BY_CUT_COUNT[cutCount];
-  if (allowance === undefined) {
-    console.warn(`[getHintAllowanceByCutCount] 未找到切割次数 ${cutCount} 对应的提示赠送，使用默认值0`);
-    return 0;
-  }
-  console.log(`[getHintAllowanceByCutCount] 切割次数 ${cutCount} -> 提示赠送 ${allowance}次`);
+export const getHintAllowanceByCutCount = (_cutCount: number): number => {
+  // 统一为全局配置，不再区分切割次数
+  const allowance = HINT_CONFIG.freeHintsPerGame;
+  console.log(`[getHintAllowanceByCutCount] 统一赠送 -> 提示赠送 ${allowance}次`);
   return allowance;
 };
 
@@ -471,7 +458,7 @@ export const calculateLiveScore = (stats: GameStats, leaderboard: GameRecord[] =
 
   return safeCalculateScore(() => {
     // 1. 基础分数
-    const baseScore = getBaseScore(stats.difficulty.actualPieces);
+    const baseScore = getBaseScore(stats.difficulty.cutCount);
     console.log('[calculateLiveScore] 1. 基础分数:', baseScore);
 
     // 2. 速度奖励
@@ -612,7 +599,7 @@ const calculateLegacyRotationScore = (stats: GameStats, minRotations: number): n
 export const calculateHintScore = (actualHints: number, allowance: number): number => {
   if (actualHints === 0) {
     // 情况1：没有使用提示 - 高额奖励分数
-    return 300; // 零提示完成：+300分奖励（提升刺激性）
+    return HINT_CONFIG.zeroHintBonus; // 统一为可配置
   }
 
   if (actualHints <= allowance) {
@@ -622,7 +609,7 @@ export const calculateHintScore = (actualHints: number, allowance: number): numb
 
   // 情况3：超过了赠送次数 - 扣分惩罚
   const excessHints = actualHints - allowance;
-  return -excessHints * 25; // 每次超出扣25分
+  return -excessHints * HINT_CONFIG.excessHintPenalty; // 统一为可配置
 };
 
 /**
@@ -817,7 +804,7 @@ export const calculateFinalScore = (
 ): ScoreBreakdown => {
   return safeCalculateScore(() => {
     // 基础分数
-    const baseScore = getBaseScore(stats.difficulty.actualPieces);
+    const baseScore = getBaseScore(stats.difficulty.cutCount);
 
     // 基于排行榜的速度奖励系统
     console.log(`[calculateFinalScore] 调用calculateTimeBonus，排行榜记录数: ${currentLeaderboard?.length || 0}`);

@@ -13,9 +13,12 @@ module.exports = {
     '^.+\.(ts|tsx)$': ['ts-jest', {
       useESM: false,
       tsconfig: {
-        sourceMap: false,
-        inlineSourceMap: false,
-        isolatedModules: true,
+        // 为了让覆盖率与 TS 源码准确对齐，开启内联 SourceMap
+        sourceMap: true,
+        inlineSourceMap: true,
+        inlineSources: true,
+        // 关闭 isolatedModules 以便完整的类型信息参与转译映射（有助于 SourceMap 更准确）
+        isolatedModules: false,
         jsx: 'react-jsx'
       }
     }],

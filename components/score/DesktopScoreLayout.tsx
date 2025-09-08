@@ -32,7 +32,7 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
   showAnimation = true,
   embedded = false
 }) => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
 
   // 格式化时间显示
   const formatDuration = (seconds: number): string => {
@@ -78,15 +78,10 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
     }
   };
 
-  // 获取难度描述
-  const getDifficultyDescription = (difficulty: any): string => {
-    const levelMap = {
-      'easy': '简单',
-      'medium': '中等', 
-      'hard': '困难',
-      'extreme': '极难'
-    };
-    return levelMap[difficulty.difficultyLevel as keyof typeof levelMap] || '未知';
+  // 获取难度显示：改为数值等级
+  const getDifficultyLabel = (difficulty: any): string => {
+    // 使用i18n：中文 -> 难度{level}；英文 -> Level {level}
+    return t('difficulty.levelLabel', { level: difficulty.cutCount });
   };
 
   // 获取切割类型文本
@@ -265,7 +260,7 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
                   scoreBreakdown.hintScore
                 )}</div>
                 <div className="text-gray-700">
-                  难度{getDifficultyDescription(gameStats.difficulty)}：{gameStats.difficulty.actualPieces}片+{getCutTypeText(gameStats.difficulty.cutType)}+{getDeviceTypeText(gameStats.deviceType)}
+                  {getDifficultyLabel(gameStats.difficulty)}：{gameStats.difficulty.actualPieces}片+{getCutTypeText(gameStats.difficulty.cutType)}+{getDeviceTypeText(gameStats.deviceType)}
                 </div>
                 <div className="text-gray-700">难度系数：×{scoreBreakdown.difficultyMultiplier}</div>
                 <div className="text-lg font-bold text-blue-600 mt-2">最终得分：{formatScore(scoreBreakdown.finalScore)}</div>
@@ -294,7 +289,7 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-gray-600">{t('stats.difficulty')}</span>
-              <span className="font-medium">{t(`difficulty.${gameStats.difficulty.difficultyLevel}`)}</span>
+              <span className="font-medium">{getDifficultyLabel(gameStats.difficulty)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">{t('stats.cutType')}</span>

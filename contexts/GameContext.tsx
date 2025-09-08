@@ -188,24 +188,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           difficultyLevel: calculateDifficultyLevel(state.cutCount),
           cutType: state.cutType || CutType.Straight,
           cutCount: state.cutCount || 1,
-          // 按V2文档规则：基于cutCount计算actualPieces，而不是依赖puzzle.length
-          // 因为puzzle.length可能因为补偿算法而不准确
+          // 🔧 修复：统一使用实际生成的拼图数量，支持cutGeneratorConfig.ts的动态数量
           actualPieces: (() => {
+            const actualPuzzleLength = state.puzzle?.length || 0;
             const cutCount = state.cutCount || 1;
-            // V2文档标准映射：切割次数 -> 实际拼图数
-            const cutCountToPieces: Record<number, number> = {
-              1: 2,   // 1次切割 -> 2片
-              2: 3,   // 2次切割 -> 3片
-              3: 4,   // 3次切割 -> 4片
-              4: 5,   // 4次切割 -> 5片
-              5: 7,   // 5次切割 -> 7片
-              6: 9,   // 6次切割 -> 9片
-              7: 12,  // 7次切割 -> 12片
-              8: 14   // 8次切割 -> 14片
-            };
-            const expectedPieces = cutCountToPieces[cutCount] || (cutCount + 1);
-            console.log(`[SCATTER_PUZZLE] cutCount: ${cutCount} -> expectedPieces: ${expectedPieces}, actualPuzzleLength: ${state.puzzle?.length || 0}`);
-            return expectedPieces;
+            
+            console.log(`[SCATTER_PUZZLE] cutCount: ${cutCount}, actualPuzzleLength: ${actualPuzzleLength}`);
+            
+            // 使用实际生成的拼图数量（支持cutGeneratorConfig.ts的动态随机数量）
+            if (actualPuzzleLength > 0) {
+              return actualPuzzleLength;
+            }
+            
+            // 如果没有拼图数据，使用基本的N+1公式作为后备
+            return cutCount + 1;
           })()
         },
         deviceType: (state.deviceType || 'desktop') as 'desktop' | 'mobile-portrait' | 'mobile-landscape' | 'ipad',
@@ -215,19 +211,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         },
         minRotations: calculateMinimumRotations(state.puzzle || []), // 游戏开始时计算最小旋转次数
         hintAllowance: (() => {
-          // 按设计文档v2：基于切割次数计算提示赠送
-          const hintAllowancesByCutCount = {
-            1: 2,  // 1次切割 -> 2次提示
-            2: 3,  // 2次切割 -> 3次提示
-            3: 4,  // 3次切割 -> 4次提示
-            4: 3,  // 4次切割 -> 3次提示
-            5: 3,  // 5次切割 -> 3次提示
-            6: 3,  // 6次切割 -> 3次提示
-            7: 5,  // 7次切割 -> 5次提示
-            8: 5   // 8次切割 -> 5次提示
-          };
-          return hintAllowancesByCutCount[state.cutCount as keyof typeof hintAllowancesByCutCount] || 0;
-        })(), // 基于切割次数计算提示次数
+          // 与统一计分配置保持一致：所有难度统一免费次数
+          try {
+            // 延迟导入以避免循环依赖
+            const { getHintAllowanceByCutCount } = require('@/utils/score/ScoreCalculator');
+            return getHintAllowanceByCutCount(state.cutCount || 1);
+          } catch (e) {
+            console.warn('[GameContext] 无法读取统一提示配置，使用默认3');
+            return 3;
+          }
+        })(), // 统一计算提示次数
         rotationEfficiency: 0, // 将在游戏结束时计算
         // 分数相关字段初始化
         baseScore: 0,

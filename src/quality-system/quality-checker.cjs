@@ -150,7 +150,7 @@ class ProjectQualityChecker {
     
     try {
       // 运行测试并生成覆盖率报告，即使测试失败也要生成覆盖率
-      execSync('npm run test:unit -- --coverage --coverageReporters=json-summary --passWithNoTests --silent', { 
+      execSync('npm run test:coverage --silent', { 
         encoding: 'utf8',
         stdio: 'pipe',
         maxBuffer: 1024 * 1024 * 10 // 10MB buffer

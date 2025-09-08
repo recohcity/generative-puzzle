@@ -1,6 +1,7 @@
 import type { Point, PuzzlePiece } from "@/types/puzzleTypes"
 import { generateCuts } from "@/utils/puzzle/cutGenerators"
 import { splitPolygon } from "@/utils/puzzle/puzzleUtils"
+import { applyExtraCutsWithRetry } from "@/utils/puzzle/puzzleCompensation"
 
 export class PuzzleGenerator {
   /**
@@ -32,116 +33,33 @@ export class PuzzleGenerator {
     // 步骤2：执行多边形分割
     // 使用线段相交检测算法将原始形状切割成独立的拼图片段
     let splitPieces: Point[][] = splitPolygon(shape, cuts);
+    
+    // 🔧 调试：记录初始切割结果
+    console.log(`[PuzzleGenerator] 初始切割结果: ${splitPieces.length}块拼图 (${cuts.length}条切割线)`);
 
     // 步骤3：质量控制 - 验证切割效果
-    // 理论上N条切割线应该产生N+1个拼图片段
-    const expectedPieceCount = cuts.length + 1;
-
-    // 步骤4：智能补偿算法
-    // 如果实际片段数量少于预期的80%，启动补偿机制
-    // 这种情况通常发生在复杂形状或高难度切割中
-    if (splitPieces.length < expectedPieceCount * 0.8) {
-      // 切割后片段数量少于预期的80%，尝试额外切割
-
-      // 高难度切割次数(难度7-8)需要更多的尝试次数
-      const isHighDifficulty = cutCount >= 7;
-      const maxRetryCount = isHighDifficulty ? 5 : 3;
-      let retryCount = 0;
-
-      // 最多尝试几次切割
-      while (splitPieces.length < expectedPieceCount * 0.9 && retryCount < maxRetryCount) {
-        retryCount++;
-        // 尝试第${retryCount}次额外切割
-
-        // 计算形状的边界
-        const xs = shape.map(p => p.x);
-        const ys = shape.map(p => p.y);
-        const minX = Math.min(...xs);
-        const maxX = Math.max(...xs);
-        const minY = Math.min(...ys);
-        const maxY = Math.max(...ys);
-        const centerX = (minX + maxX) / 2;
-        const centerY = (minY + maxY) / 2;
-
-        // 创建额外的切割线
-        const diagonal = Math.sqrt(Math.pow(maxX - minX, 2) + Math.pow(maxY - minY, 2));
-        const extraCuts: Array<{
-          x1: number;
-          y1: number;
-          x2: number;
-          y2: number;
-          type: 'straight' | 'diagonal';
-        }> = [];
-
-        // 计算需要多少额外切割线
-        const neededExtraCuts = Math.max(0, Math.min(Math.ceil(expectedPieceCount / 2), expectedPieceCount - splitPieces.length));
-
-        // 需要额外添加${neededExtraCuts}条切割线
-
-        // 生成额外切割线
-        for (let i = 0; i < neededExtraCuts; i++) {
-          let x1, y1, x2, y2;
-
-          if (isHighDifficulty) {
-            // 随机选择角度
-            const angle = Math.random() * Math.PI;
-            const offsetX = (Math.random() - 0.5) * (maxX - minX) * 0.3;
-            const offsetY = (Math.random() - 0.5) * (maxY - minY) * 0.3;
-
-            x1 = centerX + offsetX + Math.cos(angle) * diagonal * 0.8;
-            y1 = centerY + offsetY + Math.sin(angle) * diagonal * 0.8;
-            x2 = centerX + offsetX + Math.cos(angle + Math.PI) * diagonal * 0.8;
-            y2 = centerY + offsetY + Math.sin(angle + Math.PI) * diagonal * 0.8;
-          } else if (cutType === "straight") {
-            // 随机选择水平或垂直线
-            const isVertical = Math.random() < 0.5;
-            x1 = isVertical ? centerX : minX - diagonal * 0.1;
-            y1 = isVertical ? minY - diagonal * 0.1 : centerY;
-            x2 = isVertical ? centerX : maxX + diagonal * 0.1;
-            y2 = isVertical ? maxY + diagonal * 0.1 : centerY;
-          } else {
-            // 生成对角线
-            const angle = Math.random() * Math.PI;
-            x1 = centerX + Math.cos(angle) * diagonal;
-            y1 = centerY + Math.sin(angle) * diagonal;
-            x2 = centerX + Math.cos(angle + Math.PI) * diagonal;
-            y2 = centerY + Math.sin(angle + Math.PI) * diagonal;
-          }
-
-          extraCuts.push({
-            x1, y1, x2, y2,
-            type: cutType
-          });
-        }
-
-        // 使用额外的切割线重新切割
-        if (extraCuts.length > 0) {
-          // 使用${extraCuts.length}条额外切割线进行切割
-          const additionalPieces = splitPolygon(shape, [...cuts, ...extraCuts]);
-
-          if (additionalPieces.length > splitPieces.length) {
-            // 额外切割成功: 从${splitPieces.length}增加到${additionalPieces.length}个片段
-            splitPieces = additionalPieces;
-          }
-        }
-      }
-    }
-
-    // 如果片段数量超过预期，只保留最大的几个片段
-    if (splitPieces.length > expectedPieceCount) {
-      // 切割后片段数量超过预期，将保留最大的片段
-
-      // 按面积排序
-      splitPieces.sort((a, b) => {
-        const areaA = this.calculatePolygonArea(a);
-        const areaB = this.calculatePolygonArea(b);
-        return areaB - areaA;
+    // 重要修正：N条切割线可能产生N+1, N+2, N+3...个拼图片段
+    // 这取决于切割线的相交方式，不是固定的N+1
+    // 我们接受切割产生的自然片段数量，不强制补偿到特定数量
+    
+    // 步骤4：智能补偿算法（仅在片段数量明显不足时启用）
+    if (splitPieces.length < cuts.length) {
+      splitPieces = applyExtraCutsWithRetry({
+        shape,
+        cuts,
+        cutType,
+        cutCount,
+        splitPolygon,
+        initialPieces: splitPieces,
       });
-
-      splitPieces = splitPieces.slice(0, expectedPieceCount);
     }
 
-    // 最终生成了${splitPieces.length}个拼图片段，预期${expectedPieceCount}个
+    // 移除基于固定预期数量的片段限制逻辑
+    // 接受切割产生的自然片段数量，这才是正确的做法
+    // N条切割线可能产生N+1, N+2, N+3...个片段，这是正常的
+
+    // 🔧 调试：记录最终切割结果
+    console.log(`[PuzzleGenerator] 最终切割结果: ${splitPieces.length}个拼图片段 (${cuts.length}条切割线)`);
 
     // 定义暖色调色板
     const colors = [

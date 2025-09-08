@@ -44,7 +44,7 @@
             "diagonal": "Diagonal"
         },
         "cutCount": {
-            "title": "Select Cut Count",
+            "title": "Select Difficulty",
             "difficulty": {
                 "easy": "Easy",
                 "hard": "Extreme"
@@ -52,7 +52,7 @@
             "button": "Cut Shape",
             "hints": {
                 "selectCutType": "Please select cut type first",
-                "selectCount": "Please select cut count"
+                "selectCount": "Please select difficulty level"
             }
         },
         "scatter": {
@@ -222,7 +222,8 @@
         "easy": "Easy",
         "medium": "Medium",
         "hard": "Hard",
-        "extreme": "Extreme"
+        "extreme": "Extreme",
+        "levelLabel": "Level {level}"
     },
     "cutType": {
         "straight": "Straight",

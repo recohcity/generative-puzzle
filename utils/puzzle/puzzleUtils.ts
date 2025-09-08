@@ -37,92 +37,160 @@ const lineIntersection = (p1: Point, p2: Point, p3: Point, p4: Point): Point | n
 export const splitPolygon = (shape: Point[], cuts: CutLine[]): Point[][] => {
   let pieces = [shape]
   
-  // 最小片段面积 - 防止生成太小的片段，但对高难度调整为更低的阈值
+  // 最小片段面积 - 防止生成太小的片段，根据难度动态调整
   const isHighDifficulty = cuts.length >= 8; // 8条或更多切割线视为高难度
-  // 高难度时使用更小的面积阈值，允许更多的小片段
-  const minPieceAreaRatio = isHighDifficulty ? 0.02 : 0.05; 
+  const isMediumDifficulty = cuts.length >= 5; // 5条或更多切割线视为中等难度
+  
+  // 根据难度级别调整面积阈值，确保不会过度过滤有效片段
+  let minPieceAreaRatio: number;
+  if (isHighDifficulty) {
+    minPieceAreaRatio = 0.01; // 高难度：允许更小的片段
+  } else if (isMediumDifficulty) {
+    minPieceAreaRatio = 0.025; // 中等难度：适中的阈值
+  } else {
+    minPieceAreaRatio = 0.04; // 低难度：稍大的阈值
+  }
+  
   const originalArea = calculatePolygonArea(shape);
   const minPieceArea = originalArea * minPieceAreaRatio;
   
-  // 目标片段数量 = 切割次数 + 1
-  const targetPieceCount = cuts.length + 1;
-  // 切割目标: ${cuts.length}条切割线，预期${targetPieceCount}块拼图
+  // 🔧 重要修正：N条切割线可能产生N+1, N+2, N+3...个拼图片段
+  // 这取决于切割线的相交方式和组合，不是固定的N+1
+  // 因此我们不设置固定的目标片段数量，而是让所有切割线都有机会执行
   
   // 切割操作计数
   let cutCount = 0;
-  // 最大尝试次数，防止死循环
-  const maxCutAttempts = cuts.length * 2;
+  // 🔧 修复：增加最大尝试次数，确保所有切割线都能执行
+  const maxCutAttempts = cuts.length * 3; // 从2倍增加到3倍
   
-  while (cutCount < cuts.length && pieces.length < targetPieceCount && cutCount < maxCutAttempts) {
+  // 🔧 新增：基于难度级别的拼图数量控制
+  // 根据切割线数量确定难度级别，然后设置相应的拼图数量上限
+  let maxPiecesLimit: number;
+  if (cuts.length <= 2) {
+    maxPiecesLimit = 4; // 难度1: 最多4块
+  } else if (cuts.length <= 3) {
+    maxPiecesLimit = 6; // 难度2: 最多6块
+  } else if (cuts.length <= 4) {
+    maxPiecesLimit = 8; // 难度3: 最多8块
+  } else if (cuts.length <= 6) {
+    maxPiecesLimit = 12; // 难度4: 最多12块
+  } else if (cuts.length <= 8) {
+    maxPiecesLimit = 16; // 难度5: 最多16块
+  } else if (cuts.length <= 10) {
+    maxPiecesLimit = 20; // 难度6: 最多20块
+  } else if (cuts.length <= 12) {
+    maxPiecesLimit = 24; // 难度7: 最多24块
+  } else {
+    maxPiecesLimit = 30; // 难度8: 最多30块
+  }
+  
+  console.log(`[splitPolygon] 拼图数量上限: ${maxPiecesLimit} (${cuts.length}条切割线)`);
+  
+  while (cutCount < cuts.length && cutCount < maxCutAttempts) {
+    // 🔧 控制：检查是否已达到拼图数量上限
+    if (pieces.length >= maxPiecesLimit) {
+      console.log(`[splitPolygon] 已达到拼图数量上限 ${maxPiecesLimit}，停止切割`);
+      break;
+    }
+    
     const cut = cuts[cutCount];
     const newPieces: Point[][] = [];
     let madeValidCut = false;
     
-    // 如果已经达到或超过目标片段数量，停止切割
-    if (pieces.length >= targetPieceCount) {
-      // 已达到目标片段数量，停止后续切割
-      break;
-    }
-    
+    // 🔧 关键修复：让每条切割线尝试切割所有现有片段，实现真正的随机性
     // 找出最大的片段进行切割以增加成功率
     pieces.sort((a, b) => calculatePolygonArea(b) - calculatePolygonArea(a));
     
-    // 尝试切割前四大片段，增加切割成功率
-    const maxPiecesToTry = Math.min(4, pieces.length);
+    // 🔧 修复：尝试切割所有片段，不仅仅是前几个
+    // 对于高难度，尝试切割所有片段以产生更多随机数量
+    const maxPiecesToTry = isHighDifficulty ? pieces.length : Math.min(4, pieces.length);
     
-    for (let i = 0; i < maxPiecesToTry; i++) {
+    console.log(`[splitPolygon] 尝试用第${cutCount + 1}条切割线切割${maxPiecesToTry}个片段`);
+    
+    // 🔧 修复：控制拼图数量，实现合理的随机性
+    const successfullyCutPieces: number[] = []; // 记录成功切割的片段索引
+    const maxPiecesPerCut = isHighDifficulty ? 3 : 2; // 限制每条切割线最多切割的片段数
+    
+    for (let i = 0; i < maxPiecesToTry && successfullyCutPieces.length < maxPiecesPerCut; i++) {
       const pieceToTry = pieces[i];
       const splitResult = splitPieceWithLine(pieceToTry, cut);
       
-      // 过滤掉太小的片段
-      const validSplitResults = splitResult.filter(piece => 
-        calculatePolygonArea(piece) >= minPieceArea
-      );
+      // 过滤掉太小的片段，但保持宽松的标准以避免过度过滤
+      const validSplitResults = splitResult.filter(piece => {
+        const area = calculatePolygonArea(piece);
+        const hasEnoughVertices = piece.length >= 3;
+        // 对于高难度，更宽松的面积要求
+        const areaThreshold = isHighDifficulty ? minPieceArea * 0.2 : minPieceArea; // 进一步放宽到0.2
+        return hasEnoughVertices && area >= areaThreshold;
+      });
       
       // 如果有效的片段至少有2个，表示切割成功
       if (validSplitResults.length >= 2) {
         // 添加新切割出的片段
         newPieces.push(...validSplitResults);
+        successfullyCutPieces.push(i);
+        console.log(`[splitPolygon] 切割成功: 切割第${i+1}大片段，产生${validSplitResults.length}个新片段`);
         
-        // 添加其他未尝试切割的片段
-        newPieces.push(...pieces.slice(0, i).concat(pieces.slice(i + 1)));
-        
-        madeValidCut = true;
-        // 切割成功: 切割第${i+1}大片段，产生${validSplitResults.length}个新片段
-        break;
+        // 🔧 控制：限制每条切割线最多切割的片段数，避免拼图数量爆炸
+        if (successfullyCutPieces.length >= maxPiecesPerCut) {
+          console.log(`[splitPolygon] 达到单次切割最大片段数限制: ${maxPiecesPerCut}`);
+          break;
+        }
       }
+    }
+    
+    // 添加未被切割的片段
+    for (let i = 0; i < pieces.length; i++) {
+      if (!successfullyCutPieces.includes(i)) {
+        newPieces.push(pieces[i]);
+      }
+    }
+    
+    // 如果成功切割了任何片段，标记为有效切割
+    if (successfullyCutPieces.length > 0) {
+      madeValidCut = true;
+      console.log(`[splitPolygon] 第${cutCount + 1}条切割线成功切割了${successfullyCutPieces.length}个片段，总片段数: ${newPieces.length}`);
     }
     
     // 如果没有成功切割任何片段，保留所有原始片段并尝试下一条切割线
     if (!madeValidCut) {
-      // 切割线未能有效切割任何片段，尝试下一条切割线
+      console.log(`[splitPolygon] 第${cutCount + 1}条切割线未能有效切割任何片段，尝试下一条切割线`);
       cutCount++;
       continue;
     }
     
     // 更新片段集合
     pieces = newPieces;
-    // 切割线后的片段数量: ${pieces.length}
+    console.log(`[splitPolygon] 第${cutCount + 1}条切割线后的片段数量: ${pieces.length}`);
     cutCount++;
     
-    // 高难度时，如果片段已经足够多，可以提前结束
-    if (isHighDifficulty && pieces.length >= targetPieceCount * 0.9) {
-      // 高难度模式已达到目标片段数量的90%，可以结束切割
-      break;
-    }
+    // 移除基于固定目标的提前结束逻辑
+    // 让切割过程自然完成
   }
   
-  // 最终过滤，移除任何太小的片段或无效片段
-  const finalPieces = pieces.filter((piece) => 
-    piece.length >= 3 && calculatePolygonArea(piece) >= minPieceArea
-  );
+  // 🔧 修复：最终过滤使用与切割过程相同的宽松标准，避免丢失有效片段
+  const finalPieces = pieces.filter((piece) => {
+    const hasEnoughVertices = piece.length >= 3;
+    const area = calculatePolygonArea(piece);
+    // 🔧 关键修复：使用与切割过程相同的面积阈值，避免不一致的过滤
+    const finalAreaThreshold = isHighDifficulty ? minPieceArea * 0.2 : minPieceArea; // 与切割过程保持一致
+    const isValid = hasEnoughVertices && area >= finalAreaThreshold;
+    
+    if (!isValid) {
+      console.log(`[splitPolygon] 过滤掉片段: 顶点数=${piece.length}, 面积=${area.toFixed(2)}, 阈值=${finalAreaThreshold.toFixed(2)}`);
+    }
+    
+    return isValid;
+  });
   
-  // 完成切割，最终片段数量: ${finalPieces.length}/${targetPieceCount}
+  // 🔧 调试：记录切割结果
+  console.log(`[splitPolygon] 切割完成: ${finalPieces.length}块拼图 (${cuts.length}条切割线)`);
+  console.log(`[splitPolygon] 片段面积分布:`, finalPieces.map(p => calculatePolygonArea(p).toFixed(2)));
   
-  // 如果最终片段数量远少于目标，可以尝试再次随机切割
-  if (finalPieces.length < targetPieceCount * 0.7 && isHighDifficulty) {
-    console.warn(`警告: 最终片段数量(${finalPieces.length})远少于目标(${targetPieceCount})，尝试添加额外切割`);
-    // 这里可以添加额外的切割逻辑，或者返回原始片段，让外部处理
+  // 仅在开发模式下记录详细信息
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`切割完成: ${finalPieces.length}块拼图 (${cuts.length}条切割线)`);
+    console.log(`片段面积分布:`, finalPieces.map(p => calculatePolygonArea(p).toFixed(2)));
   }
   
   return finalPieces;

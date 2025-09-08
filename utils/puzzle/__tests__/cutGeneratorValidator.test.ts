@@ -8,6 +8,24 @@ import { Point } from '@/types/puzzleTypes';
 import { CutLine } from '../cutGeneratorTypes';
 import * as cutGeneratorGeometry from '../cutGeneratorGeometry';
 
+// 由于 ESM 导出属性为只读，使用模块级 mock 包裹可控的 jest.fn()
+jest.mock('../cutGeneratorGeometry', () => {
+  const actual = jest.requireActual('../cutGeneratorGeometry');
+  return {
+    ...actual,
+    calculateBounds: jest.fn(actual.calculateBounds),
+    lineIntersection: jest.fn(actual.lineIntersection),
+    isPointNearLine: jest.fn(actual.isPointNearLine),
+    doesCutIntersectShape: jest.fn(actual.doesCutIntersectShape),
+    cutsAreTooClose: jest.fn(actual.cutsAreTooClose),
+    calculateCenter: jest.fn(actual.calculateCenter),
+    generateStraightCutLine: jest.fn(actual.generateStraightCutLine),
+    generateDiagonalCutLine: jest.fn(actual.generateDiagonalCutLine),
+    generateCenterCutLine: jest.fn(actual.generateCenterCutLine),
+    generateForcedCutLine: jest.fn(actual.generateForcedCutLine),
+  };
+});
+
 describe('CutValidator - 100%覆盖率测试', () => {
   let validator: CutValidator;
 
@@ -32,17 +50,19 @@ describe('CutValidator - 100%覆盖率测试', () => {
     type: 'straight'
   };
 
-  beforeEach(() => {
+beforeEach(() => {
     validator = new CutValidator();
+    // 确保每个用例开始前清空所有 mock 的调用次数与实现
+    jest.clearAllMocks();
   });
 
   describe('isValid - 主要验证方法', () => {
     test('应该验证有效的切割线', () => {
-      // Mock几何函数返回有效结果
-      jest.spyOn(cutGeneratorGeometry, 'doesCutIntersectShape').mockReturnValue(2);
-      jest.spyOn(cutGeneratorGeometry, 'cutsAreTooClose').mockReturnValue(false);
-      jest.spyOn(cutGeneratorGeometry, 'calculateCenter').mockReturnValue({ x: 50, y: 50 });
-      jest.spyOn(cutGeneratorGeometry, 'isPointNearLine').mockReturnValue(true);
+// Mock几何函数返回有效结果
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).doesCutIntersectShape.mockReturnValue(2);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).cutsAreTooClose.mockReturnValue(false);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).calculateCenter.mockReturnValue({ x: 50, y: 50 });
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).isPointNearLine.mockReturnValue(true);
 
       const result = validator.isValid(validCut, testShape, []);
       
@@ -56,8 +76,8 @@ describe('CutValidator - 100%覆盖率测试', () => {
     });
 
     test('应该拒绝与形状交点不足的切割线', () => {
-      // Mock几何函数返回交点不足
-      jest.spyOn(cutGeneratorGeometry, 'doesCutIntersectShape').mockReturnValue(1); // 少于2个交点
+// Mock几何函数返回交点不足
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).doesCutIntersectShape.mockReturnValue(1); // 少于2个交点
 
       const result = validator.isValid(invalidCut, testShape, []);
       
@@ -75,9 +95,9 @@ describe('CutValidator - 100%覆盖率测试', () => {
         type: 'straight'
       };
 
-      // Mock几何函数
-      jest.spyOn(cutGeneratorGeometry, 'doesCutIntersectShape').mockReturnValue(2);
-      jest.spyOn(cutGeneratorGeometry, 'cutsAreTooClose').mockReturnValue(true); // 太接近
+// Mock几何函数
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).doesCutIntersectShape.mockReturnValue(2);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).cutsAreTooClose.mockReturnValue(true); // 太接近
 
       const result = validator.isValid(validCut, testShape, [existingCut]);
       
@@ -90,11 +110,11 @@ describe('CutValidator - 100%覆盖率测试', () => {
     });
 
     test('应该在宽松模式下跳过中心检查', () => {
-      // Mock几何函数
-      jest.spyOn(cutGeneratorGeometry, 'doesCutIntersectShape').mockReturnValue(2);
-      const mockCutsAreTooClose = jest.spyOn(cutGeneratorGeometry, 'cutsAreTooClose').mockReturnValue(false);
-      const mockCalculateCenter = jest.spyOn(cutGeneratorGeometry, 'calculateCenter');
-      const mockIsPointNearLine = jest.spyOn(cutGeneratorGeometry, 'isPointNearLine');
+// Mock几何函数
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).doesCutIntersectShape.mockReturnValue(2);
+      const mockCutsAreTooClose = (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).cutsAreTooClose.mockReturnValue(false);
+      const mockCalculateCenter = (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).calculateCenter;
+      const mockIsPointNearLine = (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).isPointNearLine;
 
       const result = validator.isValid(validCut, testShape, [], true); // relaxed = true
       
@@ -113,11 +133,11 @@ describe('CutValidator - 100%覆盖率测试', () => {
     });
 
     test('应该在严格模式下执行中心检查', () => {
-      // Mock几何函数
-      jest.spyOn(cutGeneratorGeometry, 'doesCutIntersectShape').mockReturnValue(2);
-      const mockCutsAreTooClose = jest.spyOn(cutGeneratorGeometry, 'cutsAreTooClose').mockReturnValue(false);
-      jest.spyOn(cutGeneratorGeometry, 'calculateCenter').mockReturnValue({ x: 50, y: 50 });
-      jest.spyOn(cutGeneratorGeometry, 'isPointNearLine').mockReturnValue(false); // 不通过中心
+// Mock几何函数
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).doesCutIntersectShape.mockReturnValue(2);
+      const mockCutsAreTooClose = (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).cutsAreTooClose.mockReturnValue(false);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).calculateCenter.mockReturnValue({ x: 50, y: 50 });
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).isPointNearLine.mockReturnValue(false); // 不通过中心
 
       const result = validator.isValid(validCut, testShape, [], false); // relaxed = false
       
@@ -141,9 +161,9 @@ describe('CutValidator - 100%覆盖率测试', () => {
         { x1: -10, y1: 25, x2: 110, y2: 25, type: 'straight' }
       ];
 
-      // Mock几何函数
-      jest.spyOn(cutGeneratorGeometry, 'doesCutIntersectShape').mockReturnValue(2);
-      jest.spyOn(cutGeneratorGeometry, 'cutsAreTooClose')
+// Mock几何函数
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).doesCutIntersectShape.mockReturnValue(2);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).cutsAreTooClose
         .mockReturnValueOnce(false) // 第一个切割线不太接近
         .mockReturnValueOnce(false) // 第二个切割线不太接近
         .mockReturnValueOnce(true);  // 第三个切割线太接近
@@ -158,11 +178,11 @@ describe('CutValidator - 100%覆盖率测试', () => {
     });
 
     test('应该使用正确的中心距离阈值', () => {
-      // Mock几何函数
-      jest.spyOn(cutGeneratorGeometry, 'doesCutIntersectShape').mockReturnValue(2);
-      jest.spyOn(cutGeneratorGeometry, 'cutsAreTooClose').mockReturnValue(false);
-      jest.spyOn(cutGeneratorGeometry, 'calculateCenter').mockReturnValue({ x: 50, y: 50 });
-      const mockIsPointNearLine = jest.spyOn(cutGeneratorGeometry, 'isPointNearLine').mockReturnValue(true);
+// Mock几何函数
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).doesCutIntersectShape.mockReturnValue(2);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).cutsAreTooClose.mockReturnValue(false);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).calculateCenter.mockReturnValue({ x: 50, y: 50 });
+      const mockIsPointNearLine = (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).isPointNearLine.mockReturnValue(true);
 
       validator.isValid(validCut, testShape, []);
       
@@ -180,11 +200,11 @@ describe('CutValidator - 100%覆盖率测试', () => {
 
   describe('边界情况测试', () => {
     test('应该处理空的现有切割线数组', () => {
-      // Mock几何函数
-      jest.spyOn(cutGeneratorGeometry, 'doesCutIntersectShape').mockReturnValue(2);
-      jest.spyOn(cutGeneratorGeometry, 'cutsAreTooClose').mockReturnValue(false);
-      jest.spyOn(cutGeneratorGeometry, 'calculateCenter').mockReturnValue({ x: 50, y: 50 });
-      jest.spyOn(cutGeneratorGeometry, 'isPointNearLine').mockReturnValue(true);
+// Mock几何函数
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).doesCutIntersectShape.mockReturnValue(2);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).cutsAreTooClose.mockReturnValue(false);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).calculateCenter.mockReturnValue({ x: 50, y: 50 });
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).isPointNearLine.mockReturnValue(true);
 
       const result = validator.isValid(validCut, testShape, []);
       
@@ -195,11 +215,11 @@ describe('CutValidator - 100%覆盖率测试', () => {
     });
 
     test('应该处理恰好2个交点的情况', () => {
-      // Mock几何函数返回恰好2个交点
-      jest.spyOn(cutGeneratorGeometry, 'doesCutIntersectShape').mockReturnValue(2);
-      jest.spyOn(cutGeneratorGeometry, 'cutsAreTooClose').mockReturnValue(false);
-      jest.spyOn(cutGeneratorGeometry, 'calculateCenter').mockReturnValue({ x: 50, y: 50 });
-      jest.spyOn(cutGeneratorGeometry, 'isPointNearLine').mockReturnValue(true);
+// Mock几何函数返回恰好2个交点
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).doesCutIntersectShape.mockReturnValue(2);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).cutsAreTooClose.mockReturnValue(false);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).calculateCenter.mockReturnValue({ x: 50, y: 50 });
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).isPointNearLine.mockReturnValue(true);
 
       const result = validator.isValid(validCut, testShape, []);
       
@@ -210,11 +230,11 @@ describe('CutValidator - 100%覆盖率测试', () => {
     });
 
     test('应该处理超过2个交点的情况', () => {
-      // Mock几何函数返回多个交点
-      jest.spyOn(cutGeneratorGeometry, 'doesCutIntersectShape').mockReturnValue(4);
-      jest.spyOn(cutGeneratorGeometry, 'cutsAreTooClose').mockReturnValue(false);
-      jest.spyOn(cutGeneratorGeometry, 'calculateCenter').mockReturnValue({ x: 50, y: 50 });
-      jest.spyOn(cutGeneratorGeometry, 'isPointNearLine').mockReturnValue(true);
+// Mock几何函数返回多个交点
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).doesCutIntersectShape.mockReturnValue(4);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).cutsAreTooClose.mockReturnValue(false);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).calculateCenter.mockReturnValue({ x: 50, y: 50 });
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).isPointNearLine.mockReturnValue(true);
 
       const result = validator.isValid(validCut, testShape, []);
       
@@ -231,11 +251,11 @@ describe('CutValidator - 100%覆盖率测试', () => {
         type: 'diagonal'
       };
 
-      // Mock几何函数
-      jest.spyOn(cutGeneratorGeometry, 'doesCutIntersectShape').mockReturnValue(2);
-      jest.spyOn(cutGeneratorGeometry, 'cutsAreTooClose').mockReturnValue(false);
-      jest.spyOn(cutGeneratorGeometry, 'calculateCenter').mockReturnValue({ x: 50, y: 50 });
-      jest.spyOn(cutGeneratorGeometry, 'isPointNearLine').mockReturnValue(true);
+// Mock几何函数
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).doesCutIntersectShape.mockReturnValue(2);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).cutsAreTooClose.mockReturnValue(false);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).calculateCenter.mockReturnValue({ x: 50, y: 50 });
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).isPointNearLine.mockReturnValue(true);
 
       const result = validator.isValid(diagonalCut, testShape, []);
       
@@ -258,11 +278,11 @@ describe('CutValidator - 100%覆盖率测试', () => {
         });
       }
 
-      // Mock几何函数
-      jest.spyOn(cutGeneratorGeometry, 'doesCutIntersectShape').mockReturnValue(2);
-      jest.spyOn(cutGeneratorGeometry, 'cutsAreTooClose').mockReturnValue(false);
-      jest.spyOn(cutGeneratorGeometry, 'calculateCenter').mockReturnValue({ x: 50, y: 50 });
-      jest.spyOn(cutGeneratorGeometry, 'isPointNearLine').mockReturnValue(true);
+// Mock几何函数
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).doesCutIntersectShape.mockReturnValue(2);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).cutsAreTooClose.mockReturnValue(false);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).calculateCenter.mockReturnValue({ x: 50, y: 50 });
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).isPointNearLine.mockReturnValue(true);
 
       const startTime = Date.now();
       const result = validator.isValid(validCut, testShape, manyExistingCuts);
@@ -277,11 +297,11 @@ describe('CutValidator - 100%覆盖率测试', () => {
     });
 
     test('应该处理连续验证调用', () => {
-      // Mock几何函数
-      jest.spyOn(cutGeneratorGeometry, 'doesCutIntersectShape').mockReturnValue(2);
-      jest.spyOn(cutGeneratorGeometry, 'cutsAreTooClose').mockReturnValue(false);
-      jest.spyOn(cutGeneratorGeometry, 'calculateCenter').mockReturnValue({ x: 50, y: 50 });
-      jest.spyOn(cutGeneratorGeometry, 'isPointNearLine').mockReturnValue(true);
+// Mock几何函数
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).doesCutIntersectShape.mockReturnValue(2);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).cutsAreTooClose.mockReturnValue(false);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).calculateCenter.mockReturnValue({ x: 50, y: 50 });
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).isPointNearLine.mockReturnValue(true);
 
       const results = [];
       for (let i = 0; i < 50; i++) {
@@ -339,7 +359,13 @@ describe('CutValidator - 100%覆盖率测试', () => {
   });
 
   describe('🔑 边界条件和错误处理测试', () => {
-    test('应该处理切割线与形状交点不足的情况', () => {
+test('应该处理切割线与形状交点不足的情况', () => {
+      // 使用真实实现
+      const actual = jest.requireActual('../cutGeneratorGeometry');
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).doesCutIntersectShape.mockImplementation(actual.doesCutIntersectShape);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).cutsAreTooClose.mockImplementation(actual.cutsAreTooClose);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).calculateCenter.mockImplementation(actual.calculateCenter);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).isPointNearLine.mockImplementation(actual.isPointNearLine);
       const validator = new CutValidator();
       // 创建一个不与形状相交的切割线
       const nonIntersectingCut: CutLine = {
@@ -353,7 +379,13 @@ describe('CutValidator - 100%覆盖率测试', () => {
       expect(result).toBe(false);
     });
 
-    test('应该处理真实的几何计算 - 交点不足情况', () => {
+test('应该处理真实的几何计算 - 交点不足情况', () => {
+      // 使用真实实现
+      const actual = jest.requireActual('../cutGeneratorGeometry');
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).doesCutIntersectShape.mockImplementation(actual.doesCutIntersectShape);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).cutsAreTooClose.mockImplementation(actual.cutsAreTooClose);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).calculateCenter.mockImplementation(actual.calculateCenter);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).isPointNearLine.mockImplementation(actual.isPointNearLine);
       const validator = new CutValidator();
       // 不使用mock，测试真实的几何计算
       // 创建一个完全在形状外部的切割线
@@ -548,11 +580,11 @@ describe('CutValidator - 100%覆盖率测试', () => {
     });
 
     test('应该处理边界情况 - 恰好在阈值边缘的切割线', () => {
-      // Mock几何函数来测试边界情况
-      jest.spyOn(cutGeneratorGeometry, 'doesCutIntersectShape').mockReturnValue(2);
-      jest.spyOn(cutGeneratorGeometry, 'cutsAreTooClose').mockReturnValue(false);
-      jest.spyOn(cutGeneratorGeometry, 'calculateCenter').mockReturnValue({ x: 50, y: 50 });
-      jest.spyOn(cutGeneratorGeometry, 'isPointNearLine').mockReturnValue(false); // 恰好在阈值边缘
+// Mock几何函数来测试边界情况
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).doesCutIntersectShape.mockReturnValue(2);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).cutsAreTooClose.mockReturnValue(false);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).calculateCenter.mockReturnValue({ x: 50, y: 50 });
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).isPointNearLine.mockReturnValue(false); // 恰好在阈值边缘
 
       const result = validator.isValid(validCut, testShape, []);
       

@@ -260,8 +260,9 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                 };
 
                 // 获取难度显示文本
-                const getDifficultyText = (difficulty: string): string => {
-                  return t(`difficulty.${difficulty}`);
+                const getDifficultyText = (difficulty: { cutCount?: number; difficultyLevel?: string } | undefined): string => {
+                  if (!difficulty) return t('difficulty.levelLabel', { level: 1 });
+                  return t('difficulty.levelLabel', { level: difficulty.cutCount || 1 });
                 };
 
                 return (
@@ -275,7 +276,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
 
                     {/* 游戏信息 - 一行布局 */}
                     <div className="flex-1 min-w-0 text-xs text-[#FFD5AB] opacity-70">
-                      {formatTime(record.totalDuration || 0)} • {getDifficultyText(record.difficulty?.difficultyLevel || 'easy')} • {record.difficulty?.actualPieces || 0}{t('stats.piecesUnit')}
+{formatTime(record.totalDuration || 0)} • {getDifficultyText(record.difficulty)} • {record.difficulty?.actualPieces || 0}{t('stats.piecesUnit')}
                     </div>
 
                     {/* 分数 - 加粗大号 */}

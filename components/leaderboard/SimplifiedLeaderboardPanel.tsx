@@ -44,15 +44,9 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
     return LeaderboardSimplifier.processSimplifiedLeaderboard(leaderboardData, lastGameTimestamp);
   }, [leaderboardData, lastGameRecord]);
 
-  // 获取难度显示文本
-  const getDifficultyText = (difficulty: string): string => {
-    const levelMap: Record<string, string> = {
-      'easy': '简单',
-      'medium': '中等', 
-      'hard': '困难',
-      'extreme': '极难'
-    };
-    return levelMap[difficulty] || difficulty;
+  // 获取难度显示文本（统一为数值等级）
+  const getDifficultyLabel = (difficulty: { cutCount: number }): string => {
+    return t('difficulty.levelLabel', { level: difficulty.cutCount });
   };
 
   // 格式化日期显示
@@ -148,7 +142,7 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
                             </div>
                             {/* 第二行：时间和难度（字号较小） */}
                             <div className="text-xs text-[#FFD5AB] opacity-70">
-                              {LeaderboardSimplifier.formatTime(record.totalDuration)} • {getDifficultyText(record.difficulty.difficultyLevel)}：{record.difficulty.actualPieces}片
+                              {LeaderboardSimplifier.formatTime(record.totalDuration)} • {getDifficultyLabel(record.difficulty)}：{record.difficulty.actualPieces}片
                             </div>
                           </div>
                         </div>
@@ -168,7 +162,7 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
                           rank={rank}
                           score={record.finalScore}
                           duration={record.totalDuration}
-                          difficulty={getDifficultyText(record.difficulty.difficultyLevel)}
+                          difficulty={getDifficultyLabel(record.difficulty)}
                           pieces={record.difficulty.actualPieces}
                           date={formatDate(record.timestamp)}
                           isPlayerNewEntry={isPlayerNewEntry}
@@ -200,7 +194,7 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
                 <div className="flex items-center gap-2">
                   <span className="text-lg">🎮</span>
                   <div className="text-xs">
-                    <div>{getDifficultyText(lastGameRecord.difficulty.difficultyLevel)} • {lastGameRecord.difficulty.actualPieces}片</div>
+                    <div>{getDifficultyLabel(lastGameRecord.difficulty)} • {lastGameRecord.difficulty.actualPieces}片</div>
                     <div className="opacity-60">{formatDate(lastGameRecord.timestamp)}</div>
                   </div>
                 </div>
@@ -247,7 +241,7 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
                 {/* 难度和日期信息 */}
                 <div className="flex items-center justify-between pt-3 border-t border-[#555]">
                   <span className="px-3 py-1 bg-gradient-to-r from-[#FFD5AB] to-[#F4C2A1] text-[#2A2A2A] text-xs font-medium rounded-full">
-                    {getDifficultyText(lastGameRecord.difficulty.difficultyLevel)}
+                    {getDifficultyLabel(lastGameRecord.difficulty)}
                   </span>
                   <div className="text-xs text-[#FFD5AB] opacity-60">
                     {formatDate(lastGameRecord.timestamp)}

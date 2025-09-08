@@ -23,9 +23,9 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
   currentRank
 }) => {
   const { t } = useTranslation();
-  // 获取难度描述
+  // 获取难度显示：改为数值等级
   const getDifficultyText = (difficulty: any): string => {
-    return t(`difficulty.${difficulty.difficultyLevel}`) || t('difficulty.easy');
+    return t('difficulty.levelLabel', { level: difficulty.cutCount });
   };
 
   // 格式化分数显示

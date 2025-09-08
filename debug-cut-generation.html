@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>切割线生成调试</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin: 10px 0; padding: 10px; background: #f8f9fa; border-left: 4px solid #007bff; }
+        .error { border-left-color: #dc3545; background: #f8d7da; }
+        .success { border-left-color: #28a745; background: #d4edda; }
+    </style>
+</head>
+<body>
+    <h1>🧪 切割线生成随机性测试</h1>
+    
+    <div class="test-section">
+        <h2>测试说明</h2>
+        <p>这个页面用于测试拼图生成的随机性。请按照以下步骤操作：</p>
+        <ol>
+            <li>打开浏览器开发者工具（F12）</li>
+            <li>切换到 Console 标签页</li>
+            <li>在游戏中选择难度8</li>
+            <li>多次点击"切割形状"按钮</li>
+            <li>观察控制台输出的调试信息</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>预期结果</h2>
+        <div class="result">
+            <strong>控制台应该显示：</strong>
+            <ul>
+                <li><code>[CutGeneratorController] 难度级别: 8, 目标切割线数量: 15</code></li>
+                <li><code>[CutGeneratorController] 成功生成第1条切割线</code></li>
+                <li><code>[CutGeneratorController] 成功生成第2条切割线</code></li>
+                <li>... (直到第15条)</li>
+                <li><code>[CutGeneratorController] 总共生成了15条切割线</code></li>
+                <li><code>[splitPolygon] 切割完成: X块拼图 (15条切割线)</code></li>
+            </ul>
+        </div>
+        <div class="result success">
+            <strong>✅ 成功标准：</strong>
+            <ul>
+                <li>X应该在16-30之间</li>
+                <li>每次点击"切割形状"按钮，X的值都应该不同</li>
+                <li>不再固定为16块拼图</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>问题诊断</h2>
+        <div class="result error">
+            <strong>❌ 如果仍然固定为16块：</strong>
+            <ul>
+                <li>检查切割线是否真的相交</li>
+                <li>检查splitPolygon函数是否正确处理相交切割</li>
+                <li>可能需要改进切割线生成策略</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>测试记录</h2>
+        <p>请记录每次测试的结果：</p>
+        <textarea id="testResults" rows="10" cols="80" placeholder="记录测试结果..."></textarea>
+        <br><br>
+        <button onclick="clearResults()">清空记录</button>
+        <button onclick="copyResults()">复制记录</button>
+    </div>
+
+    <script>
+        function clearResults() {
+            document.getElementById('testResults').value = '';
+        }
+        
+        function copyResults() {
+            const textarea = document.getElementById('testResults');
+            textarea.select();
+            document.execCommand('copy');
+            alert('测试记录已复制到剪贴板！');
+        }
+        
+        // 监听控制台输出（如果可能）
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            
+            // 如果包含切割相关的日志，记录到测试结果中
+            const message = args.join(' ');
+            if (message.includes('CutGeneratorController') || message.includes('splitPolygon')) {
+                const textarea = document.getElementById('testResults');
+                const timestamp = new Date().toLocaleTimeString();
+                textarea.value += `[${timestamp}] ${message}\n`;
+            }
+        };
+    </script>
+</body>
+</html>

@@ -82,7 +82,7 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', width: '100%', overflow: 'visible' }}>
-      {/* 添加切割次数标签 - 仅在非手机设备上显示 */}
+      {/* 添加难度标签 - 仅在非手机设备上显示 */}
       {!isPhone && !isLandscape && (
         <div style={{ fontSize: '12px', color: '#FFD5AB', marginBottom: '4px', lineHeight: '16px' }}>
           {t('game.cutCount.title')}
@@ -149,6 +149,8 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
           {!hasCutType ? t('game.cutCount.hints.selectCutType') : !hasSelectedCount ? t('game.cutCount.hints.selectCount') : ""}
         </div>
       )}
+      
+
     </div>
   )
 } 

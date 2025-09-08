@@ -211,23 +211,19 @@ export class OptimizedShapeGenerator {
   private static analyzeShapeInOnePass(shape: Point[]) {
     let minX = Infinity, maxX = -Infinity;
     let minY = Infinity, maxY = -Infinity;
-    let sumX = 0, sumY = 0;
     
-    // 一次遍历计算所有值
+    // 一次遍历计算边界
     for (const point of shape) {
-      // Bounds计算
       if (point.x < minX) minX = point.x;
       if (point.x > maxX) maxX = point.x;
       if (point.y < minY) minY = point.y;
       if (point.y > maxY) maxY = point.y;
-      
-      // 中心点计算
-      sumX += point.x;
-      sumY += point.y;
     }
     
-    const centerX = sumX / shape.length;
-    const centerY = sumY / shape.length;
+    // 使用边界框中心而不是几何中心，确保形状正确居中
+    // 这样可以避免不规则形状的几何中心偏移问题
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
     const diameter = Math.max(maxX - minX, maxY - minY);
     
     return {

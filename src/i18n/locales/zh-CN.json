@@ -44,7 +44,7 @@
             "diagonal": "斜线"
         },
         "cutCount": {
-            "title": "选择切割次数",
+            "title": "选择难度",
             "difficulty": {
                 "easy": "简单",
                 "hard": "极难"
@@ -52,7 +52,7 @@
             "button": "切割形状",
             "hints": {
                 "selectCutType": "请先选择切割类型",
-                "selectCount": "请选择切割次数"
+                "selectCount": "请选择难度级别"
             }
         },
         "scatter": {
@@ -99,11 +99,12 @@
             "close": "关闭",
             "all": "全部"
         },
-        "difficulty": {
+    "difficulty": {
             "easy": "简单",
             "medium": "中等",
             "hard": "困难",
-            "extreme": "极难"
+            "extreme": "极难",
+            "levelLabel": "难度{level}"
         }
     },
     "score": {
@@ -232,7 +233,8 @@
         "easy": "简单",
         "medium": "中等",
         "hard": "困难",
-        "extreme": "极难"
+        "extreme": "极难",
+        "levelLabel": "难度{level}"
     },
     "cutType": {
         "straight": "直线",

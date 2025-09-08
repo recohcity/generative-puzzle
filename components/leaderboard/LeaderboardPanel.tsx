@@ -41,9 +41,10 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
   const [selectedRecord, setSelectedRecord] = useState<GameRecord | null>(null);
   const [showDetails, setShowDetails] = useState(false);
 
-  // 获取难度显示文本
-  const getDifficultyText = (difficulty: string): string => {
-    return t(`difficulty.${difficulty}`);
+  // 获取难度显示文本（统一为数值等级）
+  const getDifficultyText = (difficulty: { cutCount?: number } | undefined): string => {
+    const level = difficulty?.cutCount || 1;
+    return t('difficulty.levelLabel', { level });
   };
 
   // 统一所有难度的个人最佳成绩数据，只显示前5名
@@ -224,7 +225,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                   
                   {/* 游戏信息 - 一行布局 */}
                   <div className="flex-1 min-w-0 text-xs text-[#FFD5AB] opacity-70">
-                    {formatTime(record.totalDuration)} • {getDifficultyText(record.difficulty.difficultyLevel as DifficultyLevel)} • {record.difficulty.actualPieces}{t('stats.piecesUnit')}
+                    {formatTime(record.totalDuration)} • {getDifficultyText(record.difficulty)} • {record.difficulty.actualPieces}{t('stats.piecesUnit')}
                   </div>
                   
                   {/* 分数 - 加粗大号 */}

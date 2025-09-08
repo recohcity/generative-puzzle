@@ -1,16 +1,16 @@
 # API扫描报告
 
-> 生成时间: 2025/9/6 19:29:32
+> 生成时间: 2025/9/9 00:40:36
 > 扫描工具: API变更扫描器 v1.0
 
 ## 📊 统计概览
 
 | 项目 | 数量 | 说明 |
 |------|------|------|
-| API总数 | 261 | 项目中所有导出的API |
+| API总数 | 268 | 项目中所有导出的API |
 | 已文档化 | 31 | 在API文档中已记录的API |
-| 文档覆盖率 | 11.9% | 文档化程度 |
-| 新增API | 233 | 需要添加到文档的API |
+| 文档覆盖率 | 11.6% | 文档化程度 |
+| 新增API | 240 | 需要添加到文档的API |
 | 可能删除 | 3 | 文档中存在但代码中找不到 |
 
 ## 🆕 新增API详情
@@ -1284,10 +1284,33 @@ export class DeviceLayoutManager {
 ```
 ```
 
+#### setHintConfig
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:53`
+- **签名**: `export const setHintConfig = (config: Partial<typeof HINT_CONFIG>) => {`
+
+**建议文档结构**:
+```markdown
+### setHintConfig
+
+[添加API描述]
+
+```typescript
+export const setHintConfig = (config: Partial<typeof HINT_CONFIG>) => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
 #### getDeviceMultiplier
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:67`
+- **文件**: `utils/score/ScoreCalculator.ts:62`
 - **签名**: `export const getDeviceMultiplier = (): number => {`
 
 **建议文档结构**:
@@ -1310,7 +1333,7 @@ export const getDeviceMultiplier = (): number => {
 #### calculateDifficultyMultiplier
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:101`
+- **文件**: `utils/score/ScoreCalculator.ts:96`
 - **签名**: `export const calculateDifficultyMultiplier = (config: DifficultyConfig): number => {`
 
 **建议文档结构**:
@@ -1333,8 +1356,8 @@ export const calculateDifficultyMultiplier = (config: DifficultyConfig): number 
 #### getBaseScore
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:124`
-- **签名**: `export const getBaseScore = (actualPieces: number): number => {`
+- **文件**: `utils/score/ScoreCalculator.ts:119`
+- **签名**: `export const getBaseScore = (difficultyLevel: number): number => {`
 
 **建议文档结构**:
 ```markdown
@@ -1343,7 +1366,7 @@ export const calculateDifficultyMultiplier = (config: DifficultyConfig): number 
 [添加API描述]
 
 ```typescript
-export const getBaseScore = (actualPieces: number): number => {
+export const getBaseScore = (difficultyLevel: number): number => {
 ```
 
 #### 使用示例
@@ -1356,7 +1379,7 @@ export const getBaseScore = (actualPieces: number): number => {
 #### getBaseScoreByPieces
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:137`
+- **文件**: `utils/score/ScoreCalculator.ts:129`
 - **签名**: `export const getBaseScoreByPieces = (actualPieces: number): number => {`
 
 **建议文档结构**:
@@ -1379,7 +1402,7 @@ export const getBaseScoreByPieces = (actualPieces: number): number => {
 #### getBaseDifficultyMultiplierByPieces
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:144`
+- **文件**: `utils/score/ScoreCalculator.ts:136`
 - **签名**: `export const getBaseDifficultyMultiplierByPieces = (actualPieces: number): number => {`
 
 **建议文档结构**:
@@ -1402,8 +1425,8 @@ export const getBaseDifficultyMultiplierByPieces = (actualPieces: number): numbe
 #### getHintAllowance
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:157`
-- **签名**: `export const getHintAllowance = (difficultyLevel: string): number => {`
+- **文件**: `utils/score/ScoreCalculator.ts:146`
+- **签名**: `export const getHintAllowance = (_difficultyLevel: string): number => {`
 
 **建议文档结构**:
 ```markdown
@@ -1412,7 +1435,7 @@ export const getBaseDifficultyMultiplierByPieces = (actualPieces: number): numbe
 [添加API描述]
 
 ```typescript
-export const getHintAllowance = (difficultyLevel: string): number => {
+export const getHintAllowance = (_difficultyLevel: string): number => {
 ```
 
 #### 使用示例
@@ -1425,8 +1448,8 @@ export const getHintAllowance = (difficultyLevel: string): number => {
 #### getHintAllowanceByCutCount
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:164`
-- **签名**: `export const getHintAllowanceByCutCount = (cutCount: number): number => {`
+- **文件**: `utils/score/ScoreCalculator.ts:154`
+- **签名**: `export const getHintAllowanceByCutCount = (_cutCount: number): number => {`
 
 **建议文档结构**:
 ```markdown
@@ -1435,7 +1458,7 @@ export const getHintAllowance = (difficultyLevel: string): number => {
 [添加API描述]
 
 ```typescript
-export const getHintAllowanceByCutCount = (cutCount: number): number => {
+export const getHintAllowanceByCutCount = (_cutCount: number): number => {
 ```
 
 #### 使用示例
@@ -1448,7 +1471,7 @@ export const getHintAllowanceByCutCount = (cutCount: number): number => {
 #### calculateMinimumRotationsAtStart
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:183`
+- **文件**: `utils/score/ScoreCalculator.ts:170`
 - **签名**: `export const calculateMinimumRotationsAtStart = (pieces: PuzzlePiece[]): number => {`
 
 **建议文档结构**:
@@ -1471,7 +1494,7 @@ export const calculateMinimumRotationsAtStart = (pieces: PuzzlePiece[]): number 
 #### calculateMinimumRotations
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:217`
+- **文件**: `utils/score/ScoreCalculator.ts:204`
 - **签名**: `export const calculateMinimumRotations = (pieces: PuzzlePiece[]): number => {`
 
 **建议文档结构**:
@@ -1494,7 +1517,7 @@ export const calculateMinimumRotations = (pieces: PuzzlePiece[]): number => {
 #### calculateRotationEfficiency
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:225`
+- **文件**: `utils/score/ScoreCalculator.ts:212`
 - **签名**: `export const calculateRotationEfficiency = (minRotations: number, actualRotations: number): number => {`
 
 **建议文档结构**:
@@ -1517,7 +1540,7 @@ export const calculateRotationEfficiency = (minRotations: number, actualRotation
 #### formatRotationDisplay
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:241`
+- **文件**: `utils/score/ScoreCalculator.ts:228`
 - **签名**: `export const formatRotationDisplay = (`
 
 **建议文档结构**:
@@ -1540,7 +1563,7 @@ export const formatRotationDisplay = (
 #### calculateRotationEfficiencyPercentage
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:252`
+- **文件**: `utils/score/ScoreCalculator.ts:239`
 - **签名**: `export const calculateRotationEfficiencyPercentage = (`
 
 **建议文档结构**:
@@ -1563,7 +1586,7 @@ export const calculateRotationEfficiencyPercentage = (
 #### calculateRemainingRotations
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:271`
+- **文件**: `utils/score/ScoreCalculator.ts:258`
 - **签名**: `export const calculateRemainingRotations = (pieces: PuzzlePiece[]): number => {`
 
 **建议文档结构**:
@@ -1586,7 +1609,7 @@ export const calculateRemainingRotations = (pieces: PuzzlePiece[]): number => {
 #### checkTimeRecord
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:308`
+- **文件**: `utils/score/ScoreCalculator.ts:295`
 - **签名**: `export const checkTimeRecord = (stats: GameStats, currentLeaderboard: GameRecord[]): {`
 
 **建议文档结构**:
@@ -1609,7 +1632,7 @@ export const checkTimeRecord = (stats: GameStats, currentLeaderboard: GameRecord
 #### calculateTimeBonus
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:362`
+- **文件**: `utils/score/ScoreCalculator.ts:349`
 - **签名**: `export const calculateTimeBonus = (`
 
 **建议文档结构**:
@@ -1632,7 +1655,7 @@ export const calculateTimeBonus = (
 #### validateScoreParams
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:410`
+- **文件**: `utils/score/ScoreCalculator.ts:397`
 - **签名**: `export const validateScoreParams = (stats: GameStats | null | undefined): stats is GameStats => {`
 
 **建议文档结构**:
@@ -1655,7 +1678,7 @@ export const validateScoreParams = (stats: GameStats | null | undefined): stats 
 #### calculateLiveScore
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:448`
+- **文件**: `utils/score/ScoreCalculator.ts:435`
 - **签名**: `export const calculateLiveScore = (stats: GameStats, leaderboard: GameRecord[] = []): number => {`
 
 **建议文档结构**:
@@ -1678,7 +1701,7 @@ export const calculateLiveScore = (stats: GameStats, leaderboard: GameRecord[] =
 #### calculateRotationScore
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:532`
+- **文件**: `utils/score/ScoreCalculator.ts:519`
 - **签名**: `export const calculateRotationScore = (stats: GameStats, pieces?: PuzzlePiece[]): number => {`
 
 **建议文档结构**:
@@ -1701,7 +1724,7 @@ export const calculateRotationScore = (stats: GameStats, pieces?: PuzzlePiece[])
 #### calculateHintScore
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:612`
+- **文件**: `utils/score/ScoreCalculator.ts:599`
 - **签名**: `export const calculateHintScore = (actualHints: number, allowance: number): number => {`
 
 **建议文档结构**:
@@ -1724,7 +1747,7 @@ export const calculateHintScore = (actualHints: number, allowance: number): numb
 #### calculateHintScoreFromStats
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:631`
+- **文件**: `utils/score/ScoreCalculator.ts:618`
 - **签名**: `export const calculateHintScoreFromStats = (stats: GameStats): number => {`
 
 **建议文档结构**:
@@ -1747,7 +1770,7 @@ export const calculateHintScoreFromStats = (stats: GameStats): number => {
 #### calculateScoreDelta
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:650`
+- **文件**: `utils/score/ScoreCalculator.ts:637`
 - **签名**: `export const calculateScoreDelta = (`
 
 **建议文档结构**:
@@ -1770,7 +1793,7 @@ export const calculateScoreDelta = (
 #### withPerformanceMonitoring
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:696`
+- **文件**: `utils/score/ScoreCalculator.ts:683`
 - **签名**: `export const withPerformanceMonitoring = <T extends any[], R>(`
 
 **建议文档结构**:
@@ -1793,7 +1816,7 @@ export const withPerformanceMonitoring = <T extends any[], R>(
 #### calculateLiveScoreWithMonitoring
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:718`
+- **文件**: `utils/score/ScoreCalculator.ts:705`
 - **签名**: `export const calculateLiveScoreWithMonitoring = withPerformanceMonitoring(`
 
 **建议文档结构**:
@@ -1816,7 +1839,7 @@ export const calculateLiveScoreWithMonitoring = withPerformanceMonitoring(
 #### safeCalculateScore
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:727`
+- **文件**: `utils/score/ScoreCalculator.ts:714`
 - **签名**: `export const safeCalculateScore = <T>(`
 
 **建议文档结构**:
@@ -1839,7 +1862,7 @@ export const safeCalculateScore = <T>(
 #### formatScore
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:744`
+- **文件**: `utils/score/ScoreCalculator.ts:731`
 - **签名**: `export const formatScore = (score: number): string => {`
 
 **建议文档结构**:
@@ -1862,7 +1885,7 @@ export const formatScore = (score: number): string => {
 #### formatTime
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:752`
+- **文件**: `utils/score/ScoreCalculator.ts:739`
 - **签名**: `export const formatTime = (seconds: number): string => {`
 
 **建议文档结构**:
@@ -1885,7 +1908,7 @@ export const formatTime = (seconds: number): string => {
 #### debounce
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:762`
+- **文件**: `utils/score/ScoreCalculator.ts:749`
 - **签名**: `export const debounce = <T extends (...args: any[]) => any>(`
 
 **建议文档结构**:
@@ -1908,7 +1931,7 @@ export const debounce = <T extends (...args: any[]) => any>(
 #### createLiveScoreUpdater
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:783`
+- **文件**: `utils/score/ScoreCalculator.ts:770`
 - **签名**: `export const createLiveScoreUpdater = (`
 
 **建议文档结构**:
@@ -1931,7 +1954,7 @@ export const createLiveScoreUpdater = (
 #### calculateFinalScore
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:813`
+- **文件**: `utils/score/ScoreCalculator.ts:800`
 - **签名**: `export const calculateFinalScore = (`
 
 **建议文档结构**:
@@ -1954,7 +1977,7 @@ export const calculateFinalScore = (
 #### updateStatsWithOptimalSolution
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:889`
+- **文件**: `utils/score/ScoreCalculator.ts:876`
 - **签名**: `export const updateStatsWithOptimalSolution = (stats: GameStats, pieces: PuzzlePiece[]): GameStats => {`
 
 **建议文档结构**:
@@ -1977,7 +2000,7 @@ export const updateStatsWithOptimalSolution = (stats: GameStats, pieces: PuzzleP
 #### formatRankDisplay
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:906`
+- **文件**: `utils/score/ScoreCalculator.ts:893`
 - **签名**: `export const formatRankDisplay = (rank: number, totalRecords: number): string => {`
 
 **建议文档结构**:
@@ -2000,7 +2023,7 @@ export const formatRankDisplay = (rank: number, totalRecords: number): string =>
 #### getNewRecordBadge
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:920`
+- **文件**: `utils/score/ScoreCalculator.ts:907`
 - **签名**: `export const getNewRecordBadge = (recordInfo: {`
 
 **建议文档结构**:
@@ -2023,7 +2046,7 @@ export const getNewRecordBadge = (recordInfo: {
 #### calculateLeaderboardStats
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:957`
+- **文件**: `utils/score/ScoreCalculator.ts:944`
 - **签名**: `export const calculateLeaderboardStats = (`
 
 **建议文档结构**:
@@ -2046,7 +2069,7 @@ export const calculateLeaderboardStats = (
 #### calculateScoreWithLeaderboard
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:987`
+- **文件**: `utils/score/ScoreCalculator.ts:974`
 - **签名**: `export const calculateScoreWithLeaderboard = (`
 
 **建议文档结构**:
@@ -3315,7 +3338,7 @@ export const initBackgroundMusic = () => {
 #### toggleBackgroundMusic
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:81`
+- **文件**: `utils/rendering/soundEffects.ts:91`
 - **签名**: `export const toggleBackgroundMusic = async (): Promise<boolean> => {`
 
 **建议文档结构**:
@@ -3338,7 +3361,7 @@ export const toggleBackgroundMusic = async (): Promise<boolean> => {
 #### getBackgroundMusicStatus
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:119`
+- **文件**: `utils/rendering/soundEffects.ts:129`
 - **签名**: `export const getBackgroundMusicStatus = (): boolean => {`
 
 **建议文档结构**:
@@ -3361,7 +3384,7 @@ export const getBackgroundMusicStatus = (): boolean => {
 #### autoStartBackgroundMusic
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:124`
+- **文件**: `utils/rendering/soundEffects.ts:134`
 - **签名**: `export const autoStartBackgroundMusic = async (): Promise<void> => {`
 
 **建议文档结构**:
@@ -3384,7 +3407,7 @@ export const autoStartBackgroundMusic = async (): Promise<void> => {
 #### playButtonClickSound
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:142`
+- **文件**: `utils/rendering/soundEffects.ts:152`
 - **签名**: `export const playButtonClickSound = async (): Promise<void> => {`
 
 **建议文档结构**:
@@ -3407,7 +3430,7 @@ export const playButtonClickSound = async (): Promise<void> => {
 #### playPieceSnapSound
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:208`
+- **文件**: `utils/rendering/soundEffects.ts:218`
 - **签名**: `export const playPieceSnapSound = async (): Promise<void> => {`
 
 **建议文档结构**:
@@ -3430,7 +3453,7 @@ export const playPieceSnapSound = async (): Promise<void> => {
 #### playCutSound
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:303`
+- **文件**: `utils/rendering/soundEffects.ts:313`
 - **签名**: `export const playCutSound = async (): Promise<void> => {`
 
 **建议文档结构**:
@@ -3683,7 +3706,7 @@ export const splitPolygon = (shape: Point[], cuts: CutLine[]): Point[][] => {
 #### isValidPiece
 
 - **类型**: constant
-- **文件**: `utils/puzzle/puzzleUtils.ts:269`
+- **文件**: `utils/puzzle/puzzleUtils.ts:337`
 - **签名**: `export const isValidPiece = (piece: Point[]): boolean => {`
 
 **建议文档结构**:
@@ -3706,7 +3729,7 @@ export const isValidPiece = (piece: Point[]): boolean => {
 #### checkRectOverlap
 
 - **类型**: constant
-- **文件**: `utils/puzzle/puzzleUtils.ts:274`
+- **文件**: `utils/puzzle/puzzleUtils.ts:342`
 - **签名**: `export const checkRectOverlap = (rect1: { x: number, y: number, width: number, height: number }, rect2: { x: number, y: number, width: number, height: number }): boolean => {`
 
 **建议文档结构**:
@@ -3729,7 +3752,7 @@ export const checkRectOverlap = (rect1: { x: number, y: number, width: number, h
 #### findLineIntersections
 
 - **类型**: function
-- **文件**: `utils/puzzle/puzzleUtils.ts:286`
+- **文件**: `utils/puzzle/puzzleUtils.ts:354`
 - **签名**: `export function findLineIntersections( line1: { start: Point; end: Point }, line2: { start: Point; end: Point } ): Point[] {`
 
 **建议文档结构**:
@@ -3740,6 +3763,121 @@ export const checkRectOverlap = (rect1: { x: number, y: number, width: number, h
 
 ```typescript
 export function findLineIntersections( line1: { start: Point; end: Point }, line2: { start: Point; end: Point } ): Point[] {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### Cut
+
+- **类型**: type
+- **文件**: `utils/puzzle/puzzleCompensation.ts:3`
+- **签名**: `export type Cut = {`
+
+**建议文档结构**:
+```markdown
+### Cut
+
+[添加API描述]
+
+```typescript
+export type Cut = {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### Bounds
+
+- **类型**: type
+- **文件**: `utils/puzzle/cutGeneratorTypes.ts:7`
+- **签名**: `export type Bounds = {`
+
+**建议文档结构**:
+```markdown
+### Bounds
+
+[添加API描述]
+
+```typescript
+export type Bounds = {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### computeBounds
+
+- **类型**: constant
+- **文件**: `utils/puzzle/puzzleCompensation.ts:21`
+- **签名**: `export const computeBounds = (shape: Point[]): Bounds => {`
+
+**建议文档结构**:
+```markdown
+### computeBounds
+
+[添加API描述]
+
+```typescript
+export const computeBounds = (shape: Point[]): Bounds => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### buildExtraCuts
+
+- **类型**: constant
+- **文件**: `utils/puzzle/puzzleCompensation.ts:34`
+- **签名**: `export const buildExtraCuts = (params: {`
+
+**建议文档结构**:
+```markdown
+### buildExtraCuts
+
+[添加API描述]
+
+```typescript
+export const buildExtraCuts = (params: {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### applyExtraCutsWithRetry
+
+- **类型**: constant
+- **文件**: `utils/puzzle/puzzleCompensation.ts:78`
+- **签名**: `export const applyExtraCutsWithRetry = (params: {`
+
+**建议文档结构**:
+```markdown
+### applyExtraCutsWithRetry
+
+[添加API描述]
+
+```typescript
+export const applyExtraCutsWithRetry = (params: {
 ```
 
 #### 使用示例
@@ -3786,29 +3924,6 @@ export const generateCuts = (
 
 ```typescript
 export interface CutValidator {
-```
-
-#### 使用示例
-
-```typescript
-// [添加使用示例]
-```
-```
-
-#### Bounds
-
-- **类型**: type
-- **文件**: `utils/puzzle/cutGeneratorTypes.ts:7`
-- **签名**: `export type Bounds = {`
-
-**建议文档结构**:
-```markdown
-### Bounds
-
-[添加API描述]
-
-```typescript
-export type Bounds = {
 ```
 
 #### 使用示例
@@ -4005,7 +4120,7 @@ export class MediumCutStrategy implements CutGenerationStrategy {
 #### HardCutStrategy
 
 - **类型**: class
-- **文件**: `utils/puzzle/cutGeneratorStrategies.ts:47`
+- **文件**: `utils/puzzle/cutGeneratorStrategies.ts:79`
 - **签名**: `export class HardCutStrategy implements CutGenerationStrategy {`
 
 **建议文档结构**:
@@ -4028,7 +4143,7 @@ export class HardCutStrategy implements CutGenerationStrategy {
 #### CutStrategyFactory
 
 - **类型**: class
-- **文件**: `utils/puzzle/cutGeneratorStrategies.ts:81`
+- **文件**: `utils/puzzle/cutGeneratorStrategies.ts:143`
 - **签名**: `export class CutStrategyFactory {`
 
 **建议文档结构**:
@@ -4235,7 +4350,7 @@ export const CUT_GENERATOR_CONFIG = {
 #### DIFFICULTY_SETTINGS
 
 - **类型**: constant
-- **文件**: `utils/puzzle/cutGeneratorConfig.ts:97`
+- **文件**: `utils/puzzle/cutGeneratorConfig.ts:116`
 - **签名**: `export const DIFFICULTY_SETTINGS = CUT_GENERATOR_CONFIG.DIFFICULTY_SETTINGS;`
 
 **建议文档结构**:
@@ -4258,7 +4373,7 @@ export const DIFFICULTY_SETTINGS = CUT_GENERATOR_CONFIG.DIFFICULTY_SETTINGS;
 #### MAX_ATTEMPTS
 
 - **类型**: constant
-- **文件**: `utils/puzzle/cutGeneratorConfig.ts:98`
+- **文件**: `utils/puzzle/cutGeneratorConfig.ts:117`
 - **签名**: `export const MAX_ATTEMPTS = CUT_GENERATOR_CONFIG.MAX_ATTEMPTS;`
 
 **建议文档结构**:
@@ -4281,7 +4396,7 @@ export const MAX_ATTEMPTS = CUT_GENERATOR_CONFIG.MAX_ATTEMPTS;
 #### EARLY_EXIT_THRESHOLD
 
 - **类型**: constant
-- **文件**: `utils/puzzle/cutGeneratorConfig.ts:99`
+- **文件**: `utils/puzzle/cutGeneratorConfig.ts:118`
 - **签名**: `export const EARLY_EXIT_THRESHOLD = CUT_GENERATOR_CONFIG.EARLY_EXIT_THRESHOLD;`
 
 **建议文档结构**:
@@ -4304,7 +4419,7 @@ export const EARLY_EXIT_THRESHOLD = CUT_GENERATOR_CONFIG.EARLY_EXIT_THRESHOLD;
 #### DifficultyLevel
 
 - **类型**: type
-- **文件**: `utils/puzzle/cutGeneratorConfig.ts:101`
+- **文件**: `utils/puzzle/cutGeneratorConfig.ts:120`
 - **签名**: `export type DifficultyLevel = keyof typeof CUT_GENERATOR_CONFIG.DIFFICULTY_SETTINGS;`
 
 **建议文档结构**:
@@ -4327,7 +4442,7 @@ export type DifficultyLevel = keyof typeof CUT_GENERATOR_CONFIG.DIFFICULTY_SETTI
 #### DifficultySettings
 
 - **类型**: type
-- **文件**: `utils/puzzle/cutGeneratorConfig.ts:102`
+- **文件**: `utils/puzzle/cutGeneratorConfig.ts:121`
 - **签名**: `export type DifficultySettings = typeof CUT_GENERATOR_CONFIG.DIFFICULTY_SETTINGS[DifficultyLevel];`
 
 **建议文档结构**:
@@ -4338,6 +4453,52 @@ export type DifficultyLevel = keyof typeof CUT_GENERATOR_CONFIG.DIFFICULTY_SETTI
 
 ```typescript
 export type DifficultySettings = typeof CUT_GENERATOR_CONFIG.DIFFICULTY_SETTINGS[DifficultyLevel];
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### PieceRange
+
+- **类型**: interface
+- **文件**: `utils/puzzle/cutGeneratorConfig.ts:124`
+- **签名**: `export interface PieceRange {`
+
+**建议文档结构**:
+```markdown
+### PieceRange
+
+[添加API描述]
+
+```typescript
+export interface PieceRange {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### EnhancedDifficultySettings
+
+- **类型**: interface
+- **文件**: `utils/puzzle/cutGeneratorConfig.ts:129`
+- **签名**: `export interface EnhancedDifficultySettings {`
+
+**建议文档结构**:
+```markdown
+### EnhancedDifficultySettings
+
+[添加API描述]
+
+```typescript
+export interface EnhancedDifficultySettings {
 ```
 
 #### 使用示例
@@ -4465,7 +4626,7 @@ export const calculateDifficultyLevel = (cutCount: number): DifficultyLevel => {
 #### getPieceCountByDifficulty
 
 - **类型**: constant
-- **文件**: `utils/difficulty/DifficultyUtils.ts:21`
+- **文件**: `utils/difficulty/DifficultyUtils.ts:22`
 - **签名**: `export const getPieceCountByDifficulty = (difficulty: DifficultyLevel): number => {`
 
 **建议文档结构**:
@@ -4488,7 +4649,7 @@ export const getPieceCountByDifficulty = (difficulty: DifficultyLevel): number =
 #### getDifficultyMultiplier
 
 - **类型**: constant
-- **文件**: `utils/difficulty/DifficultyUtils.ts:34`
+- **文件**: `utils/difficulty/DifficultyUtils.ts:36`
 - **签名**: `export const getDifficultyMultiplier = (difficulty: DifficultyLevel): number => {`
 
 **建议文档结构**:
@@ -4511,7 +4672,7 @@ export const getDifficultyMultiplier = (difficulty: DifficultyLevel): number => 
 #### ALL_DIFFICULTY_LEVELS
 
 - **类型**: constant
-- **文件**: `utils/difficulty/DifficultyUtils.ts:47`
+- **文件**: `utils/difficulty/DifficultyUtils.ts:49`
 - **签名**: `export const ALL_DIFFICULTY_LEVELS: DifficultyLevel[] = ['easy', 'medium', 'hard', 'extreme', 'expert'];`
 
 **建议文档结构**:
@@ -4534,7 +4695,7 @@ export const ALL_DIFFICULTY_LEVELS: DifficultyLevel[] = ['easy', 'medium', 'hard
 #### isValidDifficultyLevel
 
 - **类型**: constant
-- **文件**: `utils/difficulty/DifficultyUtils.ts:52`
+- **文件**: `utils/difficulty/DifficultyUtils.ts:54`
 - **签名**: `export const isValidDifficultyLevel = (difficulty: string): difficulty is DifficultyLevel => {`
 
 **建议文档结构**:
@@ -5426,7 +5587,7 @@ export const AngleDisplayControllerImpl: AngleDisplayController = {
 - ❌ `AdaptationResult` (interface)
 - ❌ `CanvasSizeResult` (interface)
 
-### 核心管理器API (68个)
+### 核心管理器API (69个)
 
 - ❌ `ValidationRule` (interface)
 - ❌ `ValidationSchema` (interface)
@@ -5454,6 +5615,7 @@ export const AngleDisplayControllerImpl: AngleDisplayController = {
 - ✅ `DeviceManager` (class)
 - ❌ `DeviceLayoutManager` (class)
 - ✅ `CanvasManager` (class)
+- ❌ `setHintConfig` (constant)
 - ❌ `getDeviceMultiplier` (constant)
 - ❌ `calculateDifficultyMultiplier` (constant)
 - ❌ `getBaseScore` (constant)
@@ -5521,7 +5683,7 @@ export const AngleDisplayControllerImpl: AngleDisplayController = {
 - ❌ `useDebugToggle` (function)
 - ❌ `reducer` (constant)
 
-### 工具函数API (133个)
+### 工具函数API (139个)
 
 - ❌ `deviceLogger` (constant)
 - ✅ `adaptationLogger` (constant)
@@ -5583,9 +5745,13 @@ export const AngleDisplayControllerImpl: AngleDisplayController = {
 - ❌ `isValidPiece` (constant)
 - ❌ `checkRectOverlap` (constant)
 - ❌ `findLineIntersections` (function)
+- ❌ `Cut` (type)
+- ❌ `Bounds` (type)
+- ❌ `computeBounds` (constant)
+- ❌ `buildExtraCuts` (constant)
+- ❌ `applyExtraCutsWithRetry` (constant)
 - ❌ `generateCuts` (constant)
 - ❌ `CutValidator` (interface)
-- ❌ `Bounds` (type)
 - ❌ `CutLine` (type)
 - ❌ `CutType` (type)
 - ❌ `CutGenerationContext` (interface)
@@ -5609,6 +5775,8 @@ export const AngleDisplayControllerImpl: AngleDisplayController = {
 - ❌ `EARLY_EXIT_THRESHOLD` (constant)
 - ❌ `DifficultyLevel` (type)
 - ❌ `DifficultySettings` (type)
+- ❌ `PieceRange` (interface)
+- ❌ `EnhancedDifficultySettings` (interface)
 - ✅ `ScatterPuzzle` (class)
 - ✅ `PuzzleGenerator` (class)
 - ❌ `LeaderboardSimplifier` (class)

@@ -223,7 +223,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
                     <div>
                       <div className="text-[#FFD5AB] font-medium">{record.finalScore.toLocaleString()}</div>
                       <div className="text-[#FFD5AB] opacity-60">
-                        {formatTime(record.totalDuration)} • {record.difficulty.difficultyLevel}
+                        {formatTime(record.totalDuration)} • {t('difficulty.levelLabel', { level: record.difficulty.cutCount })}
                       </div>
                     </div>
                   </div>
@@ -297,7 +297,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
               <div className="flex items-center justify-between pt-3 border-t border-[#555]">
                 <div className="flex items-center gap-2">
                   <span className="px-3 py-1 bg-gradient-to-r from-[#FFD5AB] to-[#F4C2A1] text-[#2A2A2A] text-xs font-medium rounded-full">
-                    {t(`difficulty.${recentGame.difficulty.difficultyLevel}`) || recentGame.difficulty.difficultyLevel}
+                    {t('difficulty.levelLabel', { level: recentGame.difficulty.cutCount })}
                   </span>
                   <span className="text-xs text-[#FFD5AB] opacity-70 bg-[#FFD5AB] bg-opacity-10 px-2 py-1 rounded">
                     {t(`cutType.${recentGame.difficulty.cutType}`) || recentGame.difficulty.cutType}

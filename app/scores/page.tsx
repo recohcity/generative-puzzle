@@ -64,7 +64,13 @@ export default function ScoreManagementPage() {
     }
   };
 
-  const getDifficultyText = (difficulty: string) => {
+  const getDifficultyTextFromRecord = (difficulty: any) => {
+    const level = difficulty?.cutCount || 1;
+    return `难度${level}`;
+  };
+
+  // 仅用于筛选标签的人类可读文案
+  const getDifficultyFilterName = (difficulty: string) => {
     switch (difficulty) {
       case 'easy': return '简单';
       case 'medium': return '中等';
@@ -196,7 +202,7 @@ export default function ScoreManagementPage() {
                         <span className="text-xl font-bold">{record.finalScore}分</span>
                       </div>
                       <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                        {getDifficultyText(record.difficulty?.difficultyLevel)}
+{getDifficultyTextFromRecord(record.difficulty)}
                       </span>
                     </div>
                     <div className="text-sm text-gray-600 space-y-1">
@@ -225,7 +231,7 @@ export default function ScoreManagementPage() {
             {filteredHistory.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-gray-500">
-                  {selectedDifficulty === 'all' ? '暂无历史记录' : `暂无${getDifficultyText(selectedDifficulty)}难度的记录`}
+{selectedDifficulty === 'all' ? '暂无历史记录' : `暂无${getDifficultyFilterName(selectedDifficulty)}难度的记录`}
                 </p>
                 <p className="text-sm text-gray-400 mt-1">开始游戏来创建记录吧</p>
               </div>
@@ -240,7 +246,7 @@ export default function ScoreManagementPage() {
                     <div className="flex justify-between items-start mb-2">
                       <span className="text-lg font-bold">{record.finalScore}分</span>
                       <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">
-                        {getDifficultyText(record.difficulty?.difficultyLevel)}
+{getDifficultyTextFromRecord(record.difficulty)}
                       </span>
                     </div>
                     <div className="text-sm text-gray-600 space-y-1">
@@ -297,7 +303,7 @@ export default function ScoreManagementPage() {
                     </div>
                     <div>
                       <span className="text-sm text-gray-600">难度级别</span>
-                      <p className="text-lg font-semibold">{getDifficultyText(selectedRecord.difficulty?.difficultyLevel)}</p>
+<p className="text-lg font-semibold">{getDifficultyTextFromRecord(selectedRecord.difficulty)}</p>
                     </div>
                   </div>
                 </div>

@@ -15,16 +15,19 @@ import {
 
 export class CutValidator {
   
-  isValid(cut: CutLine, shape: Point[], existingCuts: CutLine[], relaxed: boolean = false): boolean {
+  isValid(cut: CutLine, shape: Point[], existingCuts: CutLine[], relaxed: boolean = false, allowIntersection: boolean = false): boolean {
     // 基础验证：检查是否与形状相交
     if (doesCutIntersectShape(cut, shape) < 2) {
       return false;
     }
 
-    // 检查是否与现有切割线太接近
-    for (const existingCut of existingCuts) {
-      if (cutsAreTooClose(cut, existingCut)) {
-        return false;
+    // 如果允许相交（高难度模式），跳过距离检查
+    if (!allowIntersection) {
+      // 检查是否与现有切割线太接近
+      for (const existingCut of existingCuts) {
+        if (cutsAreTooClose(cut, existingCut)) {
+          return false;
+        }
       }
     }
 

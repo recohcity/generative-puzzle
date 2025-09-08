@@ -1,6 +1,6 @@
 # 项目结构（Project Structure）
 
-> 自动生成时间：2025/9/6 19:29:32  
+> 自动生成时间：2025/9/9 00:40:36  
 > 生成工具：项目结构文档生成器 v3.1.0 - 开发导航版
 
 **开发者导航工具** - 快速理解项目架构，精准定位代码位置，提升开发效率。
@@ -15,8 +15,8 @@
 | 统计项 | 数量 | 说明 |
 |--------|------|------|
 | 总目录数 | 62 | 项目目录结构层次 |
-| 总文件数 | 290 | 代码文件和资源文件总数 |
-| 项目容量 | 5.53 MB | 不包含node_modules的项目大小 |
+| 总文件数 | 299 | 代码文件和资源文件总数 |
+| 项目容量 | 6.24 MB | 不包含node_modules的项目大小 |
 
 ---
 
@@ -418,6 +418,7 @@ npm run lint                   # 代码检查
   📄 `code-quality-report.md`
   📄 `coverage-strategy.md`
   📄 `CURRENT_ADAPTATION_SYSTEM.md`
+  📄 `CUT_LOGIC_FIX_REPORT.md`
   📄 `cutGenerators-migration-guide.md`
   📄 `cutGenerators-refactoring-report.md`
   📄 `dependency-analysis-report.md`
@@ -436,6 +437,7 @@ npm run lint                   # 代码检查
   📄 `project_structure.md`
   📄 `README.md` - 项目说明文档
   📄 `score-system-design.md`
+  📄 `SCORING_SYSTEM_UNIFICATION_REPORT.md`
   📄 `SUPREME_ADAPTATION_DIRECTIVE.md`
   📄 `test-coverage-improvement-summary.md`
 📁 **e2e/**
@@ -458,6 +460,7 @@ npm run lint                   # 代码检查
   📄 `eb8734d4982c5186c0a4d6018b409622.txt`
   📄 `performance-data.json`
   📄 `puzzle-pieces.mp3` - 游戏音效文件
+  📄 `Short Cut.mp3`
   📄 `texture-tile.png` - 拼图材质纹理
 📁 **quality-reports/**
 📁 **scripts/**
@@ -556,6 +559,8 @@ npm run lint                   # 代码检查
       📄 `cutGenerators.test.ts`
       📄 `cutGeneratorTypes.test.ts`
       📄 `cutGeneratorValidator.test.ts`
+      📄 `puzzleCompensation.test.ts`
+      📄 `PuzzleGenerator.branches.test.ts`
       📄 `PuzzleGenerator.test.ts`
       📄 `puzzleUtils.test.ts`
       📄 `simplePuzzleGenerator.test.ts`
@@ -566,6 +571,7 @@ npm run lint                   # 代码检查
     📄 `cutGeneratorStrategies.ts`
     📄 `cutGeneratorTypes.ts`
     📄 `cutGeneratorValidator.ts`
+    📄 `puzzleCompensation.ts`
     📄 `PuzzleGenerator.ts`
     📄 `puzzleUtils.ts`
     📄 `ScatterPuzzle.ts`
@@ -603,7 +609,10 @@ npm run lint                   # 代码检查
 📄 `.gitignore` - Git 忽略文件配置
 📄 `CHANGELOG.md` - 版本历史与变更记录
 📄 `components.json` - Shadcn UI 组件配置
+📄 `debug-cut-generation.html`
 📄 `jest.config.cjs`
+📄 `jest.coverage.cjs`
+📄 `jest.fast.cjs`
 📄 `LICENSE`
 📄 `next.config.mjs` - Next.js 框架配置
 📄 `package-lock.json` - 依赖锁定文件
@@ -651,4 +660,4 @@ npm run generate-structure  # 一键更新项目结构文档
 
 ---
 
-*📅 生成时间：2025/9/6 19:29:32 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*
+*📅 生成时间：2025/9/9 00:40:36 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*

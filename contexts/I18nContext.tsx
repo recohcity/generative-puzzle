@@ -164,7 +164,8 @@ const defaultMessages = {
       "easy": "简单",
       "medium": "中等",
       "hard": "困难",
-      "extreme": "极难"
+      "extreme": "极难",
+      "levelLabel": "难度{level}"
     }
   },
   "leaderboard": {

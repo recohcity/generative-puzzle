@@ -76,7 +76,7 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({
             <div className="bg-white/5 rounded-lg p-3 border border-white/10">
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-[#FFD5AB]">{t('score.breakdown.base')}：{t(`difficulty.${record.difficulty.difficultyLevel}`)}</span>
+                  <span className="text-[#FFD5AB]">{t('score.breakdown.base')}：{t('difficulty.levelLabel', { level: record.difficulty.cutCount })}</span>
                   <span className="text-[#FFD5AB]">{record.scoreBreakdown.baseScore}</span>
                 </div>
                 <div className="flex justify-between">

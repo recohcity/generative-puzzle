@@ -42,10 +42,20 @@ export const initBackgroundMusic = () => {
     backgroundMusic.loop = true;
     backgroundMusic.volume = 0.5;
     
+    // 添加循环播放的额外保障
+    backgroundMusic.addEventListener('ended', () => {
+      // 这个事件在loop=true时通常不会触发，但作为备用保障
+      console.warn('Background music ended unexpectedly, restarting...');
+      if (isBackgroundMusicPlaying && backgroundMusic) {
+        backgroundMusic.currentTime = 0;
+        backgroundMusic.play().catch(console.error);
+      }
+    });
+
     // 默认开启背景音乐，但需要用户交互后才能播放
     // 设置为准备播放状态
     isBackgroundMusicPlaying = true;
-    
+
     // 添加全局点击监听器，在第一次用户交互时自动启动背景音乐
     const handleFirstInteraction = async (event?: Event) => {
       // 确保这是真正的用户交互，而不是程序触发的事件
@@ -62,14 +72,14 @@ export const initBackgroundMusic = () => {
         }
       }
     };
-    
+
     // 移除监听器的辅助函数
     const removeFirstInteractionListeners = () => {
       document.removeEventListener('click', handleFirstInteraction);
       document.removeEventListener('touchstart', handleFirstInteraction);
       document.removeEventListener('keydown', handleFirstInteraction);
     };
-    
+
     // 监听多种用户交互事件
     document.addEventListener('click', handleFirstInteraction, { once: true });
     document.addEventListener('touchstart', handleFirstInteraction, { once: true });
@@ -85,7 +95,7 @@ export const toggleBackgroundMusic = async (): Promise<boolean> => {
       await audioContext.resume();
       audioUnlocked = true;
     }
-    
+
     // 如果是第一次交互且音乐应该播放，自动开始播放
     if (isBackgroundMusicPlaying && backgroundMusic.paused && !audioUnlocked) {
       try {
@@ -98,7 +108,7 @@ export const toggleBackgroundMusic = async (): Promise<boolean> => {
         return false;
       }
     }
-    
+
     if (isBackgroundMusicPlaying) {
       backgroundMusic.pause();
       isBackgroundMusicPlaying = false;
@@ -146,7 +156,7 @@ export const playButtonClickSound = async (): Promise<void> => {
   try {
     // 确保AudioContext正在运行
     await ensureAudioContextRunning(audioContext);
-    
+
     // 尝试自动启动背景音乐（如果应该播放的话）
     await autoStartBackgroundMusic();
 
@@ -302,36 +312,46 @@ export const playRotateSound = async (): Promise<void> => {
 // Play sound when cutting/generating puzzle pieces
 export const playCutSound = async (): Promise<void> => {
   soundPlayedForTest('cut');
-  const audioContext = createAudioContext();
-  if (!audioContext) return;
 
   try {
-    await ensureAudioContextRunning(audioContext);
-
-    // 清晰简单的切割音效：模拟刀片切割的"咔嚓"声
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-
-    // 使用锯齿波产生更锐利的切割声
-    oscillator.type = 'sawtooth';
-    oscillator.frequency.setValueAtTime(300, audioContext.currentTime); // 中频开始
-    oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.01); // 快速上升
-    oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.08); // 快速下降
-
-    // 音量包络：瞬间攻击，快速衰减，模拟切割的瞬间性
-    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.002); // 瞬间音量
-    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.08); // 快速衰减
-
-    // 连接音频节点
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+    // 直接播放真实的切割音效文件
+    const cutAudio = new Audio('/Short Cut.mp3');
+    cutAudio.volume = 0.6; // 适中的音量
+    cutAudio.currentTime = 0; // 确保从头开始播放
 
     // 播放音效
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.08);
+    await cutAudio.play();
 
   } catch (error) {
     console.error('Error playing cut sound:', error);
+
+    // 如果音频文件播放失败，回退到简单的程序生成音效
+    const audioContext = createAudioContext();
+    if (!audioContext) return;
+
+    try {
+      await ensureAudioContextRunning(audioContext);
+
+      // 简单的回退音效
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.type = 'square';
+      oscillator.frequency.setValueAtTime(1200, audioContext.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.05);
+
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.002);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.08);
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.08);
+
+    } catch (fallbackError) {
+      console.error('Error playing fallback cut sound:', fallbackError);
+    }
   }
 };
