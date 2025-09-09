@@ -203,6 +203,7 @@ export interface DifficultyConfig {
   cutType: CutType;        // 切割类型
   actualPieces: number;    // 实际产生的拼图数量
   difficultyLevel: DifficultyLevel; // 难度级别
+  shapeType?: ShapeType;   // 形状类型（用于形状难度系数计算）
 }
 
 // 游戏统计数据接口

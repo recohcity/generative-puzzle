@@ -36,7 +36,12 @@
             "title": "Select Shape Type",
             "polygon": "Polygon",
             "curve": "Cloud",
-            "irregular": "Jagged"
+            "irregular": "Jagged",
+            "names": {
+                "polygon": "Polygon",
+                "cloud": "Cloud",
+                "jagged": "Jagged"
+            }
         },
         "cutType": {
             "title": "Select Cut Type",

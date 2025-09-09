@@ -315,8 +315,8 @@ export const playCutSound = async (): Promise<void> => {
 
   try {
     // 直接播放真实的切割音效文件
-    const cutAudio = new Audio('/Short Cut.mp3');
-    cutAudio.volume = 0.6; // 适中的音量
+    const cutAudio = new Audio('/split.mp3');
+    cutAudio.volume = 1.0; // 放大2倍音量
     cutAudio.currentTime = 0; // 确保从头开始播放
 
     // 播放音效
@@ -352,6 +352,53 @@ export const playCutSound = async (): Promise<void> => {
 
     } catch (fallbackError) {
       console.error('Error playing fallback cut sound:', fallbackError);
+    }
+  }
+};
+
+// Play sound when scattering puzzle pieces
+export const playScatterSound = async (): Promise<void> => {
+  soundPlayedForTest('scatter');
+
+  try {
+    // 直接播放真实的散开音效文件
+    const scatterAudio = new Audio('/scatter.mp3');
+    scatterAudio.volume = 1.0; // 正常音量
+    scatterAudio.currentTime = 0; // 确保从头开始播放
+
+    // 播放音效
+    await scatterAudio.play();
+
+  } catch (error) {
+    console.error('Error playing scatter sound:', error);
+
+    // 如果音频文件播放失败，回退到简单的程序生成音效
+    const audioContext = createAudioContext();
+    if (!audioContext) return;
+
+    try {
+      await ensureAudioContextRunning(audioContext);
+
+      // 简单的回退音效
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.type = 'sawtooth';
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.1);
+
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.4, audioContext.currentTime + 0.005);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.15);
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.15);
+
+    } catch (fallbackError) {
+      console.error('Error playing fallback scatter sound:', fallbackError);
     }
   }
 };

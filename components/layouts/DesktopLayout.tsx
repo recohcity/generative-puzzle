@@ -94,6 +94,23 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
     resetGame();
   };
 
+  // 获取形状显示名称
+  const getShapeDisplayName = (shapeType?: string): string => {
+    if (!shapeType) return '';
+    try {
+      return t(`game.shapes.names.${shapeType}`);
+    } catch {
+      return shapeType;
+    }
+  };
+
+  // 获取包含形状的难度显示文本
+  const getDifficultyWithShape = (difficulty: any): string => {
+    const shapeName = getShapeDisplayName(difficulty?.shapeType);
+    const difficultyLevel = t('difficulty.levelLabel', { level: difficulty.cutCount });
+    return shapeName ? `${shapeName} ${difficultyLevel}` : difficultyLevel;
+  };
+
   // 格式化时间显示
   const formatDuration = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -400,7 +417,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                         <div className="bg-white/5 rounded-lg p-3 border border-white/10">
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
-                              <span className="text-[#FFD5AB]">{t('score.breakdown.base')}：{t('difficulty.levelLabel', { level: state.gameStats.difficulty.cutCount })}</span>
+                              <span className="text-[#FFD5AB]">{t('score.breakdown.base')}：{getDifficultyWithShape(state.gameStats.difficulty)}</span>
                               <span className="text-[#FFD5AB]">{state.scoreBreakdown.baseScore}</span>
                             </div>
                             <div className="flex justify-between">

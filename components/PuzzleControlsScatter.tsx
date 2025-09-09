@@ -2,7 +2,7 @@
 import { useGame } from "@/contexts/GameContext"
 import { Button } from "@/components/ui/button"
 import { ScatterChart } from "lucide-react"
-import { playButtonClickSound } from "@/utils/rendering/soundEffects"
+import { playButtonClickSound, playScatterSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
 import { useDeviceDetection } from "@/hooks/useDeviceDetection"
 import { useTranslation } from '@/contexts/I18nContext'
@@ -32,7 +32,8 @@ export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 34 }
 
   const handleScatterPuzzle = () => {
     console.log('🔧 handleScatterPuzzle被调用');
-    playButtonClickSound()
+    playButtonClickSound() // 通用按钮音效
+    playScatterSound() // 散开拼图音效
     console.log('🔧 准备调用scatterPuzzle');
     scatterPuzzle()
     console.log('🔧 scatterPuzzle调用完成');

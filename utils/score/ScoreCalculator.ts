@@ -1,4 +1,4 @@
-import { GameStats, DifficultyConfig, ScoreBreakdown, GameRecord, PuzzlePiece } from '@/types/puzzleTypes';
+import { GameStats, DifficultyConfig, ScoreBreakdown, GameRecord, PuzzlePiece, ShapeType } from '@/types/puzzleTypes';
 import { calculateNewRotationScore } from './RotationEfficiencyCalculator';
 
 /**
@@ -55,6 +55,29 @@ export const setHintConfig = (config: Partial<typeof HINT_CONFIG>) => {
 };
 
 /**
+ * 获取形状难度系数
+ * 不同形状的完成难度不同，反映在分数系数上
+ */
+export const getShapeMultiplier = (shapeType?: ShapeType | string): number => {
+  // 处理可能的 undefined 或空值
+  if (!shapeType) {
+    console.warn('[getShapeMultiplier] 形状类型为空，使用默认系数1.0');
+    return 1.0;
+  }
+
+  // 形状难度系数映射
+  const shapeMultipliers: Record<string, number> = {
+    [ShapeType.Polygon]: 1.0,  // 多边形：标准难度
+    [ShapeType.Cloud]: 1.1,    // 云朵形：增加10%难度
+    [ShapeType.Jagged]: 1.2,   // 锯齿形：增加20%难度
+  };
+
+  const multiplier = shapeMultipliers[shapeType] || 1.0;
+  console.log(`[getShapeMultiplier] 形状类型 ${shapeType} -> 形状系数 ${multiplier}`);
+  return multiplier;
+};
+
+/**
  * 获取设备难度系数
  * 集成现有的设备检测逻辑，统一移动端系数为1.1
  * 与useDeviceDetection保持一致的检测逻辑
@@ -100,15 +123,19 @@ export const calculateDifficultyMultiplier = (config: DifficultyConfig): number 
   // 切割类型系数
   const cutTypeMultiplier = config.cutType === 'diagonal' ? 1.2 : 1.0;
 
-  // 设备适配系数
-  const deviceMultiplier = getDeviceMultiplier();
+// 设备适配系数
+const deviceMultiplier = getDeviceMultiplier();
 
-  const finalMultiplier = baseMultiplier * cutTypeMultiplier * deviceMultiplier;
+// 形状难度系数
+const shapeMultiplier = getShapeMultiplier(config.shapeType);
+
+const finalMultiplier = baseMultiplier * cutTypeMultiplier * deviceMultiplier * shapeMultiplier;
 
   console.log(`[calculateDifficultyMultiplier] 难度级别 ${config.cutCount} -> 基础系数 ${baseMultiplier}`);
   console.log(`[calculateDifficultyMultiplier] 切割类型 ${config.cutType} -> 切割系数 ${cutTypeMultiplier}`);
-  console.log(`[calculateDifficultyMultiplier] 设备系数 ${deviceMultiplier}`);
-  console.log(`[calculateDifficultyMultiplier] 最终系数 ${finalMultiplier}`);
+console.log(`[calculateDifficultyMultiplier] 设备系数 ${deviceMultiplier}`);
+console.log(`[calculateDifficultyMultiplier] 形状系数 ${shapeMultiplier}`);
+console.log(`[calculateDifficultyMultiplier] 最终系数 ${finalMultiplier}`);
 
   return finalMultiplier;
 };

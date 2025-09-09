@@ -47,6 +47,23 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
     return t('difficulty.levelLabel', { level });
   };
 
+  // 获取形状显示名称
+  const getShapeDisplayName = (shapeType?: string): string => {
+    if (!shapeType) return '';
+    try {
+      return t(`game.shapes.names.${shapeType}`);
+    } catch {
+      return shapeType;
+    }
+  };
+
+  // 获取包含形状的难度文本
+  const getDifficultyWithShape = (difficulty: any): string => {
+    const shapeName = getShapeDisplayName(difficulty?.shapeType);
+    const difficultyLevel = getDifficultyText(difficulty);
+    return shapeName ? `${shapeName}·${difficultyLevel}` : difficultyLevel;
+  };
+
   // 统一所有难度的个人最佳成绩数据，只显示前5名
   const filteredLeaderboard = useMemo(() => {
     return leaderboard.slice(0, 5);
@@ -225,7 +242,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                   
                   {/* 游戏信息 - 一行布局 */}
                   <div className="flex-1 min-w-0 text-xs text-[#FFD5AB] opacity-70">
-                    {formatTime(record.totalDuration)} • {getDifficultyText(record.difficulty)} • {record.difficulty.actualPieces}{t('stats.piecesUnit')}
+                    {formatTime(record.totalDuration)} • {getDifficultyWithShape(record.difficulty)} • {record.difficulty.actualPieces}{t('stats.piecesUnit')}
                   </div>
                   
                   {/* 分数 - 加粗大号 */}

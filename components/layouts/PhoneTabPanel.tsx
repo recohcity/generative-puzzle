@@ -265,6 +265,23 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                   return t('difficulty.levelLabel', { level: difficulty.cutCount || 1 });
                 };
 
+                // 获取形状显示名称
+                const getShapeDisplayName = (shapeType?: string): string => {
+                  if (!shapeType) return '';
+                  try {
+                    return t(`game.shapes.names.${shapeType}`);
+                  } catch {
+                    return shapeType;
+                  }
+                };
+
+                // 获取包含形状的难度文本
+                const getDifficultyWithShape = (difficulty: any): string => {
+                  const shapeName = getShapeDisplayName(difficulty?.shapeType);
+                  const difficultyLevel = getDifficultyText(difficulty);
+                  return shapeName ? `${shapeName}·${difficultyLevel}` : difficultyLevel;
+                };
+
                 return (
                   <div key={record.id || record.timestamp} className="flex items-center gap-2 py-1 px-2 bg-[#1A1A1A] rounded border border-[#333]">
                     {/* 排名图标 */}
@@ -276,7 +293,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
 
                     {/* 游戏信息 - 一行布局 */}
                     <div className="flex-1 min-w-0 text-xs text-[#FFD5AB] opacity-70">
-{formatTime(record.totalDuration || 0)} • {getDifficultyText(record.difficulty)} • {record.difficulty?.actualPieces || 0}{t('stats.piecesUnit')}
+{formatTime(record.totalDuration || 0)} • {getDifficultyWithShape(record.difficulty)} • {record.difficulty?.actualPieces || 0}{t('stats.piecesUnit')}
                     </div>
 
                     {/* 分数 - 加粗大号 */}

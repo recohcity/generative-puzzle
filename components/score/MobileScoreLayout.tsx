@@ -28,6 +28,25 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
     return t('difficulty.levelLabel', { level: difficulty.cutCount });
   };
 
+  // 获取形状显示名称
+  const getShapeDisplayName = (shapeType?: string): string => {
+    if (!shapeType) return '';
+    // 使用新的形状名称翻译
+    try {
+      return t(`game.shapes.names.${shapeType}`);
+    } catch {
+      // 降级方案：使用默认名称
+      return shapeType;
+    }
+  };
+
+  // 获取包含形状的难度显示文本
+  const getDifficultyWithShape = (difficulty: any): string => {
+    const shapeName = getShapeDisplayName(difficulty.shapeType);
+    const difficultyLevel = getDifficultyText(difficulty);
+    return shapeName ? `${shapeName} ${difficultyLevel}` : difficultyLevel;
+  };
+
   // 格式化分数显示
   const formatScore = (score: number): string => {
     return score.toLocaleString();
@@ -78,7 +97,7 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
           <div className="space-y-1">
             {/* 难度基础 */}
             <div className="flex justify-between items-center">
-              <span className="text-[#FFD5AB] text-xs">{t('score.breakdown.base')}：{getDifficultyText(gameStats.difficulty)}</span>
+              <span className="text-[#FFD5AB] text-xs">{t('score.breakdown.base')}：{getDifficultyWithShape(gameStats.difficulty)}</span>
               <span className="text-[#FFD5AB] text-xs font-medium">{formatScore(scoreBreakdown.baseScore)}</span>
             </div>
 

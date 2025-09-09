@@ -1,15 +1,15 @@
 # API分类报告
 
-> 生成时间: 2025/9/9 00:40:36
+> 生成时间: 2025/9/9 21:03:16
 > 分类工具: API分类器 v1.0
 
 ## 📊 分类统计
 
 | 分类 | 数量 | 占比 | 优先级 | 建议 |
 |------|------|------|--------|------|
-| PUBLIC | 24 | 10.0% | 1 | 必须文档化 |
-| TEAM | 25 | 10.4% | 2 | 建议文档化 |
-| INTERNAL | 191 | 79.6% | 3 | 选择性文档化 |
+| PUBLIC | 24 | 9.9% | 1 | 必须文档化 |
+| TEAM | 25 | 10.3% | 2 | 建议文档化 |
+| INTERNAL | 193 | 79.8% | 3 | 选择性文档化 |
 
 ## 📋 详细分类
 
@@ -80,7 +80,7 @@
 
 **描述**: 模块内部实现细节
 
-**API列表** (191个):
+**API列表** (193个):
 
 - `EVENT_CONFIG`
 - `MEMORY_CONFIG`
@@ -130,6 +130,7 @@
 - `ErrorRecoveryStrategy`
 - `ErrorHandlingConfig`
 - `setHintConfig`
+- `getShapeMultiplier`
 - `getDeviceMultiplier`
 - `calculateDifficultyMultiplier`
 - `getBaseDifficultyMultiplierByPieces`
@@ -191,6 +192,7 @@
 - `playButtonClickSound`
 - `playPieceSnapSound`
 - `playCutSound`
+- `playScatterSound`
 - `PuzzlePiece`
 - `drawPiece`
 - `drawCompletionEffect`

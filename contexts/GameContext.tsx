@@ -188,12 +188,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           difficultyLevel: calculateDifficultyLevel(state.cutCount),
           cutType: state.cutType || CutType.Straight,
           cutCount: state.cutCount || 1,
+          shapeType: state.shapeType, // 🆕 新增：形状类型（用于形状难度系数计算）
           // 🔧 修复：统一使用实际生成的拼图数量，支持cutGeneratorConfig.ts的动态数量
           actualPieces: (() => {
             const actualPuzzleLength = state.puzzle?.length || 0;
             const cutCount = state.cutCount || 1;
             
-            console.log(`[SCATTER_PUZZLE] cutCount: ${cutCount}, actualPuzzleLength: ${actualPuzzleLength}`);
+            console.log(`[SCATTER_PUZZLE] cutCount: ${cutCount}, actualPuzzleLength: ${actualPuzzleLength}, shapeType: ${state.shapeType}`);
             
             // 使用实际生成的拼图数量（支持cutGeneratorConfig.ts的动态随机数量）
             if (actualPuzzleLength > 0) {

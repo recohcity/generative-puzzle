@@ -358,7 +358,168 @@ beforeEach(() => {
     });
   });
 
+  describe('🔑 缺少的分支覆盖测试', () => {
+    test('应该在 allowIntersection=true 时跳过距离检查', () => {
+      // Mock几何函数
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).doesCutIntersectShape.mockReturnValue(2);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).calculateCenter.mockReturnValue({ x: 50, y: 50 });
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).isPointNearLine.mockReturnValue(true);
+      // 注意：不要Mock cutsAreTooClose，因为 allowIntersection=true 时不会调用
+      
+      const existingCut: CutLine = {
+        x1: 45, y1: -10,
+        x2: 45, y2: 110,
+        type: 'straight'
+      };
+      
+      const result = validator.isValid(validCut, testShape, [existingCut], false, true); // allowIntersection = true
+      
+      expect(result).toBe(true);
+      expect(cutGeneratorGeometry.doesCutIntersectShape).toHaveBeenCalledWith(validCut, testShape);
+      // 在 allowIntersection=true 时，不应该调用 cutsAreTooClose
+      expect(cutGeneratorGeometry.cutsAreTooClose).not.toHaveBeenCalled();
+      
+      // 恢复mocks
+      jest.restoreAllMocks();
+    });
+
+    test('应该在非宽松模式下返回 false 当 cutsAreTooClose 为 true', () => {
+      // Mock几何函数
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).doesCutIntersectShape.mockReturnValue(2);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).cutsAreTooClose.mockReturnValue(true); // 太接近
+      
+      const existingCut: CutLine = {
+        x1: 45, y1: -10,
+        x2: 45, y2: 110,
+        type: 'straight'
+      };
+      
+      const result = validator.isValid(validCut, testShape, [existingCut], false, false); // 非宽松模式，allowIntersection=false
+      
+      expect(result).toBe(false); // 应该返回 false
+      expect(cutGeneratorGeometry.doesCutIntersectShape).toHaveBeenCalledWith(validCut, testShape);
+      expect(cutGeneratorGeometry.cutsAreTooClose).toHaveBeenCalledWith(validCut, existingCut);
+      
+      // 恢复mocks
+      jest.restoreAllMocks();
+    });
+
+    test('应该在宽松模式下返回 true 而不检查中心', () => {
+      // Mock几何函数
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).doesCutIntersectShape.mockReturnValue(2);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).cutsAreTooClose.mockReturnValue(false);
+      const mockCalculateCenter = (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).calculateCenter;
+      const mockIsPointNearLine = (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).isPointNearLine;
+      
+      const result = validator.isValid(validCut, testShape, [], true, false); // relaxed = true
+      
+      expect(result).toBe(true);
+      expect(cutGeneratorGeometry.doesCutIntersectShape).toHaveBeenCalledWith(validCut, testShape);
+      // 在宽松模式下，不应该调用中心检查
+      expect(mockCalculateCenter).not.toHaveBeenCalled();
+      expect(mockIsPointNearLine).not.toHaveBeenCalled();
+      
+      // 恢复mocks
+      jest.restoreAllMocks();
+    });
+
+    test('应该正确处理宽松模式与 allowIntersection 的组合', () => {
+      // Mock几何函数
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).doesCutIntersectShape.mockReturnValue(2);
+      const mockCutsAreTooClose = (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).cutsAreTooClose;
+      const mockCalculateCenter = (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).calculateCenter;
+      const mockIsPointNearLine = (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).isPointNearLine;
+      
+      const existingCut: CutLine = {
+        x1: 45, y1: -10,
+        x2: 45, y2: 110,
+        type: 'straight'
+      };
+      
+      const result = validator.isValid(validCut, testShape, [existingCut], true, true); // relaxed=true, allowIntersection=true
+      
+      expect(result).toBe(true);
+      expect(cutGeneratorGeometry.doesCutIntersectShape).toHaveBeenCalledWith(validCut, testShape);
+      // allowIntersection=true 时不调用 cutsAreTooClose
+      expect(mockCutsAreTooClose).not.toHaveBeenCalled();
+      // relaxed=true 时不调用中心检查
+      expect(mockCalculateCenter).not.toHaveBeenCalled();
+      expect(mockIsPointNearLine).not.toHaveBeenCalled();
+      
+      // 恢复mocks
+      jest.restoreAllMocks();
+    });
+
+    test('应该在严格模式下正确检查所有现有切割线', () => {
+      const existingCuts: CutLine[] = [
+        { x1: 30, y1: -10, x2: 30, y2: 110, type: 'straight' },
+        { x1: 70, y1: -10, x2: 70, y2: 110, type: 'straight' }
+      ];
+      
+      // Mock几何函数
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).doesCutIntersectShape.mockReturnValue(2);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).cutsAreTooClose
+        .mockReturnValueOnce(false) // 第一个不太接近
+        .mockReturnValueOnce(true);  // 第二个太接近
+      
+      const result = validator.isValid(validCut, testShape, existingCuts, false, false); // 严格模式
+      
+      expect(result).toBe(false); // 应该返回 false 因为第二个太接近
+      expect(cutGeneratorGeometry.cutsAreTooClose).toHaveBeenCalledTimes(2);
+      
+      // 恢复mocks
+      jest.restoreAllMocks();
+    });
+  });
+
   describe('🔑 边界条件和错误处理测试', () => {
+    test('应该在cutsAreTooClose返回true时返回false（覆盖28-31行）', () => {
+      // Mock几何函数
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).doesCutIntersectShape.mockReturnValue(2);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).cutsAreTooClose.mockReturnValue(true); // 切割线太接近，触发28-31行
+      
+      const existingCut: CutLine = {
+        x1: 45, y1: -10,
+        x2: 45, y2: 110,
+        type: 'straight'
+      };
+      
+      const result = validator.isValid(validCut, testShape, [existingCut], false, false); // allowIntersection = false
+      
+      expect(result).toBe(false); // 应该返回false，覆盖line 29
+      expect(cutGeneratorGeometry.doesCutIntersectShape).toHaveBeenCalledWith(validCut, testShape);
+      expect(cutGeneratorGeometry.cutsAreTooClose).toHaveBeenCalledWith(validCut, existingCut);
+      
+      // 恢复mocks
+      jest.restoreAllMocks();
+    });
+
+    test('应该在relaxed=true时直接返回true（覆盖36-37行）', () => {
+      // Mock几何函数
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).doesCutIntersectShape.mockReturnValue(2);
+      (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).cutsAreTooClose.mockReturnValue(false);
+      const mockCalculateCenter = (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).calculateCenter;
+      const mockIsPointNearLine = (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).isPointNearLine;
+      
+      const existingCut: CutLine = {
+        x1: 45, y1: -10,
+        x2: 45, y2: 110,
+        type: 'straight'
+      };
+      
+      const result = validator.isValid(validCut, testShape, [existingCut], true, false); // relaxed = true，触发36-37行
+      
+      expect(result).toBe(true); // 应该返回true，覆盖line 36
+      expect(cutGeneratorGeometry.doesCutIntersectShape).toHaveBeenCalledWith(validCut, testShape);
+      expect(cutGeneratorGeometry.cutsAreTooClose).toHaveBeenCalledWith(validCut, existingCut);
+      // 在relaxed模式下，不应该调用中心检查函数
+      expect(mockCalculateCenter).not.toHaveBeenCalled();
+      expect(mockIsPointNearLine).not.toHaveBeenCalled();
+      
+      // 恢复mocks
+      jest.restoreAllMocks();
+    });
+
 test('应该处理切割线与形状交点不足的情况', () => {
       // 使用真实实现
       const actual = jest.requireActual('../cutGeneratorGeometry');

@@ -36,7 +36,12 @@
             "title": "选择形状类型",
             "polygon": "多边形",
             "curve": "云朵形状",
-            "irregular": "锯齿形状"
+            "irregular": "锯齿形状",
+            "names": {
+                "polygon": "多边形",
+                "cloud": "云朵形",
+                "jagged": "锯齿形"
+            }
         },
         "cutType": {
             "title": "选择切割类型",

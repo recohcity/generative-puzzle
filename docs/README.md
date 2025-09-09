@@ -15,7 +15,7 @@
 - **[配置指南](./configuration/)** - 环境配置和部署
 - **[测试文档](./testing/)** - Playwright自动化测试系统
 - **[GitHub Pages部署](./GITHUB_PAGES_DEPLOYMENT.md)** - 完整的部署管理指南
-- **[难度设计](./difficulty-design.md)** - 游戏难度设计文档
+- **[游戏规则](./game-rules-unified.md)** - 统一游戏规则文档（难度+分数系统）
 
 ### 🎯 监督指令
 - **[最高级别监督指令](./SUPREME_ADAPTATION_DIRECTIVE.md)** - 项目开发的最高指导原则
@@ -169,7 +169,7 @@ docs/
 ├── project_structure.md                # 🏗️ 项目结构文档（自动生成）
 ├── api-scan-report.md                  # 🔍 API扫描报告（自动生成）
 ├── api-classification-report.md        # �️ 戏API分类报告（自动生成）
-├── difficulty-design.md                # 🎮 游戏难度设计文档
+├── game-rules-unified.md               # 🎮 统一游戏规则文档（难度+分数系统）
 ├── SUPREME_ADAPTATION_DIRECTIVE.md     # �️ 最高级别监督指令
 ├── PRD_生成式拼图游戏.md                # 📋 产品需求文档
 ├── configuration/                      # ⚙️ 配置相关文档
