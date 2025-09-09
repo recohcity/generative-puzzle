@@ -147,7 +147,7 @@ class ArchitectureConflictChecker {
       console.log(`   ${check.description}`);
       
       check.details.forEach(detail => {
-        console.log(`   • ${detail}`);
+        console.log(`   · ${detail}`);
       });
     });
 

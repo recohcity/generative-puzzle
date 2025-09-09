@@ -44,7 +44,10 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
   const getDifficultyWithShape = (difficulty: any): string => {
     const shapeName = getShapeDisplayName(difficulty.shapeType);
     const difficultyLevel = getDifficultyText(difficulty);
-    return shapeName ? `${shapeName} ${difficultyLevel}` : difficultyLevel;
+    const piecesPart = `${difficulty.actualPieces}${t('stats.piecesUnit')}`;
+    return shapeName
+      ? `${shapeName} · ${difficultyLevel} · ${piecesPart}`
+      : `${difficultyLevel} · ${piecesPart}`;
   };
 
   // 格式化分数显示

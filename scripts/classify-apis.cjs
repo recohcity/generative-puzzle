@@ -147,7 +147,7 @@ class APIClassifier {
       if (apis.length > 0) {
         console.log('   API列表:');
         for (const api of apis.slice(0, 10)) { // 只显示前10个
-          console.log(`     • ${api.name}`);
+          console.log(`     · ${api.name}`);
         }
         if (apis.length > 10) {
           console.log(`     ... 还有 ${apis.length - 10} 个API`);

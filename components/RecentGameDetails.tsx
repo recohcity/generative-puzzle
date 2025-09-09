@@ -87,7 +87,20 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
             <div className="bg-white/5 rounded-lg p-3 border border-white/10">
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-[#FFD5AB]">{t('score.breakdown.base')}：{t('difficulty.levelLabel', { level: record.difficulty.cutCount })}</span>
+                <span className="text-[#FFD5AB]">{t('score.breakdown.base')}：{(() => {
+                    const getShapeDisplayName = (shapeType?: string): string => {
+                      if (!shapeType) return '';
+                      try {
+                        return t(`game.shapes.names.${shapeType}`);
+                      } catch {
+                        return shapeType as string;
+                      }
+                    };
+                    const shapeName = getShapeDisplayName(record.difficulty?.shapeType);
+                    const levelText = t('difficulty.levelLabel', { level: record.difficulty.cutCount });
+                    const piecesPart = `${record.difficulty?.actualPieces || 0}${t('stats.piecesUnit')}`;
+                    return shapeName ? `${shapeName} · ${levelText} · ${piecesPart}` : `${levelText} · ${piecesPart}`;
+                  })()}</span>
                   <span className="text-[#FFD5AB]">{record.scoreBreakdown.baseScore}</span>
                 </div>
                 <div className="flex justify-between">
@@ -120,7 +133,7 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
                   </div>
                   <div className="flex justify-between mb-2">
                     <span className="text-[#FFD5AB]">{t('score.breakdown.multiplier')}：</span>
-                    <span className="text-[#FFD5AB]">×{record.scoreBreakdown.difficultyMultiplier}</span>
+                    <span className="text-[#FFD5AB]">×{record.scoreBreakdown.difficultyMultiplier.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between font-medium">
                     <span className="text-[#FFD5AB]">{t('score.breakdown.final')}：</span>

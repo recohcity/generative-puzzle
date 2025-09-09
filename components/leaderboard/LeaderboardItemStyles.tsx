@@ -146,7 +146,7 @@ export const LeaderboardItemContent: React.FC<LeaderboardItemContentProps> = ({
           <div className={`text-xs truncate ${
             isPlayerNewEntry ? 'text-[#FFD5AB] opacity-90' : 'text-[#FFD5AB] opacity-60'
           }`}>
-            {formatTime(duration)} • {difficulty}：{pieces}片
+            {formatTime(duration)} · {difficulty}：{pieces}片
           </div>
         </div>
       </div>

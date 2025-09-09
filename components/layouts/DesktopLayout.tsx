@@ -108,7 +108,11 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   const getDifficultyWithShape = (difficulty: any): string => {
     const shapeName = getShapeDisplayName(difficulty?.shapeType);
     const difficultyLevel = t('difficulty.levelLabel', { level: difficulty.cutCount });
-    return shapeName ? `${shapeName} ${difficultyLevel}` : difficultyLevel;
+    const piecesPart =`${difficulty.actualPieces}${t('stats.piecesUnit')}`;
+    return shapeName 
+      ? `${shapeName} · ${difficultyLevel} · ${piecesPart}` 
+      : `${difficultyLevel} · ${piecesPart}`;
+
   };
 
   // 格式化时间显示
@@ -449,7 +453,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                               </div>
                               <div className="flex justify-between mb-2">
                                 <span className="text-[#FFD5AB]">{t('score.breakdown.multiplier')}：</span>
-                                <span className="text-[#FFD5AB]">×{state.scoreBreakdown.difficultyMultiplier}</span>
+                                <span className="text-[#FFD5AB]">×{state.scoreBreakdown.difficultyMultiplier.toFixed(2)}</span>
                               </div>
                               <div className="flex justify-between font-medium">
                                 <span className="text-[#FFD5AB]">{t('score.breakdown.final')}：</span>

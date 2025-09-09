@@ -391,7 +391,7 @@ export default function ScoreManagementPage() {
                       </div>
                       <div className="flex justify-between">
                         <span>难度系数:</span>
-                        <span className="font-semibold">×{selectedRecord.scoreBreakdown.difficultyMultiplier}</span>
+                        <span className="font-semibold">×{selectedRecord.scoreBreakdown.difficultyMultiplier.toFixed(2)}</span>
                       </div>
                       <hr className="my-2" />
                       <div className="flex justify-between text-lg font-bold">

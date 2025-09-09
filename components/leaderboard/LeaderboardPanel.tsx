@@ -61,8 +61,9 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
   const getDifficultyWithShape = (difficulty: any): string => {
     const shapeName = getShapeDisplayName(difficulty?.shapeType);
     const difficultyLevel = getDifficultyText(difficulty);
-    return shapeName ? `${shapeName}·${difficultyLevel}` : difficultyLevel;
+    return shapeName ? `${shapeName} · ${difficultyLevel}` : difficultyLevel;
   };
+
 
   // 统一所有难度的个人最佳成绩数据，只显示前5名
   const filteredLeaderboard = useMemo(() => {
@@ -234,7 +235,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                   className="flex items-center gap-3 p-2 rounded-lg bg-black bg-opacity-20 border border-[#FFD5AB] border-opacity-20"
                 >
                   {/* 排名图标 */}
-                  <div className="flex items-center justify-center w-10 h-10">
+                  <div className="flex items-center justify-center w-6 h-10">
                     <span className="text-2xl text-white">
                       {getRankIcon(index + 1)}
                     </span>
@@ -242,7 +243,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                   
                   {/* 游戏信息 - 一行布局 */}
                   <div className="flex-1 min-w-0 text-xs text-[#FFD5AB] opacity-70">
-                    {formatTime(record.totalDuration)} • {getDifficultyWithShape(record.difficulty)} • {record.difficulty.actualPieces}{t('stats.piecesUnit')}
+                    {formatTime(record.totalDuration)} · {getDifficultyWithShape(record.difficulty)} · {record.difficulty.actualPieces}{t('stats.piecesUnit')}
                   </div>
                   
                   {/* 分数 - 加粗大号 */}

@@ -142,7 +142,7 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
                             </div>
                             {/* 第二行：时间和难度（字号较小） */}
                             <div className="text-xs text-[#FFD5AB] opacity-70">
-                              {LeaderboardSimplifier.formatTime(record.totalDuration)} • {getDifficultyLabel(record.difficulty)}：{record.difficulty.actualPieces}片
+                              {LeaderboardSimplifier.formatTime(record.totalDuration)} · {getDifficultyLabel(record.difficulty)}：{record.difficulty.actualPieces}片
                             </div>
                           </div>
                         </div>
@@ -194,7 +194,7 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
                 <div className="flex items-center gap-2">
                   <span className="text-lg">🎮</span>
                   <div className="text-xs">
-                    <div>{getDifficultyLabel(lastGameRecord.difficulty)} • {lastGameRecord.difficulty.actualPieces}片</div>
+                    <div>{getDifficultyLabel(lastGameRecord.difficulty)} · {lastGameRecord.difficulty.actualPieces}片</div>
                     <div className="opacity-60">{formatDate(lastGameRecord.timestamp)}</div>
                   </div>
                 </div>

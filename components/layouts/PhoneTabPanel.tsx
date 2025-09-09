@@ -279,7 +279,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                 const getDifficultyWithShape = (difficulty: any): string => {
                   const shapeName = getShapeDisplayName(difficulty?.shapeType);
                   const difficultyLevel = getDifficultyText(difficulty);
-                  return shapeName ? `${shapeName}·${difficultyLevel}` : difficultyLevel;
+                  return shapeName ? `${shapeName} · ${difficultyLevel}` : difficultyLevel;
                 };
 
                 return (
@@ -293,7 +293,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
 
                     {/* 游戏信息 - 一行布局 */}
                     <div className="flex-1 min-w-0 text-xs text-[#FFD5AB] opacity-70">
-{formatTime(record.totalDuration || 0)} • {getDifficultyWithShape(record.difficulty)} • {record.difficulty?.actualPieces || 0}{t('stats.piecesUnit')}
+{formatTime(record.totalDuration || 0)} · {getDifficultyWithShape(record.difficulty)} · {record.difficulty?.actualPieces || 0}{t('stats.piecesUnit')}
                     </div>
 
                     {/* 分数 - 加粗大号 */}

@@ -25,7 +25,9 @@ export class GameDataManager {
       difficultyLevel: (record.difficulty?.difficultyLevel || 'medium') as DifficultyLevel,
       cutType: cutTypeValue === 'straight' ? CutType.Straight : CutType.Diagonal,
       cutCount: record.difficulty?.cutCount || 2,
-      actualPieces: record.difficulty?.actualPieces || 4
+      actualPieces: record.difficulty?.actualPieces || 4,
+      // 尝试迁移旧数据中的形状字段，如果缺失则留空，由UI降级处理
+      shapeType: record.difficulty?.shapeType || record.shapeType || undefined
     };
 
     const migratedRecord: GameRecord = {

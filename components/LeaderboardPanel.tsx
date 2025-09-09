@@ -223,7 +223,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
                     <div>
                       <div className="text-[#FFD5AB] font-medium">{record.finalScore.toLocaleString()}</div>
                       <div className="text-[#FFD5AB] opacity-60">
-                        {formatTime(record.totalDuration)} • {t('difficulty.levelLabel', { level: record.difficulty.cutCount })}
+                        {formatTime(record.totalDuration)} · {t('difficulty.levelLabel', { level: record.difficulty.cutCount })}
                       </div>
                     </div>
                   </div>

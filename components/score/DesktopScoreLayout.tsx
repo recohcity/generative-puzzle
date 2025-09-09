@@ -262,7 +262,7 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
                 <div className="text-gray-700">
                   {getDifficultyLabel(gameStats.difficulty)}：{gameStats.difficulty.actualPieces}片+{getCutTypeText(gameStats.difficulty.cutType)}+{getDeviceTypeText(gameStats.deviceType)}
                 </div>
-                <div className="text-gray-700">难度系数：×{scoreBreakdown.difficultyMultiplier}</div>
+                <div className="text-gray-700">难度系数：×{scoreBreakdown.difficultyMultiplier.toFixed(2)}</div>
                 <div className="text-lg font-bold text-blue-600 mt-2">最终得分：{formatScore(scoreBreakdown.finalScore)}</div>
               </div>
             </div>

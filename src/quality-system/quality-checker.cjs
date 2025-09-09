@@ -295,7 +295,7 @@ class ProjectQualityChecker {
     }
     
     suggestions.forEach(suggestion => {
-      this.log(`  • ${suggestion}`);
+      this.log(`  · ${suggestion}`);
     });
   }
 
