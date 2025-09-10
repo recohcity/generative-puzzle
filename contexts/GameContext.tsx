@@ -13,7 +13,8 @@ import { Point, PuzzlePiece, DraggingPiece, PieceBounds, GameState, GameContextP
 import { GameDataManager } from '@/utils/data/GameDataManager';
 import { calculateFinalScore, calculateMinimumRotations, calculateLiveScore } from '@/utils/score/ScoreCalculator';
 import { calculateDifficultyLevel } from '@/utils/difficulty/DifficultyUtils';
-
+// 导入音效函数（确保路径正确）
+import { playFinishSound } from '@/utils/rendering/soundEffects';
 // 获取设备类型的工具函数
 const getDeviceType = (): 'desktop' | 'mobile-portrait' | 'mobile-landscape' | 'ipad' => {
   if (typeof window === 'undefined') return 'desktop';
@@ -796,7 +797,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       !state.isGameComplete  // 使用isGameComplete而不是isCompleted
     ) {
       console.log('✅ [GameContext] 触发游戏完成!');
-      // 游戏完成时自动触发统计计算
+      // 1. 播放完成音效
+      playFinishSound(); // 新增：播放public/finish.mp3
+      // 2.游戏完成状态更新，触发完成动画
       dispatch({ type: "GAME_COMPLETED" });
     }
   }, [state.completedPieces, state.puzzle, state.isGameActive, state.isGameComplete]);

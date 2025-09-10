@@ -1,6 +1,6 @@
 # API分类报告
 
-> 生成时间: 2025/9/10 00:35:55
+> 生成时间: 2025/9/10 19:46:43
 > 分类工具: API分类器 v1.0
 
 ## 📊 分类统计
@@ -9,7 +9,7 @@
 |------|------|------|--------|------|
 | PUBLIC | 24 | 9.9% | 1 | 必须文档化 |
 | TEAM | 25 | 10.3% | 2 | 建议文档化 |
-| INTERNAL | 193 | 79.8% | 3 | 选择性文档化 |
+| INTERNAL | 194 | 79.8% | 3 | 选择性文档化 |
 
 ## 📋 详细分类
 
@@ -80,7 +80,7 @@
 
 **描述**: 模块内部实现细节
 
-**API列表** (193个):
+**API列表** (194个):
 
 - `EVENT_CONFIG`
 - `MEMORY_CONFIG`
@@ -193,6 +193,7 @@
 - `playPieceSnapSound`
 - `playCutSound`
 - `playScatterSound`
+- `playFinishSound`
 - `PuzzlePiece`
 - `drawPiece`
 - `drawCompletionEffect`

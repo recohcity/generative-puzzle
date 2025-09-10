@@ -1,16 +1,16 @@
 # API扫描报告
 
-> 生成时间: 2025/9/10 00:35:55
+> 生成时间: 2025/9/10 19:46:43
 > 扫描工具: API变更扫描器 v1.0
 
 ## 📊 统计概览
 
 | 项目 | 数量 | 说明 |
 |------|------|------|
-| API总数 | 270 | 项目中所有导出的API |
+| API总数 | 271 | 项目中所有导出的API |
 | 已文档化 | 31 | 在API文档中已记录的API |
-| 文档覆盖率 | 11.5% | 文档化程度 |
-| 新增API | 242 | 需要添加到文档的API |
+| 文档覆盖率 | 11.4% | 文档化程度 |
+| 新增API | 243 | 需要添加到文档的API |
 | 可能删除 | 3 | 文档中存在但代码中找不到 |
 
 ## 🆕 新增API详情
@@ -3519,6 +3519,29 @@ export const playScatterSound = async (): Promise<void> => {
 ```
 ```
 
+#### playFinishSound
+
+- **类型**: constant
+- **文件**: `utils/rendering/soundEffects.ts:406`
+- **签名**: `export const playFinishSound = async (): Promise<void> => {`
+
+**建议文档结构**:
+```markdown
+### playFinishSound
+
+[添加API描述]
+
+```typescript
+export const playFinishSound = async (): Promise<void> => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
 #### PuzzlePiece
 
 - **类型**: interface
@@ -5730,7 +5753,7 @@ export const AngleDisplayControllerImpl: AngleDisplayController = {
 - ❌ `useDebugToggle` (function)
 - ❌ `reducer` (constant)
 
-### 工具函数API (140个)
+### 工具函数API (141个)
 
 - ❌ `deviceLogger` (constant)
 - ✅ `adaptationLogger` (constant)
@@ -5774,6 +5797,7 @@ export const AngleDisplayControllerImpl: AngleDisplayController = {
 - ✅ `playRotateSound` (constant)
 - ❌ `playCutSound` (constant)
 - ❌ `playScatterSound` (constant)
+- ❌ `playFinishSound` (constant)
 - ❌ `PuzzlePiece` (interface)
 - ✅ `drawShape` (constant)
 - ❌ `drawPiece` (constant)

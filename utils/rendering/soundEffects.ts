@@ -316,7 +316,7 @@ export const playCutSound = async (): Promise<void> => {
   try {
     // 直接播放真实的切割音效文件
     const cutAudio = new Audio('/split.mp3');
-    cutAudio.volume = 1.0; // 放大2倍音量
+    cutAudio.volume = 1.0; // 正常音量
     cutAudio.currentTime = 0; // 确保从头开始播放
 
     // 播放音效
@@ -399,6 +399,55 @@ export const playScatterSound = async (): Promise<void> => {
 
     } catch (fallbackError) {
       console.error('Error playing fallback scatter sound:', fallbackError);
+    }
+  }
+};
+// 播放拼图完成音效（独立音频文件）
+export const playFinishSound = async (): Promise<void> => {
+  soundPlayedForTest('finish');
+
+  try {
+    // 直接播放完成音效文件
+    const finishAudio = new Audio('/finish.mp3');
+    finishAudio.volume = 0.8; // 适中音量，突出完成感
+    finishAudio.currentTime = 0; // 确保从头确保从头播放
+
+    await finishAudio.play();
+  } catch (error) {
+    console.error('Error playing finish sound:', error);
+
+    // 回退方案：使用程序生成音效（保持与现有系统一致）
+    const audioContext = createAudioContext();
+    if (!audioContext) return;
+
+    try {
+      await ensureAudioContextRunning(audioContext);
+
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      // 和弦效果增强完成感（C5 + E5 + G5）
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+      
+      // 0.1秒后添加E5音符
+      oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+      
+      // 0.2秒后添加G5音符
+      oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+
+      // 音量包络：快速上升后缓慢衰减
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.05);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 1.2);
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 1.2);
+    } catch (fallbackError) {
+      console.error('Error playing fallback finish sound:', fallbackError);
     }
   }
 };

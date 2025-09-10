@@ -32,8 +32,8 @@ export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 34 }
 
   const handleScatterPuzzle = () => {
     console.log('🔧 handleScatterPuzzle被调用');
-    playButtonClickSound() // 通用按钮音效
-    playScatterSound() // 散开拼图音效
+    //playButtonClickSound() // 禁用通用按钮音效
+    playScatterSound() // 使用指定的散开拼图音效替代通用按钮音效
     console.log('🔧 准备调用scatterPuzzle');
     scatterPuzzle()
     console.log('🔧 scatterPuzzle调用完成');
