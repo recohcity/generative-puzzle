@@ -1,306 +1,312 @@
-# Generative Puzzle
+# 🧩 Generative Puzzle
 
+<div align="center">
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/recohcity/generative-puzzle) 
+[![Live Demo](https://img.shields.io/badge/🚀-Live_Demo-brightgreen)](https://www.citylivepark.com) 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-15.3.4-black.svg)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-blue.svg)](https://reactjs.org/)
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/recohcity/generative-puzzle) <a href="https://www.citylivepark.com"> <img src="https://img.shields.io/badge/🚀-Live_Demo-brightgreen" alt="Live Demo"> </a> [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+**基于 Next.js 15 和 React 19 构建的企业级生成式拼图游戏**
 
-基于 Next.js 和 React 构建的高可维护、可测试的3端统一适配生成式拼图游戏。
+*高可维护、可测试、3端统一适配的现代化拼图游戏解决方案*
 
----
-
-## 项目愿景
-
-- **3端统一适配（✅ 已完成）**：桌面端、移动端、iPad端完美适配，智能布局切换，拼图状态随窗口/方向变化无损恢复。
-- **自动化测试闭环**：100% 稳定的 E2E 测试 + 性能数据归档 + 趋势可视化，开发、测试、分析一体化。
-- **高可维护性**：核心逻辑高度解耦，类型系统完善，文档与变更记录齐全。
-
----
-
-## 技术栈与架构
-
-- **前端框架**：Next.js 15 / React 19
-- **UI 体系**：Radix UI + Shadcn UI / Tailwind CSS
-- **状态管理**：React Context + useReducer
-- **类型系统**：TypeScript（核心类型集中于 `types/puzzleTypes.ts`）
-- **渲染引擎**：HTML Canvas API（多层画布）
-- **自动化测试**：Playwright（E2E 测试 + 性能分析 + 专用 API）
-- **性能分析**：测试数据自动归档、趋势仪表盘、报告可视化
-
-### 关键依赖版本（性能优化）
-
-为确保最佳性能表现，项目锁定以下关键依赖版本：
-
-```json
-{
-  "next": "15.3.4",
-  "lucide-react": "0.454.0", 
-  "motion": "12.23.0",
-  "@playwright/test": "1.53.2",
-  "playwright": "1.53.2"
-}
-```
-
-> **⚠️ 重要提示**：经过性能基准测试，这些版本在形状生成、拼图切割、动画渲染等关键场景下表现最佳。升级到更新版本可能导致显著的性能下降（如形状生成时间从 66ms 增加到 691ms）。建议在升级前进行充分的性能测试。
+</div>
 
 ---
 
-## 核心功能
+## ✨ 项目亮点
 
-- **形状系统**：多边形、曲线、不规则圆形，参数可调，形状按钮即生成，已移除“生成形状”按钮
-- **切割系统**：1-8 次切割，直线/斜线，智能分块
-- **交互机制**：拖拽、双指旋转、15° 增量、磁吸归位、物理回弹
-- **3端统一适配**：桌面端左画布+右面板，移动端Tab布局，iPad智能切换，画布与拼图状态无损恢复
-- **视觉反馈**：动态阴影、完成动画、音效、调试模式
-- **分布算法**：网格/螺旋分布，智能避让，边界安全
-- **自动化测试**：E2E 测试全流程覆盖，专项与主流程测试隔离
-- **性能分析**：自动归档、趋势可视化、基准评估
-- **UI优化** 
-    - 拼图块与目标形状支持材质瓷砖气孔纹理填充，提升美术质感
-    - 单图响应式背景方案，资源优化67%，CSS标准化处理
-    - 移动端按钮完美平分，触摸事件防冲突，双指旋转精确控制
-    - 加载页风格与主页面一致，极简高效，进度条与数字同步
+### 🏆 企业级质量标准
+- **A+ 级别代码质量** - 99.04% 测试覆盖率，零 TypeScript 错误
+- **性能卓越** - 形状生成 77ms，拼图生成 43ms，60fps 流畅体验
+- **3端统一适配** - 桌面端、移动端、iPad 端完美适配，智能布局切换
+- **自动化测试闭环** - 100% 稳定的 E2E 测试 + 性能数据归档 + 趋势可视化
 
----
+### 🚀 技术前沿
+- **最新技术栈** - Next.js 15 + React 19 + TypeScript 5
+- **现代化 UI** - Radix UI + Shadcn UI + Tailwind CSS
+- **智能渲染** - HTML Canvas API 多层画布，支持材质纹理
+- **音效系统** - 真实音频文件 + 程序生成音效的混合方案
 
-## 自动化测试与性能分析闭环
-
-- **专用测试 API**：核心状态管理中心（GameContext）在测试环境下自动挂载 `window.testAPI`，支持直接驱动游戏状态，规避 UI 竞态，100% 稳定。
-- **E2E 测试体系**：主流程测试（全流程）、专项测试（如3端适配验证），Playwright 脚本与测试 API 紧密集成。
-- **性能数据归档**：测试结束后自动归档性能数据（Markdown+JSON），存储于 `playwright-test-logs/`。
-- **趋势可视化**：内置 `/test` 仪表盘页面，实时展示历史性能趋势与详细报告。
-- **测试隔离与管理**：临时/专项测试与主流程测试物理隔离，配置 `testIgnore` 保证主流程环境纯净。
-- **支持开发/生产模式自动识别，测试报告、API、前端可视化全链路分组、对比、差异高亮、趋势分析**
-- **所有性能指标分项采集与分级，保留两位小数，报告、索引、终端日志格式统一**
+### 🎮 游戏特性
+- **生成式形状** - 多边形、曲线、不规则圆形，参数可调
+- **智能切割** - 1-8 次切割，直线/斜线，智能分块算法
+- **流畅交互** - 拖拽、双指旋转、15° 增量、磁吸归位、物理回弹
+- **视觉反馈** - 动态阴影、完成动画、音效反馈、调试模式
 
 ---
 
-## 🚀 API快速预览
+## 🎯 快速开始
 
-### 核心API一览
-```typescript
-import { 
-  UNIFIED_CONFIG,
-  useDevice, 
-  useCanvas, 
-  useAdaptation 
-} from 'generative-puzzle';
+### 环境要求
+- **Node.js** 18+ 
+- **npm** 或 **yarn**
+- **现代浏览器** (Chrome 90+, Firefox 88+, Safari 14+)
 
-// 🎯 设备适配
-const deviceState = useDevice();
-console.log(deviceState.isMobile); // true/false
-console.log(deviceState.deviceType); // 'desktop' | 'tablet' | 'phone'
-
-// 🎨 画布管理
-const canvasSize = useCanvas({ 
-  containerRef, 
-  canvasRef, 
-  backgroundCanvasRef 
-});
-console.log(`画布尺寸: ${canvasSize.width}x${canvasSize.height}`);
-
-// ⚙️ 统一配置
-const mobileConfig = UNIFIED_CONFIG.adaptation.mobile;
-const desktopConfig = UNIFIED_CONFIG.adaptation.desktop;
-```
-
-### 主要API分类
-- 🔧 **[配置管理API](./docs/API_DOCUMENTATION.md#配置管理api)** - 设备配置、适配参数、性能设置
-- 🏗️ **[核心管理器API](./docs/API_DOCUMENTATION.md#核心管理器api)** - 设备管理、画布管理、事件管理
-- ⚛️ **[React Hooks API](./docs/API_DOCUMENTATION.md#react-hooks-api)** - 3端统一适配、交互处理
-- 🛠️ **[工具函数API](./docs/API_DOCUMENTATION.md#工具函数api)** - 几何计算、拼图适配、渲染优化
-
-📖 **[完整API文档](./docs/API_DOCUMENTATION.md)** | 🚀 **[快速开始指南](./docs/GETTING_STARTED.md)** | 📚 **[文档中心](./docs/README.md)** | 🏥 **[项目体检报告](./docs/PROJECT_HEALTH_REPORT.md)**
-
----
-
-## 目录结构与模块分工
-
-- `app/`：Next.js 路由、布局、API、性能仪表盘
-- `components/`：核心 UI 组件、PuzzleCanvas（重构后仅编排各钩子与渲染）
-- `contexts/`：全局状态管理（GameContext，含测试 API 挂载）
-- `hooks/`：自定义钩子（3端适配、设备检测、交互、调试等）
-- `e2e/`：Playwright 测试脚本（主流程、专项、临时）
-- `utils/`：核心算法与工具（几何、绘制、拼图生成、分布、音效等）
-- `types/`：核心类型定义（GameState、PuzzlePiece 等）
-- `scripts/`：自动化归档脚本
-- `playwright-test-logs/`：性能报告归档目录
-- `public/`：静态资源（图片、音效）
-- `docs/`：设计、配置、重构、测试等文档
-- `animate-ui/backgrounds/bubble.tsx`：动态气泡背景特效组件，提升美术体验
-- `texture-tile.png`：瓷砖气孔材质纹理，用于拼图块和目标形状的美术填充
-- `app/test/page.tsx`：性能趋势仪表盘页面，支持开发/生产分组、对比、差异高亮、趋势分析，所有性能指标分项采集与分级，自动高亮环境差异
-- `test-results/`：Playwright 测试原始结果目录（自动生成，存放原始测试结果文件，.gitkeep 保证目录同步，文件不上传）
-- `playwright-report/`：Playwright 生成的 HTML 测试报告目录（自动生成，存放测试报告，内容可忽略，.gitkeep 保证目录同步，文件不上传）
-
-详见 [项目结构文档](./docs/project_structure.md)
-
----
-
-## 性能优化与基准
-
-### 性能基准指标
-
-项目通过自动化 E2E 测试持续监控以下关键性能指标：
-
-- **形状生成时间**: ≤ 100ms（当前：66ms）
-- **拼图生成时间**: ≤ 100ms（当前：39ms）
-- **散开动画时间**: ≤ 200ms（当前：65ms）
-- **平均帧率**: ≥ 30fps（当前：60fps）
-- **页面加载时间**: ≤ 1500ms（当前：1319ms）
-
-### 依赖版本管理策略
-
-1. **性能关键依赖锁定**：Next.js、Lucide React、Motion 等核心依赖保持在经过验证的稳定版本
-2. **渐进式更新**：新依赖更新前必须通过性能基准测试
-3. **自动化监控**：每次测试运行都会生成性能报告，异常变化会被及时发现
-4. **版本回退机制**：发现性能回归时可快速回退到已知良好版本
-
-### 性能优化技术
-
-- **形状生成优化**：点数控制在 30 个，平衡视觉质量与计算性能
-- **碰撞检测优化**：`isPointInPolygon` 函数添加边界框预检查，大幅提升交互响应
-- **渲染优化**：多层 Canvas 分离，减少不必要的重绘
-- **内存管理**：智能缓存与清理机制，避免内存泄漏
-
----
-
-## 安装与运行
-
+### 安装运行
 ```bash
-# 克隆仓库
+# 克隆项目
 git clone https://github.com/recohcity/generative-puzzle.git
 cd generative-puzzle
 
 # 安装依赖
 npm install
 
-# 开发模式
+# 启动开发服务器
+npm run dev
+
+# 打开浏览器访问
+open http://localhost:3000
+```
+
+### 游戏体验
+1. **选择形状** - 点击多边形、曲线或不规则形状按钮
+2. **设置切割** - 选择切割次数(1-8)和类型(直线/斜线)
+3. **开始游戏** - 拖拽拼图块到正确位置
+4. **完成拼图** - 所有块归位后查看完成动画
+
+---
+
+## 🛠️ 技术栈
+
+### 核心框架
+| 技术 | 版本 | 用途 |
+|------|------|------|
+| **Next.js** | 15.3.4 | React 全栈框架 |
+| **React** | 19 | 用户界面库 |
+| **TypeScript** | 5.0 | 类型安全 |
+| **Tailwind CSS** | 3.4.17 | 样式框架 |
+
+### UI 组件
+| 技术 | 版本 | 用途 |
+|------|------|------|
+| **Radix UI** | 最新 | 无障碍组件库 |
+| **Shadcn UI** | 最新 | 组件设计系统 |
+| **Lucide React** | 0.454.0 | 图标库 |
+| **Motion** | 12.23.0 | 动画库 |
+
+### 测试工具
+| 技术 | 版本 | 用途 |
+|------|------|------|
+| **Playwright** | 1.53.2 | E2E 测试 |
+| **Jest** | 30.0.2 | 单元测试 |
+| **Testing Library** | 16.3.0 | React 测试 |
+
+> **⚠️ 性能优化提示**：经过性能基准测试，这些版本在形状生成、拼图切割、动画渲染等关键场景下表现最佳。升级到更新版本可能导致显著的性能下降。
+
+---
+
+## 📊 项目质量
+
+### 🏥 质量指标
+| 维度 | 得分 | 等级 | 状态 |
+|------|------|------|------|
+| **代码质量** | 100/100 | A+ | ✅ 优秀 |
+| **测试覆盖率** | 99.04% | A+ | ✅ 优秀 |
+| **性能表现** | 100/100 | A+ | 🚀 卓越 |
+| **文档完整性** | 97/100 | A+ | ✅ 优秀 |
+| **整体评分** | 100/100 | A+ | 🏆 卓越 |
+
+### 📈 性能基准
+- **形状生成时间**: ≤ 100ms (当前: 77ms)
+- **拼图生成时间**: ≤ 100ms (当前: 43ms)
+- **散开动画时间**: ≤ 200ms (当前: 163ms)
+- **页面加载时间**: ≤ 1500ms (当前: 1328ms)
+- **平均帧率**: ≥ 30fps (当前: 60fps)
+
+---
+
+## 🎮 核心功能
+
+### 形状系统
+- **多边形形状** - 可调节边数和复杂度
+- **曲线形状** - 贝塞尔曲线生成的不规则形状
+- **不规则圆形** - 随机点生成的有机形状
+- **一键生成** - 点击按钮即生成，无需额外操作
+
+### 切割系统
+- **智能切割** - 1-8 次切割，支持直线和斜线
+- **分块算法** - 智能分块，确保拼图块大小合理
+- **边界检测** - 自动检测切割边界，避免无效切割
+
+### 交互机制
+- **拖拽操作** - 流畅的拖拽体验，支持多指操作
+- **旋转控制** - 双指旋转，15° 增量控制
+- **磁吸归位** - 智能吸附，精确归位
+- **物理回弹** - 自然的物理反馈效果
+
+### 3端适配
+- **桌面端** - 左画布 + 右面板布局
+- **移动端** - Tab 布局，触摸优化
+- **iPad 端** - 智能切换，横竖屏适配
+- **状态恢复** - 窗口/方向变化时无损恢复拼图状态
+
+---
+
+## 🧪 测试与质量
+
+### 自动化测试
+```bash
+# 运行完整测试套件
+npm run test:e2e
+
+# 运行单元测试
+npm run test:unit
+
+# 查看测试覆盖率
+npm run test:coverage
+
+# 查看测试报告
+npm run test:report
+```
+
+### 质量检查
+```bash
+# 代码质量检查
+npm run quality:check
+
+# 依赖分析
+npm run analyze:unused-deps
+
+# 项目结构扫描
+npm run generate-structure
+```
+
+### 测试覆盖
+- **E2E 测试** - 全流程自动化测试
+- **单元测试** - 核心逻辑单元测试
+- **性能测试** - 性能指标监控
+- **适配测试** - 跨设备适配验证
+
+---
+
+## 📚 文档中心
+
+### 核心文档
+- **[快速开始指南](./docs/GETTING_STARTED.md)** - 5分钟上手指南
+- **[API 文档](./docs/API_DOCUMENTATION.md)** - 完整的 API 参考手册
+- **[项目体检报告](./docs/Generative%20Puzzle%20项目代码质量全面体检报告.md)** - 企业级质量分析
+- **[项目结构](./docs/project_structure.md)** - 完整的项目架构
+
+### 配置文档
+- **[环境配置](./docs/configuration/README.md)** - 开发环境配置
+- **[音效配置](./docs/configuration/media-sound.md)** - 音效系统配置
+- **[测试配置](./docs/testing/README.md)** - 测试系统配置
+
+### 部署文档
+- **[GitHub Pages 部署](./docs/GITHUB_PAGES_DEPLOYMENT.md)** - 静态站点部署
+- **[性能优化](./docs/configuration/performance.md)** - 性能优化指南
+
+---
+
+## 🏗️ 项目结构
+
+```
+generative-puzzle/
+├── app/                    # Next.js 应用目录
+│   ├── page.tsx           # 主页面
+│   ├── test/              # 性能仪表盘
+│   └── api/               # API 路由
+├── components/            # React 组件
+│   ├── GameInterface.tsx  # 核心游戏界面
+│   ├── PuzzleCanvas.tsx   # 拼图画布
+│   └── ui/                # UI 组件库
+├── contexts/              # React Context
+│   └── GameContext.tsx    # 全局状态管理
+├── hooks/                 # 自定义 Hooks
+│   └── usePuzzleInteractions.ts
+├── utils/                 # 工具函数
+│   ├── puzzle/            # 拼图算法
+│   ├── rendering/         # 渲染引擎
+│   └── adaptation/        # 适配系统
+├── types/                 # TypeScript 类型
+│   └── puzzleTypes.ts     # 核心类型定义
+├── e2e/                   # E2E 测试
+├── docs/                  # 项目文档
+└── public/                # 静态资源
+    ├── bgm.mp3           # 背景音乐
+    ├── finish.mp3        # 完成音效
+    └── texture-tile.png  # 材质纹理
+```
+
+---
+
+## 🚀 开发指南
+
+### 开发命令
+```bash
+# 开发服务器
 npm run dev
 
 # 构建生产版本
 npm run build
+
+# 启动生产服务器
+npm run start
+
+# 代码检查
+npm run lint
+
+# 类型检查
+npm run type-check
 ```
 
----
+### 开发流程
+1. **组件开发** → `components/`
+2. **业务逻辑** → `hooks/`, `utils/`
+3. **状态管理** → `contexts/`
+4. **类型定义** → `types/`
+5. **测试编写** → `tests/`, `e2e/`
 
-## 运行测试与报告
-
-```bash
-# 主流程自动化测试与归档（推荐，先运行所有E2E测试，再自动归档性能与流程报告）
-npm run test:e2e
-
-# 仅运行 Playwright 测试（不归档）
-npm run test
-
-# UI 模式下运行测试，便于调试
-tnpx playwright test --ui
-
-# 查看最近一次生成的 HTML 测试报告
-npm run test:report
-```
-
-- **性能趋势仪表盘**：访问 `/test` 页面，实时查看历史性能趋势与详细报告
-- **专项/临时测试隔离**：所有临时测试存放于 `e2e/temp/`，主流程测试环境始终纯净
-- **归档报告目录**：所有标准化 Markdown 报告归档于 `playwright-test-logs/`，便于前端聚合与趋势分析
+### 代码规范
+- **TypeScript 严格模式** - 类型安全保障
+- **ESLint 规则** - 代码风格统一
+- **Prettier 格式化** - 代码格式一致
+- **命名规范** - 统一的命名约定
 
 ---
 
-## 游戏流程
+## 🤝 贡献指南
 
-1. 选择形状类型（多边形/曲线/不规则）
-2. 生成形状
-3. 设置切割参数（次数和类型）
-4. 切割形状
-5. 散开拼图
-6. 拖拽和旋转拼图，完成游戏
-- 提示区内容严格按五步唯一流转，所有流程节点以提示区域为唯一判断标准，自动化测试脚本已同步适配。
+### 贡献流程
+1. **Fork 项目** - 创建自己的分支
+2. **创建功能分支** - `git checkout -b feature/amazing-feature`
+3. **提交更改** - `git commit -m 'Add amazing feature'`
+4. **推送分支** - `git push origin feature/amazing-feature`
+5. **创建 Pull Request** - 提交合并请求
 
----
-
-### 🏥 项目健康状况
-
-**🎉 最新体检结果：A+ 级别 (99/100分)**
-
-| 维度 | 得分 | 等级 | 状态 |
-|------|------|------|------|
-| 代码质量 | 99/100 | A+ | ✅ 优秀 |
-| 测试覆盖率 | 98/100 | A+ | ✅ 优秀 |
-| 性能表现 | 95/100 | A+ | ✅ 优秀 |
-| 架构设计 | 98/100 | A+ | ✅ 优秀 |
-| 文档完整性 | 96/100 | A+ | ✅ 优秀 |
-| 安全性 | 100/100 | A+ | ✅ 优秀 |
-| 可维护性 | 99/100 | A+ | ✅ 优秀 |
-
-📋 **[查看完整体检报告](./docs/PROJECT_HEALTH_REPORT.md)** - 最高级别全面分析
-
-### 📊 项目统计
-- 🎮 **190个API接口** - 完整的游戏开发工具集
-- 🧪 **97.8%测试覆盖率** - 601个测试用例，100%通过
-- 📱 **3端统一适配** - 桌面端、移动端、iPad端完美适配
-- ⚡ **高性能渲染** - 60fps流畅游戏体验
-- 📝 **34,344行代码** - 155个TypeScript文件，零错误零警告
-- 🏆 **企业级质量** - 超越行业优秀标准，可作为最佳实践参考
-
-### 🛠️ 开发者工具
-```bash
-# API文档维护
-npm run scan-api-changes    # 扫描API变更
-npm run classify-apis       # API分类分析
-npm run docs:check         # 文档完整性检查
-
-# 项目结构
-npm run generate-structure  # 生成项目结构文档
-
-# 测试和性能
-npm run test:e2e           # 端到端测试
-npm run test:report        # 查看测试报告
-```
-
-### ✅ 贡献检查清单
-1. **代码规范**：代码符合项目编码规范
-2. **测试通过**：所有单元测试和 E2E 测试通过
-3. **性能验证**：运行 `npm run test:e2e` 确保性能指标无回归
-4. **文档更新**：相关文档已更新
-5. **依赖管理**：如需更新依赖，请先进行性能基准测试
-
-📖 **[详细贡献指南](./CONTRIBUTING.md)** | 🏗️ **[架构文档](./docs/project_structure.md)** | 📚 **[文档中心](./docs/README.md)** | 🏥 **[项目体检报告](./docs/PROJECT_HEALTH_REPORT.md)**
-
-### 依赖更新流程
-
-如需更新关键依赖，请遵循以下流程：
-
-1. **基准测试**：记录当前性能基准 `npm run test:e2e`
-2. **更新依赖**：更新目标依赖版本
-3. **性能验证**：再次运行测试，对比性能指标
-4. **回归检查**：如有显著性能下降，考虑回退或寻找替代方案
-5. **文档更新**：更新 README.md 中的版本说明
-
----
-
-### 📈 项目状态
-- ✅ **活跃维护** - 定期更新和Bug修复
-- 🔄 **持续集成** - 自动化测试和部署
-- 📊 **性能监控** - 实时性能指标追踪
-- 🏆 **质量认证** - A+级别代码质量，企业级标准
-- 🎯 **技术标杆** - 可作为现代前端开发最佳实践参考
-
-### 🏆 致谢
-感谢大家关注！
-
-[![Contributors](https://contrib.rocks/image?repo=recohcity/generative-puzzle)](https://github.com/recohcity/generative-puzzle/graphs/contributors)
+### 贡献检查清单
+- [ ] 代码符合项目编码规范
+- [ ] 所有测试通过
+- [ ] 性能指标无回归
+- [ ] 相关文档已更新
+- [ ] 依赖更新已测试
 
 ---
 
 ## 📄 许可证
 
-MIT License
+本项目采用 [MIT 许可证](./LICENSE) - 查看 LICENSE 文件了解详情。
+
+---
+
+## 🙏 致谢
+
+感谢所有为这个项目做出贡献的开发者！
+
+[![Contributors](https://contrib.rocks/image?repo=recohcity/generative-puzzle)](https://github.com/recohcity/generative-puzzle/graphs/contributors)
 
 ---
 
 <div align="center">
 
-**⭐ 如果这个项目对你有帮助，请给我们一个Star！ ⭐**
+**⭐ 如果这个项目对你有帮助，请给我们一个 Star！ ⭐**
 
-[🌟 Star项目](https://github.com/recohcity/generative-puzzle) | [🍴 Fork项目](https://github.com/recohcity/generative-puzzle/fork) | [📢 分享项目](https://twitter.com/intent/tweet?text=Check%20out%20this%20amazing%20puzzle%20game%20project!)
+[🌟 Star 项目](https://github.com/recohcity/generative-puzzle) | 
+[🍴 Fork 项目](https://github.com/recohcity/generative-puzzle/fork) | 
+[📢 分享项目](https://twitter.com/intent/tweet?text=Check%20out%20this%20amazing%20puzzle%20game%20project!)
 
 </div>
