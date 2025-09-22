@@ -38,7 +38,7 @@ const ensureAudioContextRunning = async (context: AudioContext): Promise<void> =
 // Initialize background music
 export const initBackgroundMusic = () => {
   if (backgroundMusic === null) {
-    backgroundMusic = new Audio('/puzzle-pieces.mp3');
+    backgroundMusic = new Audio('/bgm.mp3');
     backgroundMusic.loop = true;
     backgroundMusic.volume = 0.5;
     
@@ -242,40 +242,6 @@ export const playPieceSnapSound = async (): Promise<void> => {
   }
 };
 
-// Play sound when a puzzle is completed
-export const playPuzzleCompletedSound = async (): Promise<void> => {
-  soundPlayedForTest('puzzleCompleted');
-  const audioContext = createAudioContext();
-  if (!audioContext) return;
-
-  try {
-    await ensureAudioContextRunning(audioContext);
-    const oscillator1 = audioContext.createOscillator();
-    const oscillator2 = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-
-    // First note
-    oscillator1.type = 'sine';
-    oscillator1.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
-    // Second note
-    oscillator2.type = 'sine';
-    oscillator2.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.15); // E5
-
-    gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.6);
-
-    oscillator1.connect(gainNode);
-    oscillator2.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-
-    oscillator1.start(audioContext.currentTime);
-    oscillator1.stop(audioContext.currentTime + 0.6);
-    oscillator2.start(audioContext.currentTime + 0.15);
-    oscillator2.stop(audioContext.currentTime + 0.75);
-  } catch (error) {
-    console.error('Error playing puzzle completed sound:', error);
-  }
-};
 
 // Play sound when rotating a piece
 export const playRotateSound = async (): Promise<void> => {
@@ -324,35 +290,6 @@ export const playCutSound = async (): Promise<void> => {
 
   } catch (error) {
     console.error('Error playing cut sound:', error);
-
-    // 如果音频文件播放失败，回退到简单的程序生成音效
-    const audioContext = createAudioContext();
-    if (!audioContext) return;
-
-    try {
-      await ensureAudioContextRunning(audioContext);
-
-      // 简单的回退音效
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-
-      oscillator.type = 'square';
-      oscillator.frequency.setValueAtTime(1200, audioContext.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.05);
-
-      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.002);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.08);
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.08);
-
-    } catch (fallbackError) {
-      console.error('Error playing fallback cut sound:', fallbackError);
-    }
   }
 };
 
@@ -371,35 +308,6 @@ export const playScatterSound = async (): Promise<void> => {
 
   } catch (error) {
     console.error('Error playing scatter sound:', error);
-
-    // 如果音频文件播放失败，回退到简单的程序生成音效
-    const audioContext = createAudioContext();
-    if (!audioContext) return;
-
-    try {
-      await ensureAudioContextRunning(audioContext);
-
-      // 简单的回退音效
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-
-      oscillator.type = 'sawtooth';
-      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.1);
-
-      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.4, audioContext.currentTime + 0.005);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.15);
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.15);
-
-    } catch (fallbackError) {
-      console.error('Error playing fallback scatter sound:', fallbackError);
-    }
   }
 };
 // 播放拼图完成音效（独立音频文件）
@@ -415,39 +323,5 @@ export const playFinishSound = async (): Promise<void> => {
     await finishAudio.play();
   } catch (error) {
     console.error('Error playing finish sound:', error);
-
-    // 回退方案：使用程序生成音效（保持与现有系统一致）
-    const audioContext = createAudioContext();
-    if (!audioContext) return;
-
-    try {
-      await ensureAudioContextRunning(audioContext);
-
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-
-      // 和弦效果增强完成感（C5 + E5 + G5）
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
-      
-      // 0.1秒后添加E5音符
-      oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
-      
-      // 0.2秒后添加G5音符
-      oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
-
-      // 音量包络：快速上升后缓慢衰减
-      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.05);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 1.2);
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 1.2);
-    } catch (fallbackError) {
-      console.error('Error playing fallback finish sound:', fallbackError);
-    }
   }
 };

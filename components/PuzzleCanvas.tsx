@@ -3,7 +3,7 @@
 import type React from "react"
 import { useEffect, useRef, useState, useMemo, useCallback } from "react"
 import { useGame } from "@/contexts/GameContext"
-import { playPieceSelectSound, playPieceSnapSound, playPuzzleCompletedSound, playRotateSound } from "@/utils/rendering/soundEffects"
+import { playPieceSelectSound, playPieceSnapSound, playFinishSound, playRotateSound } from "@/utils/rendering/soundEffects"
 import { useTranslation } from '@/contexts/I18nContext'
 
 import {
@@ -238,7 +238,7 @@ export default function PuzzleCanvas() {
     setIsShaking,
     playPieceSelectSound,
     playPieceSnapSound,
-    playPuzzleCompletedSound,
+    playFinishSound,
     playRotateSound,
   });
 

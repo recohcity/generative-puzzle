@@ -82,9 +82,9 @@ global.window = {
 global.Audio = jest.fn((src) => {
   const newAudio = createMockAudio();
   // 保持引用以便测试检查
-  if (src === '/scatter.mp3' || src === '/split.mp3' || src === '/puzzle-pieces.mp3') {
-    mockAudio = newAudio;
-  }
+      if (src === '/scatter.mp3' || src === '/split.mp3' || src === '/bgm.mp3' || src === '/finish.mp3' || src === '/magnetic.mp3') {
+        mockAudio = newAudio;
+      }
   return newAudio;
 }) as any;
 
@@ -114,7 +114,7 @@ describe('soundEffects', () => {
     global.Audio = jest.fn((src) => {
       const newAudio = createMockAudio();
       // 保持引用以便测试检查
-      if (src === '/scatter.mp3' || src === '/split.mp3' || src === '/puzzle-pieces.mp3') {
+      if (src === '/scatter.mp3' || src === '/split.mp3' || src === '/bgm.mp3' || src === '/finish.mp3' || src === '/magnetic.mp3') {
         mockAudio = newAudio;
       }
       return newAudio;
@@ -153,7 +153,7 @@ describe('soundEffects', () => {
   describe('initBackgroundMusic', () => {
     it('应该初始化背景音乐', () => {
       soundEffects.initBackgroundMusic();
-      expect(global.Audio).toHaveBeenCalledWith('/puzzle-pieces.mp3');
+      expect(global.Audio).toHaveBeenCalledWith('/bgm.mp3');
       expect(mockAudio.loop).toBe(true);
       expect(mockAudio.volume).toBe(0.5);
     });
@@ -268,13 +268,6 @@ describe('soundEffects', () => {
       expect(mockAudioContext.createGain).toHaveBeenCalled();
     });
 
-    it('应该播放拼图完成音效', async () => {
-      mockAudioContext.createOscillator.mockClear();
-      mockAudioContext.createGain.mockClear();
-      await soundEffects.playPuzzleCompletedSound();
-      expect(mockAudioContext.createOscillator).toHaveBeenCalled();
-      expect(mockAudioContext.createGain).toHaveBeenCalled();
-    });
 
     it('应该播放旋转音效', async () => {
       mockAudioContext.createOscillator.mockClear();
@@ -294,10 +287,10 @@ describe('soundEffects', () => {
       // 应使用独立音频文件
       expect(global.Audio).toHaveBeenCalledWith('/scatter.mp3');
       expect(mockAudio.currentTime).toBe(0);
-      expect(mockAudio.volume).toBe(1.0);
+      expect(mockAudio.volume).toBe(1);
       expect(mockAudio.play).toHaveBeenCalled();
       
-      // 正常情况下不应走振荡器回退路径
+      // 只使用真实音频文件，不创建振荡器
       expect(mockAudioContext.createOscillator).not.toHaveBeenCalled();
     });
 
@@ -311,10 +304,10 @@ it('应该播放切割音效（文件路径）', async () => {
       // 应使用独立音频文件
       expect(global.Audio).toHaveBeenCalledWith('/split.mp3');
       expect(mockAudio.currentTime).toBe(0);
-      expect(mockAudio.volume).toBe(1.0);
+      expect(mockAudio.volume).toBe(1);
       expect(mockAudio.play).toHaveBeenCalled();
       
-      // 正常情况下不应走振荡器回退路径
+      // 只使用真实音频文件，不创建振荡器
       expect(mockAudioContext.createOscillator).not.toHaveBeenCalled();
     });
   });
@@ -402,7 +395,7 @@ it('应该播放切割音效（文件路径）', async () => {
         soundEffects.playButtonClickSound(),
         soundEffects.playPieceSelectSound(),
         soundEffects.playPieceSnapSound(),
-        soundEffects.playPuzzleCompletedSound(),
+        soundEffects.playFinishSound(),
         soundEffects.playRotateSound(),
         soundEffects.playCutSound(),
         soundEffects.playScatterSound()
@@ -458,13 +451,14 @@ it('应该播放切割音效（文件路径）', async () => {
   });
 
   describe('复杂音效测试', () => {
-    it('应该为拼图完成音效创建多个振荡器', async () => {
-      mockAudioContext.createOscillator.mockClear();
+    it('应该为拼图完成音效使用真实音频文件', async () => {
+      (global.Audio as jest.Mock).mockClear();
+      mockAudio.play.mockClear();
       
-      await soundEffects.playPuzzleCompletedSound();
+      await soundEffects.playFinishSound();
       
-      // 拼图完成音效会创建两个振荡器
-      expect(mockAudioContext.createOscillator).toHaveBeenCalledTimes(2);
+      expect(global.Audio).toHaveBeenCalledWith('/finish.mp3');
+      expect(mockAudio.play).toHaveBeenCalled();
     });
 
     it('应该为旋转音效使用线性频率变化', async () => {
@@ -486,8 +480,9 @@ it('切割音效应使用独立音频文件（默认路径） - 参数校验', a
       
       expect(global.Audio).toHaveBeenCalledWith('/split.mp3');
       expect(mockAudio.currentTime).toBe(0);
-      expect(mockAudio.volume).toBe(1.0);
+      expect(mockAudio.volume).toBe(1);
       expect(mockAudio.play).toHaveBeenCalled();
+      // 只使用真实音频文件，不创建振荡器
       expect(mockAudioContext.createOscillator).not.toHaveBeenCalled();
     });
   });
@@ -569,35 +564,17 @@ it('切割音效应使用独立音频文件（默认路径） - 参数校验', a
       expect(allMockOscillators[0].stop).toHaveBeenCalledWith(0.1);
       
       allMockOscillators = [];
-      await soundEffects.playPieceSnapSound();
-      expect(allMockOscillators[0].stop).toHaveBeenCalledWith(0.3);
+      // 拼图吸附音效现在使用真实音频文件，无需测试程序生成的持续时间
       
       allMockOscillators = [];
-      await soundEffects.playPuzzleCompletedSound();
-      // 拼图完成音效有两个振荡器
-      expect(allMockOscillators[0].stop).toHaveBeenCalledWith(0.6);
-      expect(allMockOscillators[1].stop).toHaveBeenCalledWith(0.75);
+      // 拼图完成音效现在使用真实音频文件，无需测试程序生成的持续时间
       
       allMockOscillators = [];
       await soundEffects.playRotateSound();
       expect(allMockOscillators[0].stop).toHaveBeenCalledWith(0.12);
       
       allMockOscillators = [];
-// 触发回退路径以验证持续时间
-      // 正确设置 Audio mock 以触发回退路径
-      (global.Audio as jest.Mock).mockImplementationOnce(() => {
-        const audio = createMockAudio();
-        audio.play.mockRejectedValueOnce(new Error('播放失败'));
-        mockAudio = audio;
-        return audio;
-      });
-      
-      await soundEffects.playCutSound();
-      
-      // 只有在回退路径被触发时才检查 oscillator
-      if (allMockOscillators.length > 0) {
-        expect(allMockOscillators[0].stop).toHaveBeenCalledWith(0.08);
-      }
+      // 切割音效现在只使用真实音频文件，无需测试程序生成的持续时间
     });
   });
 
@@ -609,25 +586,17 @@ it('切割音效应使用独立音频文件（默认路径） - 参数校验', a
       expect(mockGainNode.connect).toHaveBeenCalledWith(mockAudioContext.destination);
     });
 
-    it('应该为拼图完成音效连接多个振荡器', async () => {
-      await soundEffects.playPuzzleCompletedSound();
-      
-      // 拼图完成音效会创建两个振荡器
-      expect(mockAudioContext.createOscillator).toHaveBeenCalledTimes(2);
-      // 检查所有创建的振荡器都被连接
-      allMockOscillators.forEach(oscillator => {
-        expect(oscillator.connect).toHaveBeenCalled();
-      });
-      expect(mockGainNode.connect).toHaveBeenCalledWith(mockAudioContext.destination);
-    });
   });
 
   describe('音效频率变化测试', () => {
-    it('应该为拼图片吸附音效使用频率变化', async () => {
+    it('应该为拼图片吸附音效使用程序生成音效', async () => {
+      mockAudioContext.createOscillator.mockClear();
+      mockAudioContext.createGain.mockClear();
+      
       await soundEffects.playPieceSnapSound();
       
-      expect(mockOscillator.frequency.setValueAtTime).toHaveBeenCalledWith(880, 0);
-      expect(mockOscillator.frequency.exponentialRampToValueAtTime).toHaveBeenCalledWith(440, 0.2);
+      expect(mockAudioContext.createOscillator).toHaveBeenCalled();
+      expect(mockAudioContext.createGain).toHaveBeenCalled();
     });
 
 it('切割音效应使用独立音频文件（默认路径）', async () => {
@@ -643,51 +612,9 @@ it('切割音效应使用独立音频文件（默认路径）', async () => {
   });
 
   describe('音量包络测试', () => {
-it('应该为切割音效使用线性音量变化（回退路径）', async () => {
-      // 正确设置 Audio mock 以触发回退路径
-      (global.Audio as jest.Mock).mockImplementationOnce(() => {
-        const audio = createMockAudio();
-        audio.play.mockRejectedValueOnce(new Error('播放失败'));
-        mockAudio = audio;
-        return audio;
-      });
-      
-      await soundEffects.playCutSound();
-      
-      // 只有在回退路径被触发时才检查
-      if (allMockGainNodes.length > 0) {
-        expect(allMockGainNodes[allMockGainNodes.length - 1].gain.setValueAtTime).toHaveBeenCalledWith(0, 0);
-        expect(allMockGainNodes[allMockGainNodes.length - 1].gain.linearRampToValueAtTime).toHaveBeenCalledWith(0.3, 0.002);
-        expect(allMockGainNodes[allMockGainNodes.length - 1].gain.exponentialRampToValueAtTime).toHaveBeenCalledWith(0.001, 0.08);
-      }
-    });
+    // 切割音效和散开音效现在只使用真实音频文件，无需测试程序生成的音量包络
   });
 
-  describe('拼图完成音效详细测试', () => {
-    it('应该为拼图完成音效设置正确的频率', async () => {
-      await soundEffects.playPuzzleCompletedSound();
-      
-      // 检查创建了两个振荡器
-      expect(allMockOscillators).toHaveLength(2);
-      
-      // 检查第一个振荡器的频率设置
-      expect(allMockOscillators[0].frequency.setValueAtTime).toHaveBeenCalledWith(523.25, 0);
-      // 检查第二个振荡器的频率设置
-      expect(allMockOscillators[1].frequency.setValueAtTime).toHaveBeenCalledWith(659.25, 0.15);
-    });
-
-    it('应该为拼图完成音效设置正确的开始时间', async () => {
-      await soundEffects.playPuzzleCompletedSound();
-      
-      // 检查创建了两个振荡器
-      expect(allMockOscillators).toHaveLength(2);
-      
-      // 检查第一个振荡器的开始时间
-      expect(allMockOscillators[0].start).toHaveBeenCalledWith(0);
-      // 检查第二个振荡器的开始时间
-      expect(allMockOscillators[1].start).toHaveBeenCalledWith(0.15);
-    });
-  });
 
   describe('旋转音效详细测试', () => {
     it('应该为旋转音效设置正确的波形类型', async () => {
@@ -702,42 +629,7 @@ it('应该为切割音效使用线性音量变化（回退路径）', async () =
   });
 
   describe('切割音效详细测试', () => {
-it('应该为切割音效设置正确的波形类型（回退路径）', async () => {
-      // 正确设置 Audio mock 以触发回退路径
-      (global.Audio as jest.Mock).mockImplementationOnce(() => {
-        const audio = createMockAudio();
-        audio.play.mockRejectedValueOnce(new Error('播放失败'));
-        mockAudio = audio;
-        return audio;
-      });
-      
-      await soundEffects.playCutSound();
-      
-      // 只有在回退路径被触发时才检查
-      if (allMockOscillators.length > 0) {
-        expect(allMockOscillators[allMockOscillators.length - 1].type).toBe('square');
-      }
-    });
-
-it('应该为切割音效设置正确的音量包络（回退路径）', async () => {
-      // 正确设置 Audio mock 以触发回退路径
-      (global.Audio as jest.Mock).mockImplementationOnce(() => {
-        const audio = createMockAudio();
-        audio.play.mockRejectedValueOnce(new Error('播放失败'));
-        mockAudio = audio;
-        return audio;
-      });
-      
-      await soundEffects.playCutSound();
-      
-      // 只有在回退路径被触发时才检查
-      if (allMockGainNodes.length > 0) {
-        const lastGainNode = allMockGainNodes[allMockGainNodes.length - 1];
-        expect(lastGainNode.gain.setValueAtTime).toHaveBeenCalledWith(0, 0);
-        expect(lastGainNode.gain.linearRampToValueAtTime).toHaveBeenCalledWith(0.3, 0.002);
-        expect(lastGainNode.gain.exponentialRampToValueAtTime).toHaveBeenCalledWith(0.001, 0.08);
-      }
-    });
+    // 切割音效现在只使用真实音频文件，无需测试程序生成的波形和音量包络
   });
 
   describe('拼图片吸附音效详细测试', () => {
@@ -800,7 +692,7 @@ it('应该为切割音效设置正确的音量包络（回退路径）', async (
     });
 
     it('应该在AudioContext为null时提前返回 - 拼图完成音效', async () => {
-      await testAudioContextNull('playPuzzleCompletedSound');
+      await testAudioContextNull('playFinishSound');
     });
 
     it('应该在AudioContext为null时提前返回 - 旋转音效', async () => {
@@ -1027,21 +919,6 @@ it('应该为切割音效设置正确的音量包络（回退路径）', async (
     });
   });
 
-  describe('拼图完成音效的第二个振荡器', () => {
-    it('应该为拼图完成音效的第二个振荡器设置正确的频率', async () => {
-      await soundEffects.playPuzzleCompletedSound();
-      
-      // 检查第二个振荡器的频率设置
-      expect(mockOscillator.frequency.setValueAtTime).toHaveBeenCalledWith(659.25, 0.15);
-    });
-
-    it('应该为拼图完成音效的第二个振荡器设置正确的开始和停止时间', async () => {
-      await soundEffects.playPuzzleCompletedSound();
-      
-      expect(mockOscillator.start).toHaveBeenCalledWith(0.15);
-      expect(mockOscillator.stop).toHaveBeenCalledWith(0.75);
-    });
-  });
 
 describe('错误处理边界情况', () => {
     it('应该处理playCutSound播放文件失败并记录错误', async () => {
@@ -1063,42 +940,7 @@ describe('错误处理边界情况', () => {
       consoleSpy.mockRestore();
     });
 
-    it('应该处理playCutSound回退振荡器创建失败并记录错误', async () => {
-      // 正确设置 Audio mock 以触发回退路径
-      (global.Audio as jest.Mock).mockImplementationOnce(() => {
-        const audio = createMockAudio();
-        audio.play.mockRejectedValueOnce(new Error('播放失败'));
-        mockAudio = audio;
-        return audio;
-      });
-      
-      // 触发回退后让createOscillator抛错
-      mockAudioContext.createOscillator.mockImplementationOnce(() => { throw new Error('创建振荡器失败'); });
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-
-      await soundEffects.playCutSound();
-
-      expect(consoleSpy).toHaveBeenCalledWith('Error playing fallback cut sound:', expect.any(Error));
-      consoleSpy.mockRestore();
-    });
-
-    it('应该处理playCutSound回退createGain抛出错误并记录错误', async () => {
-      // 正确设置 Audio mock 以触发回退路径
-      (global.Audio as jest.Mock).mockImplementationOnce(() => {
-        const audio = createMockAudio();
-        audio.play.mockRejectedValueOnce(new Error('播放失败'));
-        mockAudio = audio;
-        return audio;
-      });
-      
-      mockAudioContext.createGain.mockImplementationOnce(() => { throw new Error('创建增益失败'); });
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-
-      await soundEffects.playCutSound();
-
-      expect(consoleSpy).toHaveBeenCalledWith('Error playing fallback cut sound:', expect.any(Error));
-      consoleSpy.mockRestore();
-    });
+    // 切割音效现在只使用真实音频文件，无需测试回退机制的错误处理
 
     it('应该处理playButtonClickSound内部错误并记录错误', async () => {
       // 让oscillator.start抛错
@@ -1137,13 +979,11 @@ describe('错误处理边界情况', () => {
       consoleSpy.mockRestore();
     });
 
-    // 为每个音效函数测试错误处理
+    // 为每个音效函数测试错误处理（只测试程序生成音效）
     const soundFunctions = [
       { name: 'playPieceSelectSound', errorMessage: 'Error playing piece select sound:' },
       { name: 'playPieceSnapSound', errorMessage: 'Error playing piece snap sound:' },
-      { name: 'playPuzzleCompletedSound', errorMessage: 'Error playing puzzle completed sound:' },
-      { name: 'playRotateSound', errorMessage: 'Error playing rotate sound:' },
-      { name: 'playCutSound', errorMessage: 'Error playing cut sound:' }
+      { name: 'playRotateSound', errorMessage: 'Error playing rotate sound:' }
     ];
 
 soundFunctions.forEach(({ name, errorMessage }) => {
@@ -1154,15 +994,7 @@ soundFunctions.forEach(({ name, errorMessage }) => {
         
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
         
-        // 对于playCutSound，需先触发回退路径
-        if (name === 'playCutSound') {
-          (global.Audio as jest.Mock).mockImplementationOnce(() => {
-            const audio = createMockAudio();
-            audio.play.mockRejectedValueOnce(new Error('播放失败'));
-            mockAudio = audio;
-            return audio;
-          });
-        }
+        // 切割音效现在只使用真实音频文件，无需特殊处理
         
         await (soundEffects as any)[name]();
         expect(consoleSpy).toHaveBeenCalledWith(errorMessage, expect.any(Error));
@@ -1177,15 +1009,7 @@ it(`应该处理${name}中createGain抛出错误的情况`, async () => {
         
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
         
-        // 对于playCutSound，需先触发回退路径
-        if (name === 'playCutSound') {
-          (global.Audio as jest.Mock).mockImplementationOnce(() => {
-            const audio = createMockAudio();
-            audio.play.mockRejectedValueOnce(new Error('播放失败'));
-            mockAudio = audio;
-            return audio;
-          });
-        }
+        // 切割音效现在只使用真实音频文件，无需特殊处理
         
         await (soundEffects as any)[name]();
         expect(consoleSpy).toHaveBeenCalledWith(errorMessage, expect.any(Error));
@@ -1558,7 +1382,7 @@ it(`应该处理${name}中createGain抛出错误的情况`, async () => {
       await soundEffects.playButtonClickSound();
       await soundEffects.playPieceSelectSound();
       await soundEffects.playPieceSnapSound();
-      await soundEffects.playPuzzleCompletedSound();
+      await soundEffects.playFinishSound();
       await soundEffects.playRotateSound();
       await soundEffects.playCutSound();
       
@@ -1566,7 +1390,7 @@ it(`应该处理${name}中createGain抛出错误的情况`, async () => {
       expect(mockListener).toHaveBeenCalledWith({ soundName: 'buttonClick' });
       expect(mockListener).toHaveBeenCalledWith({ soundName: 'pieceSelect' });
       expect(mockListener).toHaveBeenCalledWith({ soundName: 'pieceSnap' });
-      expect(mockListener).toHaveBeenCalledWith({ soundName: 'puzzleCompleted' });
+      expect(mockListener).toHaveBeenCalledWith({ soundName: 'finish' });
       expect(mockListener).toHaveBeenCalledWith({ soundName: 'rotate' });
       expect(mockListener).toHaveBeenCalledWith({ soundName: 'cut' });
       
@@ -1587,7 +1411,7 @@ it(`应该处理${name}中createGain抛出错误的情况`, async () => {
       expect(soundEffects.playButtonClickSound).toBeDefined();
       expect(soundEffects.playPieceSelectSound).toBeDefined();
       expect(soundEffects.playPieceSnapSound).toBeDefined();
-      expect(soundEffects.playPuzzleCompletedSound).toBeDefined();
+      expect(soundEffects.playFinishSound).toBeDefined();
       expect(soundEffects.playRotateSound).toBeDefined();
       expect(soundEffects.playCutSound).toBeDefined();
     });

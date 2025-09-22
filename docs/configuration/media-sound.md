@@ -1,6 +1,6 @@
 # 媒体资源与音效配置
 
-> 修订日期：2025-07-24 (v1.3.36)
+> 修订日期：2025-01-22 (v1.3.58)
 
 本文档详细说明媒体资源和音效系统的配置参数，包括背景音乐、交互音效、静态资源等核心配置。
 
@@ -10,8 +10,10 @@
 
 ### backgroundMusic
 - **作用**：背景音乐开关与音量控制
+- **文件路径**：`/public/bgm.mp3`
 - **取值范围**：布尔（开关）+ 0~1（音量）
-- **默认值**：false（静音），0.3（音量）
+- **默认值**：true（开启），0.5（音量）
+- **循环播放**：启用，提供连续背景音乐体验
 - **影响点**：用户体验、沉浸感
 - **配置/代码位置**：`utils/rendering/soundEffects.ts`、`components/GlobalUtilityButtons.tsx`
 
@@ -19,7 +21,7 @@
 - **作用**：音乐开关按钮配置
 - **按钮样式**：24px图标，统一风格
 - **状态显示**：音乐开启/关闭状态图标切换
-- **默认值**：关闭状态
+- **默认值**：开启状态
 - **影响点**：用户控制便利性
 - **配置/代码位置**：`components/GlobalUtilityButtons.tsx`
 
@@ -34,80 +36,94 @@
 
 ## 2. 交互音效配置
 
-### pieceSelectSound
+### 程序生成音效
+
+#### pieceSelectSound
 - **作用**：拼图块选中音效
 - **音频参数**：
-  - 频率：660Hz
-  - 持续时间：0.15s
+  - 频率：600Hz
+  - 持续时间：0.1s
   - 波形：正弦波
   - 音量：0.3
 - **默认值**：如上所示
 - **影响点**：交互反馈
 - **配置/代码位置**：`utils/rendering/soundEffects.ts`（playPieceSelectSound函数）
 
-### pieceSnapSound
+#### pieceSnapSound
 - **作用**：拼图块吸附音效
 - **音频参数**：
-  - 频率：1320Hz
+  - 频率：880Hz → 440Hz（指数衰减）
   - 持续时间：0.3s
-  - 波形：正弦波
+  - 波形：三角波
   - 音量：0.4
 - **默认值**：如上所示
 - **影响点**：成功反馈
 - **配置/代码位置**：`utils/rendering/soundEffects.ts`（playPieceSnapSound函数）
 
-### rotateSound
+#### rotateSound
 - **作用**：拼图块旋转音效
 - **音频参数**：
-  - 频率：380Hz
+  - 频率：400Hz → 450Hz
   - 持续时间：0.12s
-  - 波形：正弦波
+  - 波形：三角波
   - 音量：0.25
 - **默认值**：如上所示
 - **影响点**：操作反馈
 - **配置/代码位置**：`utils/rendering/soundEffects.ts`（playRotateSound函数）
 
-### collisionSound
-- **作用**：边界碰撞音效（双音调）
+#### buttonClickSound
+- **作用**：通用按钮点击音效
 - **音频参数**：
-  - 低音：120Hz，持续0.15s
-  - 高音：240Hz，持续0.1s
+  - 频率：440Hz → 220Hz（指数衰减）
+  - 持续时间：0.2s
   - 波形：正弦波
-  - 音量：0.2
+  - 音量：0.3
 - **默认值**：如上所示
-- **影响点**：边界反馈
-- **配置/代码位置**：`contexts/GameContext.tsx`（边界检测逻辑）
+- **影响点**：按钮交互反馈
+- **配置/代码位置**：`utils/rendering/soundEffects.ts`（playButtonClickSound函数）
+
+
+### 真实音频文件音效
+
+#### cutSound
+- **作用**：切割形状生成拼图音效
+- **文件路径**：`/public/split.mp3`
+- **音频参数**：
+  - 音量：1.0
+  - 播放方式：HTML5 Audio API直接播放
+- **优势**：
+  - 真实质感：专业录制的切割音效
+  - 高品质：比程序生成音效更自然
+  - 一致性：每次播放完全相同
+- **配置/代码位置**：`utils/rendering/soundEffects.ts`（playCutSound函数）
+
+#### scatterSound
+- **作用**：散开拼图音效
+- **文件路径**：`/public/scatter.mp3`
+- **音频参数**：
+  - 音量：1.0
+  - 播放方式：HTML5 Audio API直接播放
+- **优势**：
+  - 真实质感：专业录制的散开音效
+  - 高品质：比程序生成音效更自然
+  - 一致性：每次播放完全相同
+- **配置/代码位置**：`utils/rendering/soundEffects.ts`（playScatterSound函数）
+
+#### finishSound
+- **作用**：拼图完成音效（真实音频）
+- **文件路径**：`/public/finish.mp3`
+- **音频参数**：
+  - 音量：0.8
+  - 播放方式：HTML5 Audio API直接播放
+- **优势**：
+  - 真实质感：专业录制的完成音效
+  - 高品质：比程序生成音效更自然
+  - 一致性：每次播放完全相同
+- **配置/代码位置**：`utils/rendering/soundEffects.ts`（playFinishSound函数）
 
 ---
 
-## 3. 完成庆祝音效配置
-
-### puzzleCompletedSound
-- **作用**：拼图完成音效（音阶序列）
-- **音阶配置**：
-  - C5：523.25Hz
-  - E5：659.25Hz
-  - G5：783.99Hz
-  - C6：1046.5Hz
-- **播放参数**：
-  - 间隔：0.1s
-  - 持续时间：每个音符0.4s
-  - 音量：0.5
-- **默认值**：如上所示
-- **影响点**：完成庆祝体验
-- **配置/代码位置**：`utils/rendering/soundEffects.ts`（playPuzzleCompletedSound函数）
-
-### celebrationSequence
-- **作用**：庆祝音效播放序列配置
-- **播放策略**：依次播放音阶，创造上升感
-- **错误处理**：单个音符失败不影响整体序列
-- **默认值**：启用完整序列
-- **影响点**：庆祝效果的完整性
-- **配置/代码位置**：`utils/rendering/soundEffects.ts`（音阶播放逻辑）
-
----
-
-## 4. 静态资源配置
+## 3. 静态资源配置
 
 ### backgroundImage
 - **作用**：游戏背景图片配置
@@ -118,14 +134,18 @@
 - **影响点**：视觉体验、加载性能
 - **配置/代码位置**：`public/bg.jpg`、CSS背景配置
 
-### audioFile
+### audioFiles
 - **作用**：游戏音效文件配置
-- **文件路径**：`public/puzzle-pieces.mp3`
+- **文件列表**：
+  - `public/bgm.mp3` - 背景音乐
+  - `public/split.mp3` - 切割音效
+  - `public/scatter.mp3` - 散开音效
+  - `public/finish.mp3` - 完成音效
 - **文件格式**：MP3格式，兼容性好
 - **文件大小**：优化压缩，平衡质量和大小
-- **默认值**：启用音效文件
+- **默认值**：启用所有音效文件
 - **影响点**：音效质量、加载速度
-- **配置/代码位置**：`public/puzzle-pieces.mp3`
+- **配置/代码位置**：`public/` 目录
 
 ### textureFile
 - **作用**：瓷砖气孔材质纹理配置
@@ -138,13 +158,13 @@
 
 ---
 
-## 5. 音效播放控制配置
+## 4. 音效播放控制配置
 
 ### soundEnabled
 - **作用**：全局音效开关配置
 - **控制范围**：所有交互音效和背景音乐
 - **存储方式**：本地存储，记住用户偏好
-- **默认值**：false（默认静音）
+- **默认值**：true（默认开启）
 - **影响点**：用户体验、性能优化
 - **配置/代码位置**：`utils/rendering/soundEffects.ts`（全局开关）
 
@@ -152,9 +172,9 @@
 - **作用**：音量控制配置
 - **音量范围**：0.0~1.0
 - **音量分级**：
-  - 背景音乐：0.3
-  - 交互音效：0.2~0.5
-  - 庆祝音效：0.5
+  - 背景音乐：0.5
+  - 程序生成音效：0.25~0.5
+  - 真实音频文件：0.8~1.0
 - **默认值**：分级音量设置
 - **影响点**：音效平衡、用户体验
 - **配置/代码位置**：各音效函数的音量参数
@@ -170,7 +190,7 @@
 
 ---
 
-## 6. 设备适配配置
+## 5. 设备适配配置
 
 ### mobileAudioOptimization
 - **作用**：移动端音频优化配置
@@ -192,7 +212,7 @@
 
 ---
 
-## 7. 性能优化配置
+## 6. 性能优化配置
 
 ### audioPreloading
 - **作用**：音频预加载配置
@@ -224,7 +244,7 @@
 
 ---
 
-## 8. 错误处理配置
+## 7. 错误处理配置
 
 ### audioErrorHandling
 - **作用**：音频错误处理配置
@@ -249,23 +269,66 @@
 
 ---
 
+## 8. 音效系统架构
+
+### 音效类型分类
+
+#### 程序生成音效
+- **用途**：简单交互反馈
+- **技术**：Web Audio API + 振荡器
+- **优势**：轻量级、无文件加载
+- **音效列表**：
+  - 按钮点击音效
+  - 拼图块选择音效
+  - 拼图块吸附音效
+  - 旋转音效
+  - 拼图完成音效（程序生成版本）
+
+#### 真实音频文件音效
+- **用途**：重要操作反馈
+- **技术**：HTML5 Audio API
+- **优势**：高品质、真实感
+- **音效列表**：
+  - 切割音效
+  - 散开音效
+  - 完成音效（真实音频版本）
+
+### 音效播放流程
+
+```mermaid
+graph TD
+    A[用户交互] --> B{音效类型}
+    B -->|程序生成| C[创建AudioContext]
+    B -->|真实音频| D[创建Audio对象]
+    C --> E[生成振荡器]
+    D --> F[加载音频文件]
+    E --> G[设置频率和音量]
+    F --> H[设置播放参数]
+    G --> I[播放音效]
+    H --> I
+    I --> J[错误处理]
+    J --> K[完成]
+```
+
+---
+
 ## 9. 配置示例
 
 ### 基础音效配置示例
 ```typescript
 // 音效配置示例
 const soundConfig = {
-  enabled: false,
+  enabled: true,
   volume: {
-    background: 0.3,
-    interaction: 0.3,
-    celebration: 0.5
+    background: 0.5,
+    programGenerated: 0.3,
+    realAudio: 1.0
   },
   frequencies: {
-    select: 660,
-    snap: 1320,
-    rotate: 380,
-    collision: [120, 240]
+    select: 600,
+    snap: 880,
+    rotate: 400,
+    buttonClick: 440
   }
 };
 ```
@@ -287,6 +350,46 @@ const deviceAudioConfig = {
 };
 ```
 
+### 音效使用示例
+```typescript
+import { 
+  playButtonClickSound, 
+  playCutSound, 
+  playRotateSound,
+  playScatterSound,
+  playFinishSound
+} from '@/utils/rendering/soundEffects';
+
+// 按钮点击
+const handleClick = () => {
+  playButtonClickSound();
+  // 其他逻辑
+};
+
+// 切割操作
+const handleCut = () => {
+  playCutSound();
+  generatePuzzle();
+};
+
+// 旋转操作
+const handleRotate = () => {
+  playRotateSound();
+  rotatePiece();
+};
+
+// 散开拼图操作
+const handleScatter = () => {
+  playScatterSound();
+  scatterPuzzle();
+};
+
+// 完成操作
+const handleComplete = () => {
+  playFinishSound(); // 真实音频版本
+};
+```
+
 ---
 
 ## 10. 故障排除
@@ -296,12 +399,23 @@ const deviceAudioConfig = {
 2. **移动端静音**：确认触摸解锁已触发
 3. **音效延迟**：检查音频预加载配置
 4. **内存泄漏**：验证音频资源释放逻辑
+5. **真实音频文件无法播放**：检查文件路径和格式
 
 ### 调试方法
 - 检查音频上下文状态
 - 监控音效播放日志
 - 验证用户交互触发
 - 测试不同设备兼容性
+- 检查音频文件加载状态
+
+### 测试支持
+```bash
+# 音效系统测试
+npm run test:unit -- --testPathPatterns=soundEffects
+
+# 端到端音效测试
+npx playwright test e2e/cut-sound-effect.spec.ts
+```
 
 ---
 

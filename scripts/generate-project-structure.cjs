@@ -237,7 +237,7 @@ const CONFIG = {
     'public/bg.jpg': '游戏背景图片（桌面端）',
     'public/bg-mobile-landscape.png': '移动端横屏背景图片（v1.3.34新增）',
     'public/bg-mobile-portrait.png': '移动端竖屏背景图片（v1.3.34新增）',
-    'public/puzzle-pieces.mp3': '游戏音效文件',
+    'public/bgm.mp3': '游戏音效文件',
     'public/texture-tile.png': '瓷砖气孔材质纹理，用于拼图块和目标形状的美术填充',
 
     // scripts目录

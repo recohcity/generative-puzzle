@@ -7,7 +7,7 @@ import { RefObject, useState, useRef, useEffect, useCallback } from "react";
 import { GameState, Point, PuzzlePiece } from "@/types/puzzleTypes";
 import { useGame } from "@/contexts/GameContext";
 import { calculateCenter, isPointInPolygon, rotatePoint, calculateAngle } from "@/utils/geometry/puzzleGeometry";
-import { playPieceSelectSound, playPieceSnapSound, playPuzzleCompletedSound, playRotateSound } from "@/utils/rendering/soundEffects";
+import { playPieceSelectSound, playPieceSnapSound, playFinishSound, playRotateSound } from "@/utils/rendering/soundEffects";
 import { drawPuzzle } from "@/utils/rendering/puzzleDrawing";
 
 interface UsePuzzleInteractionsProps {
@@ -23,7 +23,7 @@ interface UsePuzzleInteractionsProps {
   setIsShaking: React.Dispatch<React.SetStateAction<boolean>>;
   playPieceSelectSound: () => Promise<void>;
   playPieceSnapSound: () => Promise<void>;
-  playPuzzleCompletedSound: () => Promise<void>;
+  playFinishSound: () => Promise<void>;
   playRotateSound: () => Promise<void>;
 }
 
@@ -40,7 +40,6 @@ export function usePuzzleInteractions({
   setIsShaking,
   playPieceSelectSound,
   playPieceSnapSound,
-  playPuzzleCompletedSound,
   playRotateSound,
 }: UsePuzzleInteractionsProps) {
   const { 

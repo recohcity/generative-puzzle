@@ -157,7 +157,7 @@ const CONFIG = {
     'components/GameInterface.tsx': '核心游戏界面',
     'components/PuzzleCanvas.tsx': '主画布组件',
     'contexts/GameContext.tsx': '核心状态管理中心',
-    'public/puzzle-pieces.mp3': '游戏音效文件',
+    'public/bgm.mp3': '游戏音效文件',
     'public/texture-tile.png': '拼图材质纹理'
   },
   

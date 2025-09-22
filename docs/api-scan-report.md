@@ -1,15 +1,15 @@
 # API扫描报告
 
-> 生成时间: 2025/9/10 19:46:43
+> 生成时间: 2025/9/22 12:56:43
 > 扫描工具: API变更扫描器 v1.0
 
 ## 📊 统计概览
 
 | 项目 | 数量 | 说明 |
 |------|------|------|
-| API总数 | 271 | 项目中所有导出的API |
-| 已文档化 | 31 | 在API文档中已记录的API |
-| 文档覆盖率 | 11.4% | 文档化程度 |
+| API总数 | 270 | 项目中所有导出的API |
+| 已文档化 | 30 | 在API文档中已记录的API |
+| 文档覆盖率 | 11.1% | 文档化程度 |
 | 新增API | 243 | 需要添加到文档的API |
 | 可能删除 | 3 | 文档中存在但代码中找不到 |
 
@@ -3476,7 +3476,7 @@ export const playPieceSnapSound = async (): Promise<void> => {
 #### playCutSound
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:313`
+- **文件**: `utils/rendering/soundEffects.ts:279`
 - **签名**: `export const playCutSound = async (): Promise<void> => {`
 
 **建议文档结构**:
@@ -3499,7 +3499,7 @@ export const playCutSound = async (): Promise<void> => {
 #### playScatterSound
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:360`
+- **文件**: `utils/rendering/soundEffects.ts:297`
 - **签名**: `export const playScatterSound = async (): Promise<void> => {`
 
 **建议文档结构**:
@@ -3522,7 +3522,7 @@ export const playScatterSound = async (): Promise<void> => {
 #### playFinishSound
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:406`
+- **文件**: `utils/rendering/soundEffects.ts:314`
 - **签名**: `export const playFinishSound = async (): Promise<void> => {`
 
 **建议文档结构**:
@@ -5753,7 +5753,7 @@ export const AngleDisplayControllerImpl: AngleDisplayController = {
 - ❌ `useDebugToggle` (function)
 - ❌ `reducer` (constant)
 
-### 工具函数API (141个)
+### 工具函数API (140个)
 
 - ❌ `deviceLogger` (constant)
 - ✅ `adaptationLogger` (constant)
@@ -5793,7 +5793,6 @@ export const AngleDisplayControllerImpl: AngleDisplayController = {
 - ❌ `playButtonClickSound` (constant)
 - ✅ `playPieceSelectSound` (constant)
 - ❌ `playPieceSnapSound` (constant)
-- ✅ `playPuzzleCompletedSound` (constant)
 - ✅ `playRotateSound` (constant)
 - ❌ `playCutSound` (constant)
 - ❌ `playScatterSound` (constant)
