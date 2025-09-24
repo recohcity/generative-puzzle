@@ -1,16 +1,16 @@
 # API扫描报告
 
-> 生成时间: 2025/9/24 23:01:33
+> 生成时间: 2025/9/25 00:36:48
 > 扫描工具: API变更扫描器 v1.0
 
 ## 📊 统计概览
 
 | 项目 | 数量 | 说明 |
 |------|------|------|
-| API总数 | 270 | 项目中所有导出的API |
+| API总数 | 271 | 项目中所有导出的API |
 | 已文档化 | 30 | 在API文档中已记录的API |
 | 文档覆盖率 | 11.1% | 文档化程度 |
-| 新增API | 243 | 需要添加到文档的API |
+| 新增API | 244 | 需要添加到文档的API |
 | 可能删除 | 3 | 文档中存在但代码中找不到 |
 
 ## 🆕 新增API详情
@@ -3315,7 +3315,7 @@ export class OptimizedShapeGenerator {
 #### soundPlayedForTest
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:13`
+- **文件**: `utils/rendering/soundEffects.ts:16`
 - **签名**: `export const soundPlayedForTest = (soundName: string) => {`
 
 **建议文档结构**:
@@ -3338,7 +3338,7 @@ export const soundPlayedForTest = (soundName: string) => {
 #### initBackgroundMusic
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:40`
+- **文件**: `utils/rendering/soundEffects.ts:43`
 - **签名**: `export const initBackgroundMusic = () => {`
 
 **建议文档结构**:
@@ -3358,10 +3358,33 @@ export const initBackgroundMusic = () => {
 ```
 ```
 
+#### preloadAllSoundEffects
+
+- **类型**: constant
+- **文件**: `utils/rendering/soundEffects.ts:114`
+- **签名**: `export const preloadAllSoundEffects = (): void => {`
+
+**建议文档结构**:
+```markdown
+### preloadAllSoundEffects
+
+[添加API描述]
+
+```typescript
+export const preloadAllSoundEffects = (): void => {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
 #### toggleBackgroundMusic
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:92`
+- **文件**: `utils/rendering/soundEffects.ts:172`
 - **签名**: `export const toggleBackgroundMusic = async (): Promise<boolean> => {`
 
 **建议文档结构**:
@@ -3384,7 +3407,7 @@ export const toggleBackgroundMusic = async (): Promise<boolean> => {
 #### getBackgroundMusicStatus
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:130`
+- **文件**: `utils/rendering/soundEffects.ts:210`
 - **签名**: `export const getBackgroundMusicStatus = (): boolean => {`
 
 **建议文档结构**:
@@ -3407,7 +3430,7 @@ export const getBackgroundMusicStatus = (): boolean => {
 #### autoStartBackgroundMusic
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:135`
+- **文件**: `utils/rendering/soundEffects.ts:215`
 - **签名**: `export const autoStartBackgroundMusic = async (): Promise<void> => {`
 
 **建议文档结构**:
@@ -3430,7 +3453,7 @@ export const autoStartBackgroundMusic = async (): Promise<void> => {
 #### playButtonClickSound
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:153`
+- **文件**: `utils/rendering/soundEffects.ts:233`
 - **签名**: `export const playButtonClickSound = async (): Promise<void> => {`
 
 **建议文档结构**:
@@ -3453,7 +3476,7 @@ export const playButtonClickSound = async (): Promise<void> => {
 #### playPieceSnapSound
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:219`
+- **文件**: `utils/rendering/soundEffects.ts:299`
 - **签名**: `export const playPieceSnapSound = async (): Promise<void> => {`
 
 **建议文档结构**:
@@ -3476,7 +3499,7 @@ export const playPieceSnapSound = async (): Promise<void> => {
 #### playCutSound
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:280`
+- **文件**: `utils/rendering/soundEffects.ts:360`
 - **签名**: `export const playCutSound = async (): Promise<void> => {`
 
 **建议文档结构**:
@@ -3499,7 +3522,7 @@ export const playCutSound = async (): Promise<void> => {
 #### playScatterSound
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:298`
+- **文件**: `utils/rendering/soundEffects.ts:381`
 - **签名**: `export const playScatterSound = async (): Promise<void> => {`
 
 **建议文档结构**:
@@ -3522,7 +3545,7 @@ export const playScatterSound = async (): Promise<void> => {
 #### playFinishSound
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:315`
+- **文件**: `utils/rendering/soundEffects.ts:401`
 - **签名**: `export const playFinishSound = async (): Promise<void> => {`
 
 **建议文档结构**:
@@ -5753,7 +5776,7 @@ export const AngleDisplayControllerImpl: AngleDisplayController = {
 - ❌ `useDebugToggle` (function)
 - ❌ `reducer` (constant)
 
-### 工具函数API (140个)
+### 工具函数API (141个)
 
 - ❌ `deviceLogger` (constant)
 - ✅ `adaptationLogger` (constant)
@@ -5787,6 +5810,7 @@ export const AngleDisplayControllerImpl: AngleDisplayController = {
 - ❌ `OptimizedShapeGenerator` (class)
 - ❌ `soundPlayedForTest` (constant)
 - ❌ `initBackgroundMusic` (constant)
+- ❌ `preloadAllSoundEffects` (constant)
 - ❌ `toggleBackgroundMusic` (constant)
 - ❌ `getBackgroundMusicStatus` (constant)
 - ❌ `autoStartBackgroundMusic` (constant)

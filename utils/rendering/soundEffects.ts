@@ -6,6 +6,7 @@ let backgroundMusic: HTMLAudioElement | null = null;
 let isBackgroundMusicPlaying: boolean = true;
 let audioUnlocked = false;
 let finishAudio: HTMLAudioElement | null = null;
+let finishAudioBuffer: AudioBuffer | null = null; // 预解码的完成音效缓冲
 let cutAudioElement: HTMLAudioElement | null = null;
 let scatterAudioElement: HTMLAudioElement | null = null;
 
@@ -44,6 +45,9 @@ export const initBackgroundMusic = () => {
     backgroundMusic = new Audio('/bgm.mp3');
     backgroundMusic.loop = true;
     backgroundMusic.volume = 0.5;
+    backgroundMusic.preload = 'auto';
+    // @ts-ignore
+    backgroundMusic.playsInline = true;
     
     // 添加循环播放的额外保障
     backgroundMusic.addEventListener('ended', () => {
@@ -66,23 +70,23 @@ export const initBackgroundMusic = () => {
       if (!isTrustedEvent) return;
 
       try {
-        // 1) 恢复/创建音频上下文
+        // 1) 先尝试立即启动BGM（不等待任何Promise，保持手势上下文）
+        if (isBackgroundMusicPlaying && backgroundMusic && backgroundMusic.paused) {
+          backgroundMusic.play().then(() => {
+            audioUnlocked = true;
+          }).catch(err => {
+            console.log('Background music start failed on first interaction:', err);
+          });
+        }
+
+        // 2) 并行恢复AudioContext（不await，避免打断手势激活语境）
         const ctx = createAudioContext();
         if (ctx && ctx.state === 'suspended') {
-          await ctx.resume();
+          void ctx.resume();
         }
 
-        // 2) 仅做预加载（不播放），避免任何可听见的触发
+        // 3) 仅做预加载（不播放）
         preloadAllSoundEffects();
-
-        // 3) 若设置为应播放背景音乐，则尝试启动
-        if (isBackgroundMusicPlaying && backgroundMusic && backgroundMusic.paused) {
-          try {
-            await backgroundMusic.play();
-          } catch (err) {
-            console.log('Background music start failed on first interaction:', err);
-          }
-        }
 
         audioUnlocked = true;
         console.log('Audio system unlocked and primed on first interaction');
@@ -144,6 +148,20 @@ export const preloadAllSoundEffects = (): void => {
       finishAudio.loop = false;
       finishAudio.load();
     }
+
+    // 预解码完成音效为AudioBuffer，确保非手势上下文也能即时播放
+    (async () => {
+      try {
+        const ctx = createAudioContext();
+        if (!ctx) return;
+        const res = await fetch('/finish.mp3', { cache: 'force-cache' });
+        const arrayBuffer = await res.arrayBuffer();
+        finishAudioBuffer = await ctx.decodeAudioData(arrayBuffer.slice(0));
+      } catch (e) {
+        // 解码失败时忽略，保留HTMLAudio回退
+        finishAudioBuffer = null;
+      }
+    })();
   } catch (e) {
     // 预加载失败不影响后续按需播放
     console.warn('Sound preloading failed (safe to ignore):', e);
@@ -391,7 +409,19 @@ export const playFinishSound = async (): Promise<void> => {
       audioUnlocked = true;
     }
 
-    // 与其他真实音效一致：复用预加载的元素并直接播放
+    // 优先使用AudioBuffer通过WebAudio播放，规避HTMLAudio在非手势上下文的限制
+    if (ctx && finishAudioBuffer) {
+      const source = ctx.createBufferSource();
+      const gain = ctx.createGain();
+      source.buffer = finishAudioBuffer;
+      gain.gain.value = 0.8;
+      source.connect(gain);
+      gain.connect(ctx.destination);
+      source.start();
+      return;
+    }
+
+    // 回退：复用预加载的HTMLAudio元素直接播放
     if (!finishAudio) {
       finishAudio = new Audio('/finish.mp3');
       finishAudio.preload = 'auto';
@@ -399,7 +429,6 @@ export const playFinishSound = async (): Promise<void> => {
       finishAudio.playsInline = true;
       finishAudio.loop = false;
     }
-
     finishAudio.volume = 0.8;
     finishAudio.currentTime = 0;
     await finishAudio.play();
