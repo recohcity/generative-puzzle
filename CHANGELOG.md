@@ -6,6 +6,9 @@
 - 一致化：`playFinishSound()` 与其他真实音效（`playCutSound`/`playScatterSound`）调用方式保持一致，统一使用 HTML5 Audio，并复用音频实例。
 - 兼容性：在播放前尝试恢复 `AudioContext`，若自动播放受限（如 iOS Safari），会注册一次性用户交互回退以确保后续触发时正常播放。
 - 文档对齐：实现细节与 `docs/configuration/media-sound.md` 的“真实音频文件音效/finishSound”配置保持一致。
+ - 预加载：新增 `preloadAllSoundEffects()`，在应用初始化时预加载并缓存 `split.mp3`、`scatter.mp3`、`finish.mp3`，首播零等待、无卡顿。
+ - 复用：切割与散开音效播放改为复用预加载的 `HTMLAudioElement`，避免重复创建对象造成的延迟与内存抖动。
+ - 集成：在 `components/GameInterface.tsx` 首次挂载时同时调用 `initBackgroundMusic()` 与 `preloadAllSoundEffects()`，确保进入游戏后所有真实音效立即可用。
 
 ## [v1.3.58] - 2025-09-22
 ### 🎵 音效系统全面优化与文档整合
