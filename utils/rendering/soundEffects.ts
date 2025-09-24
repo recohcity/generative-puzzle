@@ -63,16 +63,55 @@ export const initBackgroundMusic = () => {
     const handleFirstInteraction = async (event?: Event) => {
       // 确保这是真正的用户交互，而不是程序触发的事件
       const isTrustedEvent = !event || event.isTrusted !== false;
-      if (isTrustedEvent && isBackgroundMusicPlaying && backgroundMusic && backgroundMusic.paused && !audioUnlocked) {
-        try {
-          await backgroundMusic.play();
-          audioUnlocked = true;
-          console.log('Background music auto-started on first interaction');
-          // 成功启动后移除所有监听器
-          removeFirstInteractionListeners();
-        } catch (error) {
-          console.log('Auto-start failed, waiting for manual activation:', error);
+      if (!isTrustedEvent) return;
+
+      try {
+        // 1) 恢复/创建音频上下文
+        const ctx = createAudioContext();
+        if (ctx && ctx.state === 'suspended') {
+          await ctx.resume();
         }
+
+        // 2) 预加载所有真实音效并进行一次静音prime，确保后续可立即播放
+        preloadAllSoundEffects();
+
+        const prime = async (el: HTMLAudioElement | null) => {
+          if (!el) return;
+          const originalVolume = el.volume;
+          el.volume = 0; // 静音prime
+          el.currentTime = 0;
+          try {
+            await el.play();
+          } catch (_) {
+            // 忽略prime失败
+          } finally {
+            // 立即暂停并恢复音量
+            try { el.pause(); } catch { /* noop */ }
+            el.currentTime = 0;
+            el.volume = originalVolume;
+          }
+        };
+
+        await Promise.all([
+          prime(cutAudioElement),
+          prime(scatterAudioElement),
+          prime(finishAudio),
+        ]);
+
+        // 3) 若设置为应播放背景音乐，则尝试启动
+        if (isBackgroundMusicPlaying && backgroundMusic && backgroundMusic.paused) {
+          try {
+            await backgroundMusic.play();
+          } catch (err) {
+            console.log('Background music start failed on first interaction:', err);
+          }
+        }
+
+        audioUnlocked = true;
+        console.log('Audio system unlocked and primed on first interaction');
+        removeFirstInteractionListeners();
+      } catch (error) {
+        console.log('First interaction audio unlock failed:', error);
       }
     };
 
