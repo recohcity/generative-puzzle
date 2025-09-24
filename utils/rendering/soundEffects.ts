@@ -6,6 +6,8 @@ let backgroundMusic: HTMLAudioElement | null = null;
 let isBackgroundMusicPlaying: boolean = true;
 let audioUnlocked = false;
 let finishAudio: HTMLAudioElement | null = null;
+let cutAudioElement: HTMLAudioElement | null = null;
+let scatterAudioElement: HTMLAudioElement | null = null;
 
 // Test-specific global flag/listener for Playwright
 // This function will be exposed to Playwright's Node.js context.
@@ -85,6 +87,40 @@ export const initBackgroundMusic = () => {
     document.addEventListener('click', handleFirstInteraction, { once: true });
     document.addEventListener('touchstart', handleFirstInteraction, { once: true });
     document.addEventListener('keydown', handleFirstInteraction, { once: true });
+  }
+};
+
+// 预加载并缓存所有真实音效文件，避免首次触发时的加载卡顿
+export const preloadAllSoundEffects = (): void => {
+  try {
+    // 切割音效
+    if (!cutAudioElement) {
+      cutAudioElement = new Audio('/split.mp3');
+      cutAudioElement.preload = 'auto';
+      // @ts-ignore
+      cutAudioElement.playsInline = true;
+      cutAudioElement.load();
+    }
+    // 散开音效
+    if (!scatterAudioElement) {
+      scatterAudioElement = new Audio('/scatter.mp3');
+      scatterAudioElement.preload = 'auto';
+      // @ts-ignore
+      scatterAudioElement.playsInline = true;
+      scatterAudioElement.load();
+    }
+    // 完成音效
+    if (!finishAudio) {
+      finishAudio = new Audio('/finish.mp3');
+      finishAudio.preload = 'auto';
+      // @ts-ignore
+      finishAudio.playsInline = true;
+      finishAudio.loop = false;
+      finishAudio.load();
+    }
+  } catch (e) {
+    // 预加载失败不影响后续按需播放
+    console.warn('Sound preloading failed (safe to ignore):', e);
   }
 };
 
@@ -281,13 +317,16 @@ export const playCutSound = async (): Promise<void> => {
   soundPlayedForTest('cut');
 
   try {
-    // 直接播放真实的切割音效文件
-    const cutAudio = new Audio('/split.mp3');
-    cutAudio.volume = 1.0; // 正常音量
-    cutAudio.currentTime = 0; // 确保从头开始播放
-
-    // 播放音效
-    await cutAudio.play();
+    // 使用预加载的音频元素（若不存在则即时创建）
+    if (!cutAudioElement) {
+      cutAudioElement = new Audio('/split.mp3');
+      cutAudioElement.preload = 'auto';
+      // @ts-ignore
+      cutAudioElement.playsInline = true;
+    }
+    cutAudioElement.volume = 1.0;
+    cutAudioElement.currentTime = 0;
+    await cutAudioElement.play();
 
   } catch (error) {
     console.error('Error playing cut sound:', error);
@@ -299,13 +338,16 @@ export const playScatterSound = async (): Promise<void> => {
   soundPlayedForTest('scatter');
 
   try {
-    // 直接播放真实的散开音效文件
-    const scatterAudio = new Audio('/scatter.mp3');
-    scatterAudio.volume = 1.0; // 正常音量
-    scatterAudio.currentTime = 0; // 确保从头开始播放
-
-    // 播放音效
-    await scatterAudio.play();
+    // 使用预加载的音频元素（若不存在则即时创建）
+    if (!scatterAudioElement) {
+      scatterAudioElement = new Audio('/scatter.mp3');
+      scatterAudioElement.preload = 'auto';
+      // @ts-ignore
+      scatterAudioElement.playsInline = true;
+    }
+    scatterAudioElement.volume = 1.0;
+    scatterAudioElement.currentTime = 0;
+    await scatterAudioElement.play();
 
   } catch (error) {
     console.error('Error playing scatter sound:', error);
