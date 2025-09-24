@@ -123,6 +123,31 @@
 
 ---
 
+## 2.1 预加载与自动播放策略（v1.3.59）
+
+- 背景音乐与真实音效在应用初始化阶段统一预加载，减少首次播放延迟。
+- 预加载范围：`bgm.mp3`、`split.mp3`、`scatter.mp3`、`finish.mp3`。
+- 背景音乐仅预加载不自动播放，仍遵循浏览器自动播放策略：需要用户交互或通过喇叭按钮触发。
+- 播放函数复用已预加载的 `HTMLAudioElement`，避免重复创建造成的卡顿与内存抖动。
+- 初始化位置：在 `components/GameInterface.tsx` 的首次挂载中调用：
+
+```typescript
+import { initBackgroundMusic, preloadAllSoundEffects } from '@/utils/rendering/soundEffects';
+
+useEffect(() => {
+  if (typeof window !== 'undefined') {
+    initBackgroundMusic();
+    preloadAllSoundEffects();
+  }
+}, []);
+```
+
+- 相关实现：`utils/rendering/soundEffects.ts`
+  - `preloadAllSoundEffects()`：创建并缓存 `backgroundMusic`、`cutAudioElement`、`scatterAudioElement`、`finishAudio`，统一设置 `preload='auto'` 并调用 `.load()`。
+  - `toggleBackgroundMusic()`：在用户交互时控制背景音乐播放/暂停，并在必要时恢复 `AudioContext`。
+
+---
+
 ## 3. 静态资源配置
 
 ### backgroundImage
