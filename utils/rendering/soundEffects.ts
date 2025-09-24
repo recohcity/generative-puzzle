@@ -5,6 +5,7 @@ let audioContext: AudioContext | null = null;
 let backgroundMusic: HTMLAudioElement | null = null;
 let isBackgroundMusicPlaying: boolean = true;
 let audioUnlocked = false;
+let finishAudio: HTMLAudioElement | null = null;
 
 // Test-specific global flag/listener for Playwright
 // This function will be exposed to Playwright's Node.js context.
@@ -315,13 +316,62 @@ export const playFinishSound = async (): Promise<void> => {
   soundPlayedForTest('finish');
 
   try {
-    // 直接播放完成音效文件
-    const finishAudio = new Audio('/finish.mp3');
+    // 优先尝试解锁/恢复音频上下文，提升移动端播放成功率
+    const ctx = createAudioContext();
+    if (ctx && ctx.state === 'suspended') {
+      await ctx.resume();
+      audioUnlocked = true;
+    }
+
+    // 复用并预设完成音效元素，确保与其他真实音效一致的调用方式
+    if (!finishAudio) {
+      finishAudio = new Audio('/finish.mp3');
+      finishAudio.preload = 'auto';
+      // @ts-ignore: playsInline for iOS Safari
+      finishAudio.playsInline = true;
+      finishAudio.loop = false;
+    }
+
     finishAudio.volume = 0.8; // 适中音量，突出完成感
-    finishAudio.currentTime = 0; // 确保从头确保从头播放
+    finishAudio.currentTime = 0;
 
     await finishAudio.play();
   } catch (error) {
     console.error('Error playing finish sound:', error);
+    // 移动端（尤其是 iOS）在非用户交互上下文中可能阻止播放
+    // 作为回退：在下一次真实用户交互时播放一次
+    try {
+      const oneTimeHandler = async (event?: Event) => {
+        const isTrustedEvent = !event || event.isTrusted !== false;
+        if (!isTrustedEvent) return;
+        document.removeEventListener('click', oneTimeHandler);
+        document.removeEventListener('touchstart', oneTimeHandler);
+        document.removeEventListener('keydown', oneTimeHandler);
+        try {
+          const ctx = createAudioContext();
+          if (ctx && ctx.state === 'suspended') {
+            await ctx.resume();
+            audioUnlocked = true;
+          }
+          if (!finishAudio) {
+            finishAudio = new Audio('/finish.mp3');
+            finishAudio.preload = 'auto';
+            // @ts-ignore
+            finishAudio.playsInline = true;
+            finishAudio.loop = false;
+          }
+          finishAudio.volume = 0.8;
+          finishAudio.currentTime = 0;
+          await finishAudio.play();
+        } catch (e) {
+          console.error('Deferred finish sound still failed:', e);
+        }
+      };
+      document.addEventListener('click', oneTimeHandler, { once: true });
+      document.addEventListener('touchstart', oneTimeHandler, { once: true });
+      document.addEventListener('keydown', oneTimeHandler, { once: true });
+    } catch (e) {
+      // 忽略回退绑定失败
+    }
   }
 };

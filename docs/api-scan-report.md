@@ -1,6 +1,6 @@
 # API扫描报告
 
-> 生成时间: 2025/9/22 12:56:43
+> 生成时间: 2025/9/24 23:01:33
 > 扫描工具: API变更扫描器 v1.0
 
 ## 📊 统计概览
@@ -3315,7 +3315,7 @@ export class OptimizedShapeGenerator {
 #### soundPlayedForTest
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:12`
+- **文件**: `utils/rendering/soundEffects.ts:13`
 - **签名**: `export const soundPlayedForTest = (soundName: string) => {`
 
 **建议文档结构**:
@@ -3338,7 +3338,7 @@ export const soundPlayedForTest = (soundName: string) => {
 #### initBackgroundMusic
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:39`
+- **文件**: `utils/rendering/soundEffects.ts:40`
 - **签名**: `export const initBackgroundMusic = () => {`
 
 **建议文档结构**:
@@ -3361,7 +3361,7 @@ export const initBackgroundMusic = () => {
 #### toggleBackgroundMusic
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:91`
+- **文件**: `utils/rendering/soundEffects.ts:92`
 - **签名**: `export const toggleBackgroundMusic = async (): Promise<boolean> => {`
 
 **建议文档结构**:
@@ -3384,7 +3384,7 @@ export const toggleBackgroundMusic = async (): Promise<boolean> => {
 #### getBackgroundMusicStatus
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:129`
+- **文件**: `utils/rendering/soundEffects.ts:130`
 - **签名**: `export const getBackgroundMusicStatus = (): boolean => {`
 
 **建议文档结构**:
@@ -3407,7 +3407,7 @@ export const getBackgroundMusicStatus = (): boolean => {
 #### autoStartBackgroundMusic
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:134`
+- **文件**: `utils/rendering/soundEffects.ts:135`
 - **签名**: `export const autoStartBackgroundMusic = async (): Promise<void> => {`
 
 **建议文档结构**:
@@ -3430,7 +3430,7 @@ export const autoStartBackgroundMusic = async (): Promise<void> => {
 #### playButtonClickSound
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:152`
+- **文件**: `utils/rendering/soundEffects.ts:153`
 - **签名**: `export const playButtonClickSound = async (): Promise<void> => {`
 
 **建议文档结构**:
@@ -3453,7 +3453,7 @@ export const playButtonClickSound = async (): Promise<void> => {
 #### playPieceSnapSound
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:218`
+- **文件**: `utils/rendering/soundEffects.ts:219`
 - **签名**: `export const playPieceSnapSound = async (): Promise<void> => {`
 
 **建议文档结构**:
@@ -3476,7 +3476,7 @@ export const playPieceSnapSound = async (): Promise<void> => {
 #### playCutSound
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:279`
+- **文件**: `utils/rendering/soundEffects.ts:280`
 - **签名**: `export const playCutSound = async (): Promise<void> => {`
 
 **建议文档结构**:
@@ -3499,7 +3499,7 @@ export const playCutSound = async (): Promise<void> => {
 #### playScatterSound
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:297`
+- **文件**: `utils/rendering/soundEffects.ts:298`
 - **签名**: `export const playScatterSound = async (): Promise<void> => {`
 
 **建议文档结构**:
@@ -3522,7 +3522,7 @@ export const playScatterSound = async (): Promise<void> => {
 #### playFinishSound
 
 - **类型**: constant
-- **文件**: `utils/rendering/soundEffects.ts:314`
+- **文件**: `utils/rendering/soundEffects.ts:315`
 - **签名**: `export const playFinishSound = async (): Promise<void> => {`
 
 **建议文档结构**:

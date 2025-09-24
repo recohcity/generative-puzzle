@@ -1,4 +1,12 @@
 # 生成式拼图游戏 Changelog
+## [v1.3.59] - 2025-09-24
+### 🎵 移动端完成音效修复与实现一致化
+
+- 修复：移动端拼图完成后未播放 `public/finish.mp3` 的问题。
+- 一致化：`playFinishSound()` 与其他真实音效（`playCutSound`/`playScatterSound`）调用方式保持一致，统一使用 HTML5 Audio，并复用音频实例。
+- 兼容性：在播放前尝试恢复 `AudioContext`，若自动播放受限（如 iOS Safari），会注册一次性用户交互回退以确保后续触发时正常播放。
+- 文档对齐：实现细节与 `docs/configuration/media-sound.md` 的“真实音频文件音效/finishSound”配置保持一致。
+
 ## [v1.3.58] - 2025-09-22
 ### 🎵 音效系统全面优化与文档整合
 
