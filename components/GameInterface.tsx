@@ -20,7 +20,8 @@ import {
   initBackgroundMusic, 
   toggleBackgroundMusic, 
   getBackgroundMusicStatus, 
-  playButtonClickSound // Still needed here for other buttons
+  playButtonClickSound, // Still needed here for other buttons
+  preloadAllSoundEffects
 } from "@/utils/rendering/soundEffects"
 import DesktopPuzzleSettings from "./DesktopPuzzleSettings"; // <-- Import the new component
 import { BubbleBackground } from '../components/animate-ui/backgrounds/bubble';
@@ -70,6 +71,8 @@ export default function CurveTestOptimized() {
     // 只在客户端运行
     if (typeof window !== 'undefined') {
       initBackgroundMusic();
+      // 预加载真实音效，确保首次触发无卡顿
+      preloadAllSoundEffects();
       // 获取初始状态
       setIsMusicPlaying(getBackgroundMusicStatus());
     }
