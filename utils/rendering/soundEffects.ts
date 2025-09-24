@@ -391,7 +391,7 @@ export const playFinishSound = async (): Promise<void> => {
       audioUnlocked = true;
     }
 
-    // 复用并预设完成音效元素，确保与其他真实音效一致的调用方式
+    // 与其他真实音效一致：复用预加载的元素并直接播放
     if (!finishAudio) {
       finishAudio = new Audio('/finish.mp3');
       finishAudio.preload = 'auto';
@@ -400,46 +400,11 @@ export const playFinishSound = async (): Promise<void> => {
       finishAudio.loop = false;
     }
 
-    finishAudio.volume = 0.8; // 适中音量，突出完成感
+    finishAudio.volume = 0.8;
     finishAudio.currentTime = 0;
-
     await finishAudio.play();
   } catch (error) {
     console.error('Error playing finish sound:', error);
-    // 移动端（尤其是 iOS）在非用户交互上下文中可能阻止播放
-    // 作为回退：在下一次真实用户交互时播放一次
-    try {
-      const oneTimeHandler = async (event?: Event) => {
-        const isTrustedEvent = !event || event.isTrusted !== false;
-        if (!isTrustedEvent) return;
-        document.removeEventListener('click', oneTimeHandler);
-        document.removeEventListener('touchstart', oneTimeHandler);
-        document.removeEventListener('keydown', oneTimeHandler);
-        try {
-          const ctx = createAudioContext();
-          if (ctx && ctx.state === 'suspended') {
-            await ctx.resume();
-            audioUnlocked = true;
-          }
-          if (!finishAudio) {
-            finishAudio = new Audio('/finish.mp3');
-            finishAudio.preload = 'auto';
-            // @ts-ignore
-            finishAudio.playsInline = true;
-            finishAudio.loop = false;
-          }
-          finishAudio.volume = 0.8;
-          finishAudio.currentTime = 0;
-          await finishAudio.play();
-        } catch (e) {
-          console.error('Deferred finish sound still failed:', e);
-        }
-      };
-      document.addEventListener('click', oneTimeHandler, { once: true });
-      document.addEventListener('touchstart', oneTimeHandler, { once: true });
-      document.addEventListener('keydown', oneTimeHandler, { once: true });
-    } catch (e) {
-      // 忽略回退绑定失败
-    }
+    // 完成音效不再使用延迟回退机制，保持与其他真实音效一致的即时播放策略
   }
 };
