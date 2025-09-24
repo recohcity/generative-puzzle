@@ -93,6 +93,16 @@ export const initBackgroundMusic = () => {
 // 预加载并缓存所有真实音效文件，避免首次触发时的加载卡顿
 export const preloadAllSoundEffects = (): void => {
   try {
+    // 背景音乐 - 仅预加载，不自动播放
+    if (!backgroundMusic) {
+      backgroundMusic = new Audio('/bgm.mp3');
+      backgroundMusic.loop = true;
+      backgroundMusic.volume = 0.5;
+      backgroundMusic.preload = 'auto';
+      // @ts-ignore
+      backgroundMusic.playsInline = true;
+      backgroundMusic.load();
+    }
     // 切割音效
     if (!cutAudioElement) {
       cutAudioElement = new Audio('/split.mp3');
