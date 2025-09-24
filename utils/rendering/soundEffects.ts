@@ -72,31 +72,8 @@ export const initBackgroundMusic = () => {
           await ctx.resume();
         }
 
-        // 2) 预加载所有真实音效并进行一次静音prime，确保后续可立即播放
+        // 2) 仅做预加载（不播放），避免任何可听见的触发
         preloadAllSoundEffects();
-
-        const prime = async (el: HTMLAudioElement | null) => {
-          if (!el) return;
-          const originalVolume = el.volume;
-          el.volume = 0; // 静音prime
-          el.currentTime = 0;
-          try {
-            await el.play();
-          } catch (_) {
-            // 忽略prime失败
-          } finally {
-            // 立即暂停并恢复音量
-            try { el.pause(); } catch { /* noop */ }
-            el.currentTime = 0;
-            el.volume = originalVolume;
-          }
-        };
-
-        await Promise.all([
-          prime(cutAudioElement),
-          prime(scatterAudioElement),
-          prime(finishAudio),
-        ]);
 
         // 3) 若设置为应播放背景音乐，则尝试启动
         if (isBackgroundMusicPlaying && backgroundMusic && backgroundMusic.paused) {
