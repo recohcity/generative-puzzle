@@ -33,6 +33,8 @@ transform: {
         '<rootDir>/utils/difficulty/**/__tests__/**/*.test.ts',
         '<rootDir>/utils/score/**/__tests__/**/*.test.ts',
         '<rootDir>/src/quality-system/**/__tests__/**/*.test.ts',
+        // 排除需要 DOM 环境的音效测试
+        '!<rootDir>/utils/rendering/**/__tests__/**/*.test.ts',
       ],
     },
     {
