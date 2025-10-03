@@ -88,7 +88,7 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({
                     const shapeName = getShapeDisplayName(record.difficulty?.shapeType);
                     const levelText = t('difficulty.levelLabel', { level: record.difficulty.cutCount });
                     const piecesPart = `${record.difficulty?.actualPieces || 0}${t('stats.piecesUnit')}`;
-                    return shapeName ? `${shapeName} · ${levelText} · ${piecesPart}` : `${levelText} · ${piecesPart}`;
+                    return shapeName ? `${levelText} · ${shapeName} · ${piecesPart}` : `${levelText} · ${piecesPart}`;
                   })()}</span>
                   <span className="text-[#FFD5AB]">{record.scoreBreakdown.baseScore}</span>
                 </div>

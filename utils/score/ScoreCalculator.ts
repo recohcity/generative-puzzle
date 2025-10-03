@@ -2,14 +2,24 @@ import { GameStats, DifficultyConfig, ScoreBreakdown, GameRecord, PuzzlePiece, S
 import { calculateNewRotationScore } from './RotationEfficiencyCalculator';
 
 /**
- * 分数计算引擎
- * 提供完整的分数计算功能，包括难度系数、实时分数和最终分数计算
+ * 生成式拼图游戏 - 分数计算引擎
+ * 基于统一规则文档 v3.1 (docs/game-rules-unified.md)
+ * 
+ * 核心特性：
+ * - 基于难度级别（1-8）的固定基础分数和系数
+ * - 固定阈值的速度奖励系统（10s-120s分级奖励）
+ * - v3.0 旋转效率算法（完美+500分，超出-10分/次）
+ * - 统一提示系统（3次免费，零提示+500分）
+ * - 形状难度系数（多边形1.0，云朵1.1，锯齿1.2）
+ * - 设备适配系数（移动端1.1，桌面端和iPad 1.0）
+ * 
+ * 最终公式：
+ * finalScore = (baseScore + timeBonus + rotationScore + hintScore) × difficultyMultiplier
+ * difficultyMultiplier = baseDifficultyMultiplier × cutTypeMultiplier × deviceMultiplier × shapeMultiplier
  */
 
-// 🔧 修复：基于切割次数的动态分数计算系统
-// 移除硬编码的拼图数量映射表，改为基于切割次数的动态计算
-
-// 🔧 重新设计：基于难度级别的基础分数表（与cutGeneratorConfig.ts保持一致）
+// 基于统一规则文档 v3.1 的基础分数表（与 cutGeneratorConfig.ts 保持一致）
+// 难度级别 1-8 对应的固定基础分数
 const BASE_SCORES_BY_DIFFICULTY: Record<number, number> = {
   1: 500,    // 难度1 -> 基础分500
   2: 800,    // 难度2 -> 基础分800
@@ -21,7 +31,7 @@ const BASE_SCORES_BY_DIFFICULTY: Record<number, number> = {
   8: 8000    // 难度8 -> 基础分8000
 };
 
-// 🔧 重新设计：基于难度级别的难度系数表
+// 基于统一规则文档 v3.1 的难度系数表
 const DIFFICULTY_MULTIPLIERS_BY_LEVEL: Record<number, number> = {
   1: 1.0,    // 难度1 -> 系数1.0
   2: 1.2,    // 难度2 -> 系数1.2
@@ -33,7 +43,7 @@ const DIFFICULTY_MULTIPLIERS_BY_LEVEL: Record<number, number> = {
   8: 5.0     // 难度8 -> 系数5.0
 };
 
-// 速度奖励分数表（基于完成时间）
+// 速度奖励分数表（基于完成时间的固定阈值奖励）
 const TIME_BONUS_THRESHOLDS = [
   { maxTime: 10, bonus: 600, description: '10秒内完成' },
   { maxTime: 30, bonus: 400, description: '30秒内完成' },
@@ -42,7 +52,7 @@ const TIME_BONUS_THRESHOLDS = [
   { maxTime: 120, bonus: 100, description: '2分钟内完成' },
 ] as const;
 
-// 提示系统可配置参数（全局统一）
+// 提示系统统一配置参数（所有难度统一 3 次免费提示）
 let HINT_CONFIG = {
   freeHintsPerGame: 3,      // 所有难度的免费提示次数
   zeroHintBonus: 500,       // 零提示奖励分数
@@ -55,8 +65,15 @@ export const setHintConfig = (config: Partial<typeof HINT_CONFIG>) => {
 };
 
 /**
- * 获取形状难度系数
- * 不同形状的完成难度不同，反映在分数系数上
+ * 获取形状难度系数（统一规则文档 v3.1）
+ * 
+ * 形状难度系数表：
+ * - 多边形 (Polygon): 1.0 - 标准难度，边缘规则，适合新手
+ * - 云枵形 (Cloud): 1.1 - 轻微增雾，曲线边缘，初级挑战
+ * - 锯齿形 (Jagged): 1.2 - 较高难度，不规则边缘，高手挑战
+ * 
+ * @param shapeType 形状类型
+ * @returns 形状难度系数
  */
 export const getShapeMultiplier = (shapeType?: ShapeType | string): number => {
   // 处理可能的 undefined 或空值
@@ -78,9 +95,16 @@ export const getShapeMultiplier = (shapeType?: ShapeType | string): number => {
 };
 
 /**
- * 获取设备难度系数
- * 集成现有的设备检测逻辑，统一移动端系数为1.1
- * 与useDeviceDetection保持一致的检测逻辑
+ * 获取设备难度系数（统一规则文档 v3.1）
+ * 
+ * 设备难度系数表：
+ * - 桌面端: 1.0 - 标准难度
+ * - iPad: 1.0 - 标准难度
+ * - 移动端（横屏+竖屏）: 1.1 - 统一 1.1 倍雾度
+ * 
+ * 与 useDeviceDetection 保持一致的检测逻辑
+ * 
+ * @returns 设备难度系数
  */
 export const getDeviceMultiplier = (): number => {
   // 检测设备类型
@@ -186,13 +210,17 @@ export const getHintAllowanceByCutCount = (_cutCount: number): number => {
 };
 
 /**
- * 计算拼图散开后到完成状态的最小旋转次数（严格按V2文档定义）
+ * 计算最小旋转次数（统一规则文档 v3.1 算法）
  * 
- * 规则：
- * - 如果拼图角度小于180度，使用逆时针旋转实现角度归0
- * - 如果拼图角度大于180度，使用顺时针旋转实现角度归0
- * - 这是游戏开始时就应该计算并存储的值
- * - 计算合计所有散开的拼图角度归0所需最小旋转次数
+ * 旋转最优解规则：
+ * - 角度 ≤ 180°：使用逆时针旋转到 0°
+ * - 角度 > 180°：使用顺时针旋转到 0°
+ * - 每次旋转 15° 增量
+ * 
+ * 注意：这是游戏开始时就应该计算并存储的值
+ * 
+ * @param pieces 拼图片段数组
+ * @returns 所有片段的最小旋转次数总和
  */
 export const calculateMinimumRotationsAtStart = (pieces: PuzzlePiece[]): number => {
   if (!pieces || pieces.length === 0) {

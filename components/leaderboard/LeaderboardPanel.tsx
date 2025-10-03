@@ -61,7 +61,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
   const getDifficultyWithShape = (difficulty: any): string => {
     const shapeName = getShapeDisplayName(difficulty?.shapeType);
     const difficultyLevel = getDifficultyText(difficulty);
-    return shapeName ? `${shapeName} · ${difficultyLevel}` : difficultyLevel;
+    return shapeName ? `${difficultyLevel} · ${shapeName}` : difficultyLevel;
   };
 
 

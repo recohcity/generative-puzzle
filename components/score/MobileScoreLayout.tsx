@@ -42,11 +42,11 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
 
   // 获取包含形状的难度显示文本
   const getDifficultyWithShape = (difficulty: any): string => {
-    const shapeName = getShapeDisplayName(difficulty.shapeType);
     const difficultyLevel = getDifficultyText(difficulty);
+    const shapeName = getShapeDisplayName(difficulty.shapeType);
     const piecesPart = `${difficulty.actualPieces}${t('stats.piecesUnit')}`;
     return shapeName
-      ? `${shapeName} · ${difficultyLevel} · ${piecesPart}`
+      ? `${difficultyLevel} · ${shapeName} · ${piecesPart}`
       : `${difficultyLevel} · ${piecesPart}`;
   };
 

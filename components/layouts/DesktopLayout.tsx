@@ -110,7 +110,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
     const difficultyLevel = t('difficulty.levelLabel', { level: difficulty.cutCount });
     const piecesPart =`${difficulty.actualPieces}${t('stats.piecesUnit')}`;
     return shapeName 
-      ? `${shapeName} · ${difficultyLevel} · ${piecesPart}` 
+      ? `${difficultyLevel} · ${shapeName} · ${piecesPart}` 
       : `${difficultyLevel} · ${piecesPart}`;
 
   };
