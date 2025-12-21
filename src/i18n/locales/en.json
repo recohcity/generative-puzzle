@@ -21,15 +21,17 @@
             "progress": "{completed}/{total} pieces done",
             "gameStats": "P:{completed}/{total} H:{hints}/{allowedHints}",
             "completionMessages": [
+                "You're awesome !",
+                "Good job !",
+                "Super cool !",
+                "Pro player !",
+                "Nice one !",
                 "Awesome !",
-                "Perfect !",
-                "Amazing !",
-                "Excellent !",
-                "Great job !",
-                "Well done !",
-                "Fantastic !",
-                "Outstanding !",
-                "Brilliant !"
+                "Looks sick !",
+                "Smooth sailing !",
+                "Flawless !",
+                "You know how to play !",
+                "So stylish !"
             ]
         },
         "shapes": {

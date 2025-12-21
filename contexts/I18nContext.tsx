@@ -26,15 +26,18 @@ const defaultMessages = {
       "completed": "恭喜！拼图完成！",
       "progress": "{{completed}} / {{total}} 块拼图已完成",
       "completionMessages": [
-        "你好犀利吖！",
-        "太棒了！",
-        "完美！",
-        "厉害了！",
-        "真不错！",
-        "干得漂亮！",
-        "超赞的！",
-        "好样的！",
-        "绝绝子！"
+        "你好犀利㖞 ！",
+        "叻叻猪 ！",
+        "完美晒 ！",
+        "劲到飞起 ！",
+        "高手 ！",
+        "好嘢 ！",
+        "超正 ！",
+        "靓到爆 ！",
+        "掂过碌蔗 ！",
+        "冇得弹 ！",
+        "识玩 ! ",
+        "型到漏油 ！"
       ]
     },
     "shapes": {
@@ -245,7 +248,7 @@ export function I18nProvider({ children }: I18nProviderProps) {
   // 初始化语言设置 - 页面刷新后保持默认中文
   useEffect(() => {
     if (!isClient) return;
-    
+
     // 首次加载时立即加载完整的中文翻译文件，确保所有键值都能正确显示
     const loadInitialTranslations = async () => {
       try {
@@ -259,7 +262,7 @@ export function I18nProvider({ children }: I18nProviderProps) {
         // 保持使用默认翻译
       }
     };
-    
+
     loadInitialTranslations();
   }, [isClient]);
 
