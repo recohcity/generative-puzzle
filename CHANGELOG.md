@@ -1,4 +1,12 @@
 # 生成式拼图游戏 Changelog
+## [v1.3.61] - 2025-12-21
+### 🔧 配置修复与依赖优化
+
+- **修复** `tsconfig.json` 中错误的 `"1344"` 排除项
+- **优化** 移除未使用的 `date-fns` 依赖
+- **优化** 移除重复的 `playwright` 依赖（保留 devDeps 中的 `@playwright/test`）
+- **优化** 将 `dayjs` 和 `fs-extra` 移至 devDependencies（仅构建/测试脚本使用）
+
 ## [v1.3.60] - 2025-10-04
 ###  优化成绩显示文案和游戏规则文案
 

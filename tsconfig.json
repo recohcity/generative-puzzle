@@ -1,6 +1,10 @@
 {
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "target": "ES6",
     "skipLibCheck": true,
@@ -19,11 +23,26 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"],
-      "@/quality-system": ["./src/quality-system"]
+      "@/*": [
+        "./*"
+      ],
+      "@/quality-system": [
+        "./src/quality-system"
+      ]
     },
-    "types": ["@playwright/test", "node", "jest"]
+    "types": [
+      "@playwright/test",
+      "node",
+      "jest"
+    ]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "1344"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
