@@ -132,7 +132,7 @@ describe('ScoreCalculator - 基础分数测试', () => {
     expect(getBaseScore(999)).toBe(1000);
   });
 
-test('getBaseScoreByPieces应与getBaseScore一致（兼容性测试）', () => {
+  test('getBaseScoreByPieces应与getBaseScore一致（兼容性测试）', () => {
     // 兼容性：当前实现按级别直接取基础分
     expect(getBaseScoreByPieces(4)).toBe(getBaseScore(4));
     expect(getBaseScoreByPieces(7)).toBe(getBaseScore(7));
@@ -160,7 +160,7 @@ describe('ScoreCalculator - 难度系数测试', () => {
 });
 
 describe('ScoreCalculator - 提示赠送测试', () => {
-test('基于切割次数的提示赠送', () => {
+  test('基于切割次数的提示赠送', () => {
     expect(getHintAllowanceByCutCount(1)).toBe(3);
     expect(getHintAllowanceByCutCount(2)).toBe(3);
     expect(getHintAllowanceByCutCount(3)).toBe(3);
@@ -243,31 +243,31 @@ describe('ScoreCalculator - 旋转计算测试', () => {
 // 新算法：完美旋转+500分，每超出1次-10分
 
 describe('ScoreCalculator - 速度奖励测试', () => {
-test('10秒内完成应获得600分奖励', () => {
+  test('10秒内完成应获得600分奖励', () => {
     const stats = createTestStats({ totalDuration: 8 });
     const result = calculateTimeBonus(stats, []);
     expect(result.timeBonus).toBe(600);
   });
 
-test('30秒内完成应获得400分奖励', () => {
+  test('30秒内完成应获得400分奖励', () => {
     const stats = createTestStats({ totalDuration: 25 });
     const result = calculateTimeBonus(stats, []);
     expect(result.timeBonus).toBe(400);
   });
 
-test('60秒内完成应获得300分奖励', () => {
+  test('60秒内完成应获得300分奖励', () => {
     const stats = createTestStats({ totalDuration: 45 });
     const result = calculateTimeBonus(stats, []);
     expect(result.timeBonus).toBe(300);
   });
 
-test('90秒内完成应获得200分奖励', () => {
+  test('90秒内完成应获得200分奖励', () => {
     const stats = createTestStats({ totalDuration: 75 });
     const result = calculateTimeBonus(stats, []);
     expect(result.timeBonus).toBe(200);
   });
 
-test('120秒内完成应获得100分奖励', () => {
+  test('120秒内完成应获得100分奖励', () => {
     const stats = createTestStats({ totalDuration: 110 });
     const result = calculateTimeBonus(stats, []);
     expect(result.timeBonus).toBe(100);
@@ -280,7 +280,7 @@ test('120秒内完成应获得100分奖励', () => {
   });
 
   test('边界值测试', () => {
-expect(calculateTimeBonus(createTestStats({ totalDuration: 10 }), []).timeBonus).toBe(600);
+    expect(calculateTimeBonus(createTestStats({ totalDuration: 10 }), []).timeBonus).toBe(600);
     expect(calculateTimeBonus(createTestStats({ totalDuration: 30 }), []).timeBonus).toBe(400);
     expect(calculateTimeBonus(createTestStats({ totalDuration: 120 }), []).timeBonus).toBe(100);
   });
@@ -295,7 +295,7 @@ expect(calculateTimeBonus(createTestStats({ totalDuration: 10 }), []).timeBonus)
 
 describe('ScoreCalculator - 提示系统测试', () => {
   test('提示分数计算 - 未使用提示应获得奖励', () => {
-const score = calculateHintScore(0, 3);
+    const score = calculateHintScore(0, 3);
     expect(score).toBe(500); // 零提示完成：+500分奖励
   });
 
@@ -628,7 +628,7 @@ describe('ScoreCalculator - 排行榜统计测试', () => {
     const leaderboard = [createTestRecord({ totalDuration: 30 })];
     const result = calculateLeaderboardStats(stats, leaderboard);
 
-expect(result.timeBonus).toBe(400);
+    expect(result.timeBonus).toBe(400);
     expect(result.recordInfo.isNewRecord).toBe(true);
     expect(result.rankDisplay).toBe('第1名🏆');
     expect(result.recordBadge.shouldCelebrate).toBe(true);
@@ -693,7 +693,7 @@ describe('ScoreCalculator - 边界情况和异常处理测试', () => {
     expect(getBaseScore(-1)).toBe(1000);
     // 基于现有实现的公式：Math.min(2.0, 1.0 + (actualPieces - 10) * 0.1)
     expect(getBaseDifficultyMultiplierByPieces(0)).toBe(0.0);
-expect(getBaseDifficultyMultiplierByPieces(-1)).toBeCloseTo(-0.1, 6);
+    expect(getBaseDifficultyMultiplierByPieces(-1)).toBeCloseTo(-0.1, 6);
   });
 
   test('应该处理minRotations为0的情况', () => {
@@ -701,7 +701,7 @@ expect(getBaseDifficultyMultiplierByPieces(-1)).toBeCloseTo(-0.1, 6);
       ...createTestStats(),
       minRotations: 0
     };
-    
+
     // 应该不会抛出异常，并返回合理的分数
     expect(() => calculateLiveScore(statsWithZeroMinRotations, [])).not.toThrow();
     const result = calculateLiveScore(statsWithZeroMinRotations, []);
@@ -714,7 +714,7 @@ expect(getBaseDifficultyMultiplierByPieces(-1)).toBeCloseTo(-0.1, 6);
       ...createTestStats(),
       minRotations: undefined as any
     };
-    
+
     // 应该不会抛出异常，并返回合理的分数
     expect(() => calculateLiveScore(statsWithUndefinedMinRotations, [])).not.toThrow();
     const result = calculateLiveScore(statsWithUndefinedMinRotations, []);
@@ -767,30 +767,30 @@ expect(getBaseDifficultyMultiplierByPieces(-1)).toBeCloseTo(-0.1, 6);
     expect(validateScoreParams(null as any)).toBe(false);
     expect(validateScoreParams(undefined as any)).toBe(false);
     expect(validateScoreParams({} as any)).toBe(false);
-    
+
     // 测试formatScore的边界情况
     expect(formatScore(0)).toBe('0');
     expect(formatScore(-100)).toBe('-100');
     expect(formatScore(1000000)).toBe('1,000,000');
-    
+
     // 测试formatTime的边界情况
     expect(formatTime(0)).toBe('00:00');
     expect(formatTime(-1)).toBe('-1:-1');
     expect(formatTime(3661)).toBe('61:01'); // 超过1小时
-    
+
     // 测试checkTimeRecord的边界情况
     const emptyHistory: GameRecord[] = [];
     const testStats = createTestStats({ totalDuration: 30 });
     const timeRecord = checkTimeRecord(testStats, emptyHistory);
     expect(timeRecord.isNewRecord).toBe(true); // 空历史记录
-    
+
     // 测试calculateLeaderboardStats的边界情况 - 跳过，因为需要复杂的参数设置
-    
+
     // 测试getNewRecordBadge的边界情况
     const newRecordResult = getNewRecordBadge({ isNewRecord: true });
     expect(newRecordResult.badge).toBe('🆕记录');
     expect(newRecordResult.shouldCelebrate).toBe(true);
-    
+
     const noRecordResult = getNewRecordBadge({ isNewRecord: false });
     expect(noRecordResult.badge).toBe('');
     expect(noRecordResult.shouldCelebrate).toBe(false);
@@ -803,29 +803,29 @@ expect(getBaseDifficultyMultiplierByPieces(-1)).toBeCloseTo(-0.1, 6);
     // 测试calculateScoreDelta的边界情况
     const oldStats = createTestStats({ totalRotations: 5 });
     const newStats = createTestStats({ totalRotations: 6 });
-    
+
     const delta1 = calculateScoreDelta(oldStats, newStats);
     expect(delta1.delta).toBeLessThanOrEqual(0); // 旋转增加应该减分或不变
     expect(delta1.newScore).toBeGreaterThan(0);
     expect(delta1.reason).toBe('旋转操作');
-    
+
     const delta2 = calculateScoreDelta(null, newStats);
     expect(delta2.delta).toBeGreaterThan(0);
     expect(delta2.newScore).toBeGreaterThan(0);
     expect(delta2.reason).toBe('游戏开始');
-    
+
     const delta3 = calculateScoreDelta(oldStats, oldStats);
     expect(delta3.delta).toBe(0);
     expect(delta3.newScore).toBeGreaterThan(0);
     expect(delta3.reason).toBe('数据更新');
-    
+
     // 测试updateStatsWithOptimalSolution的边界情况
     const testStats = createTestStats();
     const pieces = [createTestPiece(45), createTestPiece(90)];
     const updatedStats = updateStatsWithOptimalSolution(testStats, pieces);
     expect(updatedStats.minRotations).toBeGreaterThanOrEqual(0);
     expect(updatedStats.rotationEfficiency).toBeGreaterThan(0);
-    
+
     // 测试calculateScoreWithLeaderboard的边界情况
     const emptyHistory: GameRecord[] = [];
     const testPieces = [createTestPiece(45), createTestPiece(90)];
@@ -837,18 +837,18 @@ expect(getBaseDifficultyMultiplierByPieces(-1)).toBeCloseTo(-0.1, 6);
   test('应该覆盖console.log输出和未覆盖的分支', () => {
     // 测试console.log输出行 (行102, 117-121)
     const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-    
+
     const config: DifficultyConfig = {
       actualPieces: 4,
       cutType: CutType.Diagonal,
       cutCount: 3,
       difficultyLevel: 'medium' as DifficultyLevel
     };
-    
+
     // 这将触发所有console.log行
     calculateDifficultyMultiplier(config);
-    
-expect(consoleSpy).toHaveBeenCalledWith(
+
+    expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining('[calculateDifficultyMultiplier] 难度级别')
     );
     expect(consoleSpy).toHaveBeenCalledWith(
@@ -860,7 +860,7 @@ expect(consoleSpy).toHaveBeenCalledWith(
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining('[calculateDifficultyMultiplier] 最终系数')
     );
-    
+
     consoleSpy.mockRestore();
   });
 
@@ -875,20 +875,20 @@ expect(consoleSpy).toHaveBeenCalledWith(
     // 测试validateScoreParams的更多边界情况
     const invalidStats1 = { difficulty: null } as any;
     expect(validateScoreParams(invalidStats1)).toBe(false);
-    
+
     const invalidStats2 = { difficulty: { actualPieces: 'invalid' } } as any;
     expect(validateScoreParams(invalidStats2)).toBe(false);
-    
+
     const invalidStats3 = { difficulty: { actualPieces: 4, cutCount: 'invalid' } } as any;
     expect(validateScoreParams(invalidStats3)).toBe(false);
-    
-    const invalidStats4 = { 
+
+    const invalidStats4 = {
       difficulty: { actualPieces: 4, cutCount: 3 },
       totalRotations: 'invalid'
     } as any;
     expect(validateScoreParams(invalidStats4)).toBe(false);
-    
-    const invalidStats5 = { 
+
+    const invalidStats5 = {
       difficulty: { actualPieces: 4, cutCount: 3 },
       totalRotations: 5,
       hintUsageCount: 'invalid'
@@ -899,31 +899,31 @@ expect(consoleSpy).toHaveBeenCalledWith(
   test('应该测试防抖函数和性能监控', () => {
     // 确保使用假定时器
     jest.useFakeTimers();
-    
+
     try {
       // 测试防抖函数
       const mockFn = jest.fn();
       const debouncedFn = debounce(mockFn, 100);
-      
+
       // 快速调用多次
       debouncedFn('test1');
       debouncedFn('test2');
       debouncedFn('test3');
-      
+
       // 应该只调用一次
       expect(mockFn).not.toHaveBeenCalled();
-      
+
       // 等待防抖时间
       jest.advanceTimersByTime(100);
       expect(mockFn).toHaveBeenCalledTimes(1);
       expect(mockFn).toHaveBeenCalledWith('test3');
-      
+
       // 测试防抖函数的清理机制
       const mockFn2 = jest.fn();
       const debouncedFn2 = debounce(mockFn2, 50);
       debouncedFn2('test4');
       debouncedFn2('test5'); // 这应该取消前一个调用
-      
+
       jest.advanceTimersByTime(50);
       expect(mockFn2).toHaveBeenCalledTimes(1);
       expect(mockFn2).toHaveBeenCalledWith('test5');
@@ -935,30 +935,30 @@ expect(consoleSpy).toHaveBeenCalledWith(
   test('应该测试实时分数更新器', () => {
     // 确保使用假定时器
     jest.useFakeTimers();
-    
+
     try {
       const mockCallback = jest.fn();
       const updater = createLiveScoreUpdater(mockCallback, 50);
-      
+
       const stats1 = createTestStats({ totalRotations: 5 });
       const stats2 = createTestStats({ totalRotations: 6 });
-      
+
       updater.updateScore(stats1);
       updater.updateScore(stats2);
-      
+
       // 防抖期间不应该调用
       expect(mockCallback).not.toHaveBeenCalled();
-      
+
       // 等待防抖时间
       jest.advanceTimersByTime(50);
       expect(mockCallback).toHaveBeenCalledTimes(1);
-      
+
       // 验证回调参数
       const lastCall = mockCallback.mock.calls[0];
       expect(lastCall[0]).toBeGreaterThan(0); // newScore
       expect(typeof lastCall[1]).toBe('number'); // delta
       expect(typeof lastCall[2]).toBe('string'); // reason
-      
+
       // 测试重置功能
       updater.reset();
       updater.updateScore(stats1);
@@ -972,9 +972,9 @@ expect(consoleSpy).toHaveBeenCalledWith(
   test('应该测试性能监控装饰器', () => {
     const mockFn = jest.fn((arg1: string, arg2: string) => 'result');
     const monitoredFn = withPerformanceMonitoring(mockFn, 'testFunction');
-    
+
     const result = monitoredFn('arg1', 'arg2');
-    
+
     expect(result).toBe('result');
     expect(mockFn).toHaveBeenCalledWith('arg1', 'arg2');
   });
@@ -989,18 +989,18 @@ expect(consoleSpy).toHaveBeenCalledWith(
     it('应该覆盖行103-104 - calculateDifficultyMultiplier的console.log', () => {
       // 测试console.log输出行
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       const config: DifficultyConfig = {
         actualPieces: 4,
         cutType: CutType.Straight,
         cutCount: 3,
         difficultyLevel: 'medium' as DifficultyLevel
       };
-      
+
       calculateDifficultyMultiplier(config);
-      
+
       // 验证console.log被调用
-expect(consoleSpy).toHaveBeenCalledWith(
+      expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining('[calculateDifficultyMultiplier] 难度级别')
       );
       expect(consoleSpy).toHaveBeenCalledWith(
@@ -1012,28 +1012,28 @@ expect(consoleSpy).toHaveBeenCalledWith(
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining('[calculateDifficultyMultiplier] 最终系数')
       );
-      
+
       consoleSpy.mockRestore();
     });
 
     it('应该覆盖行122-123 - getBaseScore的console.log', () => {
       // 测试console.log输出行
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       getBaseScore(4);
-      
+
       // 验证console.log被调用
-expect(consoleSpy).toHaveBeenCalledWith(
+      expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining('[getBaseScore] 难度级别')
       );
-      
+
       consoleSpy.mockRestore();
     });
 
     it('应该覆盖行485 - calculateLiveScore的console.warn', () => {
       // 测试console.warn输出行
       const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
-      
+
       const statsWithoutMinRotations: GameStats = {
         gameStartTime: Date.now() - 30000,
         gameEndTime: Date.now(),
@@ -1061,21 +1061,21 @@ expect(consoleSpy).toHaveBeenCalledWith(
         deviceType: 'desktop',
         canvasSize: { width: 640, height: 640 }
       };
-      
+
       calculateLiveScore(statsWithoutMinRotations);
-      
+
       // 验证console.warn被调用
       expect(consoleWarnSpy).toHaveBeenCalledWith(
         '[calculateLiveScore] minRotations为0或undefined，跳过旋转分数计算'
       );
-      
+
       consoleWarnSpy.mockRestore();
     });
 
     it('应该覆盖行489-491 - calculateLiveScore的console.log输出', () => {
       // 测试console.log输出行
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       const validStats: GameStats = {
         gameStartTime: Date.now() - 30000,
         gameEndTime: Date.now(),
@@ -1103,22 +1103,22 @@ expect(consoleSpy).toHaveBeenCalledWith(
         deviceType: 'desktop',
         canvasSize: { width: 640, height: 640 }
       };
-      
+
       calculateLiveScore(validStats);
-      
+
       // 验证console.log被调用了足够的次数
       expect(consoleSpy.mock.calls.length).toBeGreaterThan(5);
-      
+
       // 验证包含特定内容的调用
       const calls = consoleSpy.mock.calls.map(call => call.join(' '));
       const hasRotationScore = calls.some(call => call.includes('旋转分数'));
       const hasHintScore = calls.some(call => call.includes('提示分数'));
       const hasSubtotal = calls.some(call => call.includes('小计'));
-      
+
       expect(hasRotationScore).toBe(true);
       expect(hasHintScore).toBe(true);
       expect(hasSubtotal).toBe(true);
-      
+
       consoleSpy.mockRestore();
     });
 
@@ -1186,7 +1186,7 @@ expect(consoleSpy).toHaveBeenCalledWith(
           } as GameStats
         }
       ];
-      
+
       testScenarios.forEach(({ name, stats }) => {
         const result = calculateLiveScore(stats);
         expect(result).toBeGreaterThanOrEqual(0);
@@ -1258,7 +1258,7 @@ expect(consoleSpy).toHaveBeenCalledWith(
           } as GameStats
         }
       ];
-      
+
       complexScenarios.forEach(({ name, stats }) => {
         const result = calculateLiveScore(stats);
         expect(result).toBeGreaterThanOrEqual(0);
@@ -1330,16 +1330,16 @@ expect(consoleSpy).toHaveBeenCalledWith(
           } as GameStats
         }
       ];
-      
+
       boundaryScenarios.forEach(({ name, stats }) => {
         const result = calculateLiveScore(stats);
         expect(result).toBeGreaterThanOrEqual(0);
         expect(Number.isFinite(result)).toBe(true);
-        
+
         // 测试旋转分数计算的边界情况
         const rotationScore = calculateRotationScore(stats);
         expect(Number.isFinite(rotationScore)).toBe(true);
-        
+
         // 测试提示分数计算
         const hintScore = calculateHintScoreFromStats(stats);
         expect(Number.isFinite(hintScore)).toBe(true);
@@ -1440,13 +1440,13 @@ expect(consoleSpy).toHaveBeenCalledWith(
           } as GameStats
         }
       ];
-      
+
       specialScenarios.forEach(({ name, stats }) => {
         // 测试实时分数计算
         const liveScore = calculateLiveScore(stats);
         expect(liveScore).toBeGreaterThanOrEqual(0);
         expect(Number.isFinite(liveScore)).toBe(true);
-        
+
         // 测试最终分数计算
         const pieces = [
           createTestPiece(0),
@@ -1455,7 +1455,7 @@ expect(consoleSpy).toHaveBeenCalledWith(
         const finalScore = calculateFinalScore(stats, pieces, []);
         expect(finalScore.finalScore).toBeGreaterThanOrEqual(0);
         expect(Number.isFinite(finalScore.finalScore)).toBe(true);
-        
+
         // 测试分数变化计算
         const oldStats = { ...stats, totalRotations: stats.totalRotations - 1 };
         const scoreDelta = calculateScoreDelta(oldStats, stats);
@@ -1490,7 +1490,7 @@ describe('最终覆盖率提升测试', () => {
 
   it('应该覆盖calculateFinalScore中的所有console.log', () => {
     const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-    
+
     const testStats: GameStats = {
       gameStartTime: Date.now() - 60000,
       gameEndTime: Date.now(),
@@ -1534,10 +1534,10 @@ describe('最终覆盖率提升测试', () => {
     const calls = consoleSpy.mock.calls.map(call => call.join(' '));
     const hasRotationEfficiency = calls.some(call => call.includes('旋转效率'));
     const hasRotationScore = calls.some(call => call.includes('旋转分数'));
-    
+
     expect(hasRotationEfficiency).toBe(true);
     expect(hasRotationScore).toBe(true);
-    
+
     consoleSpy.mockRestore();
   });
 
@@ -1567,14 +1567,14 @@ describe('最终覆盖率提升测试', () => {
     // 注意：旧的效率评级测试已移至 RotationEfficiencyCalculator.test.ts
     extremeScenarios.forEach(({ name, minRotations, actualRotations }) => {
       const efficiency = calculateRotationEfficiency(minRotations, actualRotations);
-      
+
       // 调试信息
       console.log(`测试场景: ${name}, minRotations: ${minRotations}, actualRotations: ${actualRotations}, efficiency: ${efficiency}`);
-      
+
       // 效率应该在0-1之间（calculateRotationEfficiency返回比例，不是百分比）
       expect(efficiency).toBeGreaterThanOrEqual(0);
       expect(efficiency).toBeLessThanOrEqual(1);
-      
+
       // 对于有效的旋转数据，效率应该大于0
       if (minRotations > 0 && actualRotations > 0) {
         expect(efficiency).toBeGreaterThan(0);
@@ -1591,9 +1591,9 @@ describe('最终覆盖率提升测试', () => {
 
   it('应该测试所有切割类型的难度系数（按新表）', () => {
     const cutTypeTests = [
-      { cutType: CutType.Straight, expectedMultiplier: 1.5 }, // 1.5 * 1.0 * 1.0（桌面端）
-      { cutType: CutType.Diagonal, expectedMultiplier: 1.8 }, // 1.5 * 1.2 * 1.0
-      { cutType: CutType.Curve, expectedMultiplier: 1.5 }
+      { cutType: CutType.Straight, expectedMultiplier: 1.5 }, // 1.5 (Base for 3 cuts) * 1.0 (Straight) = 1.5
+      { cutType: CutType.Diagonal, expectedMultiplier: 1.8 }, // 1.5 * 1.2 = 1.8
+      { cutType: CutType.Curve, expectedMultiplier: 2.25 }    // 1.5 * 1.5 = 2.25
     ];
 
     // 在Node.js环境中不模拟设备，使用默认设备系数
@@ -1654,7 +1654,7 @@ describe('最终覆盖率提升测试', () => {
 describe('剩余未覆盖行专项测试', () => {
   it('应该覆盖行877-882的calculateFinalScore console.log', () => {
     const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-    
+
     const testStats: GameStats = {
       gameStartTime: Date.now() - 45000,
       gameEndTime: Date.now(),
@@ -1689,16 +1689,16 @@ describe('剩余未覆盖行专项测试', () => {
 
     // 验证特定的console.log被调用
     const calls = consoleSpy.mock.calls.map(call => call.join(' '));
-    const hasRotationEfficiencyLog = calls.some(call => 
+    const hasRotationEfficiencyLog = calls.some(call =>
       call.includes('旋转效率') && call.includes('%')
     );
-    const hasRotationScoreLog = calls.some(call => 
+    const hasRotationScoreLog = calls.some(call =>
       call.includes('旋转分数')
     );
-    
+
     expect(hasRotationEfficiencyLog).toBe(true);
     expect(hasRotationScoreLog).toBe(true);
-    
+
     consoleSpy.mockRestore();
   });
 
@@ -1844,16 +1844,16 @@ describe('剩余未覆盖行专项测试', () => {
 
     rotationTests.forEach(({ minRotations, actualRotations, expectedEfficiency }) => {
       const efficiency = calculateRotationEfficiency(minRotations, actualRotations);
-      
+
       // 效率应该在0-1之间（calculateRotationEfficiency返回比例，不是百分比）
       expect(efficiency).toBeGreaterThanOrEqual(0);
       expect(efficiency).toBeLessThanOrEqual(1);
-      
+
       // 对于有效的旋转数据，效率应该大于0
       if (minRotations > 0 && actualRotations > 0) {
         expect(efficiency).toBeGreaterThan(0);
       }
-      
+
       // 注意：旧的效率评级测试已移至 RotationEfficiencyCalculator.test.ts
       // 新算法使用不同的评分机制
     });
@@ -1861,10 +1861,10 @@ describe('剩余未覆盖行专项测试', () => {
 
   it('应该覆盖所有剩余的console.log', () => {
     const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-    
+
     // 触发各种console.log
     getBaseScore(5); // 触发基础分数日志
-    
+
     const config: DifficultyConfig = {
       actualPieces: 6,
       cutType: CutType.Diagonal,
@@ -1872,7 +1872,7 @@ describe('剩余未覆盖行专项测试', () => {
       difficultyLevel: 'medium' as DifficultyLevel
     };
     calculateDifficultyMultiplier(config); // 触发所有console.log
-    
+
     const testStats: GameStats = {
       gameStartTime: Date.now() - 60000,
       gameEndTime: Date.now(),
@@ -1895,12 +1895,12 @@ describe('剩余未覆盖行专项测试', () => {
       deviceType: 'desktop',
       canvasSize: { width: 1200, height: 800 }
     };
-    
+
     calculateLiveScore(testStats); // 触发实时分数计算的所有console.log
-    
+
     // 验证console调用
     expect(consoleSpy.mock.calls.length).toBeGreaterThan(0);
-    
+
     consoleSpy.mockRestore();
   });
 
@@ -1916,13 +1916,13 @@ describe('剩余未覆盖行专项测试', () => {
       { duration: 90, description: '90秒边界' },
       { duration: 120, description: '120秒边界' },
       { duration: 3600, description: '1小时' },
-      
+
       // 旋转边界
       { rotations: 0, description: '零旋转' },
       { rotations: 1, description: '最小旋转' },
       { rotations: 100, description: '大量旋转' },
       { rotations: 1000, description: '极大旋转' },
-      
+
       // 提示边界
       { hints: 0, description: '无提示' },
       { hints: 1, description: '最小提示' },
@@ -1936,268 +1936,268 @@ describe('剩余未覆盖行专项测试', () => {
         const result = calculateTimeBonus(testStats, []);
         expect(typeof result === 'object' ? result.timeBonus : result).toBeGreaterThanOrEqual(0);
       }
-      
+
       if ('rotations' in test && test.rotations !== undefined) {
         const efficiency = calculateRotationEfficiency(10, test.rotations);
         expect(efficiency).toBeGreaterThanOrEqual(0);
         expect(efficiency).toBeLessThanOrEqual(100);
       }
-      
+
       if ('hints' in test && test.hints !== undefined) {
         const score = calculateHintScore(test.hints, 5);
         expect(Number.isFinite(score)).toBe(true);
       }
     });
   });
-});describe(
-'精确覆盖剩余行测试', () => {
-  it('应该覆盖calculateDifficultyMultiplier的所有console.log行', () => {
-    const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-    
-    // 测试不同的配置来触发所有console.log
-    const configs = [
-      {
-        actualPieces: 2,
-        cutType: CutType.Straight as const,
-        cutCount: 1,
-        difficultyLevel: 'easy' as DifficultyLevel
-      },
-      {
-        actualPieces: 4,
-        cutType: CutType.Diagonal as const,
-        cutCount: 3,
-        difficultyLevel: 'medium' as DifficultyLevel
-      },
-      {
-        actualPieces: 8,
-        cutType: CutType.Curve as const,
-        cutCount: 6,
-        difficultyLevel: 'hard' as DifficultyLevel
-      },
-      {
-        actualPieces: 16,
-        cutType: CutType.Straight as const,
-        cutCount: 8,
-        difficultyLevel: 'expert' as DifficultyLevel
-      }
-    ];
+}); describe(
+  '精确覆盖剩余行测试', () => {
+    it('应该覆盖calculateDifficultyMultiplier的所有console.log行', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 
-    configs.forEach(config => {
-      calculateDifficultyMultiplier(config);
+      // 测试不同的配置来触发所有console.log
+      const configs = [
+        {
+          actualPieces: 2,
+          cutType: CutType.Straight as const,
+          cutCount: 1,
+          difficultyLevel: 'easy' as DifficultyLevel
+        },
+        {
+          actualPieces: 4,
+          cutType: CutType.Diagonal as const,
+          cutCount: 3,
+          difficultyLevel: 'medium' as DifficultyLevel
+        },
+        {
+          actualPieces: 8,
+          cutType: CutType.Curve as const,
+          cutCount: 6,
+          difficultyLevel: 'hard' as DifficultyLevel
+        },
+        {
+          actualPieces: 16,
+          cutType: CutType.Straight as const,
+          cutCount: 8,
+          difficultyLevel: 'expert' as DifficultyLevel
+        }
+      ];
+
+      configs.forEach(config => {
+        calculateDifficultyMultiplier(config);
+      });
+
+      // 验证所有必要的console.log都被调用了
+      const calls = consoleSpy.mock.calls.map(call => call.join(' '));
+
+      // 检查是否包含难度级别日志
+      const hasLevelLog = calls.some(call => call.includes('难度级别') && call.includes('基础系数'));
+      expect(hasLevelLog).toBe(true);
+
+      // 检查是否包含切割类型日志
+      const hasCutTypeLog = calls.some(call => call.includes('切割类型') && call.includes('切割系数'));
+      expect(hasCutTypeLog).toBe(true);
+
+      // 检查是否包含设备系数日志
+      const hasDeviceLog = calls.some(call => call.includes('设备系数'));
+      expect(hasDeviceLog).toBe(true);
+
+      // 检查是否包含最终系数日志
+      const hasFinalLog = calls.some(call => call.includes('最终系数'));
+      expect(hasFinalLog).toBe(true);
+
+      consoleSpy.mockRestore();
     });
 
-    // 验证所有必要的console.log都被调用了
-    const calls = consoleSpy.mock.calls.map(call => call.join(' '));
-    
-    // 检查是否包含难度级别日志
-    const hasLevelLog = calls.some(call => call.includes('难度级别') && call.includes('基础系数'));
-    expect(hasLevelLog).toBe(true);
-    
-    // 检查是否包含切割类型日志
-    const hasCutTypeLog = calls.some(call => call.includes('切割类型') && call.includes('切割系数'));
-    expect(hasCutTypeLog).toBe(true);
-    
-    // 检查是否包含设备系数日志
-    const hasDeviceLog = calls.some(call => call.includes('设备系数'));
-    expect(hasDeviceLog).toBe(true);
-    
-    // 检查是否包含最终系数日志
-    const hasFinalLog = calls.some(call => call.includes('最终系数'));
-    expect(hasFinalLog).toBe(true);
+    it('应该覆盖getBaseScore的console.log', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 
-    consoleSpy.mockRestore();
-  });
+      // 测试已知的等级（触发console.log）
+      getBaseScore(2);
+      getBaseScore(4);
+      getBaseScore(6);
+      getBaseScore(8);
 
-  it('应该覆盖getBaseScore的console.log', () => {
-    const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-    
-    // 测试已知的等级（触发console.log）
-    getBaseScore(2);
-    getBaseScore(4);
-    getBaseScore(6);
-    getBaseScore(8);
-    
-    // 测试未知的等级（返回默认值1000，无console.warn）
-    const unknownScore1 = getBaseScore(999);
-    const unknownScore2 = getBaseScore(0);
-    const unknownScore3 = getBaseScore(-1);
-    
-    // 验证未知等级返回默认值
-    expect(unknownScore1).toBe(1000);
-    expect(unknownScore2).toBe(1000);
-    expect(unknownScore3).toBe(1000);
+      // 测试未知的等级（返回默认值1000，无console.warn）
+      const unknownScore1 = getBaseScore(999);
+      const unknownScore2 = getBaseScore(0);
+      const unknownScore3 = getBaseScore(-1);
 
-    // 验证console.log被调用
-    const logCalls = consoleSpy.mock.calls.map(call => call.join(' '));
-    const hasBaseScoreLog = logCalls.some(call => 
-      call.includes('难度级别') && call.includes('基础分数')
-    );
-    expect(hasBaseScoreLog).toBe(true);
+      // 验证未知等级返回默认值
+      expect(unknownScore1).toBe(1000);
+      expect(unknownScore2).toBe(1000);
+      expect(unknownScore3).toBe(1000);
 
-    consoleSpy.mockRestore();
-  });
+      // 验证console.log被调用
+      const logCalls = consoleSpy.mock.calls.map(call => call.join(' '));
+      const hasBaseScoreLog = logCalls.some(call =>
+        call.includes('难度级别') && call.includes('基础分数')
+      );
+      expect(hasBaseScoreLog).toBe(true);
 
-  it('应该覆盖calculateLiveScore的所有console.warn和console.log', () => {
-    const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-    const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
-    
-    // 测试正常情况（触发所有console.log）
-    const normalStats: GameStats = {
-      gameStartTime: Date.now() - 30000,
-      gameEndTime: Date.now(),
-      totalDuration: 30,
-      totalRotations: 5,
-      hintUsageCount: 1,
-      dragOperations: 10,
-      difficulty: {
-        cutCount: 3,
-        cutType: CutType.Straight,
-        actualPieces: 4,
-        difficultyLevel: 'medium' as DifficultyLevel
-      },
-      minRotations: 3,
-      rotationEfficiency: 0.6,
-      hintAllowance: 4,
-      baseScore: 1000,
-      timeBonus: 200,
-      timeBonusRank: 2,
-      isTimeRecord: false,
-      rotationScore: 50,
-      hintScore: 0,
-      difficultyMultiplier: 1.2,
-      finalScore: 1500,
-      deviceType: 'desktop',
-      canvasSize: { width: 640, height: 640 }
-    };
-
-    calculateLiveScore(normalStats);
-
-    // 测试minRotations为0的情况（触发console.warn）
-    const statsWithoutMinRotations = { ...normalStats, minRotations: 0 };
-    calculateLiveScore(statsWithoutMinRotations);
-
-    // 验证console.log被调用
-    const logCalls = consoleSpy.mock.calls.map(call => call.join(' '));
-    const hasLiveScoreSteps = [
-      '基础分数',
-      '速度奖励', 
-      '旋转分数',
-      '提示分数',
-      '小计',
-      '难度系数',
-      '实时分数'
-    ].every(step => logCalls.some(call => call.includes(step)));
-    
-    expect(hasLiveScoreSteps).toBe(true);
-
-    // 验证console.warn被调用
-    const warnCalls = consoleWarnSpy.mock.calls.map(call => call.join(' '));
-    const hasMinRotationsWarn = warnCalls.some(call => 
-      call.includes('minRotations为0或undefined')
-    );
-    expect(hasMinRotationsWarn).toBe(true);
-
-    consoleSpy.mockRestore();
-    consoleWarnSpy.mockRestore();
-  });
-
-  it('应该覆盖calculateFinalScore的所有console.log', () => {
-    const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-    
-    const testStats: GameStats = {
-      gameStartTime: Date.now() - 60000,
-      gameEndTime: Date.now(),
-      totalDuration: 60,
-      totalRotations: 12,
-      hintUsageCount: 2,
-      dragOperations: 20,
-      difficulty: {
-        cutCount: 4,
-        cutType: CutType.Diagonal,
-        actualPieces: 6,
-        difficultyLevel: 'medium' as DifficultyLevel
-      },
-      minRotations: 8,
-      rotationEfficiency: 0.67,
-      hintAllowance: 3,
-      baseScore: 1200,
-      timeBonus: 100,
-      timeBonusRank: 3,
-      isTimeRecord: false,
-      rotationScore: 25,
-      hintScore: -10,
-      difficultyMultiplier: 1.5,
-      finalScore: 2000,
-      deviceType: 'desktop',
-      canvasSize: { width: 800, height: 600 }
-    };
-
-    const pieces = Array.from({ length: 6 }, (_, i) => createTestPiece(i * 60));
-
-    calculateFinalScore(testStats, pieces, []);
-
-    // 验证特定的console.log被调用
-    const calls = consoleSpy.mock.calls.map(call => call.join(' '));
-    
-    const expectedLogs = [
-      'calculateTimeBonus',
-      '使用最小旋转次数',
-      '旋转效率',
-      '旋转分数'
-    ];
-
-    expectedLogs.forEach(expectedLog => {
-      const hasLog = calls.some(call => call.includes(expectedLog));
-      expect(hasLog).toBe(true);
+      consoleSpy.mockRestore();
     });
 
-    consoleSpy.mockRestore();
+    it('应该覆盖calculateLiveScore的所有console.warn和console.log', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      // 测试正常情况（触发所有console.log）
+      const normalStats: GameStats = {
+        gameStartTime: Date.now() - 30000,
+        gameEndTime: Date.now(),
+        totalDuration: 30,
+        totalRotations: 5,
+        hintUsageCount: 1,
+        dragOperations: 10,
+        difficulty: {
+          cutCount: 3,
+          cutType: CutType.Straight,
+          actualPieces: 4,
+          difficultyLevel: 'medium' as DifficultyLevel
+        },
+        minRotations: 3,
+        rotationEfficiency: 0.6,
+        hintAllowance: 4,
+        baseScore: 1000,
+        timeBonus: 200,
+        timeBonusRank: 2,
+        isTimeRecord: false,
+        rotationScore: 50,
+        hintScore: 0,
+        difficultyMultiplier: 1.2,
+        finalScore: 1500,
+        deviceType: 'desktop',
+        canvasSize: { width: 640, height: 640 }
+      };
+
+      calculateLiveScore(normalStats);
+
+      // 测试minRotations为0的情况（触发console.warn）
+      const statsWithoutMinRotations = { ...normalStats, minRotations: 0 };
+      calculateLiveScore(statsWithoutMinRotations);
+
+      // 验证console.log被调用
+      const logCalls = consoleSpy.mock.calls.map(call => call.join(' '));
+      const hasLiveScoreSteps = [
+        '基础分数',
+        '速度奖励',
+        '旋转分数',
+        '提示分数',
+        '小计',
+        '难度系数',
+        '实时分数'
+      ].every(step => logCalls.some(call => call.includes(step)));
+
+      expect(hasLiveScoreSteps).toBe(true);
+
+      // 验证console.warn被调用
+      const warnCalls = consoleWarnSpy.mock.calls.map(call => call.join(' '));
+      const hasMinRotationsWarn = warnCalls.some(call =>
+        call.includes('minRotations为0或undefined')
+      );
+      expect(hasMinRotationsWarn).toBe(true);
+
+      consoleSpy.mockRestore();
+      consoleWarnSpy.mockRestore();
+    });
+
+    it('应该覆盖calculateFinalScore的所有console.log', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+
+      const testStats: GameStats = {
+        gameStartTime: Date.now() - 60000,
+        gameEndTime: Date.now(),
+        totalDuration: 60,
+        totalRotations: 12,
+        hintUsageCount: 2,
+        dragOperations: 20,
+        difficulty: {
+          cutCount: 4,
+          cutType: CutType.Diagonal,
+          actualPieces: 6,
+          difficultyLevel: 'medium' as DifficultyLevel
+        },
+        minRotations: 8,
+        rotationEfficiency: 0.67,
+        hintAllowance: 3,
+        baseScore: 1200,
+        timeBonus: 100,
+        timeBonusRank: 3,
+        isTimeRecord: false,
+        rotationScore: 25,
+        hintScore: -10,
+        difficultyMultiplier: 1.5,
+        finalScore: 2000,
+        deviceType: 'desktop',
+        canvasSize: { width: 800, height: 600 }
+      };
+
+      const pieces = Array.from({ length: 6 }, (_, i) => createTestPiece(i * 60));
+
+      calculateFinalScore(testStats, pieces, []);
+
+      // 验证特定的console.log被调用
+      const calls = consoleSpy.mock.calls.map(call => call.join(' '));
+
+      const expectedLogs = [
+        'calculateTimeBonus',
+        '使用最小旋转次数',
+        '旋转效率',
+        '旋转分数'
+      ];
+
+      expectedLogs.forEach(expectedLog => {
+        const hasLog = calls.some(call => call.includes(expectedLog));
+        expect(hasLog).toBe(true);
+      });
+
+      consoleSpy.mockRestore();
+    });
+
+    it('应该测试所有剩余的边界情况和异常路径', () => {
+      // 测试极端的游戏统计数据
+      const extremeStats: GameStats = {
+        gameStartTime: Date.now() - 7200000, // 2小时前
+        gameEndTime: Date.now(),
+        totalDuration: 7200, // 2小时
+        totalRotations: 10000, // 极多旋转
+        hintUsageCount: 1000, // 极多提示
+        dragOperations: 5000, // 极多拖拽
+        difficulty: {
+          cutCount: 50, // 极多切割
+          cutType: CutType.Diagonal,
+          actualPieces: 100, // 极多拼图片
+          difficultyLevel: 'expert' as DifficultyLevel
+        },
+        minRotations: 50,
+        rotationEfficiency: 0.005, // 极低效率
+        hintAllowance: 1,
+        baseScore: 10000,
+        timeBonus: 0,
+        timeBonusRank: 10000,
+        isTimeRecord: false,
+        rotationScore: -2000,
+        hintScore: -5000,
+        difficultyMultiplier: 10.0,
+        finalScore: 1000,
+        deviceType: 'mobile' as const,
+        canvasSize: { width: 320, height: 568 }
+      };
+
+      // 测试实时分数计算
+      const liveScore = calculateLiveScore(extremeStats);
+      expect(Number.isFinite(liveScore)).toBe(true);
+
+      // 测试最终分数计算
+      const pieces = Array.from({ length: 10 }, (_, i) => createTestPiece((i * 36) % 360));
+
+      const finalResult = calculateFinalScore(extremeStats, pieces, []);
+      expect(Number.isFinite(finalResult.finalScore)).toBe(true);
+
+      // 测试分数变化计算
+      const oldStats = { ...extremeStats, totalRotations: Math.max(1, extremeStats.totalRotations - 1) };
+      const scoreDelta = calculateScoreDelta(oldStats, extremeStats);
+      expect(Number.isFinite(scoreDelta.delta)).toBe(true);
+      expect(Number.isFinite(scoreDelta.newScore)).toBe(true);
+    });
   });
-
-  it('应该测试所有剩余的边界情况和异常路径', () => {
-    // 测试极端的游戏统计数据
-    const extremeStats: GameStats = {
-      gameStartTime: Date.now() - 7200000, // 2小时前
-      gameEndTime: Date.now(),
-      totalDuration: 7200, // 2小时
-      totalRotations: 10000, // 极多旋转
-      hintUsageCount: 1000, // 极多提示
-      dragOperations: 5000, // 极多拖拽
-      difficulty: {
-        cutCount: 50, // 极多切割
-        cutType: CutType.Diagonal,
-        actualPieces: 100, // 极多拼图片
-        difficultyLevel: 'expert' as DifficultyLevel
-      },
-      minRotations: 50,
-      rotationEfficiency: 0.005, // 极低效率
-      hintAllowance: 1,
-      baseScore: 10000,
-      timeBonus: 0,
-      timeBonusRank: 10000,
-      isTimeRecord: false,
-      rotationScore: -2000,
-      hintScore: -5000,
-      difficultyMultiplier: 10.0,
-      finalScore: 1000,
-      deviceType: 'mobile' as const,
-      canvasSize: { width: 320, height: 568 }
-    };
-
-    // 测试实时分数计算
-    const liveScore = calculateLiveScore(extremeStats);
-    expect(Number.isFinite(liveScore)).toBe(true);
-
-    // 测试最终分数计算
-    const pieces = Array.from({ length: 10 }, (_, i) => createTestPiece((i * 36) % 360));
-
-    const finalResult = calculateFinalScore(extremeStats, pieces, []);
-    expect(Number.isFinite(finalResult.finalScore)).toBe(true);
-
-    // 测试分数变化计算
-    const oldStats = { ...extremeStats, totalRotations: Math.max(1, extremeStats.totalRotations - 1) };
-    const scoreDelta = calculateScoreDelta(oldStats, extremeStats);
-    expect(Number.isFinite(scoreDelta.delta)).toBe(true);
-    expect(Number.isFinite(scoreDelta.newScore)).toBe(true);
-  });
-});

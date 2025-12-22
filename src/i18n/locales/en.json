@@ -48,7 +48,8 @@
         "cutType": {
             "title": "Select Cut Type",
             "straight": "Straight",
-            "diagonal": "Diagonal"
+            "diagonal": "Diagonal",
+            "curve": "Curve"
         },
         "cutCount": {
             "title": "Select Difficulty",
@@ -198,7 +199,7 @@
         "entries": "entries",
         "filters": "Filters",
         "sortBy": "Sort By",
-        "difficulty": "Difficulty",
+        "difficultyHeader": "Difficulty",
         "empty": "No personal best records",
         "emptyHint": "Top1 position is waiting for you！",
         "anonymous": "Anonymous Player",
@@ -210,7 +211,7 @@
             "efficiency": "By Efficiency",
             "recent": "By Recent"
         },
-        "difficulty": {
+        "difficultyFilters": {
             "all": "All"
         },
         "noRanking": "No Ranking",
@@ -234,7 +235,8 @@
     },
     "cutType": {
         "straight": "Straight",
-        "diagonal": "Diagonal"
+        "diagonal": "Diagonal",
+        "curve": "Curve"
     },
     "rotation": {
         "label": "Rotation",

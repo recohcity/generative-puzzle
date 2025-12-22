@@ -49,7 +49,8 @@ const defaultMessages = {
     "cutType": {
       "title": "选择切割类型",
       "straight": "直线",
-      "diagonal": "斜线"
+      "diagonal": "斜线",
+      "curve": "曲线"
     },
     "cutCount": {
       "title": "选择切割次数",

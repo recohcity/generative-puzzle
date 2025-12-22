@@ -49,7 +49,8 @@
         "cutType": {
             "title": "选择切割类型",
             "straight": "直线",
-            "diagonal": "斜线"
+            "diagonal": "斜线",
+            "curve": "曲线"
         },
         "cutCount": {
             "title": "选择难度",
@@ -200,17 +201,14 @@
         "perfectGame": "完美游戏",
         "zeroHintsBonus": "零提示奖励",
         "currentGameScore": "本局成绩",
-        "newRecord": "新纪录!",
-        "efficiency": {
-            "short": "效率"
-        }
+        "newRecord": "新纪录!"
     },
     "leaderboard": {
         "title": "个人最佳成绩",
         "entries": "条记录",
         "filters": "筛选器",
         "sortBy": "排序方式",
-        "difficulty": "难度",
+        "difficultyHeader": "难度",
         "empty": "暂无个人最佳成绩记录",
         "emptyHint": "Top1 位置等你来挑战！",
         "anonymous": "匿名玩家",
@@ -222,7 +220,7 @@
             "efficiency": "按效率",
             "recent": "按时间"
         },
-        "difficulty": {
+        "difficultyFilters": {
             "all": "全部"
         },
         "noRanking": "无排名",
@@ -246,7 +244,8 @@
     },
     "cutType": {
         "straight": "直线",
-        "diagonal": "斜线"
+        "diagonal": "斜线",
+        "curve": "曲线"
     },
     "rotation": {
         "label": "旋转",

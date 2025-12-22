@@ -1,16 +1,16 @@
 # API扫描报告
 
-> 生成时间: 2025/10/3 23:39:21
+> 生成时间: 2025/12/23 00:41:33
 > 扫描工具: API变更扫描器 v1.0
 
 ## 📊 统计概览
 
 | 项目 | 数量 | 说明 |
 |------|------|------|
-| API总数 | 271 | 项目中所有导出的API |
+| API总数 | 279 | 项目中所有导出的API |
 | 已文档化 | 30 | 在API文档中已记录的API |
-| 文档覆盖率 | 11.1% | 文档化程度 |
-| 新增API | 244 | 需要添加到文档的API |
+| 文档覆盖率 | 10.8% | 文档化程度 |
+| 新增API | 252 | 需要添加到文档的API |
 | 可能删除 | 3 | 文档中存在但代码中找不到 |
 
 ## 🆕 新增API详情
@@ -1379,7 +1379,7 @@ export const calculateDifficultyMultiplier = (config: DifficultyConfig): number 
 #### getBaseScore
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:170`
+- **文件**: `utils/score/ScoreCalculator.ts:175`
 - **签名**: `export const getBaseScore = (difficultyLevel: number): number => {`
 
 **建议文档结构**:
@@ -1402,7 +1402,7 @@ export const getBaseScore = (difficultyLevel: number): number => {
 #### getBaseScoreByPieces
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:180`
+- **文件**: `utils/score/ScoreCalculator.ts:185`
 - **签名**: `export const getBaseScoreByPieces = (actualPieces: number): number => {`
 
 **建议文档结构**:
@@ -1425,7 +1425,7 @@ export const getBaseScoreByPieces = (actualPieces: number): number => {
 #### getBaseDifficultyMultiplierByPieces
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:187`
+- **文件**: `utils/score/ScoreCalculator.ts:192`
 - **签名**: `export const getBaseDifficultyMultiplierByPieces = (actualPieces: number): number => {`
 
 **建议文档结构**:
@@ -1448,7 +1448,7 @@ export const getBaseDifficultyMultiplierByPieces = (actualPieces: number): numbe
 #### getHintAllowance
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:197`
+- **文件**: `utils/score/ScoreCalculator.ts:202`
 - **签名**: `export const getHintAllowance = (_difficultyLevel: string): number => {`
 
 **建议文档结构**:
@@ -1471,7 +1471,7 @@ export const getHintAllowance = (_difficultyLevel: string): number => {
 #### getHintAllowanceByCutCount
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:205`
+- **文件**: `utils/score/ScoreCalculator.ts:210`
 - **签名**: `export const getHintAllowanceByCutCount = (_cutCount: number): number => {`
 
 **建议文档结构**:
@@ -1494,7 +1494,7 @@ export const getHintAllowanceByCutCount = (_cutCount: number): number => {
 #### calculateMinimumRotationsAtStart
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:225`
+- **文件**: `utils/score/ScoreCalculator.ts:230`
 - **签名**: `export const calculateMinimumRotationsAtStart = (pieces: PuzzlePiece[]): number => {`
 
 **建议文档结构**:
@@ -1517,7 +1517,7 @@ export const calculateMinimumRotationsAtStart = (pieces: PuzzlePiece[]): number 
 #### calculateMinimumRotations
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:259`
+- **文件**: `utils/score/ScoreCalculator.ts:264`
 - **签名**: `export const calculateMinimumRotations = (pieces: PuzzlePiece[]): number => {`
 
 **建议文档结构**:
@@ -1540,7 +1540,7 @@ export const calculateMinimumRotations = (pieces: PuzzlePiece[]): number => {
 #### calculateRotationEfficiency
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:267`
+- **文件**: `utils/score/ScoreCalculator.ts:272`
 - **签名**: `export const calculateRotationEfficiency = (minRotations: number, actualRotations: number): number => {`
 
 **建议文档结构**:
@@ -1563,7 +1563,7 @@ export const calculateRotationEfficiency = (minRotations: number, actualRotation
 #### formatRotationDisplay
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:283`
+- **文件**: `utils/score/ScoreCalculator.ts:288`
 - **签名**: `export const formatRotationDisplay = (`
 
 **建议文档结构**:
@@ -1586,7 +1586,7 @@ export const formatRotationDisplay = (
 #### calculateRotationEfficiencyPercentage
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:294`
+- **文件**: `utils/score/ScoreCalculator.ts:299`
 - **签名**: `export const calculateRotationEfficiencyPercentage = (`
 
 **建议文档结构**:
@@ -1609,7 +1609,7 @@ export const calculateRotationEfficiencyPercentage = (
 #### calculateRemainingRotations
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:313`
+- **文件**: `utils/score/ScoreCalculator.ts:318`
 - **签名**: `export const calculateRemainingRotations = (pieces: PuzzlePiece[]): number => {`
 
 **建议文档结构**:
@@ -1632,7 +1632,7 @@ export const calculateRemainingRotations = (pieces: PuzzlePiece[]): number => {
 #### checkTimeRecord
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:350`
+- **文件**: `utils/score/ScoreCalculator.ts:355`
 - **签名**: `export const checkTimeRecord = (stats: GameStats, currentLeaderboard: GameRecord[]): {`
 
 **建议文档结构**:
@@ -1655,7 +1655,7 @@ export const checkTimeRecord = (stats: GameStats, currentLeaderboard: GameRecord
 #### calculateTimeBonus
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:404`
+- **文件**: `utils/score/ScoreCalculator.ts:409`
 - **签名**: `export const calculateTimeBonus = (`
 
 **建议文档结构**:
@@ -1678,7 +1678,7 @@ export const calculateTimeBonus = (
 #### validateScoreParams
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:452`
+- **文件**: `utils/score/ScoreCalculator.ts:457`
 - **签名**: `export const validateScoreParams = (stats: GameStats | null | undefined): stats is GameStats => {`
 
 **建议文档结构**:
@@ -1701,7 +1701,7 @@ export const validateScoreParams = (stats: GameStats | null | undefined): stats 
 #### calculateLiveScore
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:490`
+- **文件**: `utils/score/ScoreCalculator.ts:495`
 - **签名**: `export const calculateLiveScore = (stats: GameStats, leaderboard: GameRecord[] = []): number => {`
 
 **建议文档结构**:
@@ -1724,7 +1724,7 @@ export const calculateLiveScore = (stats: GameStats, leaderboard: GameRecord[] =
 #### calculateRotationScore
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:574`
+- **文件**: `utils/score/ScoreCalculator.ts:579`
 - **签名**: `export const calculateRotationScore = (stats: GameStats, pieces?: PuzzlePiece[]): number => {`
 
 **建议文档结构**:
@@ -1747,7 +1747,7 @@ export const calculateRotationScore = (stats: GameStats, pieces?: PuzzlePiece[])
 #### calculateHintScore
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:654`
+- **文件**: `utils/score/ScoreCalculator.ts:659`
 - **签名**: `export const calculateHintScore = (actualHints: number, allowance: number): number => {`
 
 **建议文档结构**:
@@ -1770,7 +1770,7 @@ export const calculateHintScore = (actualHints: number, allowance: number): numb
 #### calculateHintScoreFromStats
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:673`
+- **文件**: `utils/score/ScoreCalculator.ts:678`
 - **签名**: `export const calculateHintScoreFromStats = (stats: GameStats): number => {`
 
 **建议文档结构**:
@@ -1793,7 +1793,7 @@ export const calculateHintScoreFromStats = (stats: GameStats): number => {
 #### calculateScoreDelta
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:692`
+- **文件**: `utils/score/ScoreCalculator.ts:697`
 - **签名**: `export const calculateScoreDelta = (`
 
 **建议文档结构**:
@@ -1816,7 +1816,7 @@ export const calculateScoreDelta = (
 #### withPerformanceMonitoring
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:738`
+- **文件**: `utils/score/ScoreCalculator.ts:743`
 - **签名**: `export const withPerformanceMonitoring = <T extends any[], R>(`
 
 **建议文档结构**:
@@ -1839,7 +1839,7 @@ export const withPerformanceMonitoring = <T extends any[], R>(
 #### calculateLiveScoreWithMonitoring
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:760`
+- **文件**: `utils/score/ScoreCalculator.ts:765`
 - **签名**: `export const calculateLiveScoreWithMonitoring = withPerformanceMonitoring(`
 
 **建议文档结构**:
@@ -1862,7 +1862,7 @@ export const calculateLiveScoreWithMonitoring = withPerformanceMonitoring(
 #### safeCalculateScore
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:769`
+- **文件**: `utils/score/ScoreCalculator.ts:774`
 - **签名**: `export const safeCalculateScore = <T>(`
 
 **建议文档结构**:
@@ -1885,7 +1885,7 @@ export const safeCalculateScore = <T>(
 #### formatScore
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:786`
+- **文件**: `utils/score/ScoreCalculator.ts:791`
 - **签名**: `export const formatScore = (score: number): string => {`
 
 **建议文档结构**:
@@ -1908,7 +1908,7 @@ export const formatScore = (score: number): string => {
 #### formatTime
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:794`
+- **文件**: `utils/score/ScoreCalculator.ts:799`
 - **签名**: `export const formatTime = (seconds: number): string => {`
 
 **建议文档结构**:
@@ -1931,7 +1931,7 @@ export const formatTime = (seconds: number): string => {
 #### debounce
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:804`
+- **文件**: `utils/score/ScoreCalculator.ts:809`
 - **签名**: `export const debounce = <T extends (...args: any[]) => any>(`
 
 **建议文档结构**:
@@ -1954,7 +1954,7 @@ export const debounce = <T extends (...args: any[]) => any>(
 #### createLiveScoreUpdater
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:825`
+- **文件**: `utils/score/ScoreCalculator.ts:830`
 - **签名**: `export const createLiveScoreUpdater = (`
 
 **建议文档结构**:
@@ -1977,7 +1977,7 @@ export const createLiveScoreUpdater = (
 #### calculateFinalScore
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:855`
+- **文件**: `utils/score/ScoreCalculator.ts:860`
 - **签名**: `export const calculateFinalScore = (`
 
 **建议文档结构**:
@@ -2000,7 +2000,7 @@ export const calculateFinalScore = (
 #### updateStatsWithOptimalSolution
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:931`
+- **文件**: `utils/score/ScoreCalculator.ts:936`
 - **签名**: `export const updateStatsWithOptimalSolution = (stats: GameStats, pieces: PuzzlePiece[]): GameStats => {`
 
 **建议文档结构**:
@@ -2023,7 +2023,7 @@ export const updateStatsWithOptimalSolution = (stats: GameStats, pieces: PuzzleP
 #### formatRankDisplay
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:948`
+- **文件**: `utils/score/ScoreCalculator.ts:953`
 - **签名**: `export const formatRankDisplay = (rank: number, totalRecords: number): string => {`
 
 **建议文档结构**:
@@ -2046,7 +2046,7 @@ export const formatRankDisplay = (rank: number, totalRecords: number): string =>
 #### getNewRecordBadge
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:962`
+- **文件**: `utils/score/ScoreCalculator.ts:967`
 - **签名**: `export const getNewRecordBadge = (recordInfo: {`
 
 **建议文档结构**:
@@ -2069,7 +2069,7 @@ export const getNewRecordBadge = (recordInfo: {
 #### calculateLeaderboardStats
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:999`
+- **文件**: `utils/score/ScoreCalculator.ts:1004`
 - **签名**: `export const calculateLeaderboardStats = (`
 
 **建议文档结构**:
@@ -2092,7 +2092,7 @@ export const calculateLeaderboardStats = (
 #### calculateScoreWithLeaderboard
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:1029`
+- **文件**: `utils/score/ScoreCalculator.ts:1034`
 - **签名**: `export const calculateScoreWithLeaderboard = (`
 
 **建议文档结构**:
@@ -3591,7 +3591,7 @@ export interface PuzzlePiece { // Export the interface
 #### drawPiece
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:98`
+- **文件**: `utils/rendering/puzzleDrawing.ts:91`
 - **签名**: `export const drawPiece = (`
 
 **建议文档结构**:
@@ -3614,7 +3614,7 @@ export const drawPiece = (
 #### drawCompletionEffect
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:305`
+- **文件**: `utils/rendering/puzzleDrawing.ts:316`
 - **签名**: `export const drawCompletionEffect = (`
 
 **建议文档结构**:
@@ -3637,7 +3637,7 @@ export const drawCompletionEffect = (
 #### drawDistributionArea
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:395`
+- **文件**: `utils/rendering/puzzleDrawing.ts:406`
 - **签名**: `export const drawDistributionArea = (`
 
 **建议文档结构**:
@@ -3660,7 +3660,7 @@ export const drawDistributionArea = (
 #### drawCanvasCenter
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:659`
+- **文件**: `utils/rendering/puzzleDrawing.ts:664`
 - **签名**: `export const drawCanvasCenter = (`
 
 **建议文档结构**:
@@ -3683,7 +3683,7 @@ export const drawCanvasCenter = (
 #### drawShapeCenter
 
 - **类型**: constant
-- **文件**: `utils/rendering/puzzleDrawing.ts:693`
+- **文件**: `utils/rendering/puzzleDrawing.ts:698`
 - **签名**: `export const drawShapeCenter = (`
 
 **建议文档结构**:
@@ -3775,7 +3775,7 @@ export function generateSimplePuzzle( shape: Point[], cutType: "straight" | "dia
 #### splitPolygon
 
 - **类型**: constant
-- **文件**: `utils/puzzle/puzzleUtils.ts:37`
+- **文件**: `utils/puzzle/puzzleUtils.ts:30`
 - **签名**: `export const splitPolygon = (shape: Point[], cuts: CutLine[]): Point[][] => {`
 
 **建议文档结构**:
@@ -3798,7 +3798,7 @@ export const splitPolygon = (shape: Point[], cuts: CutLine[]): Point[][] => {
 #### isValidPiece
 
 - **类型**: constant
-- **文件**: `utils/puzzle/puzzleUtils.ts:337`
+- **文件**: `utils/puzzle/puzzleUtils.ts:330`
 - **签名**: `export const isValidPiece = (piece: Point[]): boolean => {`
 
 **建议文档结构**:
@@ -3821,7 +3821,7 @@ export const isValidPiece = (piece: Point[]): boolean => {
 #### checkRectOverlap
 
 - **类型**: constant
-- **文件**: `utils/puzzle/puzzleUtils.ts:342`
+- **文件**: `utils/puzzle/puzzleUtils.ts:335`
 - **签名**: `export const checkRectOverlap = (rect1: { x: number, y: number, width: number, height: number }, rect2: { x: number, y: number, width: number, height: number }): boolean => {`
 
 **建议文档结构**:
@@ -3844,7 +3844,7 @@ export const checkRectOverlap = (rect1: { x: number, y: number, width: number, h
 #### findLineIntersections
 
 - **类型**: function
-- **文件**: `utils/puzzle/puzzleUtils.ts:354`
+- **文件**: `utils/puzzle/puzzleUtils.ts:347`
 - **签名**: `export function findLineIntersections( line1: { start: Point; end: Point }, line2: { start: Point; end: Point } ): Point[] {`
 
 **建议文档结构**:
@@ -3867,8 +3867,8 @@ export function findLineIntersections( line1: { start: Point; end: Point }, line
 #### Cut
 
 - **类型**: type
-- **文件**: `utils/puzzle/puzzleCompensation.ts:3`
-- **签名**: `export type Cut = {`
+- **文件**: `utils/puzzle/puzzleCompensation.ts:4`
+- **签名**: `export type Cut = CutLine;`
 
 **建议文档结构**:
 ```markdown
@@ -3877,7 +3877,7 @@ export function findLineIntersections( line1: { start: Point; end: Point }, line
 [添加API描述]
 
 ```typescript
-export type Cut = {
+export type Cut = CutLine;
 ```
 
 #### 使用示例
@@ -3889,9 +3889,9 @@ export type Cut = {
 
 #### Bounds
 
-- **类型**: type
-- **文件**: `utils/puzzle/cutGeneratorTypes.ts:7`
-- **签名**: `export type Bounds = {`
+- **类型**: interface
+- **文件**: `utils/puzzle/graph/BezierCurve.ts:41`
+- **签名**: `export interface Bounds {`
 
 **建议文档结构**:
 ```markdown
@@ -3900,7 +3900,7 @@ export type Cut = {
 [添加API描述]
 
 ```typescript
-export type Bounds = {
+export interface Bounds {
 ```
 
 #### 使用示例
@@ -3913,7 +3913,7 @@ export type Bounds = {
 #### computeBounds
 
 - **类型**: constant
-- **文件**: `utils/puzzle/puzzleCompensation.ts:21`
+- **文件**: `utils/puzzle/puzzleCompensation.ts:16`
 - **签名**: `export const computeBounds = (shape: Point[]): Bounds => {`
 
 **建议文档结构**:
@@ -3936,7 +3936,7 @@ export const computeBounds = (shape: Point[]): Bounds => {
 #### buildExtraCuts
 
 - **类型**: constant
-- **文件**: `utils/puzzle/puzzleCompensation.ts:34`
+- **文件**: `utils/puzzle/puzzleCompensation.ts:29`
 - **签名**: `export const buildExtraCuts = (params: {`
 
 **建议文档结构**:
@@ -3959,7 +3959,7 @@ export const buildExtraCuts = (params: {
 #### applyExtraCutsWithRetry
 
 - **类型**: constant
-- **文件**: `utils/puzzle/puzzleCompensation.ts:78`
+- **文件**: `utils/puzzle/puzzleCompensation.ts:73`
 - **签名**: `export const applyExtraCutsWithRetry = (params: {`
 
 **建议文档结构**:
@@ -4052,7 +4052,7 @@ export type CutLine = {
 
 - **类型**: type
 - **文件**: `utils/puzzle/cutGeneratorTypes.ts:22`
-- **签名**: `export type CutType = "straight" | "diagonal";`
+- **签名**: `export type CutType = "straight" | "diagonal" | "curve";`
 
 **建议文档结构**:
 ```markdown
@@ -4061,7 +4061,7 @@ export type CutLine = {
 [添加API描述]
 
 ```typescript
-export type CutType = "straight" | "diagonal";
+export type CutType = "straight" | "diagonal" | "curve";
 ```
 
 #### 使用示例
@@ -4189,7 +4189,7 @@ export class SimpleCutStrategy implements CutGenerationStrategy {
 #### MediumCutStrategy
 
 - **类型**: class
-- **文件**: `utils/puzzle/cutGeneratorStrategies.ts:32`
+- **文件**: `utils/puzzle/cutGeneratorStrategies.ts:33`
 - **签名**: `export class MediumCutStrategy implements CutGenerationStrategy {`
 
 **建议文档结构**:
@@ -4212,7 +4212,7 @@ export class MediumCutStrategy implements CutGenerationStrategy {
 #### HardCutStrategy
 
 - **类型**: class
-- **文件**: `utils/puzzle/cutGeneratorStrategies.ts:79`
+- **文件**: `utils/puzzle/cutGeneratorStrategies.ts:81`
 - **签名**: `export class HardCutStrategy implements CutGenerationStrategy {`
 
 **建议文档结构**:
@@ -4235,7 +4235,7 @@ export class HardCutStrategy implements CutGenerationStrategy {
 #### CutStrategyFactory
 
 - **类型**: class
-- **文件**: `utils/puzzle/cutGeneratorStrategies.ts:143`
+- **文件**: `utils/puzzle/cutGeneratorStrategies.ts:146`
 - **签名**: `export class CutStrategyFactory {`
 
 **建议文档结构**:
@@ -4591,6 +4591,190 @@ export interface PieceRange {
 
 ```typescript
 export interface EnhancedDifficultySettings {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### NetworkCutter
+
+- **类型**: class
+- **文件**: `utils/puzzle/graph/NetworkCutter.ts:17`
+- **签名**: `export class NetworkCutter {`
+
+**建议文档结构**:
+```markdown
+### NetworkCutter
+
+[添加API描述]
+
+```typescript
+export class NetworkCutter {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### GraphNode
+
+- **类型**: class
+- **文件**: `utils/puzzle/graph/Graph.ts:7`
+- **签名**: `export class GraphNode {`
+
+**建议文档结构**:
+```markdown
+### GraphNode
+
+[添加API描述]
+
+```typescript
+export class GraphNode {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### GraphEdge
+
+- **类型**: class
+- **文件**: `utils/puzzle/graph/Graph.ts:46`
+- **签名**: `export class GraphEdge {`
+
+**建议文档结构**:
+```markdown
+### GraphEdge
+
+[添加API描述]
+
+```typescript
+export class GraphEdge {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### Graph
+
+- **类型**: class
+- **文件**: `utils/puzzle/graph/Graph.ts:66`
+- **签名**: `export class Graph {`
+
+**建议文档结构**:
+```markdown
+### Graph
+
+[添加API描述]
+
+```typescript
+export class Graph {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### BezierCurve
+
+- **类型**: class
+- **文件**: `utils/puzzle/graph/BezierCurve.ts:3`
+- **签名**: `export class BezierCurve {`
+
+**建议文档结构**:
+```markdown
+### BezierCurve
+
+[添加API描述]
+
+```typescript
+export class BezierCurve {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### createOptimizedCurve
+
+- **类型**: function
+- **文件**: `utils/puzzle/graph/BezierCurve.ts:57`
+- **签名**: `export function createOptimizedCurve(bounds: Bounds, shapeCenter?: Point, count: number = 2): BezierCurve {`
+
+**建议文档结构**:
+```markdown
+### createOptimizedCurve
+
+[添加API描述]
+
+```typescript
+export function createOptimizedCurve(bounds: Bounds, shapeCenter?: Point, count: number = 2): BezierCurve {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### createRadialCurve
+
+- **类型**: function
+- **文件**: `utils/puzzle/graph/BezierCurve.ts:136`
+- **签名**: `export function createRadialCurve(bounds: Bounds, startPoint: Point, angle: number, hubRadius: number = 0): BezierCurve {`
+
+**建议文档结构**:
+```markdown
+### createRadialCurve
+
+[添加API描述]
+
+```typescript
+export function createRadialCurve(bounds: Bounds, startPoint: Point, angle: number, hubRadius: number = 0): BezierCurve {
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### createOptimizedCurveWithAngle
+
+- **类型**: function
+- **文件**: `utils/puzzle/graph/BezierCurve.ts:171`
+- **签名**: `export function createOptimizedCurveWithAngle(bounds: Bounds, shapeCenter: Point, baseAngle: number): BezierCurve {`
+
+**建议文档结构**:
+```markdown
+### createOptimizedCurveWithAngle
+
+[添加API描述]
+
+```typescript
+export function createOptimizedCurveWithAngle(bounds: Bounds, shapeCenter: Point, baseAngle: number): BezierCurve {
 ```
 
 #### 使用示例
@@ -5776,7 +5960,7 @@ export const AngleDisplayControllerImpl: AngleDisplayController = {
 - ❌ `useDebugToggle` (function)
 - ❌ `reducer` (constant)
 
-### 工具函数API (141个)
+### 工具函数API (149个)
 
 - ❌ `deviceLogger` (constant)
 - ✅ `adaptationLogger` (constant)
@@ -5841,7 +6025,7 @@ export const AngleDisplayControllerImpl: AngleDisplayController = {
 - ❌ `checkRectOverlap` (constant)
 - ❌ `findLineIntersections` (function)
 - ❌ `Cut` (type)
-- ❌ `Bounds` (type)
+- ❌ `Bounds` (interface)
 - ❌ `computeBounds` (constant)
 - ❌ `buildExtraCuts` (constant)
 - ❌ `applyExtraCutsWithRetry` (constant)
@@ -5874,6 +6058,14 @@ export const AngleDisplayControllerImpl: AngleDisplayController = {
 - ❌ `EnhancedDifficultySettings` (interface)
 - ✅ `ScatterPuzzle` (class)
 - ✅ `PuzzleGenerator` (class)
+- ❌ `NetworkCutter` (class)
+- ❌ `GraphNode` (class)
+- ❌ `GraphEdge` (class)
+- ❌ `Graph` (class)
+- ❌ `BezierCurve` (class)
+- ❌ `createOptimizedCurve` (function)
+- ❌ `createRadialCurve` (function)
+- ❌ `createOptimizedCurveWithAngle` (function)
 - ❌ `LeaderboardSimplifier` (class)
 - ❌ `rotatePoint` (function)
 - ❌ `calculateAngle` (function)

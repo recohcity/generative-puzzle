@@ -1,17 +1,17 @@
 # 📦 项目依赖分析报告
 
-**生成时间**: 2025-10-03  
-**项目版本**: 1.3.60  
+**生成时间**: 2025-12-22  
+**项目版本**: 1.3.63  
 **分析工具**: analyze-unused-deps.cjs
 
 ## 📊 依赖使用情况总览
 
 | 指标 | 数值 | 等级 | 状态 |
 |------|------|------|------|
-| **总依赖数量** | 103个 | - | 📦 统计 |
+| **总依赖数量** | 101个 | - | 📦 统计 |
 | **检测使用依赖** | 60个 | - | ✅ 扫描 |
-| **真实使用率** | 85.4% | A | ✅ 良好 |
-| **可能冗余** | 15个 | B+ | ⚠️ 需优化 |
+| **真实使用率** | 86.1% | A | ✅ 良好 |
+| **可能冗余** | 14个 | B+ | ⚠️ 需优化 |
 
 ## 🎨 Radix UI 组件分析
 
@@ -36,7 +36,7 @@
 |------|------|--------|--------|------|
 | 🚀 框架核心 | 3 | 2 | 1 | ⚠️ |
 | 🔧 构建工具 | 6 | 0 | 6 | ⚠️ |
-| 🧪 测试工具 | 10 | 2 | 8 | ⚠️ |
+| 🧪 测试工具 | 9 | 2 | 7 | ⚠️ |
 | 📝 类型定义 | 26 | 0 | 26 | ⚠️ |
 | 🔍 代码检查 | 3 | 0 | 3 | ⚠️ |
 | 🎨 CSS工具 | 4 | 1 | 3 | ⚠️ |
@@ -70,6 +70,13 @@
 - `tailwind-merge` - CSS工具，可能在Tailwind配置中使用
 - `tailwindcss-animate` - CSS工具，可能在Tailwind配置中使用
 
+#### 🚀 框架核心依赖
+⚠️ **状态**: 1个依赖未直接检测到使用
+📊 **统计**: 3个依赖，66.7%使用率
+
+**未使用依赖**:
+- `react-dom` - Next.js框架自动使用，无需显式import
+
 #### ⚙️ 开发工具依赖
 ⚠️ **状态**: 2个依赖未直接检测到使用
 📊 **统计**: 2个依赖，0.0%使用率
@@ -78,19 +85,11 @@
 - `fs-extra` - 开发工具，在脚本中使用
 - `tsx` - 开发工具，在脚本中使用
 
-#### 🚀 框架核心依赖
-⚠️ **状态**: 1个依赖未直接检测到使用
-📊 **统计**: 3个依赖，66.7%使用率
-
-**未使用依赖**:
-- `react-dom` - Next.js框架自动使用，无需显式import
-
 #### 🧪 测试工具依赖
-⚠️ **状态**: 8个依赖未直接检测到使用
-📊 **统计**: 10个依赖，20.0%使用率
+⚠️ **状态**: 7个依赖未直接检测到使用
+📊 **统计**: 9个依赖，22.2%使用率
 
 **未使用依赖**:
-- `playwright` - 测试框架，在测试配置中使用
 - `@playwright/test` - 测试框架，在测试配置中使用
 - `@testing-library/user-event` - 测试框架，在测试配置中使用
 - `identity-obj-proxy` - 测试框架，在测试配置中使用
@@ -143,16 +142,15 @@
 
 #### ❓ 未分类依赖
 
-⚠️ **状态**: 10个依赖需要手动检查
+⚠️ **状态**: 9个依赖需要手动检查
 
 **需要检查的依赖**:
 - `@heroicons/react` - Unknown - needs manual review
 - `@hookform/resolvers` - Unknown - needs manual review
-- `date-fns` - Unknown - needs manual review
-- `dayjs` - Unknown - needs manual review
 - `zod` - Unknown - needs manual review
 - `@swc/core` - Unknown - needs manual review
 - `@swc/jest` - Unknown - needs manual review
+- `dayjs` - Unknown - needs manual review
 - `@agentdeskai/browser-tools-mcp` - Unknown - needs manual review
 - `@modelcontextprotocol/sdk` - Unknown - needs manual review
 - `pg` - Unknown - needs manual review
@@ -165,8 +163,8 @@
 
 ⚠️ **待优化** 项目依赖需要清理
 
-- 📊 依赖使用率 85.4%
-- ⚠️ 发现 15 个可能未使用的依赖
+- 📊 依赖使用率 86.1%
+- ⚠️ 发现 14 个可能未使用的依赖
 - 🔧 建议进行依赖清理优化
 
 
@@ -192,6 +190,6 @@
 
 ---
 
-**报告生成**: 2025/10/3 23:39:22  
-**下次建议检查**: 2025/11/2  
+**报告生成**: 2025/12/23 00:41:34  
+**下次建议检查**: 2026/1/22  
 **工具版本**: analyze-unused-deps.cjs v1.0

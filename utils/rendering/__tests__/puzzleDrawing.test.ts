@@ -4,17 +4,17 @@
  * 🎯 验证Canvas渲染核心逻辑
  */
 
-import { 
-  drawShape, 
-  drawPiece, 
-  drawHintOutline, 
-  drawCompletionEffect, 
-  drawCanvasBorderLine, 
-  drawDistributionArea, 
+import {
+  drawShape,
+  drawPiece,
+  drawHintOutline,
+  drawCompletionEffect,
+  drawCanvasBorderLine,
+  drawDistributionArea,
   drawPuzzle,
   drawCanvasCenter,
   drawShapeCenter,
-  PuzzlePiece 
+  PuzzlePiece
 } from '../puzzleDrawing';
 import type { Point } from '@/types/puzzleTypes';
 
@@ -33,15 +33,15 @@ class MockCanvasRenderingContext2D {
   textAlign = 'start';
   textBaseline = 'alphabetic';
   font = '10px sans-serif';
-  
+
   private path: string[] = [];
-  
+
   clearRect = jest.fn();
   beginPath = jest.fn(() => { this.path = []; });
   moveTo = jest.fn((x: number, y: number) => { this.path.push(`M${x},${y}`); });
   lineTo = jest.fn((x: number, y: number) => { this.path.push(`L${x},${y}`); });
-  quadraticCurveTo = jest.fn((cpx: number, cpy: number, x: number, y: number) => { 
-    this.path.push(`Q${cpx},${cpy},${x},${y}`); 
+  quadraticCurveTo = jest.fn((cpx: number, cpy: number, x: number, y: number) => {
+    this.path.push(`Q${cpx},${cpy},${x},${y}`);
   });
   closePath = jest.fn(() => { this.path.push('Z'); });
   fill = jest.fn();
@@ -64,13 +64,13 @@ class MockCanvasRenderingContext2D {
     addColorStop: jest.fn()
   }));
   createPattern = jest.fn(() => 'mock-pattern');
-  
+
   getPath = () => this.path.join(' ');
 }
 
 describe('puzzleDrawing - 渲染功能测试', () => {
   let mockCtx: MockCanvasRenderingContext2D;
-  
+
   beforeEach(() => {
     mockCtx = new MockCanvasRenderingContext2D();
     // 清除所有mock调用记录
@@ -88,7 +88,7 @@ describe('puzzleDrawing - 渲染功能测试', () => {
   describe('🔑 基础绘制功能', () => {
     test('应该正确绘制简单形状', () => {
       drawShape(mockCtx as any, testShape, 'polygon');
-      
+
       // 验证Canvas API调用
       expect(mockCtx.clearRect).toHaveBeenCalledWith(0, 0, 800, 600);
       expect(mockCtx.beginPath).toHaveBeenCalled();
@@ -99,7 +99,7 @@ describe('puzzleDrawing - 渲染功能测试', () => {
 
     test('应该设置正确的绘制样式', () => {
       drawShape(mockCtx as any, testShape, 'polygon');
-      
+
       expect(mockCtx.fillStyle).toBe("rgba(45, 55, 72, 0.6)");
       expect(mockCtx.strokeStyle).toBe("rgba(203, 213, 225, 0.8)");
       expect(mockCtx.lineWidth).toBe(2);
@@ -107,11 +107,11 @@ describe('puzzleDrawing - 渲染功能测试', () => {
 
     test('应该处理空形状数组', () => {
       const emptyShape: Point[] = [];
-      
+
       expect(() => {
         drawShape(mockCtx as any, emptyShape, 'polygon');
       }).not.toThrow();
-      
+
       // 空形状会直接返回，不进行任何绘制操作
       expect(mockCtx.clearRect).not.toHaveBeenCalled();
       expect(mockCtx.beginPath).not.toHaveBeenCalled();
@@ -121,10 +121,10 @@ describe('puzzleDrawing - 渲染功能测试', () => {
   describe('🔑 形状类型处理', () => {
     test('应该处理多边形类型', () => {
       drawShape(mockCtx as any, testShape, 'polygon');
-      
+
       expect(mockCtx.moveTo).toHaveBeenCalledWith(100, 100);
-      // 多边形会绘制所有线段，包括闭合线段，所以是testShape.length次lineTo调用
-      expect(mockCtx.lineTo).toHaveBeenCalledTimes(testShape.length);
+      // 多边形绘制：moveTo第一个点，然后lineTo其余点 (length - 1)
+      expect(mockCtx.lineTo).toHaveBeenCalledTimes(testShape.length - 1);
     });
 
     test('应该处理曲线类型', () => {
@@ -135,17 +135,18 @@ describe('puzzleDrawing - 渲染功能测试', () => {
         { x: 200, y: 200 },
         { x: 100, y: 200 }
       ];
-      
+
       drawShape(mockCtx as any, curveShape, 'curve');
-      
-      expect(mockCtx.moveTo).toHaveBeenCalledWith(100, 100);
+
+      // 曲线类型从最后一点和第一点的中点开始: (100+100)/2=100, (200+100)/2=150
+      expect(mockCtx.moveTo).toHaveBeenCalledWith(100, 150);
       expect(mockCtx.beginPath).toHaveBeenCalled();
       expect(mockCtx.quadraticCurveTo).toHaveBeenCalled();
     });
 
     test('应该处理不规则形状类型', () => {
       drawShape(mockCtx as any, testShape, 'irregular');
-      
+
       expect(mockCtx.beginPath).toHaveBeenCalled();
       expect(mockCtx.moveTo).toHaveBeenCalled();
       expect(mockCtx.quadraticCurveTo).toHaveBeenCalled();
@@ -159,11 +160,11 @@ describe('puzzleDrawing - 渲染功能测试', () => {
         { x: 180, y: 150 },
         { x: 120, y: 140 }
       ];
-      
+
       drawShape(mockCtx as any, curveShape, 'curve');
-      
-      // 验证quadraticCurveTo被调用了正确的次数（形状长度-1次）
-      expect(mockCtx.quadraticCurveTo).toHaveBeenCalledTimes(curveShape.length - 1);
+
+      // 验证quadraticCurveTo被调用了正确的次数（闭合循环，次数等于点数）
+      expect(mockCtx.quadraticCurveTo).toHaveBeenCalledTimes(curveShape.length);
     });
 
     test('应该处理只有两个点的曲线形状', () => {
@@ -171,13 +172,14 @@ describe('puzzleDrawing - 渲染功能测试', () => {
         { x: 100, y: 100 },
         { x: 200, y: 200 }
       ];
-      
+
       expect(() => {
         drawShape(mockCtx as any, twoPointCurve, 'curve');
       }).not.toThrow();
-      
-      expect(mockCtx.moveTo).toHaveBeenCalledWith(100, 100);
-      expect(mockCtx.quadraticCurveTo).toHaveBeenCalledTimes(1);
+
+      // Two points is not enough for a shape
+      expect(mockCtx.moveTo).not.toHaveBeenCalled();
+      expect(mockCtx.quadraticCurveTo).not.toHaveBeenCalled();
     });
 
     test('应该处理形状长度为0的情况并记录错误', () => {
@@ -186,14 +188,14 @@ describe('puzzleDrawing - 渲染功能测试', () => {
       console.error = jest.fn();
 
       const emptyShape: Point[] = [];
-      
+
       expect(() => {
         drawShape(mockCtx as any, emptyShape, 'polygon');
       }).not.toThrow();
-      
+
       // 验证错误日志被调用
       expect(console.error).toHaveBeenCalledWith('形状没有点，无法绘制');
-      
+
       // 恢复原始的 console.error
       console.error = originalConsoleError;
     });
@@ -201,18 +203,18 @@ describe('puzzleDrawing - 渲染功能测试', () => {
     test('应该处理形状长度为0但有点数组的情况', () => {
       // 创建一个长度为0但不是undefined的形状数组
       const emptyButDefinedShape: Point[] = [];
-      
+
       // Mock console.error 来验证错误日志
       const originalConsoleError = console.error;
       console.error = jest.fn();
-      
+
       expect(() => {
         drawShape(mockCtx as any, emptyButDefinedShape, 'polygon');
       }).not.toThrow();
-      
+
       // 验证第27行的错误日志被调用（早期返回）
       expect(console.error).toHaveBeenCalledWith('形状没有点，无法绘制');
-      
+
       // 恢复原始的 console.error
       console.error = originalConsoleError;
     });
@@ -220,12 +222,12 @@ describe('puzzleDrawing - 渲染功能测试', () => {
     test('应该覆盖第92行 - 形状在执行过程中长度变为0', () => {
       // 🎯 这个测试专门覆盖第92行的else分支
       // 需要让代码通过第27行检查，但在第49行时length为0
-      
+
       const originalConsoleLog = console.log;
       const originalConsoleError = console.error;
       console.log = jest.fn();
       console.error = jest.fn();
-      
+
       // 创建一个特殊的对象，模拟在执行过程中长度发生变化的情况
       let lengthAccessCount = 0;
       const dynamicShape = {
@@ -240,14 +242,14 @@ describe('puzzleDrawing - 渲染功能测试', () => {
           }
         }
       };
-      
+
       expect(() => {
         drawShape(mockCtx as any, dynamicShape as any, 'polygon');
       }).not.toThrow();
-      
+
       // 验证第92行的错误日志被调用
       expect(console.error).toHaveBeenCalledWith('没有点可绘制');
-      
+
       // 恢复原始的 console
       console.log = originalConsoleLog;
       console.error = originalConsoleError;
@@ -259,7 +261,7 @@ describe('puzzleDrawing - 渲染功能测试', () => {
   describe('🔑 路径生成验证', () => {
     test('应该生成正确的路径序列', () => {
       drawShape(mockCtx as any, testShape, 'polygon');
-      
+
       const path = mockCtx.getPath();
       expect(path).toContain('M100,100'); // 移动到起始点
       expect(path).toContain('L200,100'); // 线段
@@ -272,26 +274,26 @@ describe('puzzleDrawing - 渲染功能测试', () => {
         x: 150 + 50 * Math.cos(i * Math.PI / 4),
         y: 150 + 50 * Math.sin(i * Math.PI / 4)
       }));
-      
+
       drawShape(mockCtx as any, complexShape, 'polygon');
-      
+
       expect(mockCtx.moveTo).toHaveBeenCalledTimes(1);
-      // 包括闭合线段，所以是complexShape.length次lineTo调用
-      expect(mockCtx.lineTo).toHaveBeenCalledTimes(complexShape.length);
+      // moveTo第一个点，剩下的lineTo (length - 1)
+      expect(mockCtx.lineTo).toHaveBeenCalledTimes(complexShape.length - 1);
     });
   });
 
   describe('🔑 性能基准测试', () => {
     test('简单形状绘制应该高效', () => {
       const startTime = performance.now();
-      
+
       for (let i = 0; i < 100; i++) {
         drawShape(mockCtx as any, testShape, 'polygon');
       }
-      
+
       const endTime = performance.now();
       const avgTime = (endTime - startTime) / 100;
-      
+
       expect(avgTime).toBeLessThan(10); // 平均每次绘制 < 10ms
     });
 
@@ -300,11 +302,11 @@ describe('puzzleDrawing - 渲染功能测试', () => {
         x: 150 + 100 * Math.cos(i * Math.PI / 25),
         y: 150 + 100 * Math.sin(i * Math.PI / 25)
       }));
-      
+
       const startTime = performance.now();
       drawShape(mockCtx as any, complexShape, 'curve');
       const endTime = performance.now();
-      
+
       expect(endTime - startTime).toBeLessThan(50); // 基于监督指令的渲染性能标准
     });
   });
@@ -323,7 +325,7 @@ describe('puzzleDrawing - 渲染功能测试', () => {
         { x: 200, y: Infinity },
         { x: 100, y: 200 }
       ];
-      
+
       expect(() => {
         drawShape(mockCtx as any, invalidShape, 'polygon');
       }).not.toThrow(); // 应该优雅处理，不抛出错误
@@ -345,7 +347,7 @@ describe('puzzleDrawing - 渲染功能测试', () => {
 
     test('应该处理非多边形形状类型', () => {
       drawShape(mockCtx as any, testShape, 'irregular');
-      
+
       expect(mockCtx.beginPath).toHaveBeenCalled();
       expect(mockCtx.quadraticCurveTo).toHaveBeenCalled();
     });
@@ -354,7 +356,7 @@ describe('puzzleDrawing - 渲染功能测试', () => {
   describe('🔑 Canvas状态管理', () => {
     test('应该正确清除画布', () => {
       drawShape(mockCtx as any, testShape, 'polygon');
-      
+
       expect(mockCtx.clearRect).toHaveBeenCalledWith(0, 0, 800, 600);
       expect(mockCtx.clearRect).toHaveBeenCalledTimes(1);
     });
@@ -363,9 +365,9 @@ describe('puzzleDrawing - 渲染功能测试', () => {
       const originalFillStyle = mockCtx.fillStyle;
       const originalStrokeStyle = mockCtx.strokeStyle;
       const originalLineWidth = mockCtx.lineWidth;
-      
+
       drawShape(mockCtx as any, testShape, 'polygon');
-      
+
       // 验证属性被正确设置
       expect(mockCtx.fillStyle).not.toBe(originalFillStyle);
       expect(mockCtx.strokeStyle).not.toBe(originalStrokeStyle);
@@ -382,12 +384,12 @@ describe('puzzleDrawing - 渲染功能测试', () => {
         { x: 125, y: 100 },
         { x: 75, y: 100 }
       ];
-      
+
       drawShape(mockCtx as any, shape, 'polygon');
-      
+
       // 验证第一个点用于moveTo
       expect(mockCtx.moveTo).toHaveBeenCalledWith(50, 50);
-      
+
       // 验证其余点用于lineTo
       expect(mockCtx.lineTo).toHaveBeenCalledWith(100, 75);
       expect(mockCtx.lineTo).toHaveBeenCalledWith(150, 50);
@@ -397,14 +399,14 @@ describe('puzzleDrawing - 渲染功能测试', () => {
 
     test('单点形状应该优雅处理', () => {
       const singlePoint: Point[] = [{ x: 100, y: 100 }];
-      
+
       expect(() => {
         drawShape(mockCtx as any, singlePoint, 'polygon');
       }).not.toThrow();
-      
-      expect(mockCtx.moveTo).toHaveBeenCalledWith(100, 100);
-      // 单点形状也会绘制闭合线段，所以会有1次lineTo调用
-      expect(mockCtx.lineTo).toHaveBeenCalledTimes(1);
+
+      // 单点形状会走到 else 分支 (length <= 2)，报错并返回，不会调用 drawing methods
+      expect(mockCtx.moveTo).not.toHaveBeenCalled();
+      expect(mockCtx.lineTo).not.toHaveBeenCalled();
     });
   });
 
@@ -499,7 +501,7 @@ describe('puzzleDrawing - 渲染功能测试', () => {
         complete: true,
         src: '/texture-tile.png'
       };
-      
+
       // Mock global window object
       const originalWindow = global.window;
       (global as any).window = {
@@ -533,7 +535,7 @@ describe('puzzleDrawing - 渲染功能测试', () => {
       // 注意：纹理渲染只在特定条件下执行，这里我们验证基本的绘制操作
       expect(mockCtx.save).toHaveBeenCalled();
       expect(mockCtx.restore).toHaveBeenCalled();
-      
+
       // 恢复原始的 window
       global.window = originalWindow;
     });
@@ -544,7 +546,7 @@ describe('puzzleDrawing - 渲染功能测试', () => {
         complete: true,
         src: ''
       };
-      
+
       // Mock global window object
       const originalWindow = global.window;
       (global as any).window = {
@@ -590,7 +592,7 @@ describe('puzzleDrawing - 渲染功能测试', () => {
         complete: true,
         src: ''
       };
-      
+
       // Mock global window object
       const originalWindow = global.window;
       (global as any).window = {
@@ -627,7 +629,7 @@ describe('puzzleDrawing - 渲染功能测试', () => {
         complete: false,
         src: ''
       };
-      
+
       // Mock global window object without cached texture
       const originalWindow = global.window;
       (global as any).window = {
@@ -776,8 +778,8 @@ describe('puzzleDrawing - 渲染功能测试', () => {
       const curvePoints: Point[] = [
         { x: 100, y: 100, isOriginal: true },
         { x: 200, y: 100, isOriginal: true },
-        { x: 200, y: 200, isOriginal: false },
-        { x: 100, y: 200, isOriginal: false }
+        { x: 200, y: 200, isOriginal: true },
+        { x: 100, y: 200, isOriginal: true }
       ];
 
       const mockPiece: PuzzlePiece = {
@@ -850,9 +852,9 @@ describe('puzzleDrawing - 渲染功能测试', () => {
         drawHintOutline(mockCtx as any, mockPiece, 'curve');
       }).not.toThrow();
 
-      // 应该同时使用直线和曲线
+      // 应该只使用直线（因为有切割点，降级处理）
       expect(mockCtx.lineTo).toHaveBeenCalled();
-      expect(mockCtx.quadraticCurveTo).toHaveBeenCalled();
+      expect(mockCtx.quadraticCurveTo).not.toHaveBeenCalled();
     });
 
     test('应该正确计算边界框和中心点', () => {
@@ -956,9 +958,9 @@ describe('puzzleDrawing - 渲染功能测试', () => {
 
     test('调试关闭时不应该绘制边框线', () => {
       const saveCallsBefore = mockCtx.save.mock.calls.length;
-      
+
       drawCanvasBorderLine(mockCtx as any, 800, 600, false);
-      
+
       const saveCallsAfter = mockCtx.save.mock.calls.length;
       expect(saveCallsAfter).toBe(saveCallsBefore);
     });
@@ -974,9 +976,9 @@ describe('puzzleDrawing - 渲染功能测试', () => {
 
     test('调试关闭时不应该绘制分布区域', () => {
       const saveCallsBefore = mockCtx.save.mock.calls.length;
-      
+
       drawDistributionArea(mockCtx as any, 800, 600, false);
-      
+
       const saveCallsAfter = mockCtx.save.mock.calls.length;
       expect(saveCallsAfter).toBe(saveCallsBefore);
     });
@@ -1321,7 +1323,7 @@ describe('puzzleDrawing - 渲染功能测试', () => {
         complete: true,
         src: '/texture-tile.png'
       };
-      
+
       // Mock global window object
       const originalWindow = global.window;
       (global as any).window = {
@@ -1361,11 +1363,11 @@ describe('puzzleDrawing - 渲染功能测试', () => {
       expect(mockCtx.clearRect).toHaveBeenCalled();
       expect(mockCtx.beginPath).toHaveBeenCalled();
       expect(mockCtx.fill).toHaveBeenCalled();
-      
+
       // 验证基本的绘制操作也被调用
       expect(mockCtx.save).toHaveBeenCalled();
       expect(mockCtx.restore).toHaveBeenCalled();
-      
+
       // 注意：纹理渲染只在特定条件下执行，这里我们验证基本的绘制操作
       // 如果纹理渲染被执行，createPattern应该被调用
       // 但由于测试环境的限制，可能不会执行纹理渲染逻辑
@@ -1386,7 +1388,7 @@ describe('puzzleDrawing - 渲染功能测试', () => {
         complete: true,
         src: '/texture-tile.png'
       };
-      
+
       // Mock global window object
       const originalWindow = global.window;
       (global as any).window = {
@@ -1423,7 +1425,7 @@ describe('puzzleDrawing - 渲染功能测试', () => {
       expect(mockCtx.clearRect).toHaveBeenCalled();
       expect(mockCtx.beginPath).toHaveBeenCalled();
       expect(mockCtx.fill).toHaveBeenCalled();
-      
+
       // 注意：纹理渲染只在特定条件下执行，这里我们验证基本的绘制操作
       // 如果纹理渲染被执行，createPattern应该被调用
       // 但由于测试环境的限制，可能不会执行纹理渲染逻辑
@@ -1437,7 +1439,7 @@ describe('puzzleDrawing - 渲染功能测试', () => {
         complete: false,
         src: ''
       };
-      
+
       // Mock global window object without cached texture
       const originalWindow = global.window;
       (global as any).window = {
@@ -1520,19 +1522,19 @@ describe('puzzleDrawing - 渲染功能测试', () => {
       ];
       const completedPieces = [0]; // 所有片段都完成
       const originalShape = testShape;
-      
+
       expect(() => {
         drawPuzzle(
-          mockCtx as any, 
-          mockPieces, 
-          completedPieces, 
-          null, 
-          'polygon', 
-          originalShape, 
+          mockCtx as any,
+          mockPieces,
+          completedPieces,
+          null,
+          'polygon',
+          originalShape,
           false
         );
       }).not.toThrow();
-      
+
       expect(mockCtx.clearRect).toHaveBeenCalled();
       expect(mockCtx.beginPath).toHaveBeenCalled();
     });
@@ -1546,7 +1548,7 @@ describe('puzzleDrawing - 渲染功能测试', () => {
         { x: 150, y: 200, isOriginal: true },
         { x: 100, y: 200, isOriginal: true }
       ];
-      
+
       const mockPieces: PuzzlePiece[] = [
         {
           points: curveShape,
@@ -1560,42 +1562,42 @@ describe('puzzleDrawing - 渲染功能测试', () => {
         }
       ];
       const completedPieces = [0];
-      
+
       // Mock 成功的纹理图片
       const mockImg = {
         complete: true,
         naturalWidth: 100,
         naturalHeight: 100
       } as HTMLImageElement;
-      
+
       // Mock global window object
       const originalWindow = global.window;
       (global as any).window = {
         Image: jest.fn(() => mockImg),
         _puzzleTextureImg: mockImg
       };
-      
+
       // Mock createPattern 返回有效的pattern
       mockCtx.createPattern = jest.fn().mockReturnValue('mock-pattern');
-      
+
       expect(() => {
         drawPuzzle(
-          mockCtx as any, 
-          mockPieces, 
-          completedPieces, 
-          null, 
+          mockCtx as any,
+          mockPieces,
+          completedPieces,
+          null,
           'curve', // 使用曲线类型
-          curveShape, 
-          false, 
+          curveShape,
+          false,
           '恭喜完成！'
         );
       }).not.toThrow();
-      
+
       // 验证基本的绘制操作被调用
       expect(mockCtx.clearRect).toHaveBeenCalled();
       expect(mockCtx.beginPath).toHaveBeenCalled();
       expect(mockCtx.fill).toHaveBeenCalled();
-      
+
       // 注意：纹理渲染只在特定条件下执行，这里我们验证基本的绘制操作
 
       // 恢复原始的 window
@@ -1607,19 +1609,19 @@ describe('puzzleDrawing - 渲染功能测试', () => {
       expect(() => {
         drawCanvasCenter(mockCtx as any, 800, 600, true);
       }).not.toThrow();
-      
+
       expect(mockCtx.save).toHaveBeenCalled();
       expect(mockCtx.beginPath).toHaveBeenCalled();
       expect(mockCtx.restore).toHaveBeenCalled();
-      
+
       // 重置mock
       jest.clearAllMocks();
-      
+
       // 测试showDebugElements为false的情况（应该直接返回）
       expect(() => {
         drawCanvasCenter(mockCtx as any, 800, 600, false);
       }).not.toThrow();
-      
+
       expect(mockCtx.save).not.toHaveBeenCalled();
       expect(mockCtx.beginPath).not.toHaveBeenCalled();
     });
@@ -1633,7 +1635,7 @@ describe('puzzleDrawing - 渲染功能测试', () => {
         { x: 150, y: 200, isOriginal: false }, // 这个点的isOriginal为false
         { x: 100, y: 200, isOriginal: true }
       ];
-      
+
       const mockPieces: PuzzlePiece[] = [
         {
           points: curveShapeWithFalseOriginal,
@@ -1646,30 +1648,30 @@ describe('puzzleDrawing - 渲染功能测试', () => {
           originalY: 150
         }
       ];
-      
+
       // 测试drawPiece中的分支
       expect(() => {
         drawPiece(mockCtx as any, mockPieces[0], 0, false, false, 'curve', false);
       }).not.toThrow();
-      
+
       // 测试drawPuzzle中的分支
       expect(() => {
         drawPuzzle(
-          mockCtx as any, 
-          mockPieces, 
-          [], 
-          null, 
-          'curve', 
-          curveShapeWithFalseOriginal, 
+          mockCtx as any,
+          mockPieces,
+          [],
+          null,
+          'curve',
+          curveShapeWithFalseOriginal,
           false
         );
       }).not.toThrow();
-      
+
       // 测试drawHintOutline中的分支
       expect(() => {
         drawHintOutline(mockCtx as any, mockPieces[0], 'curve');
       }).not.toThrow();
-      
+
       expect(mockCtx.lineTo).toHaveBeenCalled();
     });
 
@@ -1682,7 +1684,7 @@ describe('puzzleDrawing - 渲染功能测试', () => {
         { x: 150, y: 200, isOriginal: false }, // 这个点的isOriginal为false
         { x: 100, y: 200, isOriginal: true }
       ];
-      
+
       const mockPieces: PuzzlePiece[] = [
         {
           points: curveShapeWithFalseOriginal,
@@ -1696,42 +1698,42 @@ describe('puzzleDrawing - 渲染功能测试', () => {
         }
       ];
       const completedPieces = [0];
-      
+
       // Mock 成功的纹理图片
       const mockImg = {
         complete: true,
         naturalWidth: 100,
         naturalHeight: 100
       } as HTMLImageElement;
-      
+
       // Mock global window object
       const originalWindow = global.window;
       (global as any).window = {
         Image: jest.fn(() => mockImg),
         _puzzleTextureImg: mockImg
       };
-      
+
       // Mock createPattern 返回有效的pattern
       mockCtx.createPattern = jest.fn().mockReturnValue('mock-pattern');
-      
+
       expect(() => {
         drawPuzzle(
-          mockCtx as any, 
-          mockPieces, 
-          completedPieces, 
-          null, 
+          mockCtx as any,
+          mockPieces,
+          completedPieces,
+          null,
           'curve', // 使用曲线类型
-          curveShapeWithFalseOriginal, 
-          false, 
+          curveShapeWithFalseOriginal,
+          false,
           '恭喜完成！'
         );
       }).not.toThrow();
-      
+
       // 验证基本的绘制操作被调用
       expect(mockCtx.clearRect).toHaveBeenCalled();
       expect(mockCtx.beginPath).toHaveBeenCalled();
       expect(mockCtx.fill).toHaveBeenCalled();
-      
+
       // 注意：纹理渲染只在特定条件下执行，这里我们验证基本的绘制操作
 
       // 恢复原始的 window
@@ -1762,51 +1764,51 @@ describe('puzzleDrawing - 渲染功能测试', () => {
           originalY: 200
         }
       ];
-      
+
       // 只完成一个片段，不等于总数
       const completedPieces = [0]; // 1 !== 2
-      
+
       expect(() => {
         drawPuzzle(
-          mockCtx as any, 
-          mockPieces, 
-          completedPieces, 
-          null, 
-          'polygon', 
-          testShape, 
+          mockCtx as any,
+          mockPieces,
+          completedPieces,
+          null,
+          'polygon',
+          testShape,
           false
         );
       }).not.toThrow();
-      
+
       // 重置mock
       jest.clearAllMocks();
-      
+
       // 测试 completedPieces.length === pieces.length 但 !originalShape 的情况
       const allCompletedPieces = [0, 1]; // 2 === 2
-      
+
       expect(() => {
         drawPuzzle(
-          mockCtx as any, 
-          mockPieces, 
-          allCompletedPieces, 
-          null, 
-          'polygon', 
+          mockCtx as any,
+          mockPieces,
+          allCompletedPieces,
+          null,
+          'polygon',
           undefined, // 没有原始形状
           false
         );
       }).not.toThrow();
-      
+
       // 重置mock
       jest.clearAllMocks();
-      
+
       // 测试 completedPieces.length === pieces.length 但 originalShape.length === 0 的情况
       expect(() => {
         drawPuzzle(
-          mockCtx as any, 
-          mockPieces, 
-          allCompletedPieces, 
-          null, 
-          'polygon', 
+          mockCtx as any,
+          mockPieces,
+          allCompletedPieces,
+          null,
+          'polygon',
           [], // 空的原始形状
           false
         );
@@ -1822,7 +1824,7 @@ describe('puzzleDrawing - 渲染功能测试', () => {
         { x: 150, y: 200, isOriginal: true },
         { x: 100, y: 200, isOriginal: true }
       ];
-      
+
       const mockPieces: PuzzlePiece[] = [
         {
           points: polygonShape,
@@ -1836,42 +1838,42 @@ describe('puzzleDrawing - 渲染功能测试', () => {
         }
       ];
       const completedPieces = [0];
-      
+
       // Mock 成功的纹理图片
       const mockImg = {
         complete: true,
         naturalWidth: 100,
         naturalHeight: 100
       } as HTMLImageElement;
-      
+
       // Mock global window object
       const originalWindow = global.window;
       (global as any).window = {
         Image: jest.fn(() => mockImg),
         _puzzleTextureImg: mockImg
       };
-      
+
       // Mock createPattern 返回有效的pattern
       mockCtx.createPattern = jest.fn().mockReturnValue('mock-pattern');
-      
+
       expect(() => {
         drawPuzzle(
-          mockCtx as any, 
-          mockPieces, 
-          completedPieces, 
-          null, 
+          mockCtx as any,
+          mockPieces,
+          completedPieces,
+          null,
           'polygon', // 使用多边形类型，应该走lineTo分支
-          polygonShape, 
-          false, 
+          polygonShape,
+          false,
           '恭喜完成！'
         );
       }).not.toThrow();
-      
+
       // 验证基本的绘制操作被调用
       expect(mockCtx.clearRect).toHaveBeenCalled();
       expect(mockCtx.beginPath).toHaveBeenCalled();
       expect(mockCtx.fill).toHaveBeenCalled();
-      
+
       // 注意：纹理渲染只在特定条件下执行，这里我们验证基本的绘制操作
 
       // 恢复原始的 window
@@ -1891,22 +1893,22 @@ describe('puzzleDrawing - 渲染功能测试', () => {
           originalY: 150
         }
       ];
-      
+
       // 测试completedPieces为空数组的情况
       const completedPieces: number[] = []; // 0 !== 1
-      
+
       expect(() => {
         drawPuzzle(
-          mockCtx as any, 
-          mockPieces, 
-          completedPieces, 
-          null, 
-          'polygon', 
-          testShape, 
+          mockCtx as any,
+          mockPieces,
+          completedPieces,
+          null,
+          'polygon',
+          testShape,
           false
         );
       }).not.toThrow();
-      
+
       expect(mockCtx.clearRect).toHaveBeenCalled();
     });
 
@@ -1914,19 +1916,19 @@ describe('puzzleDrawing - 渲染功能测试', () => {
       // 测试pieces为空数组的情况，这会让 completedPieces.length === pieces.length 为true（0 === 0）
       const mockPieces: PuzzlePiece[] = []; // 空数组
       const completedPieces: number[] = []; // 也是空数组
-      
+
       expect(() => {
         drawPuzzle(
-          mockCtx as any, 
-          mockPieces, 
-          completedPieces, 
-          null, 
-          'polygon', 
-          testShape, 
+          mockCtx as any,
+          mockPieces,
+          completedPieces,
+          null,
+          'polygon',
+          testShape,
           false
         );
       }).not.toThrow();
-      
+
       expect(mockCtx.clearRect).toHaveBeenCalled();
     });
 
@@ -1944,22 +1946,22 @@ describe('puzzleDrawing - 渲染功能测试', () => {
           originalY: 150
         }
       ];
-      
+
       // completedPieces长度大于pieces长度的异常情况
       const completedPieces: number[] = [0, 1, 2]; // 3 !== 1
-      
+
       expect(() => {
         drawPuzzle(
-          mockCtx as any, 
-          mockPieces, 
-          completedPieces, 
-          null, 
-          'polygon', 
-          testShape, 
+          mockCtx as any,
+          mockPieces,
+          completedPieces,
+          null,
+          'polygon',
+          testShape,
           false
         );
       }).not.toThrow();
-      
+
       expect(mockCtx.clearRect).toHaveBeenCalled();
     });
 
@@ -1972,7 +1974,7 @@ describe('puzzleDrawing - 渲染功能测试', () => {
         { x: 150, y: 200, isOriginal: false }, // 第四个点为false - 这会触发else分支
         { x: 100, y: 200, isOriginal: true }   // 第五个点为true
       ];
-      
+
       const mockPieces: PuzzlePiece[] = [
         {
           points: shapeWithMixedOriginal,
@@ -1986,42 +1988,42 @@ describe('puzzleDrawing - 渲染功能测试', () => {
         }
       ];
       const completedPieces = [0];
-      
+
       // Mock 成功的纹理图片
       const mockImg = {
         complete: true,
         naturalWidth: 100,
         naturalHeight: 100
       } as HTMLImageElement;
-      
+
       // Mock global window object
       const originalWindow = global.window;
       (global as any).window = {
         Image: jest.fn(() => mockImg),
         _puzzleTextureImg: mockImg
       };
-      
+
       // Mock createPattern 返回有效的pattern
       mockCtx.createPattern = jest.fn().mockReturnValue('mock-pattern');
-      
+
       expect(() => {
         drawPuzzle(
-          mockCtx as any, 
-          mockPieces, 
-          completedPieces, 
-          null, 
+          mockCtx as any,
+          mockPieces,
+          completedPieces,
+          null,
           'curve', // 使用曲线类型，混合isOriginal值
-          shapeWithMixedOriginal, 
-          false, 
+          shapeWithMixedOriginal,
+          false,
           '恭喜完成！'
         );
       }).not.toThrow();
-      
+
       // 验证基本的绘制操作被调用
       expect(mockCtx.clearRect).toHaveBeenCalled();
       expect(mockCtx.beginPath).toHaveBeenCalled();
       expect(mockCtx.fill).toHaveBeenCalled();
-      
+
       // 注意：纹理渲染只在特定条件下执行，这里我们验证基本的绘制操作
 
       // 恢复原始的 window
@@ -2132,7 +2134,7 @@ describe('puzzleDrawing - 渲染功能测试', () => {
           width: 1024,
           height: 768
         };
-        
+
         const customCtx = {
           ...mockCtx,
           canvas: customCanvas,
@@ -2177,7 +2179,7 @@ describe('puzzleDrawing - 渲染功能测试', () => {
 
         // 情况1: 纹理图片不存在，需要创建
         delete (window as any)._puzzleTextureImg;
-        
+
         // 模拟Image构造函数
         const mockImage = {
           complete: false,
@@ -2220,7 +2222,7 @@ describe('puzzleDrawing - 渲染功能测试', () => {
         expect(mockCtx.clearRect).toHaveBeenCalled();
         expect(mockCtx.beginPath).toHaveBeenCalled();
         expect(mockCtx.fill).toHaveBeenCalled();
-        
+
         // 注意：纹理渲染只在特定条件下执行，这里我们验证基本的绘制操作
       });
 
@@ -2395,7 +2397,7 @@ describe('puzzleDrawing - 渲染功能测试', () => {
 
         // 验证quadraticCurveTo被正确调用
         expect(mockCtx.quadraticCurveTo).toHaveBeenCalled();
-        
+
         // 验证计算的中点坐标
         const calls = mockCtx.quadraticCurveTo.mock.calls;
         expect(calls.length).toBeGreaterThan(0);
@@ -2405,150 +2407,150 @@ describe('puzzleDrawing - 渲染功能测试', () => {
 });
 
 describe('🎯 材质纹理和边框绘制覆盖测试', () => {
-    // 测试用形状数据
-    const testShape: Point[] = [
-      { x: 100, y: 100 },
-      { x: 200, y: 100 },
-      { x: 200, y: 200 },
-      { x: 100, y: 200 }
-    ];
+  // 测试用形状数据
+  const testShape: Point[] = [
+    { x: 100, y: 100 },
+    { x: 200, y: 100 },
+    { x: 200, y: 200 },
+    { x: 100, y: 200 }
+  ];
 
-    // Mock Canvas Context
-    let mockCtx: MockCanvasRenderingContext2D;
+  // Mock Canvas Context
+  let mockCtx: MockCanvasRenderingContext2D;
 
-    beforeEach(() => {
-      mockCtx = new MockCanvasRenderingContext2D();
-    });
-
-    test('应该处理非多边形形状的材质纹理绘制', () => {
-      const mockPiece: PuzzlePiece = {
-        points: [
-          { x: 100, y: 100, isOriginal: true },
-          { x: 200, y: 100, isOriginal: true },
-          { x: 200, y: 200, isOriginal: true },
-          { x: 100, y: 200, isOriginal: true }
-        ],
-        originalPoints: testShape,
-        rotation: 0,
-        originalRotation: 0,
-        x: 150,
-        y: 150,
-        originalX: 150,
-        originalY: 150,
-        color: '#FF0000'
-      };
-
-      // 测试非多边形形状（如圆形）的材质纹理绘制
-      expect(() => {
-        drawPiece(mockCtx as any, mockPiece, 0, false, false, 'circle', false);
-      }).not.toThrow();
-
-      // 验证quadraticCurveTo被调用（用于非多边形形状）
-      expect(mockCtx.quadraticCurveTo).toHaveBeenCalled();
-    });
-
-    test('应该处理isOriginal为false的点', () => {
-      const mockPiece: PuzzlePiece = {
-        points: [
-          { x: 100, y: 100, isOriginal: false },
-          { x: 200, y: 100, isOriginal: false },
-          { x: 200, y: 200, isOriginal: true },
-          { x: 100, y: 200, isOriginal: true }
-        ],
-        originalPoints: testShape,
-        rotation: 0,
-        originalRotation: 0,
-        x: 150,
-        y: 150,
-        originalX: 150,
-        originalY: 150,
-        color: '#FF0000'
-      };
-
-      // 测试包含isOriginal为false的点的情况
-      expect(() => {
-        drawPiece(mockCtx as any, mockPiece, 0, false, false, 'circle', false);
-      }).not.toThrow();
-
-      // 验证lineTo被调用（用于isOriginal为false的点）
-      expect(mockCtx.lineTo).toHaveBeenCalled();
-    });
-
-    test('应该处理不同的边框绘制状态', () => {
-      const mockPiece: PuzzlePiece = {
-        points: testShape,
-        originalPoints: testShape,
-        rotation: 0,
-        originalRotation: 0,
-        x: 150,
-        y: 150,
-        originalX: 150,
-        originalY: 150,
-        color: '#FF0000'
-      };
-
-      // 测试选中状态（不绘制边框）
-      expect(() => {
-        drawPiece(mockCtx as any, mockPiece, 0, false, true, 'polygon', false);
-      }).not.toThrow();
-
-      // 测试散开状态（不绘制边框）
-      expect(() => {
-        drawPiece(mockCtx as any, mockPiece, 0, false, false, 'polygon', true);
-      }).not.toThrow();
-
-      // 测试其他状态（绘制轻微轮廓）
-      mockCtx.stroke.mockClear();
-      expect(() => {
-        drawPiece(mockCtx as any, mockPiece, 0, false, false, 'polygon', false);
-      }).not.toThrow();
-
-      // 验证stroke被调用（绘制轮廓）
-      expect(mockCtx.stroke).toHaveBeenCalled();
-    });
-
-    test('应该处理完成状态的拼图片段', () => {
-      const mockPiece: PuzzlePiece = {
-        points: testShape,
-        originalPoints: testShape,
-        rotation: 0,
-        originalRotation: 0,
-        x: 150,
-        y: 150,
-        originalX: 150,
-        originalY: 150,
-        color: '#FF0000'
-      };
-
-      // 测试完成状态（不绘制边框）
-      expect(() => {
-        drawPiece(mockCtx as any, mockPiece, 0, true, false, 'polygon', false);
-      }).not.toThrow();
-
-      expect(mockCtx.save).toHaveBeenCalled();
-      expect(mockCtx.restore).toHaveBeenCalled();
-    });
-
-    test('应该处理材质纹理绘制的异常情况', () => {
-      const mockPiece: PuzzlePiece = {
-        points: testShape,
-        originalPoints: testShape,
-        rotation: 0,
-        originalRotation: 0,
-        x: 150,
-        y: 150,
-        originalX: 150,
-        originalY: 150,
-        color: '#FF0000'
-      };
-
-      // 测试正常情况下的材质纹理绘制
-      expect(() => {
-        drawPiece(mockCtx as any, mockPiece, 0, false, false, 'circle', false);
-      }).not.toThrow();
-
-      // 验证基本的绘制操作被调用
-      expect(mockCtx.save).toHaveBeenCalled();
-      expect(mockCtx.restore).toHaveBeenCalled();
-    });
+  beforeEach(() => {
+    mockCtx = new MockCanvasRenderingContext2D();
   });
+
+  test('应该处理非多边形形状的材质纹理绘制', () => {
+    const mockPiece: PuzzlePiece = {
+      points: [
+        { x: 100, y: 100, isOriginal: true },
+        { x: 200, y: 100, isOriginal: true },
+        { x: 200, y: 200, isOriginal: true },
+        { x: 100, y: 200, isOriginal: true }
+      ],
+      originalPoints: testShape,
+      rotation: 0,
+      originalRotation: 0,
+      x: 150,
+      y: 150,
+      originalX: 150,
+      originalY: 150,
+      color: '#FF0000'
+    };
+
+    // 测试非多边形形状（如圆形）的材质纹理绘制
+    expect(() => {
+      drawPiece(mockCtx as any, mockPiece, 0, false, false, 'circle', false);
+    }).not.toThrow();
+
+    // 验证quadraticCurveTo被调用（用于非多边形形状）
+    expect(mockCtx.quadraticCurveTo).toHaveBeenCalled();
+  });
+
+  test('应该处理isOriginal为false的点', () => {
+    const mockPiece: PuzzlePiece = {
+      points: [
+        { x: 100, y: 100, isOriginal: false },
+        { x: 200, y: 100, isOriginal: false },
+        { x: 200, y: 200, isOriginal: true },
+        { x: 100, y: 200, isOriginal: true }
+      ],
+      originalPoints: testShape,
+      rotation: 0,
+      originalRotation: 0,
+      x: 150,
+      y: 150,
+      originalX: 150,
+      originalY: 150,
+      color: '#FF0000'
+    };
+
+    // 测试包含isOriginal为false的点的情况
+    expect(() => {
+      drawPiece(mockCtx as any, mockPiece, 0, false, false, 'circle', false);
+    }).not.toThrow();
+
+    // 验证lineTo被调用（用于isOriginal为false的点）
+    expect(mockCtx.lineTo).toHaveBeenCalled();
+  });
+
+  test('应该处理不同的边框绘制状态', () => {
+    const mockPiece: PuzzlePiece = {
+      points: testShape,
+      originalPoints: testShape,
+      rotation: 0,
+      originalRotation: 0,
+      x: 150,
+      y: 150,
+      originalX: 150,
+      originalY: 150,
+      color: '#FF0000'
+    };
+
+    // 测试选中状态（不绘制边框）
+    expect(() => {
+      drawPiece(mockCtx as any, mockPiece, 0, false, true, 'polygon', false);
+    }).not.toThrow();
+
+    // 测试散开状态（不绘制边框）
+    expect(() => {
+      drawPiece(mockCtx as any, mockPiece, 0, false, false, 'polygon', true);
+    }).not.toThrow();
+
+    // 测试其他状态（绘制轻微轮廓）
+    mockCtx.stroke.mockClear();
+    expect(() => {
+      drawPiece(mockCtx as any, mockPiece, 0, false, false, 'polygon', false);
+    }).not.toThrow();
+
+    // 验证stroke被调用（绘制轮廓）
+    expect(mockCtx.stroke).toHaveBeenCalled();
+  });
+
+  test('应该处理完成状态的拼图片段', () => {
+    const mockPiece: PuzzlePiece = {
+      points: testShape,
+      originalPoints: testShape,
+      rotation: 0,
+      originalRotation: 0,
+      x: 150,
+      y: 150,
+      originalX: 150,
+      originalY: 150,
+      color: '#FF0000'
+    };
+
+    // 测试完成状态（不绘制边框）
+    expect(() => {
+      drawPiece(mockCtx as any, mockPiece, 0, true, false, 'polygon', false);
+    }).not.toThrow();
+
+    expect(mockCtx.save).toHaveBeenCalled();
+    expect(mockCtx.restore).toHaveBeenCalled();
+  });
+
+  test('应该处理材质纹理绘制的异常情况', () => {
+    const mockPiece: PuzzlePiece = {
+      points: testShape,
+      originalPoints: testShape,
+      rotation: 0,
+      originalRotation: 0,
+      x: 150,
+      y: 150,
+      originalX: 150,
+      originalY: 150,
+      color: '#FF0000'
+    };
+
+    // 测试正常情况下的材质纹理绘制
+    expect(() => {
+      drawPiece(mockCtx as any, mockPiece, 0, false, false, 'circle', false);
+    }).not.toThrow();
+
+    // 验证基本的绘制操作被调用
+    expect(mockCtx.save).toHaveBeenCalled();
+    expect(mockCtx.restore).toHaveBeenCalled();
+  });
+});

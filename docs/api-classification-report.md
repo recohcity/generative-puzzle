@@ -1,15 +1,15 @@
 # API分类报告
 
-> 生成时间: 2025/10/3 23:39:21
+> 生成时间: 2025/12/23 00:41:33
 > 分类工具: API分类器 v1.0
 
 ## 📊 分类统计
 
 | 分类 | 数量 | 占比 | 优先级 | 建议 |
 |------|------|------|--------|------|
-| PUBLIC | 24 | 9.8% | 1 | 必须文档化 |
-| TEAM | 25 | 10.2% | 2 | 建议文档化 |
-| INTERNAL | 195 | 79.9% | 3 | 选择性文档化 |
+| PUBLIC | 24 | 9.5% | 1 | 必须文档化 |
+| TEAM | 25 | 9.9% | 2 | 建议文档化 |
+| INTERNAL | 203 | 80.6% | 3 | 选择性文档化 |
 
 ## 📋 详细分类
 
@@ -80,7 +80,7 @@
 
 **描述**: 模块内部实现细节
 
-**API列表** (195个):
+**API列表** (203个):
 
 - `EVENT_CONFIG`
 - `MEMORY_CONFIG`
@@ -239,6 +239,14 @@
 - `DifficultySettings`
 - `PieceRange`
 - `EnhancedDifficultySettings`
+- `NetworkCutter`
+- `GraphNode`
+- `GraphEdge`
+- `Graph`
+- `BezierCurve`
+- `createOptimizedCurve`
+- `createRadialCurve`
+- `createOptimizedCurveWithAngle`
 - `LeaderboardSimplifier`
 - `calculatePieceBounds`
 - `calculateDifficultyLevel`

@@ -84,7 +84,8 @@ const DIFFICULTY_SETTINGS = {
 // 切割类型难度系数
 const CUT_TYPE_MULTIPLIER = {
   straight: 1.0,  // 直线切割：标准难度
-  diagonal: 1.2   // 斜线切割：增加20%难度
+  diagonal: 1.2,  // 斜线切割：增加20%难度
+  curve: 1.5      // 曲线切割：增加50%难度（更复杂的形状和边缘）
 }
 ```
 
@@ -117,7 +118,7 @@ finalMultiplier = baseDifficultyMultiplier × cutTypeMultiplier × deviceMultipl
 ```
 
 **示例计算**：
-- 难度5 + 斜线切割 + 移动端 + 锯齿形 = 2.2 × 1.2 × 1.1 × 1.2 = 3.485
+- 难度5 + 曲线切割 + 移动端 + 锯齿形 = 2.2 × 1.5 × 1.1 × 1.2 = 4.356
 
 ## 📊 分数计算系统
 

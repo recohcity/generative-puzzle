@@ -2,6 +2,7 @@ import type { Point, PuzzlePiece } from "@/types/puzzleTypes"
 import { generateCuts } from "@/utils/puzzle/cutGenerators"
 import { splitPolygon } from "@/utils/puzzle/puzzleUtils"
 import { applyExtraCutsWithRetry } from "@/utils/puzzle/puzzleCompensation"
+import { NetworkCutter } from "@/utils/puzzle/graph/NetworkCutter"
 
 export class PuzzleGenerator {
   /**
@@ -22,31 +23,44 @@ export class PuzzleGenerator {
    */
   static generatePuzzle(
     shape: Point[],
-    cutType: "straight" | "diagonal",
+    cutType: "straight" | "diagonal" | "curve",
     cutCount: number,
     shapeType?: string,
   ): { pieces: PuzzlePiece[]; originalPositions: PuzzlePiece[] } {
-    // 步骤1：生成切割线
-    // 根据形状边界、难度级别和切割类型生成优化的切割路径
-    const cuts = generateCuts(shape, cutCount, cutType);
 
-    // 步骤2：执行多边形分割
-    // 使用线段相交检测算法将原始形状切割成独立的拼图片段
-    let splitPieces: Point[][] = splitPolygon(shape, cuts);
-    
-    // 🔧 调试：记录初始切割结果
-    console.log(`[PuzzleGenerator] 初始切割结果: ${splitPieces.length}块拼图 (${cuts.length}条切割线)`);
+    let splitPieces: Point[][];
+    // 用于存储直线/斜线模式下的切割线，如果使用曲线模式则为空
+    let usedCuts: any[] = [];
+
+    // 🆕 混合架构入口：如果是曲线，使用图网络切割引擎
+    if (cutType === "curve") {
+      console.log("[PuzzleGenerator] 使用图网络进行曲线切割...");
+      const result = NetworkCutter.generate(shape, cutCount, shapeType);
+      splitPieces = result;
+      // 曲线模式下，cuts 概念不同，我们暂时不填充 usedCuts，跳过后续的补偿逻辑
+    } else {
+      // 步骤1：生成切割线
+      // 根据形状边界、难度级别和切割类型生成优化的切割路径
+      const cuts = generateCuts(shape, cutCount, cutType);
+      usedCuts = cuts;
+
+      // 步骤2：执行多边形分割
+      // 使用线段相交检测算法将原始形状切割成独立的拼图片段
+      splitPieces = splitPolygon(shape, cuts);
+
+      // 🔧 调试：记录初始切割结果
+      console.log(`[PuzzleGenerator] 初始切割结果: ${splitPieces.length}块拼图 (${cuts.length}条切割线)`);
+    }
 
     // 步骤3：质量控制 - 验证切割效果
-    // 重要修正：N条切割线可能产生N+1, N+2, N+3...个拼图片段
-    // 这取决于切割线的相交方式，不是固定的N+1
     // 我们接受切割产生的自然片段数量，不强制补偿到特定数量
-    
+
     // 步骤4：智能补偿算法（仅在片段数量明显不足时启用）
-    if (splitPieces.length < cuts.length) {
+    // 注意：只针对直线/斜线模式启用补偿，曲线模式由 NetworkCutter 内部保证质量
+    if (usedCuts.length > 0 && splitPieces.length < usedCuts.length) {
       splitPieces = applyExtraCutsWithRetry({
         shape,
-        cuts,
+        cuts: usedCuts,
         cutType,
         cutCount,
         splitPolygon,
@@ -54,12 +68,8 @@ export class PuzzleGenerator {
       });
     }
 
-    // 移除基于固定预期数量的片段限制逻辑
-    // 接受切割产生的自然片段数量，这才是正确的做法
-    // N条切割线可能产生N+1, N+2, N+3...个片段，这是正常的
-
     // 🔧 调试：记录最终切割结果
-    console.log(`[PuzzleGenerator] 最终切割结果: ${splitPieces.length}个拼图片段 (${cuts.length}条切割线)`);
+    console.log(`[PuzzleGenerator] 最终切割结果: ${splitPieces.length}个拼图片段`);
 
     // 定义暖色调色板
     const colors = [

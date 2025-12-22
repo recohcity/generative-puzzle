@@ -42,38 +42,31 @@ export const drawShape = (ctx: CanvasRenderingContext2D, shape: Point[], shapeTy
     // 绘制路径
     ctx.beginPath();
 
-    // 记录第一个点: (${shape[0].x.toFixed(2)}, ${shape[0].y.toFixed(2)})
-
-    // 移动到第一个点
-    if (shape.length > 0) {
-      ctx.moveTo(shape[0].x, shape[0].y);
-
+    // 记录第一个点
+    if (shape.length > 2) {
       if (shapeType === "polygon") {
-        // 多边形使用直线
+        ctx.moveTo(shape[0].x, shape[0].y);
         for (let i = 1; i < shape.length; i++) {
           ctx.lineTo(shape[i].x, shape[i].y);
-          // 线段到: (${shape[i].x.toFixed(2)}, ${shape[i].y.toFixed(2)})
         }
-
-        // 闭合路径
-        ctx.lineTo(shape[0].x, shape[0].y);
       } else {
-        // 曲线形状和锯齿形状都使用贝塞尔曲线
-        for (let i = 1; i < shape.length; i++) {
-          const prev = shape[i - 1];
-          const current = shape[i];
-          const next = shape[(i + 1) % shape.length];
+        // 曲线形状和锯齿形状都使用二次贝塞尔曲线
+        // 逻辑必须与 NetworkCutter.discretizeShape 严格一致
+        const last = shape[shape.length - 1];
+        const first = shape[0];
 
-          // 使用二次贝塞尔曲线平滑连接点
-          const midX = (prev.x + current.x) / 2;
-          const midY = (prev.y + current.y) / 2;
-          const nextMidX = (current.x + next.x) / 2;
-          const nextMidY = (current.y + next.y) / 2;
+        // 1. 起点：最后一点与第一点的中点
+        ctx.moveTo((last.x + first.x) / 2, (last.y + first.y) / 2);
 
-          ctx.quadraticCurveTo(current.x, current.y, nextMidX, nextMidY);
+        // 2. 循环绘制：中点 -> 点[i](控制点) -> 中点(点[i], 点[i+1])
+        for (let i = 0; i < shape.length; i++) {
+          const p1 = shape[i];
+          const p2 = shape[(i + 1) % shape.length];
+          const midX = (p1.x + p2.x) / 2;
+          const midY = (p1.y + p2.y) / 2;
+          ctx.quadraticCurveTo(p1.x, p1.y, midX, midY);
         }
       }
-
       ctx.closePath();
       ctx.fill();
 
@@ -184,11 +177,17 @@ export const drawPiece = (
 
   // 🎯 填充颜色：使用不透明的纯色，取消透明度
   // 根据是否已完成和是否有颜色属性设置填充颜色
-  ctx.fillStyle = isCompleted
-    ? "#B8A9E8" // 🎯 已完成拼图使用浅蓝紫色，与背景冷色调同色系，更和谐美观
-    : (piece.color || "#CCCCCC"); // 使用拼图的原始颜色，无透明度
+  const currentFillColor = isCompleted
+    ? "#B8A9E8" // 🎯 已完成拼图使用浅蓝紫色
+    : (piece.color || "#CCCCCC"); // 使用拼图的原始颜色
 
+  ctx.fillStyle = currentFillColor;
   ctx.fill(); // 填充当前路径
+
+  // 【关键改进】用相同颜色进行描边，消除抗锯齿导致的 1px 缝隙问题
+  ctx.strokeStyle = currentFillColor;
+  ctx.lineWidth = 0.5; // 轻微描边即可
+  ctx.stroke();
 
   // --------- 叠加瓷砖气孔纹理 ---------
   try {
@@ -270,27 +269,39 @@ export const drawHintOutline = (
   ctx.setLineDash([5, 5]);
   ctx.lineWidth = 4;
 
-  ctx.beginPath();
-  ctx.moveTo(piece.points[0].x, piece.points[0].y);
+  ctx.beginPath(); // Add beginPath here to ensure new path
 
-  // 🔧 修复：根据形状类型绘制正确的轮廓，确保与拼图形状一致
-  for (let i = 1; i < piece.points.length; i++) {
-    const prev = piece.points[i - 1];
-    const current = piece.points[i];
-    const next = piece.points[(i + 1) % piece.points.length];
+  if (shapeType === "polygon") {
+    ctx.moveTo(piece.points[0].x, piece.points[0].y);
+    for (let i = 1; i < piece.points.length; i++) {
+      ctx.lineTo(piece.points[i].x, piece.points[i].y);
+    }
+  } else {
+    // 提示轮廓也必须遵循相同的曲线逻辑
+    const last = piece.points[piece.points.length - 1];
+    const first = piece.points[0];
 
-    // 🎯 使用与拼图绘制完全相同的逻辑：只要当前点是原始点，就使用曲线
-    if (shapeType !== "polygon" && current.isOriginal !== false) {
-      // 🔧 对于曲线形状，只要当前点是原始点（或未定义），就使用贝塞尔曲线
-      const midX = (prev.x + current.x) / 2;
-      const midY = (prev.y + current.y) / 2;
-      const nextMidX = (current.x + next.x) / 2;
-      const nextMidY = (current.y + next.y) / 2;
+    // 如果这些点包含切割产生的点 (isOriginal === false)，它们是离散化的直线段
+    // 只有全是原始点时才应用平滑。但为了保险，我们检查每个点的性质。
+    // 在 NetworkCutter 中，离散化后的形状点 isOriginal 通常为 true。
+    const hasCutPoints = piece.points.some(p => p.isOriginal === false);
 
-      ctx.quadraticCurveTo(current.x, current.y, nextMidX, nextMidY);
+    if (hasCutPoints) {
+      // 包含切割点，直接连线 (因为它已经是由 cutter 处理过的多边形)
+      ctx.moveTo(piece.points[0].x, piece.points[0].y);
+      for (let i = 1; i < piece.points.length; i++) {
+        ctx.lineTo(piece.points[i].x, piece.points[i].y);
+      }
     } else {
-      // 对于多边形和切割线（isOriginal: false），使用直线
-      ctx.lineTo(current.x, current.y);
+      // 全是原始点，应用二次贝塞尔平滑
+      ctx.moveTo((last.x + first.x) / 2, (last.y + first.y) / 2);
+      for (let i = 0; i < piece.points.length; i++) {
+        const p1 = piece.points[i];
+        const p2 = piece.points[(i + 1) % piece.points.length];
+        const midX = (p1.x + p2.x) / 2;
+        const midY = (p1.y + p2.y) / 2;
+        ctx.quadraticCurveTo(p1.x, p1.y, midX, midY);
+      }
     }
   }
 
@@ -453,26 +464,20 @@ export const drawPuzzle = (
     ctx.moveTo(originalShape[0].x, originalShape[0].y);
 
     if (shapeType === "polygon") {
-      // 多边形使用直线
-      originalShape.forEach((point) => {
-        ctx.lineTo(point.x, point.y);
-      });
-    } else {
-      // 曲线形状和锯齿形状都使用贝塞尔曲线
+      ctx.moveTo(originalShape[0].x, originalShape[0].y);
       for (let i = 1; i < originalShape.length; i++) {
-        const prev = originalShape[i - 1];
-        const current = originalShape[i];
-        const next = originalShape[(i + 1) % originalShape.length];
-
-        const midX = (prev.x + current.x) / 2;
-        const midY = (prev.y + current.y) / 2;
-        const nextMidX = (current.x + next.x) / 2;
-        const nextMidY = (current.y + next.y) / 2;
-
-        ctx.quadraticCurveTo(current.x, current.y, nextMidX, nextMidY);
+        ctx.lineTo(originalShape[i].x, originalShape[i].y);
+      }
+    } else {
+      const last = originalShape[originalShape.length - 1];
+      const first = originalShape[0];
+      ctx.moveTo((last.x + first.x) / 2, (last.y + first.y) / 2);
+      for (let i = 0; i < originalShape.length; i++) {
+        const p1 = originalShape[i];
+        const p2 = originalShape[(i + 1) % originalShape.length];
+        ctx.quadraticCurveTo(p1.x, p1.y, (p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
       }
     }
-
     ctx.closePath();
 
     // 使用纯色填充，不使用半透明

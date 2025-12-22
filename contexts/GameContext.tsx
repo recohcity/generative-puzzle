@@ -1104,8 +1104,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
   const generatePuzzle = useCallback(() => {
     if (!state.originalShape) return;
 
-    const cutTypeString =
-      state.cutType === "straight" ? "straight" : "diagonal";
+    const cutTypeString = state.cutType || "straight";
     const { pieces, originalPositions } = PuzzleGenerator.generatePuzzle(
       state.originalShape,
       cutTypeString,
@@ -1593,18 +1592,18 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
         const bounceX =
           Math.abs(correctionX) > 0
             ? -Math.sign(correctionX) *
-              Math.min(
-                Math.abs(correctionX) * bounceBackFactor,
-                maxBounceDistance,
-              )
+            Math.min(
+              Math.abs(correctionX) * bounceBackFactor,
+              maxBounceDistance,
+            )
             : 0;
         const bounceY =
           Math.abs(correctionY) > 0
             ? -Math.sign(correctionY) *
-              Math.min(
-                Math.abs(correctionY) * bounceBackFactor,
-                maxBounceDistance,
-              )
+            Math.min(
+              Math.abs(correctionY) * bounceBackFactor,
+              maxBounceDistance,
+            )
             : 0;
 
         // 应用回弹偏移

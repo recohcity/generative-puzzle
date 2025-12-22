@@ -1,12 +1,7 @@
 import type { Point } from '@/types/puzzleTypes';
+import { CutLine, CutType } from './cutGeneratorTypes';
 
-export type Cut = {
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
-  type: 'straight' | 'diagonal';
-};
+export type Cut = CutLine;
 
 export type Bounds = {
   minX: number;
@@ -32,7 +27,7 @@ export const computeBounds = (shape: Point[]): Bounds => {
 };
 
 export const buildExtraCuts = (params: {
-  cutType: 'straight' | 'diagonal';
+  cutType: CutType;
   cutCount: number;
   bounds: Bounds;
   isHighDifficulty: boolean;
@@ -78,7 +73,7 @@ export const buildExtraCuts = (params: {
 export const applyExtraCutsWithRetry = (params: {
   shape: Point[];
   cuts: Cut[];
-  cutType: 'straight' | 'diagonal';
+  cutType: CutType;
   cutCount: number;
   splitPolygon: (shape: Point[], cuts: Cut[]) => Point[][];
   initialPieces: Point[][];

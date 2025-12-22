@@ -33,12 +33,12 @@ describe('CutGeneratorController - 100%覆盖率测试', () => {
     { x: 0, y: 100 }
   ];
 
-beforeEach(() => {
+  beforeEach(() => {
     // 每个测试前清空 mocks 的调用记录
     jest.clearAllMocks();
     controller = new CutGeneratorController();
-    mockConsoleLog = jest.spyOn(console, 'log').mockImplementation(() => {});
-    mockConsoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    mockConsoleLog = jest.spyOn(console, 'log').mockImplementation(() => { });
+    mockConsoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => { });
   });
 
   afterEach(() => {
@@ -81,7 +81,7 @@ beforeEach(() => {
       const mockStrategy = {
         generateCut: jest.fn().mockReturnValue(null)
       };
-      
+
       jest.spyOn(cutGeneratorStrategies.CutStrategyFactory, 'createStrategy')
         .mockReturnValue(mockStrategy);
 
@@ -106,7 +106,7 @@ beforeEach(() => {
           return null; // 第二次返回null
         })
       };
-      
+
       jest.spyOn(cutGeneratorStrategies.CutStrategyFactory, 'createStrategy')
         .mockReturnValue(mockStrategy);
 
@@ -160,19 +160,19 @@ beforeEach(() => {
     test('应该拒绝无效的切割类型', () => {
       expect(() => {
         controller.generateCuts(testShape, 1, 'invalid' as any);
-      }).toThrow("切割类型必须是 'straight' 或 'diagonal'");
+      }).toThrow("切割类型必须是 'straight', 'diagonal' 或 'curve'");
 
       expect(() => {
         controller.generateCuts(testShape, 1, 'curved' as any);
-      }).toThrow("切割类型必须是 'straight' 或 'diagonal'");
+      }).toThrow("切割类型必须是 'straight', 'diagonal' 或 'curve'");
 
       expect(() => {
         controller.generateCuts(testShape, 1, '' as any);
-      }).toThrow("切割类型必须是 'straight' 或 'diagonal'");
+      }).toThrow("切割类型必须是 'straight', 'diagonal' 或 'curve'");
 
       expect(() => {
         controller.generateCuts(testShape, 1, null as any);
-      }).toThrow("切割类型必须是 'straight' 或 'diagonal'");
+      }).toThrow("切割类型必须是 'straight', 'diagonal' 或 'curve'");
     });
   });
 
@@ -202,17 +202,17 @@ beforeEach(() => {
     test('应该为不支持的难度级别抛出错误', () => {
       // 通过直接访问私有方法来测试错误情况
       // 我们需要通过反射或者其他方式来测试这个分支
-      
+
       // 创建一个临时的控制器实例来测试
       const testController = new CutGeneratorController();
-      
+
       // 使用类型断言来访问私有方法
       const privateController = testController as any;
-      
+
       expect(() => {
         privateController.getDifficultySettings(999); // 不存在的难度级别
       }).toThrow('不支持的难度级别: 999');
-      
+
       expect(() => {
         privateController.getDifficultySettings(-999); // 负数难度级别
       }).toThrow('不支持的难度级别: -999');
@@ -225,7 +225,7 @@ beforeEach(() => {
       const mockStrategy = {
         generateCut: jest.fn().mockReturnValue(mockCut)
       };
-      
+
       jest.spyOn(cutGeneratorStrategies.CutStrategyFactory, 'createStrategy')
         .mockReturnValue(mockStrategy);
 
@@ -247,7 +247,7 @@ beforeEach(() => {
       const mockStrategy = {
         generateCut: jest.fn().mockReturnValue({ x1: 0, y1: 0, x2: 100, y2: 100, type: 'diagonal' })
       };
-      
+
       jest.spyOn(cutGeneratorStrategies.CutStrategyFactory, 'createStrategy')
         .mockReturnValue(mockStrategy);
 
@@ -255,7 +255,7 @@ beforeEach(() => {
 
       // 验证至少被调用3次（实现可能包含重试逻辑）
       expect(mockStrategy.generateCut.mock.calls.length).toBeGreaterThanOrEqual(3);
-      
+
       // 验证前3次调用都有正确的参数结构
       for (let i = 1; i <= 3; i++) {
         expect(mockStrategy.generateCut).toHaveBeenNthCalledWith(i,
@@ -306,7 +306,7 @@ beforeEach(() => {
       const complexShape: Point[] = [];
       const sides = 12;
       const radius = 100;
-      
+
       // 创建12边形
       for (let i = 0; i < sides; i++) {
         const angle = (i / sides) * 2 * Math.PI;
@@ -341,15 +341,15 @@ beforeEach(() => {
   describe('性能和稳定性测试', () => {
     test('应该在合理时间内完成生成', () => {
       const startTime = Date.now();
-      
+
       for (let difficulty = 1; difficulty <= 8; difficulty++) {
         controller.generateCuts(testShape, difficulty, 'straight');
         controller.generateCuts(testShape, difficulty, 'diagonal');
       }
-      
+
       const endTime = Date.now();
       const duration = endTime - startTime;
-      
+
       // 所有难度级别应该在1秒内完成
       expect(duration).toBeLessThan(1000);
     });
@@ -357,7 +357,7 @@ beforeEach(() => {
     test('应该产生一致的结果结构', () => {
       for (let i = 0; i < 10; i++) {
         const cuts = controller.generateCuts(testShape, 2, 'straight');
-        
+
         expect(Array.isArray(cuts)).toBe(true);
         cuts.forEach(cut => {
           expect(cut).toHaveProperty('x1');
@@ -376,15 +376,15 @@ beforeEach(() => {
 
     test('应该处理连续调用', () => {
       const results = [];
-      
+
       for (let i = 0; i < 20; i++) {
         const cuts = controller.generateCuts(testShape, 3, 'diagonal');
         results.push(cuts.length);
       }
-      
+
       // 所有结果都应该有效
       expect(results.every(length => length >= 0)).toBe(true);
-      
+
       // 大部分结果应该成功生成切割线
       const successfulResults = results.filter(length => length > 0);
       expect(successfulResults.length).toBeGreaterThan(results.length * 0.8);
@@ -392,7 +392,7 @@ beforeEach(() => {
   });
 
   describe('日志记录测试', () => {
-test('应该记录完整的生成过程', () => {
+    test('应该记录完整的生成过程', () => {
       const cuts = controller.generateCuts(testShape, 2, 'straight');
 
       // 验证生成过程成功完成
@@ -404,7 +404,7 @@ test('应该记录完整的生成过程', () => {
       const mockStrategy = {
         generateCut: jest.fn().mockReturnValue(null)
       };
-      
+
       jest.spyOn(cutGeneratorStrategies.CutStrategyFactory, 'createStrategy')
         .mockReturnValue(mockStrategy);
 
@@ -434,7 +434,7 @@ test('应该记录完整的生成过程', () => {
     });
 
     test('应该与几何工具正确集成', () => {
-// Mock几何工具
+      // Mock几何工具
       (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).calculateBounds
         .mockReturnValue({ minX: 0, maxX: 100, minY: 0, maxY: 100 });
 
@@ -442,7 +442,7 @@ test('应该记录完整的生成过程', () => {
 
       expect((cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).calculateBounds).toHaveBeenCalledWith(testShape);
 
-// 恢复mock到真实实现，避免后续用例出现 undefined bounds
+      // 恢复mock到真实实现，避免后续用例出现 undefined bounds
       {
         const actual = jest.requireActual('../cutGeneratorGeometry');
         (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).calculateBounds.mockImplementation(actual.calculateBounds);
@@ -466,11 +466,11 @@ test('应该记录完整的生成过程', () => {
       }).toThrow('形状必须至少包含3个点');
 
       expect(() => {
-        controller.generateCuts([{x: 0, y: 0}], 1, 'straight');
+        controller.generateCuts([{ x: 0, y: 0 }], 1, 'straight');
       }).toThrow('形状必须至少包含3个点');
 
       expect(() => {
-        controller.generateCuts([{x: 0, y: 0}, {x: 1, y: 1}], 1, 'straight');
+        controller.generateCuts([{ x: 0, y: 0 }, { x: 1, y: 1 }], 1, 'straight');
       }).toThrow('形状必须至少包含3个点');
 
       // 测试难度级别验证
@@ -489,19 +489,19 @@ test('应该记录完整的生成过程', () => {
       // 测试切割类型验证
       expect(() => {
         controller.generateCuts(testShape, 1, 'invalid' as any);
-      }).toThrow("切割类型必须是 'straight' 或 'diagonal'");
+      }).toThrow("切割类型必须是 'straight', 'diagonal' 或 'curve'");
 
       expect(() => {
         controller.generateCuts(testShape, 1, '' as any);
-      }).toThrow("切割类型必须是 'straight' 或 'diagonal'");
+      }).toThrow("切割类型必须是 'straight', 'diagonal' 或 'curve'");
 
       expect(() => {
         controller.generateCuts(testShape, 1, null as any);
-      }).toThrow("切割类型必须是 'straight' 或 'diagonal'");
+      }).toThrow("切割类型必须是 'straight', 'diagonal' 或 'curve'");
 
       expect(() => {
         controller.generateCuts(testShape, 1, undefined as any);
-      }).toThrow("切割类型必须是 'straight' 或 'diagonal'");
+      }).toThrow("切割类型必须是 'straight', 'diagonal' 或 'curve'");
     });
 
     test('应该测试真实的切割生成失败场景', () => {
@@ -515,10 +515,10 @@ test('应该记录完整的生成过程', () => {
 
       // 尝试生成大量切割线，可能会导致某些生成失败
       const cuts = controller.generateCuts(tinyShape, 8, 'straight');
-      
+
       // 验证结果是数组
       expect(Array.isArray(cuts)).toBe(true);
-      
+
       // 可能会有警告日志，但不会抛出错误
       expect(cuts.length).toBeGreaterThanOrEqual(0);
     });
@@ -534,10 +534,10 @@ test('应该记录完整的生成过程', () => {
 
       // 尝试高难度生成，可能触发生成失败的分支
       const cuts = controller.generateCuts(irregularShape, 8, 'diagonal');
-      
+
       expect(Array.isArray(cuts)).toBe(true);
       expect(cuts.length).toBeGreaterThanOrEqual(0);
-      
+
       // 验证每个生成的切割线都有正确的结构
       cuts.forEach(cut => {
         expect(cut).toHaveProperty('x1');
@@ -553,11 +553,11 @@ test('应该记录完整的生成过程', () => {
       // 测试最低难度
       const easyResult = controller.generateCuts(testShape, 1, 'straight');
       expect(easyResult.length).toBeGreaterThanOrEqual(0);
-      
+
       // 测试最高难度
       const hardResult = controller.generateCuts(testShape, 8, 'diagonal');
       expect(hardResult.length).toBeGreaterThanOrEqual(0);
-      
+
       // 验证高难度通常生成更多切割线
       expect(hardResult.length).toBeGreaterThanOrEqual(easyResult.length);
     });
@@ -569,10 +569,10 @@ test('应该记录完整的生成过程', () => {
         { x: 0, y: 100 },
         { x: 100, y: 100 }
       ];
-      
+
       const triangleCuts = controller.generateCuts(triangle, 3, 'straight');
       expect(Array.isArray(triangleCuts)).toBe(true);
-      
+
       // 五边形
       const pentagon: Point[] = [
         { x: 50, y: 0 },
@@ -581,7 +581,7 @@ test('应该记录完整的生成过程', () => {
         { x: 20, y: 90 },
         { x: 5, y: 35 }
       ];
-      
+
       const pentagonCuts = controller.generateCuts(pentagon, 3, 'diagonal');
       expect(Array.isArray(pentagonCuts)).toBe(true);
     });
@@ -591,7 +591,7 @@ test('应该记录完整的生成过程', () => {
       const mockStrategy = {
         generateCut: jest.fn().mockReturnValue(null)
       };
-      
+
       jest.spyOn(cutGeneratorStrategies.CutStrategyFactory, 'createStrategy')
         .mockReturnValue(mockStrategy);
 
@@ -618,7 +618,7 @@ test('应该记录完整的生成过程', () => {
           return null; // 第二次调用返回null
         })
       };
-      
+
       jest.spyOn(cutGeneratorStrategies.CutStrategyFactory, 'createStrategy')
         .mockReturnValue(mockStrategy);
 
@@ -635,7 +635,7 @@ test('应该记录完整的生成过程', () => {
     test('应该测试getDifficultySettings的边界情况', () => {
       // 使用类型断言来访问私有方法进行测试
       const privateController = controller as any;
-      
+
       // 测试所有有效的难度级别
       for (let i = 1; i <= 8; i++) {
         expect(() => {
@@ -666,7 +666,7 @@ test('应该记录完整的生成过程', () => {
       const mockStrategy = {
         generateCut: jest.fn().mockReturnValue(mockCut)
       };
-      
+
       const privateController = controller as any;
       const bounds = { minX: 0, maxX: 100, minY: 0, maxY: 100 };
       const existingCuts: CutLine[] = [];
@@ -682,7 +682,7 @@ test('应该记录完整的生成过程', () => {
       const alwaysFailStrategy = {
         generateCut: jest.fn().mockReturnValue(null)
       };
-      
+
       jest.spyOn(cutGeneratorStrategies.CutStrategyFactory, 'createStrategy')
         .mockReturnValue(alwaysFailStrategy);
 
@@ -695,7 +695,7 @@ test('应该记录完整的生成过程', () => {
       // 验证结果
       expect(cuts).toEqual([]);
       expect(mockConsoleWarn).toHaveBeenCalledWith('⚠️ 无法生成第1条切割线');
-expect(alwaysFailStrategy.generateCut.mock.calls.length).toBeGreaterThanOrEqual(1); // 至少调用一次（实现可能包含重试）
+      expect(alwaysFailStrategy.generateCut.mock.calls.length).toBeGreaterThanOrEqual(1); // 至少调用一次（实现可能包含重试）
 
       // 恢复mock
       jest.restoreAllMocks();
@@ -713,7 +713,7 @@ expect(alwaysFailStrategy.generateCut.mock.calls.length).toBeGreaterThanOrEqual(
           return null; // 第二次及以后返回null
         })
       };
-      
+
       jest.spyOn(cutGeneratorStrategies.CutStrategyFactory, 'createStrategy')
         .mockReturnValue(partialSuccessStrategy);
 

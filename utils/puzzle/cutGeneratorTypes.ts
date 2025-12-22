@@ -16,10 +16,10 @@ export type CutLine = {
   y1: number;
   x2: number;
   y2: number;
-  type: "straight" | "diagonal";
+  type: "straight" | "diagonal" | "curve";
 };
 
-export type CutType = "straight" | "diagonal";
+export type CutType = "straight" | "diagonal" | "curve";
 
 export interface CutGenerationContext {
   bounds: Bounds;

@@ -56,9 +56,10 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
     // 更新本地状态
     setLocalCutType(value)
     // 更新全局状态
+    // 更新全局状态
     dispatch({
       type: "SET_CUT_TYPE",
-      payload: value as CutType.Straight | CutType.Diagonal,
+      payload: value as CutType,
     })
 
     // 自动跳转到下一个Tab
@@ -81,7 +82,7 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
         <RadioGroup
           value={localCutType}
           onValueChange={canModifySettings ? handleCutTypeChange : undefined}
-          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'calc(var(--panel-scale, 1) * 8px)' }}
+          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'calc(var(--panel-scale, 1) * 8px)' }}
           disabled={!canModifySettings}
         >
           <div className="relative">
@@ -142,6 +143,36 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
               }}
             >
               <span style={{ fontSize: 'calc(var(--panel-scale, 1) * 14px)' }}>{t('game.cutType.diagonal')}</span>
+            </Label>
+          </div>
+          <div className="relative">
+            <RadioGroupItem
+              value={CutType.Curve}
+              id="curve"
+              className="peer sr-only"
+              disabled={!canModifySettings}
+            />
+            <Label
+              htmlFor="curve"
+              data-testid="cut-type-curve-button"
+              className={`flex items-center justify-center transition-all shadow-sm \
+                ${localCutType === CutType.Curve
+                  ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]"
+                  : "bg-[#1E1A2A] text-white hover:bg-[#2A283E] active:bg-[#2A283E]"}
+                ${!canModifySettings ? disabledClass : "cursor-pointer"}
+              `}
+              style={{
+                height: buttonHeight,
+                fontSize: 'calc(var(--panel-scale, 1) * 16px)',
+                lineHeight: 'calc(var(--panel-scale, 1) * 20px)',
+                borderRadius: 'calc(var(--panel-scale, 1) * 12px)',
+                width: '100%',
+                justifyContent: 'center',
+                alignItems: 'center',
+                display: 'flex',
+              }}
+            >
+              <span style={{ fontSize: 'calc(var(--panel-scale, 1) * 14px)' }}>{t('game.cutType.curve')}</span>
             </Label>
           </div>
         </RadioGroup>

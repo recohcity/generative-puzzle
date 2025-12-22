@@ -1,4 +1,4 @@
-import { GameStats, DifficultyConfig, ScoreBreakdown, GameRecord, PuzzlePiece, ShapeType } from '@/types/puzzleTypes';
+import { GameStats, DifficultyConfig, ScoreBreakdown, GameRecord, PuzzlePiece, ShapeType, CutType } from '@/types/puzzleTypes';
 import { calculateNewRotationScore } from './RotationEfficiencyCalculator';
 
 /**
@@ -145,21 +145,26 @@ export const calculateDifficultyMultiplier = (config: DifficultyConfig): number 
   const baseMultiplier = DIFFICULTY_MULTIPLIERS_BY_LEVEL[config.cutCount] || 1.0;
 
   // 切割类型系数
-  const cutTypeMultiplier = config.cutType === 'diagonal' ? 1.2 : 1.0;
+  let cutTypeMultiplier = 1.0;
+  if (config.cutType === CutType.Diagonal) {
+    cutTypeMultiplier = 1.2;
+  } else if (config.cutType === CutType.Curve) {
+    cutTypeMultiplier = 1.5;
+  }
 
-// 设备适配系数
-const deviceMultiplier = getDeviceMultiplier();
+  // 设备适配系数
+  const deviceMultiplier = getDeviceMultiplier();
 
-// 形状难度系数
-const shapeMultiplier = getShapeMultiplier(config.shapeType);
+  // 形状难度系数
+  const shapeMultiplier = getShapeMultiplier(config.shapeType);
 
-const finalMultiplier = baseMultiplier * cutTypeMultiplier * deviceMultiplier * shapeMultiplier;
+  const finalMultiplier = baseMultiplier * cutTypeMultiplier * deviceMultiplier * shapeMultiplier;
 
   console.log(`[calculateDifficultyMultiplier] 难度级别 ${config.cutCount} -> 基础系数 ${baseMultiplier}`);
   console.log(`[calculateDifficultyMultiplier] 切割类型 ${config.cutType} -> 切割系数 ${cutTypeMultiplier}`);
-console.log(`[calculateDifficultyMultiplier] 设备系数 ${deviceMultiplier}`);
-console.log(`[calculateDifficultyMultiplier] 形状系数 ${shapeMultiplier}`);
-console.log(`[calculateDifficultyMultiplier] 最终系数 ${finalMultiplier}`);
+  console.log(`[calculateDifficultyMultiplier] 设备系数 ${deviceMultiplier}`);
+  console.log(`[calculateDifficultyMultiplier] 形状系数 ${shapeMultiplier}`);
+  console.log(`[calculateDifficultyMultiplier] 最终系数 ${finalMultiplier}`);
 
   return finalMultiplier;
 };
