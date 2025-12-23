@@ -1,6 +1,6 @@
 # API扫描报告
 
-> 生成时间: 2025/12/23 00:41:33
+> 生成时间: 2025/12/23 19:27:55
 > 扫描工具: API变更扫描器 v1.0
 
 ## 📊 统计概览
@@ -4212,7 +4212,7 @@ export class MediumCutStrategy implements CutGenerationStrategy {
 #### HardCutStrategy
 
 - **类型**: class
-- **文件**: `utils/puzzle/cutGeneratorStrategies.ts:81`
+- **文件**: `utils/puzzle/cutGeneratorStrategies.ts:99`
 - **签名**: `export class HardCutStrategy implements CutGenerationStrategy {`
 
 **建议文档结构**:
@@ -4235,7 +4235,7 @@ export class HardCutStrategy implements CutGenerationStrategy {
 #### CutStrategyFactory
 
 - **类型**: class
-- **文件**: `utils/puzzle/cutGeneratorStrategies.ts:146`
+- **文件**: `utils/puzzle/cutGeneratorStrategies.ts:186`
 - **签名**: `export class CutStrategyFactory {`
 
 **建议文档结构**:

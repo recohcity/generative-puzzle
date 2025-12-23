@@ -53,11 +53,29 @@ export class MediumCutStrategy implements CutGenerationStrategy {
     // 选择一条现有的切割线
     const referenceCut = existingCuts[Math.floor(Math.random() * existingCuts.length)];
 
-    // 计算参考切割线的角度
-    const refAngle = Math.atan2(referenceCut.y2 - referenceCut.y1, referenceCut.x2 - referenceCut.x1);
+    let intersectAngle: number;
 
-    // 生成一个与参考线有一定角度的切割线（45-135度之间）
-    const intersectAngle = refAngle + (Math.PI / 4) + (Math.random() * (Math.PI / 2));
+    if (type === "straight") {
+      // 🔧 修复：若为直线切割，强制使用水平或垂直角度 (0 或 PI/2)
+      // 尝试与参考线垂直以增加相交概率
+      const refDx = Math.abs(referenceCut.x2 - referenceCut.x1);
+      const refDy = Math.abs(referenceCut.y2 - referenceCut.y1);
+      const isRefVertical = refDy > refDx;
+
+      // 如果参考线是垂直的，生成水平线(0)；否则生成垂直线(PI/2)
+      intersectAngle = isRefVertical ? 0 : Math.PI / 2;
+
+      // 增加一点随机性，偶尔允许同向（平行但位置不同）
+      if (Math.random() < 0.2) {
+        intersectAngle = isRefVertical ? Math.PI / 2 : 0;
+      }
+    } else {
+      // 斜线切割：保持原有逻辑
+      // 计算参考切割线的角度
+      const refAngle = Math.atan2(referenceCut.y2 - referenceCut.y1, referenceCut.x2 - referenceCut.x1);
+      // 生成一个与参考线有一定角度的切割线（45-135度之间）
+      intersectAngle = refAngle + (Math.PI / 4) + (Math.random() * (Math.PI / 2));
+    }
 
     // 选择一个中心点
     const center = {
@@ -111,18 +129,40 @@ export class HardCutStrategy implements CutGenerationStrategy {
     avgMidX /= referenceCuts.length;
     avgMidY /= referenceCuts.length;
 
-    // 计算所有参考切割线的平均角度
-    let avgAngle = 0;
-    for (const cut of referenceCuts) {
-      avgAngle += Math.atan2(cut.y2 - cut.y1, cut.x2 - cut.x1);
-    }
-    avgAngle /= referenceCuts.length;
+    let intersectAngle: number;
 
-    // 🔧 关键修复：生成与参考线垂直或大角度相交的切割线
-    // 这样可以确保切割线相交，产生更多片段
-    const perpendicularAngle = avgAngle + Math.PI / 2; // 垂直角度
-    const randomOffset = (Math.random() - 0.5) * Math.PI / 3; // ±30度随机偏移
-    const intersectAngle = perpendicularAngle + randomOffset;
+    if (type === "straight") {
+      // 🔧 修复：若为直线切割，强制使用水平或垂直角度
+      // 计算参考线的平均走势
+      let totalDx = 0;
+      let totalDy = 0;
+      for (const cut of referenceCuts) {
+        totalDx += Math.abs(cut.x2 - cut.x1);
+        totalDy += Math.abs(cut.y2 - cut.y1);
+      }
+
+      const isRefMostlyVertical = totalDy > totalDx;
+      // 生成与平均走势垂直的线
+      intersectAngle = isRefMostlyVertical ? 0 : Math.PI / 2;
+
+      // 20%的概率随机方向
+      if (Math.random() < 0.2) {
+        intersectAngle = Math.random() < 0.5 ? 0 : Math.PI / 2;
+      }
+    } else {
+      // 斜线切割：保持原有逻辑
+      // 计算所有参考切割线的平均角度
+      let avgAngle = 0;
+      for (const cut of referenceCuts) {
+        avgAngle += Math.atan2(cut.y2 - cut.y1, cut.x2 - cut.x1);
+      }
+      avgAngle /= referenceCuts.length;
+
+      // 🔧 关键修复：生成与参考线垂直或大角度相交的切割线
+      const perpendicularAngle = avgAngle + Math.PI / 2; // 垂直角度
+      const randomOffset = (Math.random() - 0.5) * Math.PI / 3; // ±30度随机偏移
+      intersectAngle = perpendicularAngle + randomOffset;
+    }
 
     // 在参考线中点附近生成新切割线，确保相交
     const center = {

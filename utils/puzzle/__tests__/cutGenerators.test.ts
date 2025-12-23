@@ -3,7 +3,7 @@
  * 适配重构后的新架构
  */
 
-import { 
+import {
   generateCuts,
   calculateBounds,
   generateStraightCutLine,
@@ -57,16 +57,16 @@ describe('cutGenerators - 切割线生成测试', () => {
       expect(() => {
         generateCuts(testShape, 1, 'straight'); // 最小值
       }).not.toThrow();
-      
+
       expect(() => {
         generateCuts(testShape, 8, 'straight'); // 最大值
       }).not.toThrow();
-      
+
       // 测试无效值应该抛出错误
       expect(() => {
         generateCuts(testShape, 10, 'straight');
       }).toThrow('难度级别必须在1-8之间');
-      
+
       expect(() => {
         generateCuts(testShape, 0, 'straight');
       }).toThrow('难度级别必须在1-8之间');
@@ -95,11 +95,11 @@ describe('cutGenerators - 切割线生成测试', () => {
 
         expect(straightCuts.length).toBeGreaterThan(0);
         expect(diagonalCuts.length).toBeGreaterThan(0);
-        
+
         // 验证切割线类型正确
         expect(straightCuts.every(cut => cut.type === 'straight')).toBe(true);
         expect(diagonalCuts.every(cut => cut.type === 'diagonal')).toBe(true);
-        
+
         // 验证切割线有有效坐标
         straightCuts.forEach(cut => {
           expect(isFinite(cut.x1)).toBe(true);
@@ -109,6 +109,27 @@ describe('cutGenerators - 切割线生成测试', () => {
         });
       }
     });
+
+    test('应该生成真正的水平或垂直直线用于straight类型', () => {
+      // 验证难度 4（Medium）和 8（Hard）产生的直线切割是否真的是直的
+      // 这验证了 MediumCutStrategy 和 HardCutStrategy 的修复
+      for (const difficulty of [4, 8]) {
+        for (let i = 0; i < 20; i++) {
+          const cuts = generateCuts(testShape, difficulty, 'straight');
+          cuts.forEach(cut => {
+            if (cut.type === 'straight') {
+              const isVertical = Math.abs(cut.x1 - cut.x2) < 0.001;
+              const isHorizontal = Math.abs(cut.y1 - cut.y2) < 0.001;
+
+              if (!isVertical && !isHorizontal) {
+                console.error('Found non-straight cut:', cut);
+              }
+              expect(isVertical || isHorizontal).toBe(true);
+            }
+          });
+        }
+      }
+    });
   });
 
   describe('🔧 复杂形状处理', () => {
@@ -116,7 +137,7 @@ describe('cutGenerators - 切割线生成测试', () => {
       const complexShape: Point[] = [];
       const sides = 8;
       const radius = 50;
-      
+
       // 创建八边形
       for (let i = 0; i < sides; i++) {
         const angle = (i / sides) * 2 * Math.PI;
@@ -177,15 +198,15 @@ describe('cutGenerators - 切割线生成测试', () => {
   describe('⚡ 性能和稳定性', () => {
     test('应该在合理时间内完成', () => {
       const startTime = Date.now();
-      
+
       for (let difficulty = 1; difficulty <= 8; difficulty++) {
         generateCuts(testShape, difficulty, 'straight');
         generateCuts(testShape, difficulty, 'diagonal');
       }
-      
+
       const endTime = Date.now();
       const duration = endTime - startTime;
-      
+
       // 所有难度级别应该在1秒内完成
       expect(duration).toBeLessThan(1000);
     });
@@ -193,10 +214,10 @@ describe('cutGenerators - 切割线生成测试', () => {
     test('应该产生一致的结果结构', () => {
       for (let i = 0; i < 10; i++) {
         const cuts = generateCuts(testShape, 3, 'straight');
-        
+
         expect(Array.isArray(cuts)).toBe(true);
         expect(cuts.length).toBeGreaterThan(0);
-        
+
         cuts.forEach(cut => {
           expect(cut).toHaveProperty('x1');
           expect(cut).toHaveProperty('y1');
@@ -210,15 +231,15 @@ describe('cutGenerators - 切割线生成测试', () => {
 
     test('应该处理连续调用', () => {
       const results = [];
-      
+
       for (let i = 0; i < 50; i++) {
         const cuts = generateCuts(testShape, 2, 'diagonal');
         results.push(cuts.length);
       }
-      
+
       // 所有结果都应该有效
       expect(results.every(length => length > 0)).toBe(true);
-      
+
       // 结果应该在合理范围内
       const avgLength = results.reduce((a, b) => a + b, 0) / results.length;
       expect(avgLength).toBeGreaterThan(0);
@@ -443,7 +464,7 @@ describe('cutGenerators - 切割线生成测试', () => {
       for (let difficulty = 1; difficulty <= 8; difficulty++) {
         const strategy = CutStrategyFactory.createStrategy(difficulty);
         expect(strategy).toBeDefined();
-        
+
         // 测试策略生成切割线，但不调用可能失败的方法
         expect(typeof strategy.generateCut).toBe('function');
       }
@@ -452,11 +473,11 @@ describe('cutGenerators - 切割线生成测试', () => {
     test('应该测试验证器的各种场景', () => {
       const validator = new CutValidator();
       const bounds = calculateBounds(testShape);
-      
+
       // 测试有效切割线
       const validCut = generateStraightCutLine(bounds);
       expect(typeof validator.isValid(validCut, testShape, [])).toBe('boolean');
-      
+
       // 测试无效切割线（如果有的话）
       const invalidCut = {
         x1: -1000,
@@ -465,7 +486,7 @@ describe('cutGenerators - 切割线生成测试', () => {
         y2: -999,
         type: 'straight' as const
       };
-      
+
       // 验证器应该能处理各种切割线
       expect(() => {
         validator.isValid(invalidCut, testShape, []);
@@ -477,12 +498,12 @@ describe('cutGenerators - 切割线生成测试', () => {
     test('应该正确导出DIFFICULTY_SETTINGS', () => {
       expect(DIFFICULTY_SETTINGS).toBeDefined();
       expect(typeof DIFFICULTY_SETTINGS).toBe('object');
-      
+
       // 验证所有难度级别都存在
       for (let i = 1; i <= 8; i++) {
         expect(DIFFICULTY_SETTINGS[i as keyof typeof DIFFICULTY_SETTINGS]).toBeDefined();
       }
-      
+
       // 验证配置结构
       const setting = DIFFICULTY_SETTINGS[1];
       expect(setting).toHaveProperty('label');
@@ -496,15 +517,15 @@ describe('cutGenerators - 切割线生成测试', () => {
     test('应该正确导出CUT_GENERATOR_CONFIG', () => {
       expect(CUT_GENERATOR_CONFIG).toBeDefined();
       expect(typeof CUT_GENERATOR_CONFIG).toBe('object');
-      
+
       // 验证配置包含必要的属性
       expect(CUT_GENERATOR_CONFIG).toHaveProperty('MAX_ATTEMPTS');
       expect(CUT_GENERATOR_CONFIG).toHaveProperty('EARLY_EXIT_THRESHOLD');
-      
+
       // 验证配置值的类型
       expect(typeof CUT_GENERATOR_CONFIG.MAX_ATTEMPTS).toBe('number');
       expect(typeof CUT_GENERATOR_CONFIG.EARLY_EXIT_THRESHOLD).toBe('number');
-      
+
       // 验证配置值的合理性
       expect(CUT_GENERATOR_CONFIG.MAX_ATTEMPTS).toBeGreaterThan(0);
       expect(CUT_GENERATOR_CONFIG.EARLY_EXIT_THRESHOLD).toBeGreaterThan(0);
@@ -514,14 +535,14 @@ describe('cutGenerators - 切割线生成测试', () => {
       // 这个测试确保类型导出正常工作
       const bounds = calculateBounds(testShape);
       const cut = generateStraightCutLine(bounds);
-      
+
       // 验证返回的对象符合CutLine类型
       expect(cut).toHaveProperty('x1');
       expect(cut).toHaveProperty('y1');
       expect(cut).toHaveProperty('x2');
       expect(cut).toHaveProperty('y2');
       expect(cut).toHaveProperty('type');
-      
+
       // 验证bounds符合Bounds类型
       expect(bounds).toHaveProperty('minX');
       expect(bounds).toHaveProperty('maxX');
@@ -531,26 +552,26 @@ describe('cutGenerators - 切割线生成测试', () => {
 
     test('应该测试所有导出的工具函数', () => {
       const bounds = calculateBounds(testShape);
-      
+
       // 测试所有几何函数
       const straightCut = generateStraightCutLine(bounds);
       expect(straightCut.type).toBe('straight');
-      
+
       const diagonalCut = generateDiagonalCutLine(bounds);
       expect(diagonalCut.type).toBe('diagonal');
-      
+
       const centerCut = generateCenterCutLine(testShape, true, 'straight');
       expect(centerCut.type).toBe('straight');
-      
+
       const centerCutDiagonal = generateCenterCutLine(testShape, false, 'diagonal');
       expect(centerCutDiagonal.type).toBe('diagonal');
-      
+
       // 测试强制切割线生成
       const forcedCut1 = generateForcedCutLine(testShape, [], 'straight');
       if (forcedCut1) {
         expect(forcedCut1.type).toBe('straight');
       }
-      
+
       const forcedCut2 = generateForcedCutLine(testShape, [straightCut], 'diagonal');
       if (forcedCut2) {
         expect(forcedCut2.type).toBe('diagonal');
@@ -561,11 +582,11 @@ describe('cutGenerators - 切割线生成测试', () => {
       // 测试CutValidator
       const validator = new CutValidator();
       expect(validator).toBeInstanceOf(CutValidator);
-      
+
       // 测试CutStrategyFactory
       expect(CutStrategyFactory).toBeDefined();
       expect(typeof CutStrategyFactory.createStrategy).toBe('function');
-      
+
       // 测试CutGeneratorController
       const controller = new CutGeneratorController();
       expect(controller).toBeInstanceOf(CutGeneratorController);
@@ -582,7 +603,7 @@ describe('cutGenerators - 切割线生成测试', () => {
         expect(setting.centerProbability).toBeLessThanOrEqual(1);
         expect(setting.label).toBeTruthy();
       }
-      
+
       // 验证配置常量的合理性
       expect(CUT_GENERATOR_CONFIG.MAX_ATTEMPTS).toBeGreaterThan(10);
       expect(CUT_GENERATOR_CONFIG.EARLY_EXIT_THRESHOLD).toBeGreaterThan(0);
