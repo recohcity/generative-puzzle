@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useDeviceDetection } from "@/hooks/useDeviceDetection";
 
 // 统一使用竖屏背景图
-const PORTRAIT_BG = "/bg-mobile-portrait.png";
+const PORTRAIT_BG = "/bg-mobile-portrait.webp";
 
 /**
  * 响应式背景组件 - 行业标准优化版本
@@ -23,7 +23,12 @@ export default function ResponsiveBackground({ className = "", style }: { classN
   return (
     <div
       className={`absolute inset-0 w-full h-full z-0 pointer-events-none select-none ${className}`}
-      style={{ ...style, overflow: "hidden" }}
+      style={{
+        ...style,
+        overflow: "hidden",
+        // 🔧 修复：增加占位背景色，确保在图片加载完成前不会出现白屏
+        background: "linear-gradient(to bottom right, #4c1d95, #1e3a8a)" // 匹配 violet-900 to blue-900
+      }}
     >
       <Image
         src={PORTRAIT_BG}
