@@ -88,7 +88,7 @@ export class NetworkCutter {
     private static discretizeShape(shape: Point[]): Point[] {
         if (shape.length < 3) return shape;
         const result: Point[] = [];
-        const STEPS = 40;
+        const STEPS = 20; // 从40降低到20
 
         for (let i = 0; i < shape.length; i++) {
             const p0 = shape[i];
@@ -129,8 +129,8 @@ export class NetworkCutter {
         }
 
         for (const curve of curves) {
-            // 高精度 250
-            const points = curve.getPoints(250);
+            // 降低采样率：从250减少到100
+            const points = curve.getPoints(100);
             for (let i = 0; i < points.length - 1; i++) {
                 segments.push({
                     p1: points[i],

@@ -45,10 +45,10 @@ export const initBackgroundMusic = () => {
     backgroundMusic = new Audio('/bgm.mp3');
     backgroundMusic.loop = true;
     backgroundMusic.volume = 0.5;
-    backgroundMusic.preload = 'auto';
+    backgroundMusic.preload = 'metadata'; // 优化：移动端改为流式加载，避免全量下载
     // @ts-ignore
     backgroundMusic.playsInline = true;
-    
+
     // 添加循环播放的额外保障
     backgroundMusic.addEventListener('ended', () => {
       // 这个事件在loop=true时通常不会触发，但作为备用保障
@@ -118,10 +118,10 @@ export const preloadAllSoundEffects = (): void => {
       backgroundMusic = new Audio('/bgm.mp3');
       backgroundMusic.loop = true;
       backgroundMusic.volume = 0.5;
-      backgroundMusic.preload = 'auto';
+      backgroundMusic.preload = 'metadata'; // 优化：仅加载元数据
       // @ts-ignore
       backgroundMusic.playsInline = true;
-      backgroundMusic.load();
+      // backgroundMusic.load(); // 移动端不建议预载大文件，改为按需流式加载
     }
     // 切割音效
     if (!cutAudioElement) {
