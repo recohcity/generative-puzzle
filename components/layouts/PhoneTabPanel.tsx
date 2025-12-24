@@ -293,7 +293,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
 
                     {/* 游戏信息 - 一行布局 */}
                     <div className="flex-1 min-w-0 text-xs text-[#FFD5AB] opacity-70">
-{formatTime(record.totalDuration || 0)} · {getDifficultyWithShape(record.difficulty)} · {record.difficulty?.actualPieces || 0}{t('stats.piecesUnit')}
+                      {formatTime(record.totalDuration || 0)} · {getDifficultyWithShape(record.difficulty)} · {record.difficulty?.actualPieces || 0}{t('stats.piecesUnit')}
                     </div>
 
                     {/* 分数 - 加粗大号 */}
@@ -559,7 +559,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
       {/* 版权信息 - 移动端控制面板底部 */}
       <div className="mt-auto pt-2 border-t border-white/10">
         <div className="text-white text-xs text-center leading-relaxed opacity-60">
-          <div>recoh AI project | generative puzzle V{process.env.APP_VERSION || '1.3.51'} </div>
+          <div>recoh AI project 2025 | generative puzzle V{process.env.APP_VERSION || '1.3.51'} </div>
         </div>
       </div>
     </div>

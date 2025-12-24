@@ -94,7 +94,7 @@ export default function LoadingScreen({ onLoadComplete }: LoadingScreenProps) {
       {/* 版权信息 */}
       <div className="absolute bottom-6 left-0 right-0 flex justify-center">
         <div className="text-white text-xs text-center leading-relaxed">
-          <div>recoh AI project | V{process.env.APP_VERSION || '1.3.51'} | <a href="https://beian.miit.gov.cn" target="_blank" rel="noopener noreferrer" className="text-white hover:text-white/80 transition-colors">粤ICP备18028701号</a></div>
+          <div>recoh AI project 2025 | V{process.env.APP_VERSION || '1.3.51'} | <a href="https://beian.miit.gov.cn" target="_blank" rel="noopener noreferrer" className="text-white hover:text-white/80 transition-colors">粤ICP备18028701号</a></div>
         </div>
       </div>
     </div>

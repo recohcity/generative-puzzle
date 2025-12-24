@@ -12,14 +12,14 @@ import PuzzleControlsCutType from "@/components/PuzzleControlsCutType"
 import PuzzleControlsCutCount from "@/components/PuzzleControlsCutCount"
 import PuzzleControlsScatter from "@/components/PuzzleControlsScatter"
 import PuzzleControlsGamepad from "@/components/PuzzleControlsGamepad"
-import ActionButtons from "@/components/ActionButtons" 
+import ActionButtons from "@/components/ActionButtons"
 import { Button } from "@/components/ui/button"
-import { Volume2, VolumeX, Maximize, Minimize, RefreshCw } from "lucide-react" 
+import { Volume2, VolumeX, Maximize, Minimize, RefreshCw } from "lucide-react"
 import { useState, useEffect, useRef, useCallback } from "react"
-import { 
-  initBackgroundMusic, 
-  toggleBackgroundMusic, 
-  getBackgroundMusicStatus, 
+import {
+  initBackgroundMusic,
+  toggleBackgroundMusic,
+  getBackgroundMusicStatus,
   playButtonClickSound, // Still needed here for other buttons
   preloadAllSoundEffects
 } from "@/utils/rendering/soundEffects"
@@ -60,7 +60,7 @@ export default function CurveTestOptimized() {
   const device = useDeviceDetection();
   const deviceType = device.deviceType;
   const phoneMode = device.layoutMode as 'portrait' | 'landscape';
-  
+
   // 添加控制面板选项卡状态（仅用于手机模式）
   const [activeTab, setActiveTab] = useState<'shape' | 'puzzle' | 'cut' | 'scatter' | 'controls'>('shape');
 
@@ -77,86 +77,86 @@ export default function CurveTestOptimized() {
       setIsMusicPlaying(getBackgroundMusicStatus());
     }
   }, []);
-  
+
   // 设置全屏模式下的特殊触摸事件处理
   const setupFullscreenTouchHandlers = useCallback(() => {
     const gameContainer = gameContainerRef.current;
     if (!gameContainer) return;
-    
+
     // 保存触摸开始位置的引用
     let touchStartY = 0;
-    
+
     // 阻止向下滑动触发浏览器退出全屏手势
     const handleTouchStart = (e: TouchEvent) => {
       // 检查是否是按钮或可点击元素
       if (e.target instanceof Element) {
         // 检查目标元素是否是按钮或其子元素
-        const isButton = e.target.tagName === 'BUTTON' || 
-                        e.target.closest('button') || 
-                        e.target.hasAttribute('role') && e.target.getAttribute('role') === 'button' ||
-                        e.target.classList.contains('cursor-pointer');
-        
+        const isButton = e.target.tagName === 'BUTTON' ||
+          e.target.closest('button') ||
+          e.target.hasAttribute('role') && e.target.getAttribute('role') === 'button' ||
+          e.target.classList.contains('cursor-pointer');
+
         // 🔧 修复：检查是否是画布元素
-        const isCanvas = e.target.tagName === 'CANVAS' || 
-                        e.target.id === 'puzzle-canvas' ||
-                        e.target.closest('canvas');
-        
+        const isCanvas = e.target.tagName === 'CANVAS' ||
+          e.target.id === 'puzzle-canvas' ||
+          e.target.closest('canvas');
+
         // 如果是按钮或画布，不阻止默认行为
         if (isButton || isCanvas) {
           return;
         }
       }
-      
+
       // 记录所有触摸开始的Y坐标
       if (e.touches.length > 0) {
         touchStartY = e.touches[0].clientY;
       }
-      
+
       // 阻止iOS上可能导致退出全屏的触摸开始行为
       if (device.isIOS) {
         e.preventDefault();
       }
     };
-    
+
     const handleTouchMove = (e: TouchEvent) => {
       // 检查是否是按钮或可点击元素
       if (e.target instanceof Element) {
         // 检查目标元素是否是按钮或其子元素
-        const isButton = e.target.tagName === 'BUTTON' || 
-                        e.target.closest('button') || 
-                        e.target.hasAttribute('role') && e.target.getAttribute('role') === 'button' ||
-                        e.target.classList.contains('cursor-pointer');
-        
+        const isButton = e.target.tagName === 'BUTTON' ||
+          e.target.closest('button') ||
+          e.target.hasAttribute('role') && e.target.getAttribute('role') === 'button' ||
+          e.target.classList.contains('cursor-pointer');
+
         // 🔧 修复：检查是否是画布元素
-        const isCanvas = e.target.tagName === 'CANVAS' || 
-                        e.target.id === 'puzzle-canvas' ||
-                        e.target.closest('canvas');
-        
+        const isCanvas = e.target.tagName === 'CANVAS' ||
+          e.target.id === 'puzzle-canvas' ||
+          e.target.closest('canvas');
+
         // 如果是按钮或画布，不阻止默认行为
         if (isButton || isCanvas) {
           return;
         }
       }
-      
+
       // 🔧 修复：对于多指触摸（双指旋转），不进行全屏手势检测
       if (e.touches.length >= 2) {
         return; // 让双指触摸事件正常传递给画布
       }
-      
+
       // 确保是单指触摸
       if (e.touches.length === 1) {
         const touch = e.touches[0];
         const currentTouchY = touch.clientY;
-        
+
         // 计算垂直移动距离
         const deltaY = currentTouchY - touchStartY;
-        
+
         // 检测是否是向下滑动（deltaY > 0）
         if (deltaY > 0) {
           // 阻止所有向下滑动，无论距离大小
           e.preventDefault();
           e.stopPropagation();
-          
+
           // 适用于Safari，防止iOS退出全屏的手势被触发
           if (device.isIOS) {
             // 重置touch位置，避免累积滑动效果
@@ -165,44 +165,44 @@ export default function CurveTestOptimized() {
         }
       }
     };
-    
+
     // 处理触摸结束事件
     const handleTouchEnd = (e: TouchEvent) => {
       // 🔧 修复：检查是否是画布元素
       if (e.target instanceof Element) {
-        const isCanvas = e.target.tagName === 'CANVAS' || 
-                        e.target.id === 'puzzle-canvas' ||
-                        e.target.closest('canvas');
-        
+        const isCanvas = e.target.tagName === 'CANVAS' ||
+          e.target.id === 'puzzle-canvas' ||
+          e.target.closest('canvas');
+
         // 如果是画布，不阻止默认行为
         if (isCanvas) {
           return;
         }
       }
-      
+
       // 重置触摸开始位置
       touchStartY = 0;
-      
+
       // 阻止某些可能触发退出全屏的结束事件
       if (device.isIOS) {
         e.preventDefault();
       }
     };
-    
+
     // 只监听可能导致退出全屏的手势
     document.addEventListener('touchstart', handleTouchStart, { passive: false });
     document.addEventListener('touchmove', handleTouchMove, { passive: false });
     document.addEventListener('touchend', handleTouchEnd, { passive: false });
-    
+
     // 锁定屏幕方向（如果支持）
     if (window.screen.orientation && 'lock' in window.screen.orientation) {
       const orientation = device.screenWidth > device.screenHeight ? 'landscape' : 'portrait';
       console.log(`尝试锁定屏幕方向为: ${orientation}`);
-      
+
       (window.screen.orientation as any).lock(orientation)
         .catch((error: any) => console.log('无法锁定屏幕方向:', error));
     }
-    
+
     // 保存事件处理函数引用，用于后续移除
     (window as any).__fullscreenTouchHandlers = {
       handleTouchStart,
@@ -210,17 +210,17 @@ export default function CurveTestOptimized() {
       handleTouchEnd
     };
   }, [device]);
-  
+
   // 移除全屏模式下的触摸事件处理
   const removeFullscreenTouchHandlers = () => {
     // 从保存的引用中获取事件处理函数
     const handlers = (window as any).__fullscreenTouchHandlers;
-    
+
     if (handlers) {
       document.removeEventListener('touchstart', handlers.handleTouchStart);
       document.removeEventListener('touchmove', handlers.handleTouchMove);
       document.removeEventListener('touchend', handlers.handleTouchEnd);
-      
+
       // 清除引用
       delete (window as any).__fullscreenTouchHandlers;
     }
@@ -231,16 +231,16 @@ export default function CurveTestOptimized() {
     const handleFullscreenChange = () => {
       // 检查标准全屏API的状态
       const isInFullscreen = !!(document.fullscreenElement ||
-      (document as any).webkitFullscreenElement ||
-      (document as any).mozFullScreenElement ||
-      (document as any).msFullscreenElement);
-      
+        (document as any).webkitFullscreenElement ||
+        (document as any).mozFullScreenElement ||
+        (document as any).msFullscreenElement);
+
       // 如果使用了标准全屏API，更新状态
       if (isInFullscreen !== isFullscreen) {
         console.log(`全屏状态变化: ${isInFullscreen ? '进入全屏' : '退出全屏'} (点击次数: ${fullscreenClickCount})`);
         setIsFullscreen(isInFullscreen);
       }
-      
+
       // 在全屏状态改变时设置特定的触摸事件处理
       if (isInFullscreen) {
         setupFullscreenTouchHandlers();
@@ -248,12 +248,12 @@ export default function CurveTestOptimized() {
         removeFullscreenTouchHandlers();
       }
     };
-    
+
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
     document.addEventListener('mozfullscreenchange', handleFullscreenChange);
     document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-    
+
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
       document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
@@ -268,23 +268,23 @@ export default function CurveTestOptimized() {
     const newStatus = await toggleBackgroundMusic();
     setIsMusicPlaying(newStatus);
   };
-  
+
   // 全屏切换函数
   const toggleFullscreen = () => {
     playButtonClickSound();
-    
+
     // 增加点击计数器
     const newClickCount = fullscreenClickCount + 1;
     setFullscreenClickCount(newClickCount);
-    
+
     // 使用统一设备检测系统
     const isIOS = device.isIOS;
     const isAndroid = device.isAndroid;
     const isMobile = device.isMobile;
     const isInWebView = typeof navigator !== 'undefined' && /(.*WebView|.*FBIOS|.*Twitter)/.test(navigator.userAgent);
-    
+
     console.log(`全屏操作: 点击次数=${newClickCount}, 当前状态=${isFullscreen}, 设备检测: iOS=${isIOS}, Android=${isAndroid}, 移动=${isMobile}`);
-    
+
     // 检查是否真正处于全屏状态
     const checkFullscreenState = () => {
       return !!(document.fullscreenElement ||
@@ -292,11 +292,11 @@ export default function CurveTestOptimized() {
         (document as any).mozFullScreenElement ||
         (document as any).msFullscreenElement);
     };
-    
+
     // 获取当前实际全屏状态
     const actualFullscreenState = checkFullscreenState();
     console.log(`全屏状态检查: 界面状态=${isFullscreen}, 实际状态=${actualFullscreenState}`);
-    
+
     // 如果状态不一致，强制同步
     if (isFullscreen !== actualFullscreenState) {
       console.log(`全屏状态不一致，强制同步到 ${actualFullscreenState}`);
@@ -310,7 +310,7 @@ export default function CurveTestOptimized() {
       // 进入全屏
       const gameContainer = gameContainerRef.current;
       if (!gameContainer) return;
-      
+
       // 对于iOS设备，使用一种特殊处理方式，因为iOS不完全支持标准fullscreen API
       if (isIOS) {
         console.log("iOS设备使用替代全屏方法");
@@ -323,7 +323,7 @@ export default function CurveTestOptimized() {
           height: gameContainer.style.height,
           zIndex: gameContainer.style.zIndex
         };
-        
+
         // 2. 将元素样式设置为全屏
         (gameContainer as any)._originalStyles = originalStyles;
         gameContainer.style.position = 'fixed';
@@ -332,18 +332,18 @@ export default function CurveTestOptimized() {
         gameContainer.style.width = '100vw';
         gameContainer.style.height = '100vh';
         gameContainer.style.zIndex = '9999';
-        
+
         // 3. 修改滚动行为
         document.body.style.overflow = 'hidden';
         window.scrollTo(0, 0);
-        
+
         // 4. 应用带有安全区域的填充
         gameContainer.style.paddingTop = 'env(safe-area-inset-top)';
         gameContainer.style.paddingBottom = 'env(safe-area-inset-bottom)';
-        
+
         // 5. 强制设置状态
         setIsFullscreen(true);
-        
+
         // 6. 尝试锁定屏幕方向（这在iOS上可能不起作用，但在某些情况下可能有用）
         try {
           if (device.screenWidth > device.screenHeight) {
@@ -357,7 +357,7 @@ export default function CurveTestOptimized() {
         } catch (error) {
           console.log("锁定屏幕方向出错:", error);
         }
-      } 
+      }
       // 对于Android设备
       else if (isAndroid) {
         // 先尝试锁定方向，然后请求全屏
@@ -372,7 +372,7 @@ export default function CurveTestOptimized() {
         } catch (err) {
           console.log("Android设备方向锁定出错:", err);
         }
-        
+
         // 尝试使用标准全屏API
         try {
           if (gameContainer.requestFullscreen) {
@@ -395,7 +395,7 @@ export default function CurveTestOptimized() {
             height: gameContainer.style.height,
             zIndex: gameContainer.style.zIndex
           };
-          
+
           (gameContainer as any)._originalStyles = originalStyles;
           gameContainer.style.position = 'fixed';
           gameContainer.style.top = '0';
@@ -411,14 +411,14 @@ export default function CurveTestOptimized() {
       else {
         try {
           console.log("桌面设备进入全屏");
-        if (gameContainer.requestFullscreen) {
-          gameContainer.requestFullscreen();
-        } else if ((gameContainer as any).webkitRequestFullscreen) {
-          (gameContainer as any).webkitRequestFullscreen();
-        } else if ((gameContainer as any).mozRequestFullScreen) {
-          (gameContainer as any).mozRequestFullScreen();
-        } else if ((gameContainer as any).msRequestFullscreen) {
-          (gameContainer as any).msRequestFullscreen();
+          if (gameContainer.requestFullscreen) {
+            gameContainer.requestFullscreen();
+          } else if ((gameContainer as any).webkitRequestFullscreen) {
+            (gameContainer as any).webkitRequestFullscreen();
+          } else if ((gameContainer as any).mozRequestFullScreen) {
+            (gameContainer as any).mozRequestFullScreen();
+          } else if ((gameContainer as any).msRequestFullscreen) {
+            (gameContainer as any).msRequestFullscreen();
           }
           // 切换按钮状态 - 如果直接调用没有触发fullscreenchange事件，手动更新状态
           // 使用更长的延迟，确保全屏状态稳定后再更新
@@ -453,7 +453,7 @@ export default function CurveTestOptimized() {
           gameContainer.style.paddingTop = '';
           gameContainer.style.paddingBottom = '';
           document.body.style.overflow = '';
-          
+
           // 释放屏幕方向锁定
           try {
             if (window.screen.orientation && 'unlock' in window.screen.orientation) {
@@ -462,13 +462,13 @@ export default function CurveTestOptimized() {
           } catch (error) {
             console.log("释放屏幕方向锁定出错:", error);
           }
-          
+
           setIsFullscreen(false);
         }
       } else if (isAndroid) {
         // 增强Android退出全屏的健壮性
         const actuallyInFullscreen = checkFullscreenState();
-        
+
         // 如果实际上不在全屏状态，但状态显示在全屏中，直接更新状态
         if (!actuallyInFullscreen) {
           console.log("检测到状态不一致：UI显示全屏但实际没有全屏");
@@ -486,7 +486,7 @@ export default function CurveTestOptimized() {
           } else if ((document as any).msExitFullscreen) {
             (document as any).msExitFullscreen();
           }
-          
+
           // 释放屏幕方向锁定
           try {
             if (window.screen.orientation && 'unlock' in window.screen.orientation) {
@@ -513,30 +513,30 @@ export default function CurveTestOptimized() {
         }
       } else {
         // 桌面设备标准退出全屏 - 提高健壮性
-        
+
         // 检查是否实际上处于全屏状态
         const actuallyInFullscreen = checkFullscreenState();
-        
+
         // 如果实际上不在全屏状态，但状态显示在全屏中，直接更新状态
         if (!actuallyInFullscreen) {
           console.log("检测到状态不一致：UI显示全屏但实际没有全屏");
           setIsFullscreen(false);
           return;
         }
-        
+
         console.log("桌面设备退出全屏");
         // 使用简化的退出全屏逻辑
         try {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        } else if ((document as any).webkitExitFullscreen) {
-          (document as any).webkitExitFullscreen();
-        } else if ((document as any).mozCancelFullScreen) {
-          (document as any).mozCancelFullScreen();
-        } else if ((document as any).msExitFullscreen) {
-          (document as any).msExitFullscreen();
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+          } else if ((document as any).webkitExitFullscreen) {
+            (document as any).webkitExitFullscreen();
+          } else if ((document as any).mozCancelFullScreen) {
+            (document as any).mozCancelFullScreen();
+          } else if ((document as any).msExitFullscreen) {
+            (document as any).msExitFullscreen();
           }
-          
+
           // 切换按钮状态 - 如果直接调用没有触发fullscreenchange事件，手动更新状态
           setTimeout(() => {
             if (!checkFullscreenState() && isFullscreen) {
@@ -588,7 +588,7 @@ export default function CurveTestOptimized() {
   let layoutToRender;
   // 🎯 智能布局选择：所有桌面设备（包括iPad横屏）使用桌面布局
   const shouldUseDesktopLayout = deviceType === 'desktop';
-  
+
   if (shouldUseDesktopLayout) {
     layoutToRender = <DesktopLayout {...commonLayoutProps} goToNextTab={goToNextTab} />;
   } else {
@@ -603,34 +603,34 @@ export default function CurveTestOptimized() {
   return (
     <I18nProvider>
       <GameProvider>
-      <div 
-        ref={gameContainerRef}
-        className="min-h-screen w-full relative overflow-hidden"
-        style={{
-          // 移除默认的padding和flex居中，让子布局完全控制
-          padding: 0,
-          display: 'block', // 改为block，不使用flex
-        }}
-      >
-        
-        {/* 🎯 性能优化：iPad设备使用静态背景，避免动态背景导致的卡顿 */}
-        {(deviceType === 'desktop' && !device.isIPad) ? (
-          <BubbleBackground interactive className="absolute inset-0 w-full h-full" />
-        ) : (
-          <ResponsiveBackground />
-        )}
-        <DynamicTitle />
-        {layoutToRender}
-        
-        {/* 版权信息 - 仅桌面端显示，移动端在控制面板中显示 */}
-        {shouldUseDesktopLayout && (
-          <div className="absolute bottom-2 left-0 right-0 flex justify-center z-10">
-            <div className="text-white text-xs text-center leading-relaxed">
-              <div>recoh AI project | generative-puzzle V{process.env.APP_VERSION || '1.3.51'}</div>
+        <div
+          ref={gameContainerRef}
+          className="min-h-screen w-full relative overflow-hidden"
+          style={{
+            // 移除默认的padding和flex居中，让子布局完全控制
+            padding: 0,
+            display: 'block', // 改为block，不使用flex
+          }}
+        >
+
+          {/* 🎯 性能优化：iPad设备使用静态背景，避免动态背景导致的卡顿 */}
+          {(deviceType === 'desktop' && !device.isIPad) ? (
+            <BubbleBackground interactive className="absolute inset-0 w-full h-full" />
+          ) : (
+            <ResponsiveBackground />
+          )}
+          <DynamicTitle />
+          {layoutToRender}
+
+          {/* 版权信息 - 仅桌面端显示，移动端在控制面板中显示 */}
+          {shouldUseDesktopLayout && (
+            <div className="absolute bottom-2 left-0 right-0 flex justify-center z-10">
+              <div className="text-white text-xs text-center leading-relaxed">
+                <div>recoh AI project 2025 | generative-puzzle V{process.env.APP_VERSION || '1.3.51'}</div>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
       </GameProvider>
     </I18nProvider>
   )
