@@ -1,7 +1,7 @@
 # 📦 项目依赖分析报告
 
-**生成时间**: 2025-12-23  
-**项目版本**: 1.3.66  
+**生成时间**: 2025-12-26  
+**项目版本**: 1.3.67  
 **分析工具**: analyze-unused-deps.cjs
 
 ## 📊 依赖使用情况总览
@@ -77,14 +77,6 @@
 **未使用依赖**:
 - `react-dom` - Next.js框架自动使用，无需显式import
 
-#### ⚙️ 开发工具依赖
-⚠️ **状态**: 2个依赖未直接检测到使用
-📊 **统计**: 2个依赖，0.0%使用率
-
-**未使用依赖**:
-- `fs-extra` - 开发工具，在脚本中使用
-- `tsx` - 开发工具，在脚本中使用
-
 #### 🧪 测试工具依赖
 ⚠️ **状态**: 7个依赖未直接检测到使用
 📊 **统计**: 9个依赖，22.2%使用率
@@ -139,6 +131,14 @@
 - `@typescript-eslint/parser` - ESLint配置，在.eslintrc中使用
 - `eslint-config-next` - ESLint配置，在.eslintrc中使用
 
+#### ⚙️ 开发工具依赖
+⚠️ **状态**: 2个依赖未直接检测到使用
+📊 **统计**: 2个依赖，0.0%使用率
+
+**未使用依赖**:
+- `fs-extra` - 开发工具，在脚本中使用
+- `tsx` - 开发工具，在脚本中使用
+
 
 #### ❓ 未分类依赖
 
@@ -148,11 +148,11 @@
 - `@heroicons/react` - Unknown - needs manual review
 - `@hookform/resolvers` - Unknown - needs manual review
 - `zod` - Unknown - needs manual review
+- `@agentdeskai/browser-tools-mcp` - Unknown - needs manual review
+- `@modelcontextprotocol/sdk` - Unknown - needs manual review
 - `@swc/core` - Unknown - needs manual review
 - `@swc/jest` - Unknown - needs manual review
 - `dayjs` - Unknown - needs manual review
-- `@agentdeskai/browser-tools-mcp` - Unknown - needs manual review
-- `@modelcontextprotocol/sdk` - Unknown - needs manual review
 - `pg` - Unknown - needs manual review
 
 
@@ -190,6 +190,6 @@
 
 ---
 
-**报告生成**: 2025/12/23 21:33:56  
-**下次建议检查**: 2026/1/22  
+**报告生成**: 2025/12/26 21:51:41  
+**下次建议检查**: 2026/1/25  
 **工具版本**: analyze-unused-deps.cjs v1.0

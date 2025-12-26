@@ -49,6 +49,39 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
     return t('difficulty.levelLabel', { level: difficulty.cutCount });
   };
 
+  // 获取形状显示名称
+  const getShapeDisplayName = (shapeType?: string): string => {
+    if (!shapeType) return '';
+    try {
+      return t(`game.shapes.names.${shapeType}`);
+    } catch {
+      return shapeType;
+    }
+  };
+
+  // 获取切割类型显示名称
+  const getCutTypeDisplayName = (cutType?: string): string => {
+    if (!cutType) return '';
+    try {
+      return t(`cutType.${cutType}`);
+    } catch {
+      return cutType;
+    }
+  };
+
+  // 获取包含形状和切割类型的难度显示文本
+  const getDifficultyWithDetails = (difficulty: any): string => {
+    const levelText = getDifficultyLabel(difficulty);
+    const shapeName = getShapeDisplayName(difficulty?.shapeType);
+    const cutTypeName = getCutTypeDisplayName(difficulty?.cutType);
+    
+    const parts = [levelText];
+    if (shapeName) parts.push(shapeName);
+    if (cutTypeName) parts.push(cutTypeName);
+    
+    return parts.join(' · ');
+  };
+
   // 格式化日期显示
   const formatDate = (timestamp: number): string => {
     const date = new Date(timestamp);
@@ -141,8 +174,9 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
                               {LeaderboardSimplifier.formatScore(record.finalScore)}
                             </div>
                             {/* 第二行：时间和难度（字号较小） */}
-                            <div className="text-xs text-[#FFD5AB] opacity-70">
-                              {LeaderboardSimplifier.formatTime(record.totalDuration)} · {getDifficultyLabel(record.difficulty)}：{record.difficulty.actualPieces}片
+                            <div className="text-[#FFD5AB] opacity-70 truncate">
+                              <span className="text-xs">{LeaderboardSimplifier.formatTime(record.totalDuration)} · </span>
+                              <span className="text-[10px]">{getDifficultyWithDetails(record.difficulty)} · {record.difficulty.actualPieces}片</span>
                             </div>
                           </div>
                         </div>
@@ -162,7 +196,7 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
                           rank={rank}
                           score={record.finalScore}
                           duration={record.totalDuration}
-                          difficulty={getDifficultyLabel(record.difficulty)}
+                          difficulty={getDifficultyWithDetails(record.difficulty)}
                           pieces={record.difficulty.actualPieces}
                           date={formatDate(record.timestamp)}
                           isPlayerNewEntry={isPlayerNewEntry}
@@ -193,8 +227,8 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
               <div className="flex items-center justify-between py-1 px-1 text-[#FFD5AB]">
                 <div className="flex items-center gap-2">
                   <span className="text-lg">🎮</span>
-                  <div className="text-xs">
-                    <div>{getDifficultyLabel(lastGameRecord.difficulty)} · {lastGameRecord.difficulty.actualPieces}片</div>
+                  <div className="text-xs flex-1 min-w-0">
+                    <div className="truncate">{getDifficultyWithDetails(lastGameRecord.difficulty)} · {lastGameRecord.difficulty.actualPieces}片</div>
                     <div className="opacity-60">{formatDate(lastGameRecord.timestamp)}</div>
                   </div>
                 </div>
@@ -241,7 +275,7 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
                 {/* 难度和日期信息 */}
                 <div className="flex items-center justify-between pt-3 border-t border-[#555]">
                   <span className="px-3 py-1 bg-gradient-to-r from-[#FFD5AB] to-[#F4C2A1] text-[#2A2A2A] text-xs font-medium rounded-full">
-                    {getDifficultyLabel(lastGameRecord.difficulty)}
+                    {getDifficultyWithDetails(lastGameRecord.difficulty)}
                   </span>
                   <div className="text-xs text-[#FFD5AB] opacity-60">
                     {formatDate(lastGameRecord.timestamp)}

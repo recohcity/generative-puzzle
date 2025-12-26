@@ -104,15 +104,65 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
     }
   };
 
-  // 获取包含形状的难度显示文本
+  // 获取切割类型显示名称
+  const getCutTypeDisplayName = (cutType?: string): string => {
+    if (!cutType) return '';
+    try {
+      return t(`cutType.${cutType}`);
+    } catch {
+      return cutType;
+    }
+  };
+
+  // 获取包含形状和切割类型的难度显示文本
   const getDifficultyWithShape = (difficulty: any): string => {
     const shapeName = getShapeDisplayName(difficulty?.shapeType);
+    const cutTypeName = getCutTypeDisplayName(difficulty?.cutType);
     const difficultyLevel = t('difficulty.levelLabel', { level: difficulty.cutCount });
-    const piecesPart =`${difficulty.actualPieces}${t('stats.piecesUnit')}`;
-    return shapeName 
-      ? `${difficultyLevel} · ${shapeName} · ${piecesPart}` 
-      : `${difficultyLevel} · ${piecesPart}`;
+    const piecesPart = `${difficulty.actualPieces}${t('stats.piecesUnit')}`;
+    
+    const parts = [difficultyLevel];
+    if (shapeName) parts.push(shapeName);
+    if (cutTypeName) parts.push(cutTypeName);
+    parts.push(piecesPart);
+    
+    return parts.join(' · ');
+  };
 
+  // 获取切割类型系数
+  const getCutTypeMultiplier = (cutType?: string): number => {
+    const multipliers: Record<string, number> = {
+      'straight': 1.0,
+      'diagonal': 1.15,
+      'curve': 1.25
+    };
+    return multipliers[cutType || 'straight'] || 1.0;
+  };
+
+  // 获取形状类型系数
+  const getShapeTypeMultiplier = (shapeType?: string): number => {
+    const multipliers: Record<string, number> = {
+      'polygon': 1.0,
+      'cloud': 1.1,
+      'jagged': 1.05
+    };
+    return multipliers[shapeType || 'polygon'] || 1.0;
+  };
+
+  // 获取难度系数分解显示
+  const getMultiplierBreakdown = (difficulty: any, multiplier: number): string => {
+    const cutMult = getCutTypeMultiplier(difficulty?.cutType);
+    const shapeMult = getShapeTypeMultiplier(difficulty?.shapeType);
+    // 设备系数通常是1.0（桌面端）或1.1（移动端），这里假设为1.0（桌面端）
+    const deviceMult = 1.0;
+    // 反推基础系数
+    const baseMult = multiplier / cutMult / shapeMult / deviceMult;
+    
+    const cutTypeName = getCutTypeDisplayName(difficulty?.cutType) || t('cutType.straight');
+    const shapeName = getShapeDisplayName(difficulty?.shapeType) || t('game.shapes.names.polygon');
+    const baseLabel = t('score.breakdown.baseMultiplier');
+    
+    return `${baseLabel}${baseMult.toFixed(2)} × ${cutTypeName}${cutMult.toFixed(2)} × ${shapeName}${shapeMult.toFixed(2)}`;
   };
 
   // 格式化时间显示
@@ -420,8 +470,11 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                       {state.scoreBreakdown && (
                         <div className="bg-white/5 rounded-lg p-3 border border-white/10">
                           <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-[#FFD5AB]">{t('score.breakdown.base')}：{getDifficultyWithShape(state.gameStats.difficulty)}</span>
+                            <div className="flex justify-between items-center">
+                              <span className="text-[#FFD5AB] flex items-center gap-1">
+                                <span>{t('score.breakdown.base')}：</span>
+                                <span className="text-[10px] leading-tight">{getDifficultyWithShape(state.gameStats.difficulty)}</span>
+                              </span>
                               <span className="text-[#FFD5AB]">{state.scoreBreakdown.baseScore}</span>
                             </div>
                             <div className="flex justify-between">
@@ -451,9 +504,14 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                                 <span className="text-[#FFD5AB]">{t('score.breakdown.subtotal')}：</span>
                                 <span className="text-[#FFD5AB]">{(state.scoreBreakdown.baseScore + state.scoreBreakdown.timeBonus + state.scoreBreakdown.rotationScore + state.scoreBreakdown.hintScore)}</span>
                               </div>
-                              <div className="flex justify-between mb-2">
-                                <span className="text-[#FFD5AB]">{t('score.breakdown.multiplier')}：</span>
-                                <span className="text-[#FFD5AB]">×{state.scoreBreakdown.difficultyMultiplier.toFixed(2)}</span>
+                              <div className="flex flex-col mb-2">
+                                <div className="flex justify-between">
+                                  <span className="text-[#FFD5AB]">{t('score.breakdown.multiplier')}：</span>
+                                  <span className="text-[#FFD5AB]">×{state.scoreBreakdown.difficultyMultiplier.toFixed(2)}</span>
+                                </div>
+                                <div className="text-[#FFD5AB]/70 text-[10px] text-right mt-0.5">
+                                  ({getMultiplierBreakdown(state.gameStats.difficulty, state.scoreBreakdown.difficultyMultiplier)})
+                                </div>
                               </div>
                               <div className="flex justify-between font-medium">
                                 <span className="text-[#FFD5AB]">{t('score.breakdown.final')}：</span>

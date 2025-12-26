@@ -44,12 +44,66 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({
     return speedTexts[rank] || t('leaderboard.noRanking');
   };
 
+  // 获取切割类型显示名称
+  const getCutTypeDisplayName = (cutType?: string): string => {
+    if (!cutType) return '';
+    try {
+      return t(`cutType.${cutType}`);
+    } catch {
+      return cutType;
+    }
+  };
+
+  // 获取形状类型显示名称
+  const getShapeDisplayName = (shapeType?: string): string => {
+    if (!shapeType) return '';
+    try {
+      return t(`game.shapes.names.${shapeType}`);
+    } catch {
+      return shapeType;
+    }
+  };
+
+  // 获取切割类型系数
+  const getCutTypeMultiplier = (cutType?: string): number => {
+    const multipliers: Record<string, number> = {
+      'straight': 1.0,
+      'diagonal': 1.15,
+      'curve': 1.25
+    };
+    return multipliers[cutType || 'straight'] || 1.0;
+  };
+
+  // 获取形状类型系数
+  const getShapeTypeMultiplier = (shapeType?: string): number => {
+    const multipliers: Record<string, number> = {
+      'polygon': 1.0,
+      'cloud': 1.1,
+      'jagged': 1.05
+    };
+    return multipliers[shapeType || 'polygon'] || 1.0;
+  };
+
+  // 获取难度系数分解显示
+  const getMultiplierBreakdown = (difficulty: any, multiplier: number): string => {
+    const cutMult = getCutTypeMultiplier(difficulty?.cutType);
+    const shapeMult = getShapeTypeMultiplier(difficulty?.shapeType);
+    // 反推基础系数
+    const baseMult = multiplier / cutMult / shapeMult;
+    
+    const cutTypeName = getCutTypeDisplayName(difficulty?.cutType) || t('cutType.straight');
+    const shapeName = getShapeDisplayName(difficulty?.shapeType) || t('game.shapes.names.polygon');
+    const baseLabel = t('score.breakdown.baseMultiplier');
+    
+    return `${baseLabel}${baseMult.toFixed(2)} × ${cutTypeName}${cutMult.toFixed(2)} × ${shapeName}${shapeMult.toFixed(2)}`;
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* 成绩详情标题 */}
       <div className="mb-4">
         <h3 className="font-medium text-[#FFD5AB] mb-2 text-sm flex items-center gap-1">
-          🏆 最近游戏成绩
+          🏆 {t('stats.scoreHistory')}
         </h3>
       </div>
       
@@ -75,21 +129,21 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({
           {record.scoreBreakdown && (
             <div className="bg-white/5 rounded-lg p-3 border border-white/10">
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                <span className="text-[#FFD5AB]">{t('score.breakdown.base')}：{(() => {
-                    const getShapeDisplayName = (shapeType?: string): string => {
-                      if (!shapeType) return '';
-                      try {
-                        return t(`game.shapes.names.${shapeType}`);
-                      } catch {
-                        return shapeType as string;
-                      }
-                    };
-                    const shapeName = getShapeDisplayName(record.difficulty?.shapeType);
-                    const levelText = t('difficulty.levelLabel', { level: record.difficulty.cutCount });
-                    const piecesPart = `${record.difficulty?.actualPieces || 0}${t('stats.piecesUnit')}`;
-                    return shapeName ? `${levelText} · ${shapeName} · ${piecesPart}` : `${levelText} · ${piecesPart}`;
-                  })()}</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-[#FFD5AB] flex items-center gap-1">
+                    <span>{t('score.breakdown.base')}：</span>
+                    <span className="text-[10px] leading-tight">{(() => {
+                      const shapeName = getShapeDisplayName(record.difficulty?.shapeType);
+                      const cutTypeName = getCutTypeDisplayName(record.difficulty?.cutType);
+                      const levelText = t('difficulty.levelLabel', { level: record.difficulty.cutCount });
+                      const piecesPart = `${record.difficulty?.actualPieces || 0}${t('stats.piecesUnit')}`;
+                      const parts = [levelText];
+                      if (shapeName) parts.push(shapeName);
+                      if (cutTypeName) parts.push(cutTypeName);
+                      parts.push(piecesPart);
+                      return parts.join(' · ');
+                    })()}</span>
+                  </span>
                   <span className="text-[#FFD5AB]">{record.scoreBreakdown.baseScore}</span>
                 </div>
                 <div className="flex justify-between">
@@ -119,9 +173,14 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({
                     <span className="text-[#FFD5AB]">{t('score.breakdown.subtotal')}：</span>
                     <span className="text-[#FFD5AB]">{(record.scoreBreakdown.baseScore + record.scoreBreakdown.timeBonus + record.scoreBreakdown.rotationScore + record.scoreBreakdown.hintScore)}</span>
                   </div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-[#FFD5AB]">{t('score.breakdown.multiplier')}：</span>
-                    <span className="text-[#FFD5AB]">×{record.scoreBreakdown.difficultyMultiplier.toFixed(2)}</span>
+                  <div className="flex flex-col mb-2">
+                    <div className="flex justify-between">
+                      <span className="text-[#FFD5AB]">{t('score.breakdown.multiplier')}：</span>
+                      <span className="text-[#FFD5AB]">×{record.scoreBreakdown.difficultyMultiplier.toFixed(2)}</span>
+                    </div>
+                    <div className="text-[#FFD5AB]/70 text-[10px] text-right mt-0.5">
+                      ({getMultiplierBreakdown(record.difficulty, record.scoreBreakdown.difficultyMultiplier)})
+                    </div>
                   </div>
                   <div className="flex justify-between font-medium">
                     <span className="text-[#FFD5AB]">{t('score.breakdown.final')}：</span>

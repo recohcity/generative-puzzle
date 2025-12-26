@@ -144,6 +144,39 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
     }
   };
 
+  // 获取形状显示名称
+  const getShapeDisplayName = (shapeType?: string): string => {
+    if (!shapeType) return '';
+    try {
+      return t(`game.shapes.names.${shapeType}`);
+    } catch {
+      return shapeType;
+    }
+  };
+
+  // 获取切割类型显示名称
+  const getCutTypeDisplayName = (cutType?: string): string => {
+    if (!cutType) return '';
+    try {
+      return t(`cutType.${cutType}`);
+    } catch {
+      return cutType;
+    }
+  };
+
+  // 获取包含形状和切割类型的难度文本
+  const getDifficultyWithShape = (difficulty: any): string => {
+    const shapeName = getShapeDisplayName(difficulty?.shapeType);
+    const cutTypeName = getCutTypeDisplayName(difficulty?.cutType);
+    const difficultyLevel = t('difficulty.levelLabel', { level: difficulty?.cutCount || 1 });
+    
+    const parts = [difficultyLevel];
+    if (shapeName) parts.push(shapeName);
+    if (cutTypeName) parts.push(cutTypeName);
+    
+    return parts.join(' · ');
+  };
+
   // 如果翻译系统还在加载，显示加载状态
   if (isLoading) {
     return (
@@ -223,7 +256,8 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
                     <div>
                       <div className="text-[#FFD5AB] font-medium">{record.finalScore.toLocaleString()}</div>
                       <div className="text-[#FFD5AB] opacity-60">
-                        {formatTime(record.totalDuration)} · {t('difficulty.levelLabel', { level: record.difficulty.cutCount })}
+                        <span className="text-xs">{formatTime(record.totalDuration)} · </span>
+                        <span className="text-[10px]">{getDifficultyWithShape(record.difficulty)} · {record.difficulty?.actualPieces || 0}{t('stats.piecesUnit')}</span>
                       </div>
                     </div>
                   </div>

@@ -40,14 +40,63 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
     }
   };
 
-  // 获取包含形状的难度显示文本
+  // 获取切割类型显示名称
+  const getCutTypeDisplayName = (cutType?: string): string => {
+    if (!cutType) return '';
+    try {
+      return t(`cutType.${cutType}`);
+    } catch {
+      return cutType;
+    }
+  };
+
+  // 获取包含形状和切割类型的难度显示文本
   const getDifficultyWithShape = (difficulty: any): string => {
     const difficultyLevel = getDifficultyText(difficulty);
     const shapeName = getShapeDisplayName(difficulty.shapeType);
+    const cutTypeName = getCutTypeDisplayName(difficulty.cutType);
     const piecesPart = `${difficulty.actualPieces}${t('stats.piecesUnit')}`;
-    return shapeName
-      ? `${difficultyLevel} · ${shapeName} · ${piecesPart}`
-      : `${difficultyLevel} · ${piecesPart}`;
+    
+    const parts = [difficultyLevel];
+    if (shapeName) parts.push(shapeName);
+    if (cutTypeName) parts.push(cutTypeName);
+    parts.push(piecesPart);
+    
+    return parts.join(' · ');
+  };
+
+  // 获取切割类型系数
+  const getCutTypeMultiplier = (cutType?: string): number => {
+    const multipliers: Record<string, number> = {
+      'straight': 1.0,
+      'diagonal': 1.15,
+      'curve': 1.25
+    };
+    return multipliers[cutType || 'straight'] || 1.0;
+  };
+
+  // 获取形状类型系数
+  const getShapeTypeMultiplier = (shapeType?: string): number => {
+    const multipliers: Record<string, number> = {
+      'polygon': 1.0,
+      'cloud': 1.1,
+      'jagged': 1.05
+    };
+    return multipliers[shapeType || 'polygon'] || 1.0;
+  };
+
+  // 获取难度系数分解显示
+  const getMultiplierBreakdown = (difficulty: any, multiplier: number): string => {
+    const cutMult = getCutTypeMultiplier(difficulty.cutType);
+    const shapeMult = getShapeTypeMultiplier(difficulty.shapeType);
+    // 反推基础系数（基础系数 = 最终系数 / 切割系数 / 形状系数）
+    const baseMult = multiplier / cutMult / shapeMult;
+    
+    const cutTypeName = getCutTypeDisplayName(difficulty.cutType) || t('cutType.straight');
+    const shapeName = getShapeDisplayName(difficulty.shapeType) || t('game.shapes.names.polygon');
+    const baseLabel = t('score.breakdown.baseMultiplier');
+    
+    return `${baseLabel}${baseMult.toFixed(2)}×${cutTypeName}${cutMult.toFixed(2)}×${shapeName}${shapeMult.toFixed(2)}`;
   };
 
   // 格式化分数显示
@@ -100,8 +149,11 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
           <div className="space-y-1">
             {/* 难度基础 */}
             <div className="flex justify-between items-center">
-              <span className="text-[#FFD5AB] text-xs">{t('score.breakdown.base')}：{getDifficultyWithShape(gameStats.difficulty)}</span>
-              <span className="text-[#FFD5AB] text-xs font-medium">{formatScore(scoreBreakdown.baseScore)}</span>
+              <span className="text-[#FFD5AB] text-xs flex items-center gap-1 flex-1 min-w-0">
+                <span>{t('score.breakdown.base')}：</span>
+                <span className="text-[10px] leading-tight truncate">{getDifficultyWithShape(gameStats.difficulty)}</span>
+              </span>
+              <span className="text-[#FFD5AB] text-xs font-medium flex-shrink-0 ml-1">{formatScore(scoreBreakdown.baseScore)}</span>
             </div>
 
             {/* 速度奖励 */}
@@ -139,10 +191,15 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
               </span>
             </div>
 
-            {/* 难度系数 */}
-            <div className="flex justify-between items-center">
-              <span className="text-[#FFD5AB] text-xs">{t('score.breakdown.multiplier')}：</span>
-              <span className="text-[#FFD5AB] text-xs font-medium">×{formatMultiplier(scoreBreakdown.difficultyMultiplier)}</span>
+            {/* 难度系数分解显示 */}
+            <div className="flex flex-col gap-0.5">
+              <div className="flex justify-between items-center">
+                <span className="text-[#FFD5AB] text-xs">{t('score.breakdown.multiplier')}：</span>
+                <span className="text-[#FFD5AB] text-xs font-medium">×{formatMultiplier(scoreBreakdown.difficultyMultiplier)}</span>
+              </div>
+              <div className="text-[#FFD5AB]/70 text-[10px] text-right">
+                ({getMultiplierBreakdown(gameStats.difficulty, scoreBreakdown.difficultyMultiplier)})
+              </div>
             </div>
 
             {/* 最终得分 */}

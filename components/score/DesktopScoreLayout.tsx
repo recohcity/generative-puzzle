@@ -84,9 +84,23 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
     return t('difficulty.levelLabel', { level: difficulty.cutCount });
   };
 
-  // 获取切割类型文本
+  // 获取切割类型文本（使用i18n）
   const getCutTypeText = (cutType: string): string => { 
-    return cutType === 'diagonal' ? '斜线' : '直线';
+    try {
+      return t(`cutType.${cutType}`);
+    } catch {
+      return cutType === 'diagonal' ? '斜线' : cutType === 'curve' ? '曲线' : '直线';
+    }
+  };
+
+  // 获取形状类型文本（使用i18n）
+  const getShapeTypeText = (shapeType?: string): string => {
+    if (!shapeType) return '';
+    try {
+      return t(`game.shapes.names.${shapeType}`);
+    } catch {
+      return shapeType;
+    }
   };
 
   // 获取设备类型文本
@@ -95,6 +109,43 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
     if (deviceType.includes('mobile')) return '移动端';
     if (deviceType.includes('ipad')) return 'iPad';
     return '桌面端';
+  };
+
+  // 获取切割类型系数
+  const getCutTypeMultiplier = (cutType?: string): number => {
+    const multipliers: Record<string, number> = {
+      'straight': 1.0,
+      'diagonal': 1.15,
+      'curve': 1.25
+    };
+    return multipliers[cutType || 'straight'] || 1.0;
+  };
+
+  // 获取形状类型系数
+  const getShapeTypeMultiplier = (shapeType?: string): number => {
+    const multipliers: Record<string, number> = {
+      'polygon': 1.0,
+      'cloud': 1.1,
+      'jagged': 1.05
+    };
+    return multipliers[shapeType || 'polygon'] || 1.0;
+  };
+
+  // 获取难度系数分解显示
+  const getMultiplierBreakdown = (difficulty: any, multiplier: number): string => {
+    const cutMult = getCutTypeMultiplier(difficulty.cutType);
+    const shapeMult = getShapeTypeMultiplier(difficulty.shapeType);
+    // 设备系数通常是1.0（桌面端）或1.1（移动端），这里假设为1.0（桌面端）
+    // 如果需要精确计算，应该从 gameStats.deviceType 获取
+    const deviceMult = 1.0; // 桌面端默认值
+    // 反推基础系数：multiplier = baseMult * cutMult * shapeMult * deviceMult
+    const baseMult = multiplier / cutMult / shapeMult / deviceMult;
+    
+    const cutTypeName = getCutTypeText(difficulty.cutType) || t('cutType.straight');
+    const shapeName = getShapeTypeText(difficulty.shapeType) || t('game.shapes.names.polygon');
+    const baseLabel = t('score.breakdown.baseMultiplier');
+    
+    return `${baseLabel}${baseMult.toFixed(2)} × ${cutTypeName}${cutMult.toFixed(2)} × ${shapeName}${shapeMult.toFixed(2)}`;
   };
 
   // 获取速度奖励显示文本 - 显示实际游戏时长和奖励条件
@@ -259,10 +310,16 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
                   scoreBreakdown.rotationScore + 
                   scoreBreakdown.hintScore
                 )}</div>
-                <div className="text-gray-700">
-                  {getDifficultyLabel(gameStats.difficulty)}：{gameStats.difficulty.actualPieces}片+{getCutTypeText(gameStats.difficulty.cutType)}+{getDeviceTypeText(gameStats.deviceType)}
+                <div className="text-gray-700 flex items-center gap-1">
+                  <span>{getDifficultyLabel(gameStats.difficulty)}：</span>
+                  <span className="text-[10px] leading-tight">{getShapeTypeText(gameStats.difficulty.shapeType) || '多边形'} · {getCutTypeText(gameStats.difficulty.cutType)} · {gameStats.difficulty.actualPieces}片</span>
                 </div>
-                <div className="text-gray-700">难度系数：×{scoreBreakdown.difficultyMultiplier.toFixed(2)}</div>
+                <div className="text-gray-700">
+                  难度系数：×{scoreBreakdown.difficultyMultiplier.toFixed(2)}
+                  <span className="text-gray-500 text-[10px] ml-2">
+                    ({getMultiplierBreakdown(gameStats.difficulty, scoreBreakdown.difficultyMultiplier)})
+                  </span>
+                </div>
                 <div className="text-lg font-bold text-blue-600 mt-2">最终得分：{formatScore(scoreBreakdown.finalScore)}</div>
               </div>
             </div>

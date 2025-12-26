@@ -1,6 +1,7 @@
 import { Point } from "@/types/puzzleTypes";
 import { Graph } from "./Graph";
 import { BezierCurve, createRadialCurve, Bounds } from "./BezierCurve";
+import { DIFFICULTY_SETTINGS } from "../cutGeneratorConfig";
 
 interface Segment {
     p1: Point;
@@ -16,7 +17,7 @@ interface Intersection {
 
 export class NetworkCutter {
 
-    static generate(shape: Point[], count: number, shapeType?: string): Point[][] {
+    static generate(shape: Point[], difficultyLevel: number, shapeType?: string): Point[][] {
         const actualShape = (shapeType !== "polygon")
             ? this.discretizeShape(shape)
             : shape;
@@ -27,10 +28,25 @@ export class NetworkCutter {
 
         const width = bounds.maxX - bounds.minX;
         const height = bounds.maxY - bounds.minY;
-        const radialCount = count * 2;
+        
+        // 🔧 修复：曲线切割的放射线数量应该等于期望的拼图数量，而不是切割线数量
+        // 原因：直线/斜线的切割线会互相交叉，n条线产生约2n块拼图
+        //      但放射状曲线从中心发出不交叉，n条线只产生约n块扇形拼图
+        // 解决：使用 pieceRange.max 作为放射线数量，确保产生足够的拼图
+        const settings = DIFFICULTY_SETTINGS[difficultyLevel as keyof typeof DIFFICULTY_SETTINGS];
+        const pieceRange = settings?.pieceRange || { min: difficultyLevel * 2, max: difficultyLevel * 4 };
+        
+        // 放射线数量 = 期望拼图数量的上限（pieceRange.max）
+        // 这样难度8时：pieceRange.max=30 → radialCount=30，产生约30块拼图
+        const radialCount = pieceRange.max;
+        
+        console.log(`[NetworkCutter] 难度级别: ${difficultyLevel}, 期望拼图范围: ${pieceRange.min}-${pieceRange.max}, 放射线数量: ${radialCount}`);
 
         // 🛡️ 自动重试机制
         const MAX_RETRIES = 20;
+        
+        // 期望的最小拼图数量（pieceRange.min 或放射线数量的80%）
+        const minExpectedPieces = Math.max(pieceRange.min, Math.floor(radialCount * 0.8));
 
         for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
             const result = this.generateOneShot(actualShape, center, bounds, radialCount);
@@ -45,10 +61,9 @@ export class NetworkCutter {
 
             // 成功条件加强版：
             // 1. 面积完整 (99%+)
-            // 2. 碎片数量达标 (90%+)：防止粘连。如果 16 条线切完只剩 10 块，说明有 6 块粘连了，必须重试。
-            //    注意：对于极其复杂的凹多边形，偶尔可能会少一两块，所以留 10% 的余量。
-            if (areaRatio > 0.99 && areaRatio < 1.01 && piecesCount >= radialCount * 0.9) {
-                // Success
+            // 2. 碎片数量达标：使用 pieceRange 的最小值或 radialCount 的 80%
+            if (areaRatio > 0.99 && areaRatio < 1.01 && piecesCount >= minExpectedPieces) {
+                console.log(`[NetworkCutter] 成功: 生成 ${piecesCount} 块拼图 (期望最少 ${minExpectedPieces} 块)`);
                 return result.shapes;
             }
         }

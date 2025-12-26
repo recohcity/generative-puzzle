@@ -65,12 +65,16 @@ export const setHintConfig = (config: Partial<typeof HINT_CONFIG>) => {
 };
 
 /**
- * 获取形状难度系数（统一规则文档 v3.1）
+ * 获取形状难度系数（统一规则文档 v3.2 - 平衡优化版）
  * 
- * 形状难度系数表：
+ * 形状难度系数表（基于实际游戏体验重新评估）：
  * - 多边形 (Polygon): 1.0 - 标准难度，边缘规则，适合新手
- * - 云枵形 (Cloud): 1.1 - 轻微增雾，曲线边缘，初级挑战
- * - 锯齿形 (Jagged): 1.2 - 较高难度，不规则边缘，高手挑战
+ * - 云朵形 (Cloud): 1.1 - 曲线边缘增加匹配难度，初级挑战
+ * - 锯齿形 (Jagged): 1.05 - 虽然边缘不规则，但独特形状反而更容易识别
+ * 
+ * 设计理念：
+ * - 锯齿形的不规则边缘让每块拼图形状更独特，实际上降低了识别难度
+ * - 云朵形的柔和曲线让拼图块边缘相似，匹配时需要更仔细判断
  * 
  * @param shapeType 形状类型
  * @returns 形状难度系数
@@ -82,11 +86,11 @@ export const getShapeMultiplier = (shapeType?: ShapeType | string): number => {
     return 1.0;
   }
 
-  // 形状难度系数映射
+  // 形状难度系数映射（v3.2 平衡优化）
   const shapeMultipliers: Record<string, number> = {
-    [ShapeType.Polygon]: 1.0,  // 多边形：标准难度
-    [ShapeType.Cloud]: 1.1,    // 云朵形：增加10%难度
-    [ShapeType.Jagged]: 1.2,   // 锯齿形：增加20%难度
+    [ShapeType.Polygon]: 1.0,   // 多边形：标准难度
+    [ShapeType.Cloud]: 1.1,     // 云朵形：增加10%难度（曲线边缘增加匹配难度）
+    [ShapeType.Jagged]: 1.05,   // 锯齿形：增加5%难度（独特形状反而更容易识别）
   };
 
   const multiplier = shapeMultipliers[shapeType] || 1.0;
@@ -138,19 +142,33 @@ export const getDeviceMultiplier = (): number => {
 };
 
 /**
- * 计算难度系数（严格按v2文档表格1）
+ * 切割类型难度系数（v3.2 平衡优化版）
+ * 
+ * 基于实际游戏体验重新评估：
+ * - 直线 (Straight): 1.0 - 基准难度，方形/矩形拼图，边缘容易对齐
+ * - 斜线 (Diagonal): 1.15 - 三角形/菱形拼图，边缘稍难对齐但形状独特
+ * - 曲线 (Curve): 1.25 - 扇形拼图，曲线边缘需要更精确的旋转角度
+ * 
+ * 设计理念：
+ * - 曲线切割现在与直线/斜线产生相似数量的拼图（修复后）
+ * - 曲线边缘确实增加了对齐难度，但扇形拼图形状相似度高也增加了识别难度
+ * - 斜线切割的三角形拼图形状独特，实际识别难度不如想象中高
+ */
+const CUT_TYPE_MULTIPLIERS: Record<string, number> = {
+  [CutType.Straight]: 1.0,   // 直线：标准难度
+  [CutType.Diagonal]: 1.15,  // 斜线：增加15%难度
+  [CutType.Curve]: 1.25,     // 曲线：增加25%难度（从1.5降低）
+};
+
+/**
+ * 计算难度系数（v3.2 平衡优化版）
  */
 export const calculateDifficultyMultiplier = (config: DifficultyConfig): number => {
   // 🔧 重新设计：基于难度级别获取基础系数
   const baseMultiplier = DIFFICULTY_MULTIPLIERS_BY_LEVEL[config.cutCount] || 1.0;
 
-  // 切割类型系数
-  let cutTypeMultiplier = 1.0;
-  if (config.cutType === CutType.Diagonal) {
-    cutTypeMultiplier = 1.2;
-  } else if (config.cutType === CutType.Curve) {
-    cutTypeMultiplier = 1.5;
-  }
+  // 切割类型系数（v3.2 平衡优化）
+  const cutTypeMultiplier = CUT_TYPE_MULTIPLIERS[config.cutType] || 1.0;
 
   // 设备适配系数
   const deviceMultiplier = getDeviceMultiplier();

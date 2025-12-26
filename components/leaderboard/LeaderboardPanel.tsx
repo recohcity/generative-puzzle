@@ -57,11 +57,27 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
     }
   };
 
-  // 获取包含形状的难度文本
+  // 获取切割类型显示名称
+  const getCutTypeDisplayName = (cutType?: string): string => {
+    if (!cutType) return '';
+    try {
+      return t(`cutType.${cutType}`);
+    } catch {
+      return cutType;
+    }
+  };
+
+  // 获取包含形状和切割类型的难度文本
   const getDifficultyWithShape = (difficulty: any): string => {
     const shapeName = getShapeDisplayName(difficulty?.shapeType);
+    const cutTypeName = getCutTypeDisplayName(difficulty?.cutType);
     const difficultyLevel = getDifficultyText(difficulty);
-    return shapeName ? `${difficultyLevel} · ${shapeName}` : difficultyLevel;
+    
+    const parts = [difficultyLevel];
+    if (shapeName) parts.push(shapeName);
+    if (cutTypeName) parts.push(cutTypeName);
+    
+    return parts.join(' · ');
   };
 
 
@@ -242,8 +258,9 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                   </div>
                   
                   {/* 游戏信息 - 一行布局 */}
-                  <div className="flex-1 min-w-0 text-xs text-[#FFD5AB] opacity-70">
-                    {formatTime(record.totalDuration)} · {getDifficultyWithShape(record.difficulty)} · {record.difficulty.actualPieces}{t('stats.piecesUnit')}
+                  <div className="flex-1 min-w-0 text-[#FFD5AB] opacity-70 truncate">
+                    <span className="text-xs">{formatTime(record.totalDuration)} · </span>
+                    <span className="text-[10px]">{getDifficultyWithShape(record.difficulty)} · {record.difficulty.actualPieces}{t('stats.piecesUnit')}</span>
                   </div>
                   
                   {/* 分数 - 加粗大号 */}

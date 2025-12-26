@@ -132,6 +132,9 @@
             "hintScore": "Hint",
             "dragPenalty": "Drag Penalty",
             "multiplier": "Difficulty Multiplier",
+            "baseMultiplier": "Base",
+            "multiplierDetail": "Base×{base} · {cutType}×{cutMult} · {shape}×{shapeMult}",
+            "multiplierBreakdown": "= {base} × {cutMult} × {shapeMult}",
             "final": "Final Score",
             "subtotal": "Subtotal",
             "gameDuration": "Game Duration",
@@ -231,7 +234,7 @@
         "medium": "Medium",
         "hard": "Hard",
         "extreme": "Extreme",
-        "levelLabel": "Level {level}"
+        "levelLabel": "L{level}"
     },
     "cutType": {
         "straight": "Straight",

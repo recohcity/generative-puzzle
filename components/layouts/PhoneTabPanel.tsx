@@ -275,11 +275,22 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                   }
                 };
 
-                // 获取包含形状的难度文本
+                // 获取包含形状和切割类型的难度文本
                 const getDifficultyWithShape = (difficulty: any): string => {
                   const shapeName = getShapeDisplayName(difficulty?.shapeType);
+                  const cutTypeName = (() => {
+                    if (!difficulty?.cutType) return '';
+                    try {
+                      return t(`cutType.${difficulty.cutType}`);
+                    } catch {
+                      return difficulty.cutType;
+                    }
+                  })();
                   const difficultyLevel = getDifficultyText(difficulty);
-                  return shapeName ? `${difficultyLevel} · ${shapeName}` : difficultyLevel;
+                  const parts = [difficultyLevel];
+                  if (shapeName) parts.push(shapeName);
+                  if (cutTypeName) parts.push(cutTypeName);
+                  return parts.join(' · ');
                 };
 
                 return (
@@ -292,8 +303,9 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                     </div>
 
                     {/* 游戏信息 - 一行布局 */}
-                    <div className="flex-1 min-w-0 text-xs text-[#FFD5AB] opacity-70">
-                      {formatTime(record.totalDuration || 0)} · {getDifficultyWithShape(record.difficulty)} · {record.difficulty?.actualPieces || 0}{t('stats.piecesUnit')}
+                    <div className="flex-1 min-w-0 text-[#FFD5AB] opacity-70 truncate">
+                      <span className="text-xs">{formatTime(record.totalDuration || 0)} · </span>
+                      <span className="text-[10px]">{getDifficultyWithShape(record.difficulty)} · {record.difficulty?.actualPieces || 0}{t('stats.piecesUnit')}</span>
                     </div>
 
                     {/* 分数 - 加粗大号 */}

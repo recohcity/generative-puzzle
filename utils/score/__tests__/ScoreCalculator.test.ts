@@ -151,11 +151,11 @@ describe('ScoreCalculator - 难度系数测试', () => {
     expect(calculateDifficultyMultiplier(config)).toBe(1.5);
   });
 
-  test('计算完整难度系数 - 斜线切割（默认环境）', () => {
+  test('计算完整难度系数 - 斜线切割（默认环境，v3.2平衡优化）', () => {
     // 在Node.js环境中，不模拟移动设备，使用默认设备系数
     const config = createTestDifficulty({ cutCount: 3, cutType: CutType.Diagonal });
-    // 预期: 1.5 * 1.2 * 1.0(默认设备系数) * 1.0(默认形状系数) = 1.8
-    expect(calculateDifficultyMultiplier(config)).toBeCloseTo(1.8, 5);
+    // v3.2 优化后：预期: 1.5 * 1.15 * 1.0(默认设备系数) * 1.0(默认形状系数) = 1.725
+    expect(calculateDifficultyMultiplier(config)).toBeCloseTo(1.725, 5);
   });
 });
 
@@ -1589,11 +1589,15 @@ describe('最终覆盖率提升测试', () => {
     expect(multiplier).toBe(1.0); // Node.js环境下的默认值
   });
 
-  it('应该测试所有切割类型的难度系数（按新表）', () => {
+  it('应该测试所有切割类型的难度系数（v3.2平衡优化版）', () => {
+    // v3.2 平衡优化后的难度系数：
+    // - 直线：1.0
+    // - 斜线：1.15（从1.2降低）
+    // - 曲线：1.25（从1.5降低）
     const cutTypeTests = [
-      { cutType: CutType.Straight, expectedMultiplier: 1.5 }, // 1.5 (Base for 3 cuts) * 1.0 (Straight) = 1.5
-      { cutType: CutType.Diagonal, expectedMultiplier: 1.8 }, // 1.5 * 1.2 = 1.8
-      { cutType: CutType.Curve, expectedMultiplier: 2.25 }    // 1.5 * 1.5 = 2.25
+      { cutType: CutType.Straight, expectedMultiplier: 1.5 },   // 1.5 (Base for 3 cuts) * 1.0 (Straight) = 1.5
+      { cutType: CutType.Diagonal, expectedMultiplier: 1.725 }, // 1.5 * 1.15 = 1.725
+      { cutType: CutType.Curve, expectedMultiplier: 1.875 }     // 1.5 * 1.25 = 1.875
     ];
 
     // 在Node.js环境中不模拟设备，使用默认设备系数
