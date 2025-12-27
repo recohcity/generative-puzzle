@@ -28,7 +28,7 @@ export default defineConfig({
     headless: true, // CI建议true，本地可false
     viewport: { width: 1280, height: 800 },
     ignoreHTTPSErrors: true,
-    video: 'retain-on-failure', // 失败时保留视频
+    video: process.env.CI ? 'retain-on-failure' : 'on', // CI环境失败时保留，本地环境始终录制
     screenshot: 'only-on-failure',
     trace: 'on-first-retry', // 只在重试时开启trace，避免性能损耗
   },

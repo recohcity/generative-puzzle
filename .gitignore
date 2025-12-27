@@ -77,6 +77,13 @@ next-env.d.ts
 *.sublime-project
 *.sublime-workspace
 
+# Cursor IDE settings and debug logs (Cursor IDE 配置和调试日志)
+.cursor/
+
+# Temporary directories (临时文件目录)
+/temp/
+/e2e/temp/
+
 # OS generated files (操作系统生成文件)
 Thumbs.db
 ehthumbs.db
