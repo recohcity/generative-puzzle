@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from '@/contexts/I18nContext';
 import { GameStats, ScoreBreakdown } from '@/types/puzzleTypes';
 import { Trophy, Clock, RotateCw, Lightbulb, Move, X, Star } from 'lucide-react';
-import { calculateRotationEfficiencyPercentage } from '@/utils/score/ScoreCalculator';
+import { calculateRotationEfficiencyPercentage, getSpeedBonusDescription, getSpeedBonusDetails } from '@/utils/score/ScoreCalculator';
 import { RotationEfficiencyCalculator } from '@/utils/score/RotationEfficiencyCalculator';
 
 import './animations.css';
@@ -148,23 +148,63 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
     return `${baseLabel}${baseMult.toFixed(2)} × ${cutTypeName}${cutMult.toFixed(2)} × ${shapeName}${shapeMult.toFixed(2)}`;
   };
 
-  // 获取速度奖励显示文本 - 显示实际游戏时长和奖励条件
+  // 获取速度奖励显示文本 - 使用动态速度奖励系统（v3.3）
   const getSpeedBonusText = (duration: number): string => {
-    const actualTime = formatDuration(duration);
+    const { difficulty } = gameStats;
+    const pieceCount = difficulty?.actualPieces || 0;
+    const difficultyLevel = difficulty?.cutCount || 1;
     
-    if (duration <= 10) {
-      return `${actualTime} (${t('score.speedBonus.within10s')})`;
-    } else if (duration <= 30) {
-      return `${actualTime} (${t('score.speedBonus.within30s')})`;
-    } else if (duration <= 60) {
-      return `${actualTime} (${t('score.speedBonus.within1min')})`;
-    } else if (duration <= 90) {
-      return `${actualTime} (${t('score.speedBonus.within1min30s')})`;
-    } else if (duration <= 120) {
-      return `${actualTime} (${t('score.speedBonus.within2min')})`;
-    } else {
-      return `${actualTime} (${t('score.speedBonus.over2min')})`;
+    // 获取速度奖励详细信息
+    const speedDetails = getSpeedBonusDetails(duration, pieceCount, difficultyLevel);
+    
+    // 格式化时间显示（用于阈值）
+    const formatTimeStr = (seconds: number): string => {
+      if (seconds < 60) {
+        return locale === 'en' ? `${seconds}s` : `${seconds}秒`;
+      }
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return locale === 'en' 
+        ? `${mins}m${secs > 0 ? `${secs}s` : ''}` 
+        : `${mins}分${secs > 0 ? `${secs}秒` : ''}`;
+    };
+    
+    // 根据当前等级生成描述文本
+    if (speedDetails.currentLevel) {
+      const levelNameMap: Record<string, { zh: string; en: string }> = {
+        '极速': { zh: '极速', en: 'Extreme' },
+        '快速': { zh: '快速', en: 'Fast' },
+        '良好': { zh: '良好', en: 'Good' },
+        '标准': { zh: '标准', en: 'Normal' },
+        '一般': { zh: '一般', en: 'Slow' },
+        '慢': { zh: '慢', en: 'Too Slow' }
+      };
+      
+      const levelName = levelNameMap[speedDetails.currentLevel.name]?.[locale === 'en' ? 'en' : 'zh'] || speedDetails.currentLevel.name;
+      
+      // 如果是慢等级（无奖励），显示"超出X秒"
+      if (speedDetails.currentLevel.name === '慢') {
+        const timeStr = formatTimeStr(speedDetails.currentLevel.maxTime);
+        return locale === 'en' 
+          ? `${levelName} (exceeded ${timeStr})`
+          : `${levelName}（超出${timeStr}）`;
+      }
+      
+      // 其他等级显示"少于X秒内"
+      const timeStr = formatTimeStr(speedDetails.currentLevel.maxTime);
+      return locale === 'en' 
+        ? `${levelName} (less than ${timeStr})`
+        : `${levelName}（少于${timeStr}内）`;
     }
+    
+    // 如果没有匹配的等级（理论上不应该发生）
+    const avgTimePerPiece = difficultyLevel <= 2 ? 3 : difficultyLevel <= 4 ? 5 : difficultyLevel <= 6 ? 8 : 15;
+    const baseTime = pieceCount * avgTimePerPiece;
+    const slowThreshold = Math.round(baseTime * 1.5);
+    const timeStr = formatTimeStr(slowThreshold);
+    return locale === 'en' 
+      ? `Too Slow (exceeded ${timeStr})`
+      : `慢（超出${timeStr}）`;
   };
 
   // 嵌入模式使用简洁样式，模态模式使用完整样式
@@ -290,16 +330,74 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
                 速度奖励：{scoreBreakdown.timeBonus > 0 ? '+' : ''}{formatScore(scoreBreakdown.timeBonus)}
                 {/* 显示基于新规则的速度奖励说明 */}
                 {scoreBreakdown.timeBonus > 0 && (
-                  <span className="text-green-600">（{getSpeedBonusText(gameStats.totalDuration)}）</span>
+                  <span className="text-green-600 text-[10px]">（{getSpeedBonusText(gameStats.totalDuration)}）</span>
                 )}
+                {/* 速度奖励详细说明 */}
+                {(() => {
+                  const { difficulty } = gameStats;
+                  const pieceCount = difficulty?.actualPieces || 0;
+                  const difficultyLevel = difficulty?.cutCount || 1;
+                  const speedDetails = getSpeedBonusDetails(gameStats.totalDuration, pieceCount, difficultyLevel);
+                  
+                  // 格式化时间显示
+                  const formatTimeStr = (seconds: number): string => {
+                    if (seconds < 60) {
+                      return locale === 'en' ? `${seconds}s` : `${seconds}秒`;
+                    }
+                    const mins = Math.floor(seconds / 60);
+                    const secs = seconds % 60;
+                    return locale === 'en' 
+                      ? `${mins}m${secs > 0 ? `${secs}s` : ''}` 
+                      : `${mins}分${secs > 0 ? `${secs}秒` : ''}`;
+                  };
+                  
+                  // 等级名称翻译
+                  const getLevelName = (name: string): string => {
+                    const levelMap: Record<string, { zh: string; en: string }> = {
+                      '极速': { zh: '极速', en: 'Extreme' },
+                      '快速': { zh: '快速', en: 'Fast' },
+                      '良好': { zh: '良好', en: 'Good' },
+                      '标准': { zh: '标准', en: 'Normal' },
+                      '一般': { zh: '一般', en: 'Slow' }
+                    };
+                    return locale === 'en' ? (levelMap[name]?.en || name) : (levelMap[name]?.zh || name);
+                  };
+                  
+                  return (
+                    <div className="mt-2 ml-4 text-[10px] text-gray-500 border-l-2 border-gray-200 pl-3">
+                      <div className="font-semibold text-gray-600 mb-1">{t('score.speedBonus.levelsTitle')}</div>
+                      <div className="space-y-0.5">
+                        {speedDetails.allLevels.map((level, index) => {
+                          const isCurrent = speedDetails.currentLevel?.name === level.name;
+                          const timeStr = formatTimeStr(level.maxTime);
+                          const levelName = getLevelName(level.name);
+                          const completeText = locale === 'en' ? 'complete within' : '内完成';
+                          return (
+                            <div key={index} className={isCurrent ? 'text-green-600 font-semibold' : ''}>
+                              {isCurrent && '✓ '}
+                              {levelName}：{timeStr}{completeText} → +{level.bonus}{locale === 'en' ? 'pts' : '分'}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {speedDetails.nextLevel && speedDetails.timeToNextLevel !== null && speedDetails.timeToNextLevel > 0 && (
+                        <div className="mt-2 text-blue-600">
+                          💡 {locale === 'en' 
+                            ? `Need ${formatTimeStr(speedDetails.timeToNextLevel)} more for next level (${getLevelName(speedDetails.nextLevel.name)})`
+                            : `距离下一等级（${getLevelName(speedDetails.nextLevel.name)}）还需：${formatTimeStr(speedDetails.timeToNextLevel)}`}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
               <div className="text-gray-700">
                 旋转评分：{scoreBreakdown.rotationScore > 0 ? '+' : ''}{formatScore(scoreBreakdown.rotationScore)}
-                （{gameStats.totalRotations}/{gameStats.minRotations || '?'}，{getRotationRatingTextForDisplay(gameStats.totalRotations, gameStats.minRotations)}）
+                <span className="text-[10px]">（{gameStats.totalRotations}/{gameStats.minRotations || '?'}，{getRotationRatingTextForDisplay(gameStats.totalRotations, gameStats.minRotations)}）</span>
               </div>
               <div className="text-gray-700">
                 提示使用：{scoreBreakdown.hintScore > 0 ? '+' : ''}{formatScore(scoreBreakdown.hintScore)}
-                （{gameStats.hintUsageCount}/{gameStats.hintAllowance || 0}次）
+                <span className="text-[10px]">（{gameStats.hintUsageCount}/{gameStats.hintAllowance || 0}次）</span>
               </div>
               
               <div className="border-t pt-2 mt-3">

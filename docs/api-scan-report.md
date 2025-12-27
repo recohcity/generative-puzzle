@@ -1,16 +1,16 @@
 # API扫描报告
 
-> 生成时间: 2025/12/27 20:05:19
+> 生成时间: 2025/12/28 01:39:14
 > 扫描工具: API变更扫描器 v1.0
 
 ## 📊 统计概览
 
 | 项目 | 数量 | 说明 |
 |------|------|------|
-| API总数 | 279 | 项目中所有导出的API |
+| API总数 | 281 | 项目中所有导出的API |
 | 已文档化 | 30 | 在API文档中已记录的API |
-| 文档覆盖率 | 10.8% | 文档化程度 |
-| 新增API | 252 | 需要添加到文档的API |
+| 文档覆盖率 | 10.7% | 文档化程度 |
+| 新增API | 254 | 需要添加到文档的API |
 | 可能删除 | 3 | 文档中存在但代码中找不到 |
 
 ## 🆕 新增API详情
@@ -1287,7 +1287,7 @@ export class DeviceLayoutManager {
 #### setHintConfig
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:63`
+- **文件**: `utils/score/ScoreCalculator.ts:160`
 - **签名**: `export const setHintConfig = (config: Partial<typeof HINT_CONFIG>) => {`
 
 **建议文档结构**:
@@ -1310,7 +1310,7 @@ export const setHintConfig = (config: Partial<typeof HINT_CONFIG>) => {
 #### getShapeMultiplier
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:82`
+- **文件**: `utils/score/ScoreCalculator.ts:179`
 - **签名**: `export const getShapeMultiplier = (shapeType?: ShapeType | string): number => {`
 
 **建议文档结构**:
@@ -1333,7 +1333,7 @@ export const getShapeMultiplier = (shapeType?: ShapeType | string): number => {
 #### getDeviceMultiplier
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:113`
+- **文件**: `utils/score/ScoreCalculator.ts:210`
 - **签名**: `export const getDeviceMultiplier = (): number => {`
 
 **建议文档结构**:
@@ -1356,7 +1356,7 @@ export const getDeviceMultiplier = (): number => {
 #### calculateDifficultyMultiplier
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:166`
+- **文件**: `utils/score/ScoreCalculator.ts:263`
 - **签名**: `export const calculateDifficultyMultiplier = (config: DifficultyConfig): number => {`
 
 **建议文档结构**:
@@ -1379,7 +1379,7 @@ export const calculateDifficultyMultiplier = (config: DifficultyConfig): number 
 #### getBaseScore
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:193`
+- **文件**: `utils/score/ScoreCalculator.ts:290`
 - **签名**: `export const getBaseScore = (difficultyLevel: number): number => {`
 
 **建议文档结构**:
@@ -1402,7 +1402,7 @@ export const getBaseScore = (difficultyLevel: number): number => {
 #### getBaseScoreByPieces
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:203`
+- **文件**: `utils/score/ScoreCalculator.ts:300`
 - **签名**: `export const getBaseScoreByPieces = (actualPieces: number): number => {`
 
 **建议文档结构**:
@@ -1425,7 +1425,7 @@ export const getBaseScoreByPieces = (actualPieces: number): number => {
 #### getBaseDifficultyMultiplierByPieces
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:210`
+- **文件**: `utils/score/ScoreCalculator.ts:307`
 - **签名**: `export const getBaseDifficultyMultiplierByPieces = (actualPieces: number): number => {`
 
 **建议文档结构**:
@@ -1448,7 +1448,7 @@ export const getBaseDifficultyMultiplierByPieces = (actualPieces: number): numbe
 #### getHintAllowance
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:220`
+- **文件**: `utils/score/ScoreCalculator.ts:317`
 - **签名**: `export const getHintAllowance = (_difficultyLevel: string): number => {`
 
 **建议文档结构**:
@@ -1471,7 +1471,7 @@ export const getHintAllowance = (_difficultyLevel: string): number => {
 #### getHintAllowanceByCutCount
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:228`
+- **文件**: `utils/score/ScoreCalculator.ts:325`
 - **签名**: `export const getHintAllowanceByCutCount = (_cutCount: number): number => {`
 
 **建议文档结构**:
@@ -1494,7 +1494,7 @@ export const getHintAllowanceByCutCount = (_cutCount: number): number => {
 #### calculateMinimumRotationsAtStart
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:248`
+- **文件**: `utils/score/ScoreCalculator.ts:345`
 - **签名**: `export const calculateMinimumRotationsAtStart = (pieces: PuzzlePiece[]): number => {`
 
 **建议文档结构**:
@@ -1517,7 +1517,7 @@ export const calculateMinimumRotationsAtStart = (pieces: PuzzlePiece[]): number 
 #### calculateMinimumRotations
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:282`
+- **文件**: `utils/score/ScoreCalculator.ts:379`
 - **签名**: `export const calculateMinimumRotations = (pieces: PuzzlePiece[]): number => {`
 
 **建议文档结构**:
@@ -1540,7 +1540,7 @@ export const calculateMinimumRotations = (pieces: PuzzlePiece[]): number => {
 #### calculateRotationEfficiency
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:290`
+- **文件**: `utils/score/ScoreCalculator.ts:387`
 - **签名**: `export const calculateRotationEfficiency = (minRotations: number, actualRotations: number): number => {`
 
 **建议文档结构**:
@@ -1563,7 +1563,7 @@ export const calculateRotationEfficiency = (minRotations: number, actualRotation
 #### formatRotationDisplay
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:306`
+- **文件**: `utils/score/ScoreCalculator.ts:403`
 - **签名**: `export const formatRotationDisplay = (`
 
 **建议文档结构**:
@@ -1586,7 +1586,7 @@ export const formatRotationDisplay = (
 #### calculateRotationEfficiencyPercentage
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:317`
+- **文件**: `utils/score/ScoreCalculator.ts:414`
 - **签名**: `export const calculateRotationEfficiencyPercentage = (`
 
 **建议文档结构**:
@@ -1609,7 +1609,7 @@ export const calculateRotationEfficiencyPercentage = (
 #### calculateRemainingRotations
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:336`
+- **文件**: `utils/score/ScoreCalculator.ts:433`
 - **签名**: `export const calculateRemainingRotations = (pieces: PuzzlePiece[]): number => {`
 
 **建议文档结构**:
@@ -1632,7 +1632,7 @@ export const calculateRemainingRotations = (pieces: PuzzlePiece[]): number => {
 #### checkTimeRecord
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:373`
+- **文件**: `utils/score/ScoreCalculator.ts:470`
 - **签名**: `export const checkTimeRecord = (stats: GameStats, currentLeaderboard: GameRecord[]): {`
 
 **建议文档结构**:
@@ -1655,7 +1655,7 @@ export const checkTimeRecord = (stats: GameStats, currentLeaderboard: GameRecord
 #### calculateTimeBonus
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:427`
+- **文件**: `utils/score/ScoreCalculator.ts:524`
 - **签名**: `export const calculateTimeBonus = (`
 
 **建议文档结构**:
@@ -1675,10 +1675,56 @@ export const calculateTimeBonus = (
 ```
 ```
 
+#### getSpeedBonusDescription
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:590`
+- **签名**: `export const getSpeedBonusDescription = (`
+
+**建议文档结构**:
+```markdown
+### getSpeedBonusDescription
+
+[添加API描述]
+
+```typescript
+export const getSpeedBonusDescription = (
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
+#### getSpeedBonusDetails
+
+- **类型**: constant
+- **文件**: `utils/score/ScoreCalculator.ts:623`
+- **签名**: `export const getSpeedBonusDetails = (`
+
+**建议文档结构**:
+```markdown
+### getSpeedBonusDetails
+
+[添加API描述]
+
+```typescript
+export const getSpeedBonusDetails = (
+```
+
+#### 使用示例
+
+```typescript
+// [添加使用示例]
+```
+```
+
 #### validateScoreParams
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:475`
+- **文件**: `utils/score/ScoreCalculator.ts:683`
 - **签名**: `export const validateScoreParams = (stats: GameStats | null | undefined): stats is GameStats => {`
 
 **建议文档结构**:
@@ -1701,7 +1747,7 @@ export const validateScoreParams = (stats: GameStats | null | undefined): stats 
 #### calculateLiveScore
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:513`
+- **文件**: `utils/score/ScoreCalculator.ts:721`
 - **签名**: `export const calculateLiveScore = (stats: GameStats, leaderboard: GameRecord[] = []): number => {`
 
 **建议文档结构**:
@@ -1724,7 +1770,7 @@ export const calculateLiveScore = (stats: GameStats, leaderboard: GameRecord[] =
 #### calculateRotationScore
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:597`
+- **文件**: `utils/score/ScoreCalculator.ts:805`
 - **签名**: `export const calculateRotationScore = (stats: GameStats, pieces?: PuzzlePiece[]): number => {`
 
 **建议文档结构**:
@@ -1747,7 +1793,7 @@ export const calculateRotationScore = (stats: GameStats, pieces?: PuzzlePiece[])
 #### calculateHintScore
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:677`
+- **文件**: `utils/score/ScoreCalculator.ts:885`
 - **签名**: `export const calculateHintScore = (actualHints: number, allowance: number): number => {`
 
 **建议文档结构**:
@@ -1770,7 +1816,7 @@ export const calculateHintScore = (actualHints: number, allowance: number): numb
 #### calculateHintScoreFromStats
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:696`
+- **文件**: `utils/score/ScoreCalculator.ts:904`
 - **签名**: `export const calculateHintScoreFromStats = (stats: GameStats): number => {`
 
 **建议文档结构**:
@@ -1793,7 +1839,7 @@ export const calculateHintScoreFromStats = (stats: GameStats): number => {
 #### calculateScoreDelta
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:715`
+- **文件**: `utils/score/ScoreCalculator.ts:923`
 - **签名**: `export const calculateScoreDelta = (`
 
 **建议文档结构**:
@@ -1816,7 +1862,7 @@ export const calculateScoreDelta = (
 #### withPerformanceMonitoring
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:761`
+- **文件**: `utils/score/ScoreCalculator.ts:969`
 - **签名**: `export const withPerformanceMonitoring = <T extends any[], R>(`
 
 **建议文档结构**:
@@ -1839,7 +1885,7 @@ export const withPerformanceMonitoring = <T extends any[], R>(
 #### calculateLiveScoreWithMonitoring
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:783`
+- **文件**: `utils/score/ScoreCalculator.ts:991`
 - **签名**: `export const calculateLiveScoreWithMonitoring = withPerformanceMonitoring(`
 
 **建议文档结构**:
@@ -1862,7 +1908,7 @@ export const calculateLiveScoreWithMonitoring = withPerformanceMonitoring(
 #### safeCalculateScore
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:792`
+- **文件**: `utils/score/ScoreCalculator.ts:1000`
 - **签名**: `export const safeCalculateScore = <T>(`
 
 **建议文档结构**:
@@ -1885,7 +1931,7 @@ export const safeCalculateScore = <T>(
 #### formatScore
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:809`
+- **文件**: `utils/score/ScoreCalculator.ts:1017`
 - **签名**: `export const formatScore = (score: number): string => {`
 
 **建议文档结构**:
@@ -1908,7 +1954,7 @@ export const formatScore = (score: number): string => {
 #### formatTime
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:817`
+- **文件**: `utils/score/ScoreCalculator.ts:1025`
 - **签名**: `export const formatTime = (seconds: number): string => {`
 
 **建议文档结构**:
@@ -1931,7 +1977,7 @@ export const formatTime = (seconds: number): string => {
 #### debounce
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:827`
+- **文件**: `utils/score/ScoreCalculator.ts:1035`
 - **签名**: `export const debounce = <T extends (...args: any[]) => any>(`
 
 **建议文档结构**:
@@ -1954,7 +2000,7 @@ export const debounce = <T extends (...args: any[]) => any>(
 #### createLiveScoreUpdater
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:848`
+- **文件**: `utils/score/ScoreCalculator.ts:1056`
 - **签名**: `export const createLiveScoreUpdater = (`
 
 **建议文档结构**:
@@ -1977,7 +2023,7 @@ export const createLiveScoreUpdater = (
 #### calculateFinalScore
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:878`
+- **文件**: `utils/score/ScoreCalculator.ts:1086`
 - **签名**: `export const calculateFinalScore = (`
 
 **建议文档结构**:
@@ -2000,7 +2046,7 @@ export const calculateFinalScore = (
 #### updateStatsWithOptimalSolution
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:954`
+- **文件**: `utils/score/ScoreCalculator.ts:1162`
 - **签名**: `export const updateStatsWithOptimalSolution = (stats: GameStats, pieces: PuzzlePiece[]): GameStats => {`
 
 **建议文档结构**:
@@ -2023,7 +2069,7 @@ export const updateStatsWithOptimalSolution = (stats: GameStats, pieces: PuzzleP
 #### formatRankDisplay
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:971`
+- **文件**: `utils/score/ScoreCalculator.ts:1179`
 - **签名**: `export const formatRankDisplay = (rank: number, totalRecords: number): string => {`
 
 **建议文档结构**:
@@ -2046,7 +2092,7 @@ export const formatRankDisplay = (rank: number, totalRecords: number): string =>
 #### getNewRecordBadge
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:985`
+- **文件**: `utils/score/ScoreCalculator.ts:1193`
 - **签名**: `export const getNewRecordBadge = (recordInfo: {`
 
 **建议文档结构**:
@@ -2069,7 +2115,7 @@ export const getNewRecordBadge = (recordInfo: {
 #### calculateLeaderboardStats
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:1022`
+- **文件**: `utils/score/ScoreCalculator.ts:1230`
 - **签名**: `export const calculateLeaderboardStats = (`
 
 **建议文档结构**:
@@ -2092,7 +2138,7 @@ export const calculateLeaderboardStats = (
 #### calculateScoreWithLeaderboard
 
 - **类型**: constant
-- **文件**: `utils/score/ScoreCalculator.ts:1052`
+- **文件**: `utils/score/ScoreCalculator.ts:1260`
 - **签名**: `export const calculateScoreWithLeaderboard = (`
 
 **建议文档结构**:
@@ -5863,7 +5909,7 @@ export const AngleDisplayControllerImpl: AngleDisplayController = {
 - ❌ `AdaptationResult` (interface)
 - ❌ `CanvasSizeResult` (interface)
 
-### 核心管理器API (70个)
+### 核心管理器API (72个)
 
 - ❌ `ValidationRule` (interface)
 - ❌ `ValidationSchema` (interface)
@@ -5908,6 +5954,8 @@ export const AngleDisplayControllerImpl: AngleDisplayController = {
 - ❌ `calculateRemainingRotations` (constant)
 - ❌ `checkTimeRecord` (constant)
 - ❌ `calculateTimeBonus` (constant)
+- ❌ `getSpeedBonusDescription` (constant)
+- ❌ `getSpeedBonusDetails` (constant)
 - ❌ `validateScoreParams` (constant)
 - ❌ `calculateLiveScore` (constant)
 - ❌ `calculateRotationScore` (constant)

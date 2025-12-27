@@ -1,6 +1,7 @@
 import React from 'react';
 import { GameStats, ScoreBreakdown } from '@/types/puzzleTypes';
 import { useTranslation } from '@/contexts/I18nContext';
+import { getSpeedBonusDescription, getSpeedBonusDetails } from '@/utils/score/ScoreCalculator';
 
 
 interface MobileScoreLayoutProps {
@@ -22,7 +23,7 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
   isNewRecord,
   currentRank
 }) => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   // 获取难度显示：改为数值等级
   const getDifficultyText = (difficulty: any): string => {
     return t('difficulty.levelLabel', { level: difficulty.cutCount });
@@ -109,30 +110,63 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
     return multiplier.toFixed(2);
   };
 
-  // 获取速度奖励显示文本 - 显示实际游戏时长和奖励条件
+  // 获取速度奖励显示文本 - 使用动态速度奖励系统（v3.3）
   const getSpeedRankText = (duration: number): string => {
-    // 格式化时间显示
-    const formatDuration = (seconds: number): string => {
+    const { difficulty } = gameStats;
+    const pieceCount = difficulty?.actualPieces || 0;
+    const difficultyLevel = difficulty?.cutCount || 1;
+    
+    // 获取速度奖励详细信息
+    const speedDetails = getSpeedBonusDetails(duration, pieceCount, difficultyLevel);
+    
+    // 格式化时间显示（用于阈值）
+    const formatTimeStr = (seconds: number): string => {
+      if (seconds < 60) {
+        return locale === 'en' ? `${seconds}s` : `${seconds}秒`;
+      }
       const mins = Math.floor(seconds / 60);
       const secs = seconds % 60;
-      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      return locale === 'en' 
+        ? `${mins}m${secs > 0 ? `${secs}s` : ''}` 
+        : `${mins}分${secs > 0 ? `${secs}秒` : ''}`;
     };
     
-    const actualTime = formatDuration(duration);
-    
-    if (duration <= 10) {
-      return `${actualTime} (${t('score.speedBonus.within10s')})`;
-    } else if (duration <= 30) {
-      return `${actualTime} (${t('score.speedBonus.within30s')})`;
-    } else if (duration <= 60) {
-      return `${actualTime} (${t('score.speedBonus.within1min')})`;
-    } else if (duration <= 90) {
-      return `${actualTime} (${t('score.speedBonus.within1min30s')})`;
-    } else if (duration <= 120) {
-      return `${actualTime} (${t('score.speedBonus.within2min')})`;
-    } else {
-      return `${actualTime} (${t('score.speedBonus.over2min')})`;
+    // 根据当前等级生成描述文本
+    if (speedDetails.currentLevel) {
+      const levelNameMap: Record<string, { zh: string; en: string }> = {
+        '极速': { zh: '极速', en: 'Extreme' },
+        '快速': { zh: '快速', en: 'Fast' },
+        '良好': { zh: '良好', en: 'Good' },
+        '标准': { zh: '标准', en: 'Normal' },
+        '一般': { zh: '一般', en: 'Slow' },
+        '慢': { zh: '慢', en: 'Too Slow' }
+      };
+      
+      const levelName = levelNameMap[speedDetails.currentLevel.name]?.[locale === 'en' ? 'en' : 'zh'] || speedDetails.currentLevel.name;
+      
+      // 如果是慢等级（无奖励），显示"超出X秒"
+      if (speedDetails.currentLevel.name === '慢') {
+        const timeStr = formatTimeStr(speedDetails.currentLevel.maxTime);
+        return locale === 'en' 
+          ? `${levelName} (exceeded ${timeStr})`
+          : `${levelName}（超出${timeStr}）`;
+      }
+      
+      // 其他等级显示"少于X秒内"
+      const timeStr = formatTimeStr(speedDetails.currentLevel.maxTime);
+      return locale === 'en' 
+        ? `${levelName} (less than ${timeStr})`
+        : `${levelName}（少于${timeStr}内）`;
     }
+    
+    // 如果没有匹配的等级（理论上不应该发生）
+    const avgTimePerPiece = difficultyLevel <= 2 ? 3 : difficultyLevel <= 4 ? 5 : difficultyLevel <= 6 ? 8 : 15;
+    const baseTime = pieceCount * avgTimePerPiece;
+    const slowThreshold = Math.round(baseTime * 1.5);
+    const timeStr = formatTimeStr(slowThreshold);
+    return locale === 'en' 
+      ? `Too Slow (exceeded ${timeStr})`
+      : `慢（超出${timeStr}）`;
   };
 
   return (
@@ -159,14 +193,18 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
             {/* 速度奖励 */}
             {scoreBreakdown.timeBonus > 0 && (
               <div className="flex justify-between items-center">
-                <span className="text-[#FFD5AB] text-xs">{t('score.breakdown.timeBonus')}：{getSpeedRankText(gameStats.totalDuration)}</span>
+                <span className="text-[#FFD5AB] text-xs">
+                  {t('score.breakdown.timeBonus')}：<span className="text-[10px]">{getSpeedRankText(gameStats.totalDuration)}</span>
+                </span>
                 <span className="text-green-400 text-xs font-medium">+{formatScore(scoreBreakdown.timeBonus)}</span>
               </div>
             )}
 
             {/* 旋转技巧 */}
             <div className="flex justify-between items-center">
-              <span className="text-[#FFD5AB] text-xs">{t('score.breakdown.rotationScore')}：{gameStats.totalRotations}/{gameStats.minRotations}（{gameStats.totalRotations === gameStats.minRotations ? t('rotation.perfect') : t('rotation.excess', { count: gameStats.totalRotations - gameStats.minRotations })}）</span>
+              <span className="text-[#FFD5AB] text-xs">
+                {t('score.breakdown.rotationScore')}：<span className="text-[10px]">{gameStats.totalRotations}/{gameStats.minRotations}（{gameStats.totalRotations === gameStats.minRotations ? t('rotation.perfect') : t('rotation.excess', { count: gameStats.totalRotations - gameStats.minRotations })}）</span>
+              </span>
               <span className={`text-xs font-medium ${scoreBreakdown.rotationScore >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                 {scoreBreakdown.rotationScore >= 0 ? '+' : ''}{formatScore(scoreBreakdown.rotationScore)}
               </span>
@@ -174,7 +212,9 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
 
             {/* 提示使用 */}
             <div className="flex justify-between items-center">
-              <span className="text-[#FFD5AB] text-xs">{t('score.breakdown.hintScore')}：{gameStats.hintUsageCount}/{scoreBreakdown.hintAllowance}{t('leaderboard.timesUnit')}</span>
+              <span className="text-[#FFD5AB] text-xs">
+                {t('score.breakdown.hintScore')}：<span className="text-[10px]">{gameStats.hintUsageCount}/{scoreBreakdown.hintAllowance}{t('leaderboard.timesUnit')}</span>
+              </span>
               <span className={`text-xs font-medium ${scoreBreakdown.hintScore >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                 {scoreBreakdown.hintScore >= 0 ? '+' : ''}{formatScore(scoreBreakdown.hintScore)}
               </span>

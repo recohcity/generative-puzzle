@@ -64,50 +64,23 @@ function detectEnvMode() {
 // 辅助函数：确保画布可见、UI就绪、音效预加载完成（用于端到端加载时间测量）
 // 注意：此函数不执行 page.goto()，因为页面已经在调用前加载完成
 async function ensureCanvasAndUIReady(page: Page) {
-  // #region agent log
-  const e2eStepStart = Date.now();
-  const testRunCount = (global as any).__testRunCount__ || 1;
-  const isFirstRun = testRunCount === 1;
-  fetch('http://127.0.0.1:7243/ingest/83e1d94c-afb4-4b86-8b38-165371e14489',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'full_game_flow.spec.ts:66',message:'E2E加载开始',data:{timestamp:Date.now(),testRunCount,isFirstRun},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'B'})}).catch(()=>{});
-  // #endregion
-  
   // 优化：先等待网络空闲，这样画布和UI应该已经渲染完成
   // 等待页面完全加载和多语言系统初始化
-  const networkIdleStart = Date.now();
   await page.waitForLoadState('networkidle');
-  const networkIdleTime = Date.now() - networkIdleStart;
-  // #region agent log
-  fetch('http://127.0.0.1:7243/ingest/83e1d94c-afb4-4b86-8b38-165371e14489',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'full_game_flow.spec.ts:75',message:'networkidle等待完成',data:{networkIdleTime,testRunCount,isFirstRun},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'B'})}).catch(()=>{});
-  // #endregion
 
   // 等待初始提示出现（确保UI已完全渲染，包括画布）
   // waitForTip 已经确保了UI完全渲染，画布肯定已经可见了
-  const tipWaitStart = Date.now();
   await waitForTip(page, '请点击生成你喜欢的形状');
-  const tipWaitTime = Date.now() - tipWaitStart;
-  // #region agent log
-  fetch('http://127.0.0.1:7243/ingest/83e1d94c-afb4-4b86-8b38-165371e14489',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'full_game_flow.spec.ts:87',message:'提示等待完成',data:{tipWaitTime,testRunCount,isFirstRun},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'B'})}).catch(()=>{});
-  // #endregion
 
   // 验证画布已可见（快速检查，不应该需要等待）
   // 由于 waitForTip 已经确保了UI完全渲染，画布应该已经可见，这里只是验证
-  const canvasWaitStart = Date.now();
   await page.waitForSelector('canvas#puzzle-canvas', { state: 'visible', timeout: 1000 });
-  const canvasWaitTime = Date.now() - canvasWaitStart;
-  // #region agent log
-  fetch('http://127.0.0.1:7243/ingest/83e1d94c-afb4-4b86-8b38-165371e14489',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'full_game_flow.spec.ts:96',message:'画布等待完成',data:{canvasWaitTime,testRunCount,isFirstRun},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'B'})}).catch(()=>{});
-  // #endregion
 
   // 等待音效预加载完成（确保音效就绪，满足点击即播）
   // preloadAllSoundEffects 在 GameInterface 的 useEffect 中调用，会创建 Audio 元素并调用 load()
   // 由于音效文件较小（split.mp3, scatter.mp3, finish.mp3 通常 <100KB），加载很快
   // 网络空闲后音效应该已经加载完成，但为了确保，等待150ms
   await page.waitForTimeout(150);
-  
-  const totalE2eTime = Date.now() - e2eStepStart;
-  // #region agent log
-  fetch('http://127.0.0.1:7243/ingest/83e1d94c-afb4-4b86-8b38-165371e14489',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'full_game_flow.spec.ts:107',message:'E2E加载完成',data:{totalE2eTime,networkIdleTime,tipWaitTime,canvasWaitTime,soundWaitTime:150,testRunCount,isFirstRun},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'B'})}).catch(()=>{});
-  // #endregion
 }
 
 // 辅助函数：旋转拼图到正确角度
@@ -419,9 +392,28 @@ async function performAdaptationTest(page: Page, maxTests?: number, includePortr
 
   console.log(`[适配测试] 完成 - 通过率: ${passCount}/${resolutions.length} (${(passCount / resolutions.length * 100).toFixed(1)}%)`);
 
-  // 恢复到标准分辨率
+  // 恢复到标准分辨率（使用测试开始时的分辨率，而不是固定1280x720）
+  // 注意：测试开始时在beforeEach中设置了1920x1080，但为了兼容性，使用1280x720作为标准
   await page.setViewportSize({ width: 1280, height: 720 });
-  await page.waitForTimeout(200); // 优化：减少到200ms
+  
+  // 触发resize事件并等待适配完成
+  await page.evaluate(() => {
+    window.dispatchEvent(new Event('resize'));
+  });
+  await page.waitForTimeout(300); // 等待适配完成
+
+  // 验证页面状态：确保画布和游戏状态可用
+  try {
+    await page.waitForSelector('canvas#puzzle-canvas', { state: 'visible', timeout: 5000 });
+    
+    // 验证游戏状态可用（适配测试时游戏可能还在进行中，所以只检查基本状态）
+    await page.waitForFunction(() => {
+      const gameState = (window as any).__gameStateForTests__;
+      return gameState && gameState.originalShape && Array.isArray(gameState.originalShape);
+    }, { timeout: 5000 });
+  } catch (error) {
+    console.log(`[适配测试] 警告：恢复分辨率后页面状态验证失败，但继续测试: ${error}`);
+  }
 
   return {
     results,
@@ -452,12 +444,6 @@ async function waitForTip(page: Page, expectedCN: string, expectedEN?: string) {
 }
 
 test.beforeEach(async ({ page, context }) => {
-  // #region agent log
-  // 记录测试运行次数（用于判断是否为首次运行）
-  const testRunCount = (global as any).__testRunCount__ = ((global as any).__testRunCount__ || 0) + 1;
-  const isFirstRun = testRunCount === 1;
-  fetch('http://127.0.0.1:7243/ingest/83e1d94c-afb4-4b86-8b38-165371e14489',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'full_game_flow.spec.ts:452',message:'beforeEach开始',data:{testRunCount,isFirstRun},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'B'})}).catch(()=>{});
-  // #endregion
   
   // 设置测试环境的语言偏好（模拟中文用户）
   await page.addInitScript(() => {
@@ -534,17 +520,9 @@ test('完整自动化游戏流程', async ({ page }) => {
   try {
     // 1. 采集资源加载时间（从0%加载到100%，页面资源加载完成）
     const resourceLoadStart = Date.now();
-    const testRunCount = (global as any).__testRunCount__ || 1;
-    const isFirstRun = testRunCount === 1;
-    // #region agent log
-    fetch('http://127.0.0.1:7243/ingest/83e1d94c-afb4-4b86-8b38-165371e14489',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'full_game_flow.spec.ts:537',message:'资源加载开始',data:{timestamp:Date.now(),envMode:metrics.envMode,testRunCount,isFirstRun},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
     await page.goto('http://localhost:3000/', { waitUntil: 'load' });
     metrics.resourceLoadTime = Date.now() - resourceLoadStart;
     metrics.gotoLoadTime = metrics.resourceLoadTime; // 兼容字段
-    // #region agent log
-    fetch('http://127.0.0.1:7243/ingest/83e1d94c-afb4-4b86-8b38-165371e14489',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'full_game_flow.spec.ts:543',message:'资源加载完成',data:{resourceLoadTime:metrics.resourceLoadTime,envMode:metrics.envMode,testRunCount,isFirstRun},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
 
     // 2. 采集端到端加载时间（加载完并进入游戏主界面，所有UI都正常显示完毕，音效就绪）
     const e2eStart = Date.now();
@@ -649,8 +627,9 @@ test('完整自动化游戏流程', async ({ page }) => {
     expect(finalState.isCompleted).toBe(true);
     expect(finalState.completedPieces.length).toBe(finalState.puzzle.length);
 
-    // 步骤 7.3: 点击重新开始按钮
-    await page.getByRole('button', { name: /重新开始|重新生成/ }).click();
+    // 步骤 7.3: 点击重开游戏按钮（重置整个游戏）
+    // 注意：现在有两个按钮："重玩本局"和"重开游戏"，我们需要点击"重开游戏"来重置游戏
+    await page.getByRole('button', { name: /重开游戏|New Game/ }).click();
     await waitForTip(page, '请点击生成你喜欢的形状');
 
     // 8. 收集最终性能指标

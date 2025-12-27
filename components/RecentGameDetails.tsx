@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { playButtonClickSound } from "@/utils/rendering/soundEffects";
 import { useTranslation } from '@/contexts/I18nContext';
+import { getSpeedBonusDescription, getSpeedBonusDetails } from '@/utils/score/ScoreCalculator';
 
 // 使用GameDataManager内部的数据结构
 interface StoredGameRecord {
@@ -97,23 +98,63 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
     return `${baseLabel}${baseMult.toFixed(2)} × ${cutTypeName}${cutMult.toFixed(2)} × ${shapeName}${shapeMult.toFixed(2)}`;
   };
 
-  // 获取速度奖励显示文本 - 显示实际游戏时长和奖励条件
+  // 获取速度奖励显示文本 - 使用动态速度奖励系统（v3.3）
   const getSpeedBonusText = (duration: number): string => {
-    const actualTime = formatTime(duration);
-
-    if (duration <= 10) {
-      return `${actualTime} (${t('score.speedBonus.within10s')})`;
-    } else if (duration <= 30) {
-      return `${actualTime} (${t('score.speedBonus.within30s')})`;
-    } else if (duration <= 60) {
-      return `${actualTime} (${t('score.speedBonus.within1min')})`;
-    } else if (duration <= 90) {
-      return `${actualTime} (${t('score.speedBonus.within1min30s')})`;
-    } else if (duration <= 120) {
-      return `${actualTime} (${t('score.speedBonus.within2min')})`;
-    } else {
-      return `${actualTime} (${t('score.speedBonus.over2min')})`;
+    const { difficulty } = record;
+    const pieceCount = difficulty?.actualPieces || 0;
+    const difficultyLevel = difficulty?.cutCount || 1;
+    
+    // 获取速度奖励详细信息
+    const speedDetails = getSpeedBonusDetails(duration, pieceCount, difficultyLevel);
+    
+    // 格式化时间显示（用于阈值）
+    const formatTimeStr = (seconds: number): string => {
+      if (seconds < 60) {
+        return locale === 'en' ? `${seconds}s` : `${seconds}秒`;
+      }
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return locale === 'en' 
+        ? `${mins}m${secs > 0 ? `${secs}s` : ''}` 
+        : `${mins}分${secs > 0 ? `${secs}秒` : ''}`;
+    };
+    
+    // 根据当前等级生成描述文本
+    if (speedDetails.currentLevel) {
+      const levelNameMap: Record<string, { zh: string; en: string }> = {
+        '极速': { zh: '极速', en: 'Extreme' },
+        '快速': { zh: '快速', en: 'Fast' },
+        '良好': { zh: '良好', en: 'Good' },
+        '标准': { zh: '标准', en: 'Normal' },
+        '一般': { zh: '一般', en: 'Slow' },
+        '慢': { zh: '慢', en: 'Too Slow' }
+      };
+      
+      const levelName = levelNameMap[speedDetails.currentLevel.name]?.[locale === 'en' ? 'en' : 'zh'] || speedDetails.currentLevel.name;
+      
+      // 如果是慢等级（无奖励），显示"超出X秒"
+      if (speedDetails.currentLevel.name === '慢') {
+        const timeStr = formatTimeStr(speedDetails.currentLevel.maxTime);
+        return locale === 'en' 
+          ? `${levelName} (exceeded ${timeStr})`
+          : `${levelName}（超出${timeStr}）`;
+      }
+      
+      // 其他等级显示"少于X秒内"
+      const timeStr = formatTimeStr(speedDetails.currentLevel.maxTime);
+      return locale === 'en' 
+        ? `${levelName} (less than ${timeStr})`
+        : `${levelName}（少于${timeStr}内）`;
     }
+    
+    // 如果没有匹配的等级（理论上不应该发生）
+    const avgTimePerPiece = difficultyLevel <= 2 ? 3 : difficultyLevel <= 4 ? 5 : difficultyLevel <= 6 ? 8 : 15;
+    const baseTime = pieceCount * avgTimePerPiece;
+    const slowThreshold = Math.round(baseTime * 1.5);
+    const timeStr = formatTimeStr(slowThreshold);
+    return locale === 'en' 
+      ? `Too Slow (exceeded ${timeStr})`
+      : `慢（超出${timeStr}）`;
   };
 
   return (
@@ -159,13 +200,13 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[#FFD5AB]">
-                    {t('score.breakdown.timeBonus')}：{record.scoreBreakdown.timeBonus > 0 ? getSpeedBonusText(record.totalDuration) : t('score.noReward')}
+                    {t('score.breakdown.timeBonus')}：<span className="text-[10px]">{getSpeedBonusText(record.totalDuration)}</span>
                   </span>
                   <span className="text-green-400">+{record.scoreBreakdown.timeBonus}</span>
                 </div>
                 <div className="flex justify-between items-start">
                   <span className="text-[#FFD5AB] flex-1 min-w-0">
-                    <span className="block">{t('score.breakdown.rotationScore')}：{record.totalRotations}/{record.scoreBreakdown.minRotations}（{record.totalRotations === record.scoreBreakdown.minRotations ? t('rotation.perfect') : t('rotation.excess', { count: record.totalRotations - record.scoreBreakdown.minRotations })}）
+                    <span className="block">{t('score.breakdown.rotationScore')}：<span className="text-[10px]">{record.totalRotations}/{record.scoreBreakdown.minRotations}（{record.totalRotations === record.scoreBreakdown.minRotations ? t('rotation.perfect') : t('rotation.excess', { count: record.totalRotations - record.scoreBreakdown.minRotations })}）</span>
                     </span>
                   </span>
                   <span className={`${record.scoreBreakdown.rotationScore >= 0 ? "text-green-400" : "text-red-400"} ml-2 flex-shrink-0`}>
@@ -174,7 +215,7 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[#FFD5AB]">
-                    {t('score.breakdown.hintScore')}：{record.hintUsageCount}/{record.scoreBreakdown.hintAllowance || 0}{t('leaderboard.timesUnit')}
+                    {t('score.breakdown.hintScore')}：<span className="text-[10px]">{record.hintUsageCount}/{record.scoreBreakdown.hintAllowance || 0}{t('leaderboard.timesUnit')}</span>
                   </span>
                   <span className={record.scoreBreakdown.hintScore >= 0 ? "text-green-400" : "text-red-400"}>
                     {record.scoreBreakdown.hintScore >= 0 ? '+' : ''}{record.scoreBreakdown.hintScore}

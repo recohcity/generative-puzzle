@@ -105,6 +105,7 @@ export interface GameContextProps {
   rotatePiece: (clockwise: boolean) => void;
   showHintOutline: () => void;
   resetGame: () => void;
+  retryCurrentGame: () => void;
   calculatePieceBounds: (piece: PuzzlePiece) => PieceBounds;
   ensurePieceInBounds: (piece: PuzzlePiece, dx: number, dy: number, safeMargin?: number) => {
     constrainedDx: number;
@@ -151,6 +152,7 @@ export type GameAction =
   | { type: "SET_CUT_TYPE"; payload: CutType }
   | { type: "GAME_COMPLETED" }
   | { type: "RESTART_GAME" }
+  | { type: "RETRY_CURRENT_GAME" }
   | { type: "SHOW_LEADERBOARD" }
   | { type: "HIDE_LEADERBOARD" }
   | { type: "UPDATE_LIVE_SCORE"; payload: number }

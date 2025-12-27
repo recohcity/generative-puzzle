@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, RotateCcw } from "lucide-react";
 import React from "react";
 import { useTranslation } from '@/contexts/I18nContext';
 
@@ -12,6 +12,7 @@ interface RestartButtonProps {
   iconSize?: number | string;
   height?: number | string;
   children?: React.ReactNode;
+  icon?: 'refresh' | 'retry'; // 新增：图标类型
 }
 
 const DEFAULT_HEIGHT = 36;
@@ -27,9 +28,14 @@ const RestartButton: React.FC<RestartButtonProps> = ({
   iconSize = DEFAULT_ICON_SIZE,
   height = DEFAULT_HEIGHT,
   children,
+  icon = 'refresh', // 默认使用 refresh 图标
 }) => {
   const { t } = useTranslation();
   const defaultText = children || t('game.controls.restart');
+  
+  // 根据 icon prop 选择图标
+  const IconComponent = icon === 'retry' ? RotateCcw : RefreshCw;
+  
   return (
     <Button
       onClick={onClick}
@@ -46,7 +52,7 @@ const RestartButton: React.FC<RestartButtonProps> = ({
         ...style,
       }}
     >
-      <RefreshCw
+      <IconComponent
         className="mr-2"
         style={{
           width: iconSize,

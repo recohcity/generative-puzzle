@@ -76,6 +76,8 @@
             "rotateRight": "右转",
             "restart": "重新开始",
             "restartConfirm": "确定要重新开始游戏吗？",
+            "retryCurrent": "重玩本局",
+            "restartGame": "重开游戏",
             "currentAngle": "当前角度: {angle}°",
             "rotateInstruction": "可以使用2只手指旋转拼图",
             "rotateInstructionDesktop": "(旋转角度需与目标角度匹配才能放置)",
@@ -151,7 +153,8 @@
             "within1min": "1分钟内完成",
             "within1min30s": "1分30秒内完成",
             "within2min": "2分钟内完成",
-            "over2min": "超过2分钟"
+            "over2min": "超过2分钟",
+            "levelsTitle": "速度奖励等级说明："
         }
     },
     "stats": {

@@ -22,6 +22,7 @@ import ScoreDisplay from '@/components/score/ScoreDisplay';
 import LeaderboardPanel from '@/components/leaderboard/LeaderboardPanel';
 import RecentGameDetails from '@/components/RecentGameDetails';
 import { GameDataManager } from '@/utils/data/GameDataManager';
+import { getSpeedBonusDescription, getSpeedBonusDetails } from '@/utils/score/ScoreCalculator';
 
 interface DesktopLayoutProps {
   isMusicPlaying: boolean;
@@ -44,7 +45,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   const titleSizeClass = 'text-xl'; // Assuming desktop for now
 
   // 从GameContext获取state和resetGame函数，以及翻译函数
-  const { state, resetGame } = useGame();
+  const { state, resetGame, retryCurrentGame } = useGame();
   const { t, locale } = useTranslation();
   
   // 个人最佳成绩显示状态
@@ -88,10 +89,16 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
     }
   }
 
-  // 处理重新开始按钮点击
+  // 处理重新开始按钮点击（重开游戏）
   const handleDesktopResetGame = () => {
     playButtonClickSound();
     resetGame();
+  };
+
+  // 处理重玩本局按钮点击
+  const handleRetryCurrentGame = () => {
+    playButtonClickSound();
+    retryCurrentGame();
   };
 
   // 获取形状显示名称
@@ -172,23 +179,66 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // 获取速度奖励显示文本 - 显示实际游戏时长和奖励条件
+  // 获取速度奖励显示文本 - 使用动态速度奖励系统（v3.3）
   const getSpeedBonusText = (duration: number): string => {
-    const actualTime = formatDuration(duration);
-    
-    if (duration <= 10) {
-      return `${actualTime} (${t('score.speedBonus.within10s')})`;
-    } else if (duration <= 30) {
-      return `${actualTime} (${t('score.speedBonus.within30s')})`;
-    } else if (duration <= 60) {
-      return `${actualTime} (${t('score.speedBonus.within1min')})`;
-    } else if (duration <= 90) {
-      return `${actualTime} (${t('score.speedBonus.within1min30s')})`;
-    } else if (duration <= 120) {
-      return `${actualTime} (${t('score.speedBonus.within2min')})`;
-    } else {
-      return `${actualTime} (${t('score.speedBonus.over2min')})`;
+    if (!state.gameStats) {
+      return '';
     }
+    const { difficulty } = state.gameStats;
+    const pieceCount = difficulty?.actualPieces || 0;
+    const difficultyLevel = difficulty?.cutCount || 1;
+    
+    // 获取速度奖励详细信息
+    const speedDetails = getSpeedBonusDetails(duration, pieceCount, difficultyLevel);
+    
+    // 格式化时间显示（用于阈值）
+    const formatTimeStr = (seconds: number): string => {
+      if (seconds < 60) {
+        return locale === 'en' ? `${seconds}s` : `${seconds}秒`;
+      }
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return locale === 'en' 
+        ? `${mins}m${secs > 0 ? `${secs}s` : ''}` 
+        : `${mins}分${secs > 0 ? `${secs}秒` : ''}`;
+    };
+    
+    // 根据当前等级生成描述文本
+    if (speedDetails.currentLevel) {
+      const levelNameMap: Record<string, { zh: string; en: string }> = {
+        '极速': { zh: '极速', en: 'Extreme' },
+        '快速': { zh: '快速', en: 'Fast' },
+        '良好': { zh: '良好', en: 'Good' },
+        '标准': { zh: '标准', en: 'Normal' },
+        '一般': { zh: '一般', en: 'Slow' },
+        '慢': { zh: '慢', en: 'Too Slow' }
+      };
+      
+      const levelName = levelNameMap[speedDetails.currentLevel.name]?.[locale === 'en' ? 'en' : 'zh'] || speedDetails.currentLevel.name;
+      
+      // 如果是慢等级（无奖励），显示"超出X秒"
+      if (speedDetails.currentLevel.name === '慢') {
+        const timeStr = formatTimeStr(speedDetails.currentLevel.maxTime);
+        return locale === 'en' 
+          ? `${levelName} (exceeded ${timeStr})`
+          : `${levelName}（超出${timeStr}）`;
+      }
+      
+      // 其他等级显示"少于X秒内"
+      const timeStr = formatTimeStr(speedDetails.currentLevel.maxTime);
+      return locale === 'en' 
+        ? `${levelName} (less than ${timeStr})`
+        : `${levelName}（少于${timeStr}内）`;
+    }
+    
+    // 如果没有匹配的等级（理论上不应该发生）
+    const avgTimePerPiece = difficultyLevel <= 2 ? 3 : difficultyLevel <= 4 ? 5 : difficultyLevel <= 6 ? 8 : 15;
+    const baseTime = pieceCount * avgTimePerPiece;
+    const slowThreshold = Math.round(baseTime * 1.5);
+    const timeStr = formatTimeStr(slowThreshold);
+    return locale === 'en' 
+      ? `Too Slow (exceeded ${timeStr})`
+      : `慢（超出${timeStr}）`;
   };
 
   // 新增：桌面端控制按钮和重置按钮高度常量
@@ -479,13 +529,13 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                             </div>
                             <div className="flex justify-between">
                               <span className="text-[#FFD5AB]">
-                                {t('score.breakdown.timeBonus')}：{state.scoreBreakdown.timeBonus > 0 ? getSpeedBonusText(state.gameStats.totalDuration) : t('score.noReward')}
+                                {t('score.breakdown.timeBonus')}：<span className="text-[10px]">{getSpeedBonusText(state.gameStats.totalDuration)}</span>
                               </span>
                               <span className="text-green-400">+{state.scoreBreakdown.timeBonus}</span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-[#FFD5AB]">
-                                {t('score.breakdown.rotationScore')}：{state.gameStats.totalRotations}/{state.gameStats.minRotations}（{state.gameStats.totalRotations === state.gameStats.minRotations ? t('rotation.perfect') : t('rotation.excess', { count: state.gameStats.totalRotations - state.gameStats.minRotations })}）
+                                {t('score.breakdown.rotationScore')}：<span className="text-[10px]">{state.gameStats.totalRotations}/{state.gameStats.minRotations}（{state.gameStats.totalRotations === state.gameStats.minRotations ? t('rotation.perfect') : t('rotation.excess', { count: state.gameStats.totalRotations - state.gameStats.minRotations })}）</span>
                               </span>
                               <span className={state.scoreBreakdown.rotationScore >= 0 ? "text-green-400" : "text-red-400"}>
                                 {state.scoreBreakdown.rotationScore >= 0 ? '+' : ''}{state.scoreBreakdown.rotationScore}
@@ -493,7 +543,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                             </div>
                             <div className="flex justify-between">
                               <span className="text-[#FFD5AB]">
-                                {t('score.breakdown.hintScore')}：{state.gameStats.hintUsageCount}/{state.scoreBreakdown.hintAllowance || 0}{t('leaderboard.timesUnit')}
+                                {t('score.breakdown.hintScore')}：<span className="text-[10px]">{state.gameStats.hintUsageCount}/{state.scoreBreakdown.hintAllowance || 0}{t('leaderboard.timesUnit')}</span>
                               </span>
                               <span className={state.scoreBreakdown.hintScore >= 0 ? "text-green-400" : "text-red-400"}>
                                 {state.scoreBreakdown.hintScore >= 0 ? '+' : ''}{state.scoreBreakdown.hintScore}
@@ -540,11 +590,23 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
 
                   </div>
                   
-                  {/* 重新开始按钮 */}
-                  <RestartButton
-                    onClick={handleDesktopResetGame}
-                    style={{ height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 14 : 'calc(0.95rem * var(--panel-scale))' }}
-                  />
+                  {/* 重玩本局和重开游戏按钮 */}
+                  <div className="flex flex-col gap-2 mt-4">
+                    <RestartButton
+                      onClick={handleRetryCurrentGame}
+                      icon="retry"
+                      style={{ height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 14 : 'calc(0.95rem * var(--panel-scale))' }}
+                    >
+                      {t('game.controls.retryCurrent')}
+                    </RestartButton>
+                    <RestartButton
+                      onClick={handleDesktopResetGame}
+                      icon="refresh"
+                      style={{ height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 14 : 'calc(0.95rem * var(--panel-scale))' }}
+                    >
+                      {t('game.controls.restartGame')}
+                    </RestartButton>
+                  </div>
                 </div>
               ) : (
                 // 正常游戏状态显示控制面板
@@ -558,10 +620,16 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                   {/* 控制按钮部分 */}
                   <h3 className="font-medium mt-4 mb-3 text-[#FFD5AB]" style={{ fontSize: panelScale <= 0.5 ? 16 : 'calc(0.9rem * var(--panel-scale))' }}>{t('game.controls.title')}</h3>
                   <ActionButtons layout="desktop" buttonHeight={DESKTOP_CONTROL_BUTTON_HEIGHT} />
-                  <RestartButton
-                    onClick={handleDesktopResetGame}
-                    style={{ height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 14 : 'calc(0.95rem * var(--panel-scale))' }}
-                  />
+                  {/* 正常游戏状态下只显示重开游戏按钮 */}
+                  <div className="mt-4">
+                    <RestartButton
+                      onClick={handleDesktopResetGame}
+                      icon="refresh"
+                      style={{ height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 14 : 'calc(0.95rem * var(--panel-scale))' }}
+                    >
+                      {t('game.controls.restartGame')}
+                    </RestartButton>
+                  </div>
                 </>
               )}
             </div>

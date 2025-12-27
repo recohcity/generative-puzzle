@@ -242,35 +242,68 @@ describe('ScoreCalculator - 旋转计算测试', () => {
 // 新的旋转评分测试在 RotationEfficiencyCalculator.test.ts 中
 // 新算法：完美旋转+500分，每超出1次-10分
 
-describe('ScoreCalculator - 速度奖励测试', () => {
-  test('10秒内完成应获得600分奖励', () => {
+describe('ScoreCalculator - 速度奖励测试（动态速度奖励系统 v3.4）', () => {
+  // 测试用例基于动态速度奖励系统：
+  // 默认测试配置：难度3，4片拼图
+  // - 每片平均时间：7秒/片（难度3-4）
+  // - 基础时间：4 × 7 = 28秒
+  // - 难度倍数：1.2（难度3-4）
+  // 
+  // 速度奖励阈值：
+  // - 极速：少于28秒（1.0倍）= 600 × 1.2 = 720分
+  // - 快速：少于36.4秒（1.3倍）= 400 × 1.2 = 480分
+  // - 良好：少于44.8秒（1.6倍）= 300 × 1.2 = 360分
+  // - 标准：少于56秒（2.0倍）= 200 × 1.2 = 240分
+  // - 一般：少于70秒（2.5倍）= 100 × 1.2 = 120分
+  // - 慢：超出70秒 = 0分
+
+  test('极速完成（少于基础时间）应获得720分奖励', () => {
+    // 8秒 < 28秒（基础时间），属于极速
     const stats = createTestStats({ totalDuration: 8 });
     const result = calculateTimeBonus(stats, []);
-    expect(result.timeBonus).toBe(600);
+    expect(result.timeBonus).toBe(720); // 600 × 1.2 = 720
   });
 
-  test('30秒内完成应获得400分奖励', () => {
+  test('极速完成（边界值）应获得720分奖励', () => {
+    // 25秒 < 28秒（基础时间），属于极速
     const stats = createTestStats({ totalDuration: 25 });
     const result = calculateTimeBonus(stats, []);
-    expect(result.timeBonus).toBe(400);
+    expect(result.timeBonus).toBe(720); // 600 × 1.2 = 720
   });
 
-  test('60秒内完成应获得300分奖励', () => {
+  test('快速完成应获得480分奖励', () => {
+    // 30秒在28-36.4秒之间，属于快速
+    const stats = createTestStats({ totalDuration: 30 });
+    const result = calculateTimeBonus(stats, []);
+    expect(result.timeBonus).toBe(480); // 400 × 1.2 = 480
+  });
+
+  test('良好完成应获得360分奖励', () => {
+    // 45秒在36.4-44.8秒之间，属于良好
     const stats = createTestStats({ totalDuration: 45 });
     const result = calculateTimeBonus(stats, []);
-    expect(result.timeBonus).toBe(300);
+    expect(result.timeBonus).toBe(360); // 300 × 1.2 = 360
   });
 
-  test('90秒内完成应获得200分奖励', () => {
+  test('标准完成应获得240分奖励', () => {
+    // 50秒在44.8-56秒之间，属于标准
+    const stats = createTestStats({ totalDuration: 50 });
+    const result = calculateTimeBonus(stats, []);
+    expect(result.timeBonus).toBe(240); // 200 × 1.2 = 240
+  });
+
+  test('一般完成应获得120分奖励', () => {
+    // 65秒在56-70秒之间，属于一般
+    const stats = createTestStats({ totalDuration: 65 });
+    const result = calculateTimeBonus(stats, []);
+    expect(result.timeBonus).toBe(120); // 100 × 1.2 = 120
+  });
+
+  test('慢完成（超出2.5倍基础时间）应获得0分奖励', () => {
+    // 75秒 > 70秒（2.5倍基础时间），属于慢，无奖励
     const stats = createTestStats({ totalDuration: 75 });
     const result = calculateTimeBonus(stats, []);
-    expect(result.timeBonus).toBe(200);
-  });
-
-  test('120秒内完成应获得100分奖励', () => {
-    const stats = createTestStats({ totalDuration: 110 });
-    const result = calculateTimeBonus(stats, []);
-    expect(result.timeBonus).toBe(100);
+    expect(result.timeBonus).toBe(0);
   });
 
   test('超过120秒完成应获得0分奖励', () => {
@@ -280,9 +313,26 @@ describe('ScoreCalculator - 速度奖励测试', () => {
   });
 
   test('边界值测试', () => {
-    expect(calculateTimeBonus(createTestStats({ totalDuration: 10 }), []).timeBonus).toBe(600);
-    expect(calculateTimeBonus(createTestStats({ totalDuration: 30 }), []).timeBonus).toBe(400);
-    expect(calculateTimeBonus(createTestStats({ totalDuration: 120 }), []).timeBonus).toBe(100);
+    // 10秒 < 28秒，极速
+    expect(calculateTimeBonus(createTestStats({ totalDuration: 10 }), []).timeBonus).toBe(720);
+    // 30秒在28-36.4秒之间，快速
+    expect(calculateTimeBonus(createTestStats({ totalDuration: 30 }), []).timeBonus).toBe(480);
+    // 110秒 > 70秒，慢，无奖励
+    expect(calculateTimeBonus(createTestStats({ totalDuration: 110 }), []).timeBonus).toBe(0);
+  });
+
+  test('难度1，4片拼图的动态速度奖励', () => {
+    // 难度1，4片拼图
+    // - 每片平均时间：5秒/片（难度1-2）
+    // - 基础时间：4 × 5 = 20秒
+    // - 难度倍数：1.0（难度1-2）
+    // - 极速：少于20秒 = 600 × 1.0 = 600分
+    const stats = createTestStats({
+      difficulty: { cutCount: 1, cutType: CutType.Straight, actualPieces: 4, difficultyLevel: 'easy' as DifficultyLevel },
+      totalDuration: 15
+    });
+    const result = calculateTimeBonus(stats, []);
+    expect(result.timeBonus).toBe(600); // 600 × 1.0 = 600
   });
 
   test('无效参数应返回0分', () => {
@@ -549,7 +599,8 @@ describe('ScoreCalculator - 最终分数计算测试', () => {
     const result = calculateFinalScore(stats, pieces, []);
 
     expect(result.baseScore).toBe(1200);
-    expect(result.timeBonus).toBe(400);
+    // 难度3，4片，25秒完成：25秒 < 28秒（基础时间），属于极速，720分（600 × 1.2）
+    expect(result.timeBonus).toBe(720);
     expect(result.finalScore).toBeGreaterThan(100);
     // 在桌面直线切割下，难度系数应为1.5
     expect(result.difficultyMultiplier).toBe(1.5);
@@ -628,7 +679,8 @@ describe('ScoreCalculator - 排行榜统计测试', () => {
     const leaderboard = [createTestRecord({ totalDuration: 30 })];
     const result = calculateLeaderboardStats(stats, leaderboard);
 
-    expect(result.timeBonus).toBe(400);
+    // 难度3，4片，25秒完成：25秒 < 28秒（基础时间），属于极速，720分（600 × 1.2）
+    expect(result.timeBonus).toBe(720);
     expect(result.recordInfo.isNewRecord).toBe(true);
     expect(result.rankDisplay).toBe('第1名🏆');
     expect(result.recordBadge.shouldCelebrate).toBe(true);

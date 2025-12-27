@@ -55,6 +55,7 @@ export default function PuzzleControlsGamepad({ goToFirstTab, controlButtonHeigh
       <div>
         <RestartButton 
           onClick={handleResetGame}
+          icon="refresh"
           style={{ marginTop: 0 }}
           height={restartButtonHeight}
         />

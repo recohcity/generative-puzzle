@@ -92,7 +92,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
   isLandscape = false
 }) => {
   // 新增：引入游戏核心逻辑和翻译
-  const { state, rotatePiece, showHintOutline, resetGame, trackHintUsage, trackRotation } = useGame();
+  const { state, rotatePiece, showHintOutline, resetGame, retryCurrentGame, trackHintUsage, trackRotation } = useGame();
   const { t } = useTranslation();
 
   // 角度显示增强功能
@@ -179,6 +179,13 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
       // 静默处理统计追踪错误
     }
   };
+  // 处理重玩本局按钮点击
+  const handleRetryCurrent = () => {
+    playButtonClickSound();
+    retryCurrentGame();
+  };
+
+  // 处理重开游戏按钮点击（原重新开始）
   const handleRestart = () => {
     // 检查是否在游戏过程中（需要确认）
     const isGameInProgress = state.isGameActive && state.puzzle && state.isScattered && !state.isCompleted;
@@ -395,16 +402,30 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                   isNewRecord={state.isNewRecord}
                 />
               </div>
-              {/* 重新开始按钮 - 固定在底部，减少间距 */}
-              <div className="mt-1 flex-shrink-0">
+              {/* 重玩本局和重开游戏按钮 - 固定在底部，左右并排 */}
+              <div className="mt-1 flex-shrink-0 flex flex-row gap-2">
                 <RestartButton
-                  onClick={handleRestart}
+                  onClick={handleRetryCurrent}
+                  icon="retry"
                   height={MOBILE_RESTART_BUTTON_HEIGHT}
                   fontSize={MOBILE_RESTART_BUTTON_FONT_SIZE}
                   iconSize={MOBILE_RESTART_ICON_SIZE}
-                  style={{ width: '100%', minHeight: 0, paddingTop: 0, paddingBottom: 0, lineHeight: 1 }}
+                  style={{ flex: 1, minHeight: 0, paddingTop: 0, paddingBottom: 0, lineHeight: 1 }}
                   className="min-h-0 p-0 leading-none"
-                />
+                >
+                  {t('game.controls.retryCurrent')}
+                </RestartButton>
+                <RestartButton
+                  onClick={handleRestart}
+                  icon="refresh"
+                  height={MOBILE_RESTART_BUTTON_HEIGHT}
+                  fontSize={MOBILE_RESTART_BUTTON_FONT_SIZE}
+                  iconSize={MOBILE_RESTART_ICON_SIZE}
+                  style={{ flex: 1, minHeight: 0, paddingTop: 0, paddingBottom: 0, lineHeight: 1 }}
+                  className="min-h-0 p-0 leading-none"
+                >
+                  {t('game.controls.restartGame')}
+                </RestartButton>
               </div>
             </div>
           ) : (
@@ -550,15 +571,31 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                       </div>
                     )}
 
-                    {/* 重新开始按钮（移动端专用） */}
-                    <RestartButton
-                      onClick={handleRestart}
-                      height={MOBILE_RESTART_BUTTON_HEIGHT}
-                      fontSize={MOBILE_RESTART_BUTTON_FONT_SIZE}
-                      iconSize={MOBILE_RESTART_ICON_SIZE}
-                      style={{ width: '100%', minHeight: 0, paddingTop: 0, paddingBottom: 0, lineHeight: 1 }}
-                      className="min-h-0 p-0 leading-none"
-                    />
+                    {/* 重玩本局和重开游戏按钮（移动端专用）- 左右并排 */}
+                    <div className="flex flex-row gap-2">
+                      <RestartButton
+                        onClick={handleRetryCurrent}
+                        icon="retry"
+                        height={MOBILE_RESTART_BUTTON_HEIGHT}
+                        fontSize={MOBILE_RESTART_BUTTON_FONT_SIZE}
+                        iconSize={MOBILE_RESTART_ICON_SIZE}
+                        style={{ flex: 1, minHeight: 0, paddingTop: 0, paddingBottom: 0, lineHeight: 1 }}
+                        className="min-h-0 p-0 leading-none"
+                      >
+                        {t('game.controls.retryCurrent')}
+                      </RestartButton>
+                      <RestartButton
+                        onClick={handleRestart}
+                        icon="refresh"
+                        height={MOBILE_RESTART_BUTTON_HEIGHT}
+                        fontSize={MOBILE_RESTART_BUTTON_FONT_SIZE}
+                        iconSize={MOBILE_RESTART_ICON_SIZE}
+                        style={{ flex: 1, minHeight: 0, paddingTop: 0, paddingBottom: 0, lineHeight: 1 }}
+                        className="min-h-0 p-0 leading-none"
+                      >
+                        {t('game.controls.restartGame')}
+                      </RestartButton>
+                    </div>
 
                   </div>
                 </div>

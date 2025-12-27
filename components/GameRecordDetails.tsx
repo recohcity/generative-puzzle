@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { playButtonClickSound } from "@/utils/rendering/soundEffects";
 import { useTranslation } from '@/contexts/I18nContext';
 import { GameRecord } from '@/types/puzzleTypes';
+import { getSpeedBonusDescription, getSpeedBonusDetails } from '@/utils/score/ScoreCalculator';
 
 
 interface GameRecordDetailsProps {
@@ -148,13 +149,58 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[#FFD5AB]">
-                    {t('score.breakdown.timeBonus')}：{getSpeedRankText(record.scoreBreakdown.timeBonusRank)}
+                    {t('score.breakdown.timeBonus')}：{(() => {
+                      const pieceCount = record.difficulty?.actualPieces || 0;
+                      const difficultyLevel = record.difficulty?.cutCount || 1;
+                      const speedDetails = getSpeedBonusDetails(record.totalDuration, pieceCount, difficultyLevel);
+                      
+                      // 格式化时间显示（用于阈值）
+                      const formatTimeStr = (seconds: number): string => {
+                        if (seconds < 60) {
+                          return locale === 'en' ? `${seconds}s` : `${seconds}秒`;
+                        }
+                        const mins = Math.floor(seconds / 60);
+                        const secs = seconds % 60;
+                        return locale === 'en' 
+                          ? `${mins}m${secs > 0 ? `${secs}s` : ''}` 
+                          : `${mins}分${secs > 0 ? `${secs}秒` : ''}`;
+                      };
+                      
+                      if (speedDetails.currentLevel) {
+                        const levelNameMap: Record<string, { zh: string; en: string }> = {
+                          '极速': { zh: '极速', en: 'Extreme' },
+                          '快速': { zh: '快速', en: 'Fast' },
+                          '良好': { zh: '良好', en: 'Good' },
+                          '标准': { zh: '标准', en: 'Normal' },
+                          '一般': { zh: '一般', en: 'Slow' },
+                          '慢': { zh: '慢', en: 'Too Slow' }
+                        };
+                        
+                        const levelName = levelNameMap[speedDetails.currentLevel.name]?.[locale === 'en' ? 'en' : 'zh'] || speedDetails.currentLevel.name;
+                        
+                        // 如果是慢等级（无奖励），显示"超出X秒"
+                        if (speedDetails.currentLevel.name === '慢') {
+                          const timeStr = formatTimeStr(speedDetails.currentLevel.maxTime);
+                          return locale === 'en' 
+                            ? `${levelName} (exceeded ${timeStr})`
+                            : `${levelName}（超出${timeStr}）`;
+                        }
+                        
+                        // 其他等级显示"少于X秒内"
+                        const timeStr = formatTimeStr(speedDetails.currentLevel.maxTime);
+                        return locale === 'en' 
+                          ? `${levelName} (less than ${timeStr})`
+                          : `${levelName}（少于${timeStr}内）`;
+                      }
+                      
+                      return t('score.noReward');
+                    })()}
                   </span>
                   <span className="text-green-400">+{record.scoreBreakdown.timeBonus}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[#FFD5AB]">
-                    {t('score.breakdown.rotationScore')}：{record.totalRotations}/{record.scoreBreakdown.minRotations}（{record.totalRotations === record.scoreBreakdown.minRotations ? t('rotation.perfect') : t('rotation.excess', { count: record.totalRotations - record.scoreBreakdown.minRotations })}）
+                    {t('score.breakdown.rotationScore')}：<span className="text-[10px]">{record.totalRotations}/{record.scoreBreakdown.minRotations}（{record.totalRotations === record.scoreBreakdown.minRotations ? t('rotation.perfect') : t('rotation.excess', { count: record.totalRotations - record.scoreBreakdown.minRotations })}）</span>
                   </span>
                   <span className={record.scoreBreakdown.rotationScore >= 0 ? "text-green-400" : "text-red-400"}>
                     {record.scoreBreakdown.rotationScore >= 0 ? '+' : ''}{record.scoreBreakdown.rotationScore}
@@ -162,7 +208,7 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[#FFD5AB]">
-                    {t('score.breakdown.hintScore')}：{record.hintUsageCount}/{record.scoreBreakdown.hintAllowance || 0}{t('leaderboard.timesUnit')}
+                    {t('score.breakdown.hintScore')}：<span className="text-[10px]">{record.hintUsageCount}/{record.scoreBreakdown.hintAllowance || 0}{t('leaderboard.timesUnit')}</span>
                   </span>
                   <span className={record.scoreBreakdown.hintScore >= 0 ? "text-green-400" : "text-red-400"}>
                     {record.scoreBreakdown.hintScore >= 0 ? '+' : ''}{record.scoreBreakdown.hintScore}

@@ -75,6 +75,8 @@
             "rotateRight": "Rotate Right",
             "restart": "Restart",
             "restartConfirm": "Are you sure you want to restart the game?",
+            "retryCurrent": "Retry Current",
+            "restartGame": "New Game",
             "currentAngle": "Current Angle: {angle}°",
             "rotateInstruction": "Use 2 fingers to rotate puzzle pieces",
             "rotateInstructionDesktop": "(Rotation angle must match target angle to place)",
@@ -149,7 +151,8 @@
             "within1min": "Within 1min",
             "within1min30s": "Within 1min30s",
             "within2min": "Within 2min",
-            "over2min": "Over 2min"
+            "over2min": "Over 2min",
+            "levelsTitle": "Speed Bonus Levels:"
         }
     },
     "stats": {

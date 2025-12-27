@@ -775,6 +775,121 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case "RETRY_CURRENT_GAME": {
+      // 重玩本局：恢复至散开拼图时的状态，重新开始计时
+      if (!state.puzzle || !state.originalShape || state.originalShape.length === 0) {
+        // 如果没有拼图或形状，无法重玩
+        return state;
+      }
+
+      // 重新散开拼图（恢复到散开状态）
+      const canvasSize = state.canvasSize || { width: 640, height: 640 };
+      let canvasWidth = canvasSize.width;
+      let canvasHeight = canvasSize.height;
+
+      let targetShape = null;
+      if (state.originalShape && state.originalShape.length > 0) {
+        const bounds = state.originalShape.reduce(
+          (
+            acc: { minX: number; minY: number; maxX: number; maxY: number },
+            point: Point,
+          ) => ({
+            minX: Math.min(acc.minX, point.x),
+            minY: Math.min(acc.minY, point.y),
+            maxX: Math.max(acc.maxX, point.x),
+            maxY: Math.max(acc.maxY, point.y),
+          }),
+          {
+            minX: Infinity,
+            minY: Infinity,
+            maxX: -Infinity,
+            maxY: -Infinity,
+          },
+        );
+        const centerX = (bounds.minX + bounds.maxX) / 2;
+        const centerY = (bounds.minY + bounds.maxY) / 2;
+        const radius =
+          Math.max(
+            (bounds.maxX - bounds.minX) / 2,
+            (bounds.maxY - bounds.minY) / 2,
+          ) * 1.2;
+        targetShape = {
+          center: { x: centerX, y: centerY },
+          radius: radius,
+        };
+      }
+
+      // 获取原始拼图（未散开前的状态）
+      const originalPuzzle = state.originalPositions || state.puzzle;
+      const scatteredPuzzle = ScatterPuzzle.scatterPuzzle(originalPuzzle, {
+        canvasSize: { width: canvasWidth, height: canvasHeight },
+        targetShape: targetShape,
+      });
+
+      if (
+        !scatteredPuzzle ||
+        !Array.isArray(scatteredPuzzle) ||
+        scatteredPuzzle.length === 0
+      ) {
+        return state;
+      }
+
+      // 创建新的游戏统计（重新开始计时）
+      const gameStartTime = Date.now();
+      const difficulty: DifficultyConfig = {
+        cutCount: state.cutCount,
+        cutType: state.cutType as CutType,
+        shapeType: state.shapeType as ShapeType,
+        actualPieces: scatteredPuzzle.length,
+        difficultyLevel: calculateDifficultyLevel(state.cutCount),
+      };
+
+      const gameStats: GameStats = {
+        difficulty,
+        totalDuration: 0,
+        totalRotations: 0,
+        minRotations: 0, // 将在游戏开始时计算
+        hintUsageCount: 0,
+        hintAllowance: 3, // 统一3次免费提示
+        dragOperations: 0,
+        rotationEfficiency: 100,
+        gameStartTime,
+        timeBonus: 0,
+        timeBonusRank: 0,
+        isTimeRecord: false,
+        rotationScore: 0,
+        hintScore: 0,
+        difficultyMultiplier: 1.0,
+        finalScore: 0,
+        baseScore: 0,
+        deviceType: getDeviceType(), // deviceType 属于 GameStats，不属于 DifficultyConfig
+        canvasSize: state.canvasSize || { width: 640, height: 640 },
+      };
+
+      const currentLeaderboard = GameDataManager.getLeaderboard();
+      const initialScore = calculateLiveScore(gameStats, currentLeaderboard);
+
+      return {
+        ...state,
+        puzzle: scatteredPuzzle as any,
+        completedPieces: [],
+        isCompleted: false,
+        isScattered: true,
+        gameStats,
+        isGameActive: true,
+        isGameComplete: false,
+        currentScore: initialScore,
+        scoreBreakdown: null,
+        isNewRecord: false,
+        currentRank: null,
+        selectedPiece: null,
+        draggingPiece: null,
+        // 重置角度显示状态
+        angleDisplayMode: state.cutCount <= 3 ? "always" : "conditional",
+        temporaryAngleVisible: new Set<number>(),
+      };
+    }
+
     case "UPDATE_LIVE_SCORE": {
       return {
         ...state,
@@ -1360,6 +1475,15 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
     dispatch({ type: "RESTART_GAME" });
   }, [dispatch]);
 
+  const retryCurrentGame = useCallback(() => {
+    // 重玩本局：恢复至散开拼图时的状态，重新开始计时
+    if (!state.puzzle || !state.originalShape || state.originalShape.length === 0) {
+      console.warn("[retryCurrentGame] Cannot retry: No puzzle or shape");
+      return;
+    }
+    dispatch({ type: "RETRY_CURRENT_GAME" });
+  }, [dispatch, state.puzzle, state.originalShape]);
+
   const showLeaderboard = useCallback(() => {
     dispatch({ type: "SHOW_LEADERBOARD" });
   }, [dispatch]);
@@ -1722,6 +1846,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
     rotatePiece,
     showHintOutline,
     resetGame,
+    retryCurrentGame,
     calculatePieceBounds,
     ensurePieceInBounds,
     // 统计系统方法

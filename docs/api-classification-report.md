@@ -1,15 +1,15 @@
 # API分类报告
 
-> 生成时间: 2025/12/27 20:05:20
+> 生成时间: 2025/12/28 01:39:14
 > 分类工具: API分类器 v1.0
 
 ## 📊 分类统计
 
 | 分类 | 数量 | 占比 | 优先级 | 建议 |
 |------|------|------|--------|------|
-| PUBLIC | 24 | 9.5% | 1 | 必须文档化 |
-| TEAM | 25 | 9.9% | 2 | 建议文档化 |
-| INTERNAL | 203 | 80.6% | 3 | 选择性文档化 |
+| PUBLIC | 24 | 9.4% | 1 | 必须文档化 |
+| TEAM | 25 | 9.8% | 2 | 建议文档化 |
+| INTERNAL | 205 | 80.7% | 3 | 选择性文档化 |
 
 ## 📋 详细分类
 
@@ -80,7 +80,7 @@
 
 **描述**: 模块内部实现细节
 
-**API列表** (203个):
+**API列表** (205个):
 
 - `EVENT_CONFIG`
 - `MEMORY_CONFIG`
@@ -143,6 +143,8 @@
 - `calculateRotationEfficiencyPercentage`
 - `checkTimeRecord`
 - `calculateTimeBonus`
+- `getSpeedBonusDescription`
+- `getSpeedBonusDetails`
 - `withPerformanceMonitoring`
 - `formatTime`
 - `debounce`
