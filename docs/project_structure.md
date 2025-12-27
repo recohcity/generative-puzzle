@@ -1,6 +1,6 @@
 # 项目结构（Project Structure）
 
-> 自动生成时间：2025/12/26 21:51:41  
+> 自动生成时间：2025/12/27 20:05:20  
 > 生成工具：项目结构文档生成器 v3.1.0 - 开发导航版
 
 **开发者导航工具** - 快速理解项目架构，精准定位代码位置，提升开发效率。
@@ -15,8 +15,8 @@
 | 统计项 | 数量 | 说明 |
 |--------|------|------|
 | 总目录数 | 61 | 项目目录结构层次 |
-| 总文件数 | 298 | 代码文件和资源文件总数 |
-| 项目容量 | 4.22 MB | 不包含node_modules的项目大小 |
+| 总文件数 | 306 | 代码文件和资源文件总数 |
+| 项目容量 | 4.78 MB | 不包含node_modules的项目大小 |
 
 ---
 
@@ -426,6 +426,7 @@ npm run lint                   # 代码检查
   📄 `GITHUB_PAGES_DEPLOYMENT.md`
   📄 `GITIGNORE_OPTIMIZATION_SUMMARY.md`
   📄 `hint-reward-impact.md`
+  📄 `icon-configuration.md`
   📄 `performance-optimization-results.md`
   📄 `PRD_生成式拼图游戏.md`
   📄 `project_structure.md`
@@ -451,6 +452,13 @@ npm run lint                   # 代码检查
   📄 `bgm.mp3` - 游戏音效文件
   📄 `eb8734d4982c5186c0a4d6018b409622.txt`
   📄 `finish.mp3`
+  📄 `icon-1024.png`
+  📄 `icon-16.png`
+  📄 `icon-180.png`
+  📄 `icon-192.png`
+  📄 `icon-32.png`
+  📄 `icon-512.png`
+  📄 `icon.ico`
   📄 `performance-data.json`
   📄 `scatter.mp3`
   📄 `split.mp3`
@@ -657,4 +665,4 @@ npm run generate-structure  # 一键更新项目结构文档
 
 ---
 
-*📅 生成时间：2025/12/26 21:51:41 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*
+*📅 生成时间：2025/12/27 20:05:20 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*

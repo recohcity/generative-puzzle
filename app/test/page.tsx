@@ -34,13 +34,16 @@ interface TrendData {
 }
 
 const BENCHMARKS = {
-  loadTime: 1000,
+  resourceLoadTime: 1000, // 资源加载时间（从0%加载到100%）
+  e2eLoadTime: 1800, // 端到端加载时间（加载完并进入游戏主界面，所有UI都正常显示完毕，音效就绪）
+  loadTime: 1000, // 兼容历史字段
   shapeGenerationTime: 500,
   puzzleGenerationTime: 800,
   scatterTime: 800,
   pieceInteractionTime: 1200,
   minFps: 30,
-  maxMemoryUsage: 100 // MB
+  maxMemoryUsage: 100, // MB
+  adaptationPassRate: 90 // 适配通过率（百分比）
 };
 
 // 1. 增加新指标
@@ -143,6 +146,9 @@ const CustomTooltip: React.FC<TooltipProps> = ({ active, payload, label, data })
         <p className="font-semibold text-gray-800 mb-2">{`时间: ${dataPoint?.fullTime || label}`}</p>
         <p className="text-sm text-gray-600 mb-2">
           状态: {dataPoint?.status} | 块数: {dataPoint?.count}
+          {dataPoint?.failReason && (
+            <span className="block mt-1 text-red-600">失败原因: {dataPoint.failReason}</span>
+          )}
         </p>
         {payload.map((entry, index) => {
           const key = Object.keys(METRIC_LABELS).find(k => METRIC_LABELS[k] === entry.name) as MetricKey | undefined;
@@ -292,6 +298,7 @@ function getSingleTestRating(item: TrendData) {
 
 const PerformanceTrendPage: React.FC = () => {
   const [trendData, setTrendData] = useState<TrendData[]>([]);
+  const [benchmarkDetailsOpen, setBenchmarkDetailsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedMetric, setSelectedMetric] = useState<'performance' | 'system' | 'adaptation'>('performance');
@@ -300,11 +307,20 @@ const PerformanceTrendPage: React.FC = () => {
   const pageSize = 10;
   // 新增：模式筛选
   const [envFilter, setEnvFilter] = useState<'all' | 'development' | 'production'>('all');
+  // 新增：状态筛选（全部/成功/失败）
+  const [statusFilter, setStatusFilter] = useState<'all' | 'success' | 'failed'>('all');
   
   // 优化：使用 useMemo 缓存计算结果
   const filteredData = React.useMemo(() => {
-    return envFilter === 'all' ? trendData : trendData.filter(d => d.envMode === envFilter);
-  }, [trendData, envFilter]);
+    let filtered = envFilter === 'all' ? trendData : trendData.filter(d => d.envMode === envFilter);
+    // 应用状态筛选
+    if (statusFilter === 'success') {
+      filtered = filtered.filter(d => d.status === '✅');
+    } else if (statusFilter === 'failed') {
+      filtered = filtered.filter(d => d.status !== '✅');
+    }
+    return filtered;
+  }, [trendData, envFilter, statusFilter]);
   
   const totalPages = React.useMemo(() => {
     return Math.max(1, Math.ceil(filteredData.length / pageSize));
@@ -477,6 +493,64 @@ const PerformanceTrendPage: React.FC = () => {
           </div>
         </div>
         
+        {/* 最近一次失败测试提示 - 仅当存在失败且没有后续成功测试时显示 */}
+        {(() => {
+          // 找到最近一次失败的测试（按时间倒序）
+          const latestFailedTest = trendData
+            .filter(d => d.status !== '✅' && d.failReason)
+            .sort((a, b) => {
+              const timeA = new Date(a.fullTime || a.time).getTime();
+              const timeB = new Date(b.fullTime || b.time).getTime();
+              return timeB - timeA; // 最新的在前
+            })[0];
+          
+          // 检查是否有后续成功的测试
+          if (latestFailedTest) {
+            const failedTime = new Date(latestFailedTest.fullTime || latestFailedTest.time).getTime();
+            const hasSuccessAfterFailure = trendData.some(d => {
+              if (d.status === '✅') {
+                const testTime = new Date(d.fullTime || d.time).getTime();
+                return testTime > failedTime;
+              }
+              return false;
+            });
+            
+            // 只有在没有后续成功测试时才显示失败提示
+            if (!hasSuccessAfterFailure) {
+              return (
+                <div className="mb-4 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                      <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                    </div>
+                    <div className="ml-3 flex-1">
+                      <h3 className="text-sm font-semibold text-red-800 mb-1">
+                        ⚠️ 最近一次测试失败
+                      </h3>
+                      <div className="text-sm text-red-700 space-y-1">
+                        <div>
+                          <strong>测试时间:</strong> {latestFailedTest.fullTime || latestFailedTest.time}
+                        </div>
+                        <div>
+                          <strong>环境:</strong> {latestFailedTest.envMode === 'production' ? '生产' : latestFailedTest.envMode === 'development' ? '开发' : '未知'}
+                        </div>
+                        {latestFailedTest.failReason && (
+                          <div>
+                            <strong>失败原因:</strong> {latestFailedTest.failReason}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+          }
+          return null;
+        })()}
+        
         {/* 核心指标概览 - 紧凑设计 */}
         <section className="mb-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -485,7 +559,7 @@ const PerformanceTrendPage: React.FC = () => {
                 <span className="text-sm font-bold text-green-800">生产</span>
                 <span className="text-2xl font-extrabold text-green-700">{prodRating.grade}</span>
               </div>
-              <p className="text-xs text-green-600 mt-1">{complianceStats.successRate} 成功率</p>
+              <p className="text-xs text-green-600 mt-1">{prodStats.successRate} 成功率</p>
             </div>
             <div className="bg-blue-50 p-3 rounded border-l-4 border-blue-500">
               <div className="flex items-center justify-between">
@@ -498,10 +572,10 @@ const PerformanceTrendPage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-bold text-purple-800">适配</span>
                 <span className="text-lg font-extrabold text-purple-700">
-                  {filteredData.filter(d => d.adaptationPassRate !== undefined).length > 0 
-                    ? (filteredData.filter(d => d.adaptationPassRate !== undefined)
+                  {trendData.filter(d => d.adaptationPassRate !== undefined).length > 0 
+                    ? (trendData.filter(d => d.adaptationPassRate !== undefined)
                         .reduce((sum, d) => sum + (d.adaptationPassRate || 0), 0) / 
-                       filteredData.filter(d => d.adaptationPassRate !== undefined).length).toFixed(0)
+                       trendData.filter(d => d.adaptationPassRate !== undefined).length).toFixed(0)
                     : '0'}%
                 </span>
               </div>
@@ -522,24 +596,23 @@ const PerformanceTrendPage: React.FC = () => {
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-blue-800 text-sm">🎯 性能基准</h2>
             <button 
-              onClick={() => {
-                const details = document.getElementById('benchmark-details');
-                if (details) {
-                  details.style.display = details.style.display === 'none' ? 'block' : 'none';
-                }
-              }}
-              className="text-xs text-blue-600 hover:text-blue-800"
+              onClick={() => setBenchmarkDetailsOpen(!benchmarkDetailsOpen)}
+              className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
             >
-              详情 ▼
+              详情 {benchmarkDetailsOpen ? '▲' : '▼'}
             </button>
           </div>
-          <div className="text-xs text-blue-700 mt-2">
-            加载≤1000ms · 形状≤500ms · 切割≤800ms · 交互≤1200ms · FPS≥30 · 适配≥90%
+          <div className="text-xs text-blue-700 mt-2 space-y-1">
+            <div><strong>资源加载</strong> ≤1000ms · <strong>端到端加载</strong> ≤1800ms · <strong>形状生成</strong> ≤500ms</div>
+            <div><strong>切割生成</strong> ≤800ms · <strong>交互响应</strong> ≤1200ms · <strong>FPS</strong> ≥30 · <strong>适配通过率</strong> ≥90%</div>
           </div>
-          <div id="benchmark-details" style={{ display: 'none' }} className="mt-3 text-xs text-blue-600 space-y-1">
-            <div>📱 <strong>适配测试覆盖</strong>: 桌面(1920×1080等) · 移动(375×667等) · 平板(768×1024等)</div>
-            <div>🎯 <strong>评估维度</strong>: 布局完整性 · 交互可用性 · 性能稳定性 · 视觉一致性</div>
-          </div>
+          {benchmarkDetailsOpen && (
+            <div className="mt-3 text-xs text-blue-600 space-y-1">
+              <div>📱 <strong>适配测试覆盖</strong>: 桌面端(1920×1080, 1440×900, 1280×720) · 移动端(375×667, 414×896, 360×640) · 平板端(768×1024, 1024×768, 800×600) · 动态变化(1080×1920, 720×1280)</div>
+              <div>🎯 <strong>评估维度</strong>: 布局完整性 · 交互可用性 · 性能稳定性 · 视觉一致性</div>
+              <div>🔄 <strong>动态适配</strong>: 测试web端窗口大小动态变化时的适配响应能力</div>
+            </div>
+          )}
         </div>
         
 
@@ -583,28 +656,58 @@ const PerformanceTrendPage: React.FC = () => {
         {selectedMetric === 'performance' && (
           <div className="mb-4">
             <div className="bg-white border border-gray-200 rounded p-3">
-              <ResponsiveContainer width="100%" height={250}>
+              <ResponsiveContainer width="100%" height={300}>
                 <LineChart 
                   data={filteredData} 
-                  margin={{ top: 5, right: 20, left: 10, bottom: 30 }}
+                  margin={{ top: 10, right: 20, left: 10, bottom: 50 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
                   <XAxis 
                     dataKey="time" 
                     angle={-45} 
                     textAnchor="end" 
-                    height={60} 
+                    height={70} 
                     interval="preserveStartEnd"
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 11 }}
+                    stroke="#6b7280"
                   />
                   <YAxis 
-                    label={{ value: '时间 (ms)', angle: -90, position: 'insideLeft' }}
-                    tick={{ fontSize: 12 }}
+                    label={{ value: '时间 (ms)', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }}
+                    tick={{ fontSize: 11 }}
+                    stroke="#6b7280"
+                    domain={[0, 'dataMax + 200']}
                   />
-                  <Tooltip content={<CustomTooltip data={filteredData} />} />
-                  <Legend wrapperStyle={{ fontSize: '12px' }} />
-                  <ReferenceLine y={BENCHMARKS.shapeGenerationTime} label="形状基准" stroke="#f59e0b" strokeDasharray="3 3" />
-                  <ReferenceLine y={BENCHMARKS.pieceInteractionTime} label="交互基准" stroke="#ef4444" strokeDasharray="3 3" />
+                  <Tooltip 
+                    content={<CustomTooltip data={filteredData} />}
+                    cursor={{ stroke: '#9ca3af', strokeWidth: 1, strokeDasharray: '3 3' }}
+                  />
+                  <Legend 
+                    wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }}
+                    iconType="line"
+                    verticalAlign="bottom"
+                    height={36}
+                  />
+                  <ReferenceLine 
+                    y={BENCHMARKS.shapeGenerationTime} 
+                    label={{ value: "形状基准", position: "end", style: { fontSize: 10 } }} 
+                    stroke="#f59e0b" 
+                    strokeDasharray="3 3"
+                    strokeWidth={1.5}
+                  />
+                  <ReferenceLine 
+                    y={BENCHMARKS.puzzleGenerationTime} 
+                    label={{ value: "切割基准", position: "end", style: { fontSize: 10 } }} 
+                    stroke="#10b981" 
+                    strokeDasharray="3 3"
+                    strokeWidth={1.5}
+                  />
+                  <ReferenceLine 
+                    y={BENCHMARKS.pieceInteractionTime} 
+                    label={{ value: "交互基准", position: "end", style: { fontSize: 10 } }} 
+                    stroke="#ef4444" 
+                    strokeDasharray="3 3"
+                    strokeWidth={1.5}
+                  />
                   <Line 
                     type="monotone" 
                     dataKey="shapeGenerationTime" 
@@ -708,26 +811,26 @@ const PerformanceTrendPage: React.FC = () => {
               <div className="bg-purple-50 p-4 rounded-lg border-l-4 border-purple-500">
                 <h3 className="font-semibold text-purple-800 mb-2">📊 适配测试统计</h3>
                 <div className="space-y-1 text-sm text-purple-700">
-                  <div>总测试次数: <strong>{filteredData.filter(d => d.adaptationTestCount).length}</strong></div>
+                  <div>总测试次数: <strong>{trendData.filter(d => d.adaptationTestCount).length}</strong></div>
                   <div>平均通过率: <strong>
-                    {filteredData.filter(d => d.adaptationPassRate !== undefined).length > 0 
-                      ? (filteredData.filter(d => d.adaptationPassRate !== undefined)
+                    {trendData.filter(d => d.adaptationPassRate !== undefined).length > 0 
+                      ? (trendData.filter(d => d.adaptationPassRate !== undefined)
                           .reduce((sum, d) => sum + (d.adaptationPassRate || 0), 0) / 
-                         filteredData.filter(d => d.adaptationPassRate !== undefined).length).toFixed(1)
+                         trendData.filter(d => d.adaptationPassRate !== undefined).length).toFixed(1)
                       : '暂无数据'}%
                   </strong></div>
-                  <div>完美通过次数: <strong>{filteredData.filter(d => d.adaptationPassRate === 100).length}</strong></div>
+                  <div>完美通过次数: <strong>{trendData.filter(d => d.adaptationPassRate === 100).length}</strong></div>
                 </div>
               </div>
               
               <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
                 <h3 className="font-semibold text-green-800 mb-2">✅ 优秀表现</h3>
                 <div className="space-y-1 text-sm text-green-700">
-                  <div>≥90% 通过率: <strong>{filteredData.filter(d => (d.adaptationPassRate || 0) >= 90).length}</strong> 次</div>
-                  <div>≥75% 通过率: <strong>{filteredData.filter(d => (d.adaptationPassRate || 0) >= 75).length}</strong> 次</div>
+                  <div>≥90% 通过率: <strong>{trendData.filter(d => (d.adaptationPassRate || 0) >= 90).length}</strong> 次</div>
+                  <div>≥75% 通过率: <strong>{trendData.filter(d => (d.adaptationPassRate || 0) >= 75).length}</strong> 次</div>
                   <div>最高通过率: <strong>
-                    {filteredData.filter(d => d.adaptationPassRate !== undefined).length > 0
-                      ? Math.max(...filteredData.filter(d => d.adaptationPassRate !== undefined).map(d => d.adaptationPassRate || 0)).toFixed(1)
+                    {trendData.filter(d => d.adaptationPassRate !== undefined).length > 0
+                      ? Math.max(...trendData.filter(d => d.adaptationPassRate !== undefined).map(d => d.adaptationPassRate || 0)).toFixed(1)
                       : '暂无数据'}%
                   </strong></div>
                 </div>
@@ -736,11 +839,11 @@ const PerformanceTrendPage: React.FC = () => {
               <div className="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500">
                 <h3 className="font-semibold text-yellow-800 mb-2">⚠️ 需要关注</h3>
                 <div className="space-y-1 text-sm text-yellow-700">
-                  <div>&lt;75% 通过率: <strong>{filteredData.filter(d => (d.adaptationPassRate || 0) < 75 && d.adaptationPassRate !== undefined).length}</strong> 次</div>
-                  <div>&lt;50% 通过率: <strong>{filteredData.filter(d => (d.adaptationPassRate || 0) < 50 && d.adaptationPassRate !== undefined).length}</strong> 次</div>
+                  <div>&lt;75% 通过率: <strong>{trendData.filter(d => (d.adaptationPassRate || 0) < 75 && d.adaptationPassRate !== undefined).length}</strong> 次</div>
+                  <div>&lt;50% 通过率: <strong>{trendData.filter(d => (d.adaptationPassRate || 0) < 50 && d.adaptationPassRate !== undefined).length}</strong> 次</div>
                   <div>最低通过率: <strong>
-                    {filteredData.filter(d => d.adaptationPassRate !== undefined).length > 0
-                      ? Math.min(...filteredData.filter(d => d.adaptationPassRate !== undefined).map(d => d.adaptationPassRate || 0)).toFixed(1)
+                    {trendData.filter(d => d.adaptationPassRate !== undefined).length > 0
+                      ? Math.min(...trendData.filter(d => d.adaptationPassRate !== undefined).map(d => d.adaptationPassRate || 0)).toFixed(1)
                       : '暂无数据'}%
                   </strong></div>
                 </div>
@@ -840,6 +943,15 @@ const PerformanceTrendPage: React.FC = () => {
                 <option value="development">开发 ({devData.length})</option>
                 <option value="production">生产 ({prodData.length})</option>
               </select>
+              <select
+                value={statusFilter}
+                onChange={e => setStatusFilter(e.target.value as any)}
+                className="border border-gray-300 rounded px-2 py-1 text-xs bg-white"
+              >
+                <option value="all">全部状态</option>
+                <option value="success">成功 ({trendData.filter(d => d.status === '✅').length})</option>
+                <option value="failed">失败 ({trendData.filter(d => d.status !== '✅').length})</option>
+              </select>
               <span className="text-xs text-gray-600">
                 显示: {filteredData.length} 条
               </span>
@@ -857,6 +969,7 @@ const PerformanceTrendPage: React.FC = () => {
                   <th className="border-r border-gray-300 px-2 py-2 text-center font-bold text-gray-700 text-xs">E2E</th>
                   <th className="border-r border-gray-300 px-2 py-2 text-center font-bold text-gray-700 text-xs">形状</th>
                   <th className="border-r border-gray-300 px-2 py-2 text-center font-bold text-gray-700 text-xs">切割</th>
+                  <th className="border-r border-gray-300 px-2 py-2 text-center font-bold text-gray-700 text-xs">散开</th>
                   <th className="border-r border-gray-300 px-2 py-2 text-center font-bold text-gray-700 text-xs">交互</th>
                   <th className="border-r border-gray-300 px-2 py-2 text-center font-bold text-gray-700 text-xs">FPS</th>
                   <th className="border-r border-gray-300 px-2 py-2 text-center font-bold text-gray-700 text-xs">内存</th>
@@ -865,11 +978,13 @@ const PerformanceTrendPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {pagedFilteredData.map((item: any, index: number) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="sticky left-0 bg-white border-r border-b border-gray-300 px-2 py-1 font-mono text-xs text-gray-800">
+                {pagedFilteredData.map((item: any, index: number) => {
+                  const isFailed = item.status !== '✅';
+                  return (
+                  <tr key={index} className={`hover:bg-gray-50 ${isFailed ? 'bg-red-50' : ''}`}>
+                    <td className={`sticky left-0 border-r border-b border-gray-300 px-2 py-1 font-mono text-xs ${isFailed ? 'bg-red-50 text-red-800' : 'bg-white text-gray-800'}`}>
                       {item.fullTime?.split(' ')[1] || item.time}
-                      <div className="text-[10px] text-gray-500">{item.fullTime?.split(' ')[0]}</div>
+                      <div className={`text-[10px] ${isFailed ? 'text-red-600' : 'text-gray-500'}`}>{item.fullTime?.split(' ')[0]}</div>
                     </td>
                     <td className="border-r border-b border-gray-300 px-2 py-1 text-center">
                       {item.envMode === 'production' && (
@@ -887,12 +1002,13 @@ const PerformanceTrendPage: React.FC = () => {
                         {item.version || '-'}
                       </span>
                     </td>
-                    {/* 核心指标：资源、E2E、形状、切割、交互、FPS、内存、适配 */}
+                    {/* 核心指标：资源、E2E、形状、切割、散开、交互、FPS、内存、适配 */}
                     {[
                       { key: 'resourceLoadTime', value: item.resourceLoadTime },
                       { key: 'e2eLoadTime', value: item.e2eLoadTime },
                       { key: 'shapeGenerationTime', value: item.shapeGenerationTime },
                       { key: 'puzzleGenerationTime', value: item.puzzleGenerationTime },
+                      { key: 'scatterTime', value: item.scatterTime },
                       { key: 'avgInteractionTime', value: item.avgInteractionTime },
                       { key: 'fps', value: item.fps },
                       { key: 'memoryUsage', value: item.memoryUsage },
@@ -922,14 +1038,15 @@ const PerformanceTrendPage: React.FC = () => {
                       })()}
                     </td>
                   </tr>
-                ))}
+                )})}
                 {/* 精简统计行 */}
                 <tr className="bg-blue-50 font-semibold text-xs">
-                  <td colSpan={3} className="text-right pr-2 text-blue-800">开发均值</td>
+                  <td colSpan={3} className="text-right pr-2 text-blue-800 border-r border-gray-300">开发均值</td>
                   <td className="text-center text-blue-700 border-r border-gray-300 px-2 py-1">{calcStats(devData, 'resourceLoadTime').avg}</td>
                   <td className="text-center text-blue-700 border-r border-gray-300 px-2 py-1">{calcStats(devData, 'e2eLoadTime').avg}</td>
                   <td className="text-center text-blue-700 border-r border-gray-300 px-2 py-1">{calcStats(devData, 'shapeGenerationTime').avg}</td>
                   <td className="text-center text-blue-700 border-r border-gray-300 px-2 py-1">{calcStats(devData, 'puzzleGenerationTime').avg}</td>
+                  <td className="text-center text-blue-700 border-r border-gray-300 px-2 py-1">{calcStats(devData, 'scatterTime').avg}</td>
                   <td className="text-center text-blue-700 border-r border-gray-300 px-2 py-1">{calcStats(devData, 'avgInteractionTime').avg}</td>
                   <td className="text-center text-blue-700 border-r border-gray-300 px-2 py-1">{calcStats(devData, 'fps').avg}</td>
                   <td className="text-center text-blue-700 border-r border-gray-300 px-2 py-1">{calcStats(devData, 'memoryUsage').avg}</td>
@@ -937,11 +1054,12 @@ const PerformanceTrendPage: React.FC = () => {
                   <td className="text-center text-blue-800">-</td>
                 </tr>
                 <tr className="bg-green-50 font-semibold text-xs">
-                  <td colSpan={3} className="text-right pr-2 text-green-800">生产均值</td>
+                  <td colSpan={3} className="text-right pr-2 text-green-800 border-r border-gray-300">生产均值</td>
                   <td className="text-center text-green-700 border-r border-gray-300 px-2 py-1">{calcStats(prodData, 'resourceLoadTime').avg}</td>
                   <td className="text-center text-green-700 border-r border-gray-300 px-2 py-1">{calcStats(prodData, 'e2eLoadTime').avg}</td>
                   <td className="text-center text-green-700 border-r border-gray-300 px-2 py-1">{calcStats(prodData, 'shapeGenerationTime').avg}</td>
                   <td className="text-center text-green-700 border-r border-gray-300 px-2 py-1">{calcStats(prodData, 'puzzleGenerationTime').avg}</td>
+                  <td className="text-center text-green-700 border-r border-gray-300 px-2 py-1">{calcStats(prodData, 'scatterTime').avg}</td>
                   <td className="text-center text-green-700 border-r border-gray-300 px-2 py-1">{calcStats(prodData, 'avgInteractionTime').avg}</td>
                   <td className="text-center text-green-700 border-r border-gray-300 px-2 py-1">{calcStats(prodData, 'fps').avg}</td>
                   <td className="text-center text-green-700 border-r border-gray-300 px-2 py-1">{calcStats(prodData, 'memoryUsage').avg}</td>
@@ -983,16 +1101,6 @@ const PerformanceTrendPage: React.FC = () => {
           </div>
         </section>
 
-        {/* 精简优化建议 */}
-        <div className="bg-orange-50 p-3 rounded border-l-4 border-orange-500">
-          <h2 className="font-semibold text-orange-800 mb-2 text-sm">🔧 关键建议</h2>
-          <div className="text-xs text-orange-700 space-y-1">
-            <div><strong>✅ 生产环境:</strong> 各项指标优秀，系统稳定，已达上线标准</div>
-            <div><strong>⚠️ 开发环境:</strong> 部分指标波动，建议引入生产级构建流程</div>
-            <div><strong>📱 跨平台适配:</strong> 整体表现良好，重点关注小屏设备和4K显示器</div>
-            <div><strong>📊 持续监控:</strong> 定期回归测试，防止性能回退，关注环境差异趋势</div>
-          </div>
-        </div>
         </section>
       </div>
     </main>

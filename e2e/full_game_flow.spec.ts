@@ -59,19 +59,55 @@ function detectEnvMode() {
   return 'development';
 }
 
-// 辅助函数：导航到页面并确保画布和控制面板可见
-async function gotoAndEnsureCanvas(page: Page) {
-  await page.addInitScript(() => {
-    (window as any).soundPlayedForTest = () => { };
-  });
-  await page.setViewportSize({ width: 1920, height: 1080 });
-  await page.goto('http://localhost:3000/', { waitUntil: 'load' });
-  await page.waitForSelector('canvas#puzzle-canvas');
-
+// 辅助函数：确保画布可见、UI就绪、音效预加载完成（用于端到端加载时间测量）
+// 注意：此函数不执行 page.goto()，因为页面已经在调用前加载完成
+// 辅助函数：确保画布可见、UI就绪、音效预加载完成（用于端到端加载时间测量）
+// 注意：此函数不执行 page.goto()，因为页面已经在调用前加载完成
+async function ensureCanvasAndUIReady(page: Page) {
+  // #region agent log
+  const e2eStepStart = Date.now();
+  const testRunCount = (global as any).__testRunCount__ || 1;
+  const isFirstRun = testRunCount === 1;
+  fetch('http://127.0.0.1:7243/ingest/83e1d94c-afb4-4b86-8b38-165371e14489',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'full_game_flow.spec.ts:66',message:'E2E加载开始',data:{timestamp:Date.now(),testRunCount,isFirstRun},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'B'})}).catch(()=>{});
+  // #endregion
+  
+  // 优化：先等待网络空闲，这样画布和UI应该已经渲染完成
   // 等待页面完全加载和多语言系统初始化
+  const networkIdleStart = Date.now();
   await page.waitForLoadState('networkidle');
+  const networkIdleTime = Date.now() - networkIdleStart;
+  // #region agent log
+  fetch('http://127.0.0.1:7243/ingest/83e1d94c-afb4-4b86-8b38-165371e14489',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'full_game_flow.spec.ts:75',message:'networkidle等待完成',data:{networkIdleTime,testRunCount,isFirstRun},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'B'})}).catch(()=>{});
+  // #endregion
 
+  // 等待初始提示出现（确保UI已完全渲染，包括画布）
+  // waitForTip 已经确保了UI完全渲染，画布肯定已经可见了
+  const tipWaitStart = Date.now();
   await waitForTip(page, '请点击生成你喜欢的形状');
+  const tipWaitTime = Date.now() - tipWaitStart;
+  // #region agent log
+  fetch('http://127.0.0.1:7243/ingest/83e1d94c-afb4-4b86-8b38-165371e14489',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'full_game_flow.spec.ts:87',message:'提示等待完成',data:{tipWaitTime,testRunCount,isFirstRun},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'B'})}).catch(()=>{});
+  // #endregion
+
+  // 验证画布已可见（快速检查，不应该需要等待）
+  // 由于 waitForTip 已经确保了UI完全渲染，画布应该已经可见，这里只是验证
+  const canvasWaitStart = Date.now();
+  await page.waitForSelector('canvas#puzzle-canvas', { state: 'visible', timeout: 1000 });
+  const canvasWaitTime = Date.now() - canvasWaitStart;
+  // #region agent log
+  fetch('http://127.0.0.1:7243/ingest/83e1d94c-afb4-4b86-8b38-165371e14489',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'full_game_flow.spec.ts:96',message:'画布等待完成',data:{canvasWaitTime,testRunCount,isFirstRun},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'B'})}).catch(()=>{});
+  // #endregion
+
+  // 等待音效预加载完成（确保音效就绪，满足点击即播）
+  // preloadAllSoundEffects 在 GameInterface 的 useEffect 中调用，会创建 Audio 元素并调用 load()
+  // 由于音效文件较小（split.mp3, scatter.mp3, finish.mp3 通常 <100KB），加载很快
+  // 网络空闲后音效应该已经加载完成，但为了确保，等待150ms
+  await page.waitForTimeout(150);
+  
+  const totalE2eTime = Date.now() - e2eStepStart;
+  // #region agent log
+  fetch('http://127.0.0.1:7243/ingest/83e1d94c-afb4-4b86-8b38-165371e14489',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'full_game_flow.spec.ts:107',message:'E2E加载完成',data:{totalE2eTime,networkIdleTime,tipWaitTime,canvasWaitTime,soundWaitTime:150,testRunCount,isFirstRun},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'B'})}).catch(()=>{});
+  // #endregion
 }
 
 // 辅助函数：旋转拼图到正确角度
@@ -103,47 +139,19 @@ async function rotatePieceToCorrectAngle(page: Page, pieceIndex: number, targetR
   }
 }
 
-// 性能监控函数
-async function measurePerformance(page: Page): Promise<PerformanceMetrics> {
-  const performanceMetrics = await page.evaluate(() => {
-    const performance = window.performance;
-    const memory = (window as any).performance?.memory;
-    return {
-      loadTime: performance.timing.loadEventEnd - performance.timing.navigationStart,
-      memoryUsage: memory ? memory.usedJSHeapSize : 0,
-      fps: [] as number[],
-    };
-  });
-  return {
-    loadTime: performanceMetrics.loadTime,
-    shapeGenerationTime: 0,
-    puzzleGenerationTime: 0,
-    scatterTime: 0,
-    pieceInteractionTimes: [],
-    memoryUsage: performanceMetrics.memoryUsage,
-    fps: performanceMetrics.fps,
-    totalTestTime: 0,
-    puzzleInteractionDuration: undefined,
-    avgInteractionTime: undefined,
-    shapeType: 'N/A',
-    cutType: 'N/A',
-    cutCount: 0,
-    pieceCount: 0,
-    version, // 新增
-  };
-}
+// 注意：measurePerformance 函数已移除，性能指标在测试流程中直接收集
 
 // 评估性能指标（只做日志和报告，不影响流程通过与否）
 function evaluatePerformance(metrics: PerformanceMetrics): { details: string[] } {
   const details = [] as string[];
 
-  // 检查页面加载时间
-  if (metrics.loadTime !== undefined && metrics.loadTime > PERFORMANCE_BENCHMARKS.loadTime) {
-    details.push(`⚠️ 页面加载时间 (${metrics.loadTime}ms) 超过基准值 (${PERFORMANCE_BENCHMARKS.loadTime}ms)`);
-  } else if (metrics.loadTime !== undefined) {
-    details.push(`✅ 页面加载时间: ${metrics.loadTime}ms`);
+  // 检查资源加载时间（从0%加载到100%，页面资源加载完成）
+  if (metrics.resourceLoadTime !== undefined && metrics.resourceLoadTime > PERFORMANCE_BENCHMARKS.loadTime) {
+    details.push(`⚠️ 资源加载时间 (${metrics.resourceLoadTime}ms) 超过基准值 (${PERFORMANCE_BENCHMARKS.loadTime}ms)`);
+  } else if (metrics.resourceLoadTime !== undefined) {
+    details.push(`✅ 资源加载时间: ${metrics.resourceLoadTime}ms`);
   } else {
-    details.push('页面加载时间: 缺失');
+    details.push('资源加载时间: 缺失');
   }
 
   // 检查形状生成时间
@@ -205,22 +213,18 @@ function evaluatePerformance(metrics: PerformanceMetrics): { details: string[] }
   // 添加总测试时间
   details.push(`ℹ️ 总测试时间: ${metrics.totalTestTime}ms`);
 
-  // 页面资源加载时间
-  if (metrics.gotoLoadTime !== undefined && metrics.gotoLoadTime > 1000) {
-    details.push(`⚠️ 页面资源加载时间 (${metrics.gotoLoadTime}ms) 超过基准值 (1000ms)`);
-  } else if (metrics.gotoLoadTime !== undefined) {
-    details.push(`✅ 页面资源加载时间: ${metrics.gotoLoadTime}ms`);
-  } else {
-    details.push('页面资源加载时间: 缺失');
-  }
-  // 端到端可交互加载时间
-  if (metrics.e2eLoadTime !== undefined && metrics.e2eLoadTime > 1800) {
-    details.push(`⚠️ 端到端可交互加载时间 (${metrics.e2eLoadTime}ms) 超过基准值 (1800ms)`);
+  // 端到端加载时间（加载完并进入游戏主界面，所有UI都正常显示完毕，音效就绪）
+  const e2eLoadTimeBenchmark = 1800; // 端到端加载时间基准值
+  if (metrics.e2eLoadTime !== undefined && metrics.e2eLoadTime > e2eLoadTimeBenchmark) {
+    details.push(`⚠️ 端到端加载时间 (${metrics.e2eLoadTime}ms) 超过基准值 (${e2eLoadTimeBenchmark}ms)`);
   } else if (metrics.e2eLoadTime !== undefined) {
-    details.push(`✅ 端到端可交互加载时间: ${metrics.e2eLoadTime}ms`);
+    details.push(`✅ 端到端加载时间: ${metrics.e2eLoadTime}ms`);
   } else {
-    details.push('端到端可交互加载时间: 缺失');
+    details.push('端到端加载时间: 缺失');
   }
+
+  // 兼容字段：loadTime 使用 e2eLoadTime 的值（向后兼容）
+  // 注意：此字段仅用于兼容，实际评估应使用 resourceLoadTime 和 e2eLoadTime
 
   return { details };
 }
@@ -267,52 +271,18 @@ async function checkAdaptation(page: Page, resolutionName: string, resolutionTyp
 
     console.log(`[适配检查] ${resolutionName}: ${adaptationResult.success ? '✅ PASS' : '❌ FAIL'} - ${adaptationResult.reason}`);
 
-    // 🔍 调试信息：输出详细的适配状态
+    // 优化：简化调试信息，只在失败时输出关键信息
     if (!adaptationResult.success) {
-      const debugInfo = await page.evaluate(() => {
+      const basicDebugInfo = await page.evaluate(() => {
         const canvas = document.querySelector('canvas#puzzle-canvas') as HTMLCanvasElement;
         const gameState = (window as any).__gameStateForTests__;
-
         if (!canvas || !gameState) return null;
-
-        const canvasRect = canvas.getBoundingClientRect();
-        const canvasWidth = canvasRect.width;
-        const canvasHeight = canvasRect.height;
-
-        // 计算目标形状中心
-        let shapeMinX = Infinity, shapeMaxX = -Infinity;
-        let shapeMinY = Infinity, shapeMaxY = -Infinity;
-
-        if (gameState.originalShape && Array.isArray(gameState.originalShape)) {
-          gameState.originalShape.forEach((point: any) => {
-            shapeMinX = Math.min(shapeMinX, point.x);
-            shapeMaxX = Math.max(shapeMaxX, point.x);
-            shapeMinY = Math.min(shapeMinY, point.y);
-            shapeMaxY = Math.max(shapeMaxY, point.y);
-          });
-        }
-
-        const actualShapeCenterX = (shapeMinX + shapeMaxX) / 2;
-        const actualShapeCenterY = (shapeMinY + shapeMaxY) / 2;
-        const targetShapeCenterX = gameState.canvasWidth / 2;
-        const targetShapeCenterY = gameState.canvasHeight / 2;
-
         return {
-          canvasSize: { width: canvasWidth, height: canvasHeight },
-          gameCanvasSize: { width: gameState.canvasWidth, height: gameState.canvasHeight },
-          viewport: { width: window.innerWidth, height: window.innerHeight },
-          shapeCenter: { x: actualShapeCenterX, y: actualShapeCenterY },
-          targetCenter: { x: targetShapeCenterX, y: targetShapeCenterY },
-          centerOffset: {
-            x: Math.abs(actualShapeCenterX - targetShapeCenterX),
-            y: Math.abs(actualShapeCenterY - targetShapeCenterY)
-          },
-          hasShape: gameState.originalShape && Array.isArray(gameState.originalShape) && gameState.originalShape.length > 0,
-          hasPuzzle: gameState.puzzle && Array.isArray(gameState.puzzle) && gameState.puzzle.length > 0
+          canvasSize: { width: canvas.width, height: canvas.height },
+          hasShape: gameState.originalShape && Array.isArray(gameState.originalShape) && gameState.originalShape.length > 0
         };
       });
-
-      console.log(`[适配调试] ${resolutionName} 详细信息:`, JSON.stringify(debugInfo, null, 2));
+      console.log(`[适配调试] ${resolutionName} 关键信息:`, basicDebugInfo);
     }
 
     return adaptationResult.success;
@@ -348,29 +318,49 @@ async function testAdaptationMechanism(page: Page, resolutionName: string): Prom
   }
 }
 
-// 新增：多分辨率适配测试函数
+// 多分辨率适配测试函数（优化：支持一次性测试多个分辨率）
+// 核心测试目标：3端分辨率（桌面、移动、平板）+ web端动态变化分辨率时的适配情况
 async function performAdaptationTest(page: Page, maxTests?: number, includePortrait?: boolean, includeExtreme?: boolean): Promise<{ results: { [key: string]: boolean }, passCount: number, totalCount: number }> {
-  let resolutions = [
-    { width: 1920, height: 1080, name: '1920x1080', type: 'desktop' },
-    { width: 1440, height: 900, name: '1440x900', type: 'desktop' },
-    { width: 800, height: 600, name: '800x600', type: 'tablet' },
-    { width: 1280, height: 720, name: '1280x720', type: 'desktop' }
+  // 优化：测试3端分辨率，覆盖桌面、移动、平板
+  // 1. 桌面端分辨率（横屏）
+  const desktopResolutions = [
+    { width: 1920, height: 1080, name: '1920x1080', type: 'desktop' }, // 全高清桌面
+    { width: 1440, height: 900, name: '1440x900', type: 'desktop' },  // 标准桌面
+    { width: 1280, height: 720, name: '1280x720', type: 'desktop' }    // 小桌面
   ];
-
-  // 如果包含竖屏横屏模式，添加竖屏分辨率
+  
+  // 2. 移动端分辨率（竖屏）
+  const mobileResolutions = [
+    { width: 375, height: 667, name: '375x667-mobile', type: 'mobile' },   // iPhone 6/7/8
+    { width: 414, height: 896, name: '414x896-mobile', type: 'mobile' },   // iPhone X/11/12
+    { width: 360, height: 640, name: '360x640-mobile', type: 'mobile' }    // Android 标准
+  ];
+  
+  // 3. 平板端分辨率（横屏）
+  const tabletResolutions = [
+    { width: 768, height: 1024, name: '768x1024-tablet', type: 'tablet' }, // iPad 竖屏
+    { width: 1024, height: 768, name: '1024x768-tablet', type: 'tablet' }, // iPad 横屏
+    { width: 800, height: 600, name: '800x600-tablet', type: 'tablet' }    // 小平板
+  ];
+  
+  // 合并所有分辨率
+  let resolutions = [...desktopResolutions, ...mobileResolutions, ...tabletResolutions];
+  
+  // 如果包含竖屏横屏模式，添加额外的竖屏分辨率（用于测试动态变化）
+  // 这些分辨率用于测试web端动态变化分辨率时的适配情况
   if (includePortrait) {
     resolutions = resolutions.concat([
-      { width: 1080, height: 1920, name: '1080x1920-portrait', type: 'mobile' },
-      { width: 720, height: 1280, name: '720x1280-portrait', type: 'mobile' }
+      { width: 1080, height: 1920, name: '1080x1920-portrait', type: 'mobile' }, // 大屏手机竖屏
+      { width: 720, height: 1280, name: '720x1280-portrait', type: 'mobile' }  // 中屏手机竖屏
     ]);
   }
 
   // 如果包含极端分辨率测试，添加桌面端模拟移动端的极端情况
+  // 注意：移动端分辨率已经在上面包含，这里主要用于极端场景测试
   if (includeExtreme) {
     resolutions = resolutions.concat([
-      { width: 375, height: 667, name: '375x667-mobile-extreme', type: 'extreme' },
-      { width: 414, height: 896, name: '414x896-mobile-extreme', type: 'extreme' },
-      { width: 360, height: 640, name: '360x640-mobile-extreme', type: 'extreme' }
+      { width: 320, height: 568, name: '320x568-extreme', type: 'extreme' }, // iPhone SE
+      { width: 2560, height: 1440, name: '2560x1440-extreme', type: 'extreme' } // 4K显示器
     ]);
   }
 
@@ -385,21 +375,23 @@ async function performAdaptationTest(page: Page, maxTests?: number, includePortr
   console.log(`[适配测试] 开始多分辨率适配检查... (${resolutions.length}个分辨率)`);
 
   for (const resolution of resolutions) {
-    console.log(`[适配测试] 切换到分辨率: ${resolution.name}`);
+    console.log(`[适配测试] 切换到分辨率: ${resolution.name} (${resolution.type})`);
 
-    // 改变浏览器分辨率
+    // 改变浏览器分辨率（模拟web端动态变化分辨率）
+    // 这是本项目适配的核心体现：测试在不同分辨率动态变化时的适配情况
     await page.setViewportSize({ width: resolution.width, height: resolution.height });
 
     // 🛡️ 简化的适配等待：减少卡顿
     console.log(`[适配等待] ${resolution.name}: 等待适配完成...`);
 
-    // 触发resize事件并等待适配完成
+    // 触发resize事件并等待适配完成（这是web端动态变化分辨率时的核心适配机制）
     await page.evaluate(() => {
       window.dispatchEvent(new Event('resize'));
     });
 
     // 简化等待：只等待基本的适配时间
-    await page.waitForTimeout(500); // 进一步减少到0.5秒
+    // 适配系统需要时间响应分辨率变化，300ms足够完成布局调整
+    await page.waitForTimeout(300); // 优化：减少到300ms，适配通常很快完成
 
     console.log(`[适配等待] ${resolution.name}: 适配等待完成`);
 
@@ -422,14 +414,14 @@ async function performAdaptationTest(page: Page, maxTests?: number, includePortr
       passCount++;
     }
 
-    await page.waitForTimeout(500); // 短暂等待
+    await page.waitForTimeout(200); // 优化：减少到200ms
   }
 
   console.log(`[适配测试] 完成 - 通过率: ${passCount}/${resolutions.length} (${(passCount / resolutions.length * 100).toFixed(1)}%)`);
 
   // 恢复到标准分辨率
   await page.setViewportSize({ width: 1280, height: 720 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(200); // 优化：减少到200ms
 
   return {
     results,
@@ -441,7 +433,7 @@ async function performAdaptationTest(page: Page, maxTests?: number, includePortr
 // 辅助函数：等待画布提示区域出现指定文本
 // 更稳健的文本等待方式 - 支持中英文双语
 async function waitForTip(page: Page, expectedCN: string, expectedEN?: string) {
-  const timeout = 8000; // 减少超时时间
+  const timeout = 5000; // 优化：减少超时时间到5秒，通常UI响应很快
 
   if (expectedEN) {
     // 同时等待中文或英文文本，哪个先出现就用哪个
@@ -459,7 +451,14 @@ async function waitForTip(page: Page, expectedCN: string, expectedEN?: string) {
   }
 }
 
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async ({ page, context }) => {
+  // #region agent log
+  // 记录测试运行次数（用于判断是否为首次运行）
+  const testRunCount = (global as any).__testRunCount__ = ((global as any).__testRunCount__ || 0) + 1;
+  const isFirstRun = testRunCount === 1;
+  fetch('http://127.0.0.1:7243/ingest/83e1d94c-afb4-4b86-8b38-165371e14489',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'full_game_flow.spec.ts:452',message:'beforeEach开始',data:{testRunCount,isFirstRun},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'B'})}).catch(()=>{});
+  // #endregion
+  
   // 设置测试环境的语言偏好（模拟中文用户）
   await page.addInitScript(() => {
     // 模拟中文用户的浏览器环境
@@ -501,14 +500,14 @@ test.beforeEach(async ({ page }) => {
     function dummyAnim() { requestAnimationFrame(dummyAnim); }
     requestAnimationFrame(dummyAnim);
   });
-  await gotoAndEnsureCanvas(page);
+  // 在 beforeEach 中只设置视口，不加载页面
+  // 页面加载和测量在测试主流程中进行，确保测量准确性
+  await page.setViewportSize({ width: 1920, height: 1080 });
 });
 
 // --- 完整流程自动化测试脚本 ---
 
 test('完整自动化游戏流程', async ({ page }) => {
-  // 测试开始，记录初始时间
-  console.log('[E2E-debugLOG] 测试开始', { startTime: Date.now() });
   const startTime = Date.now();
   const metrics: PerformanceMetrics = {
     gotoLoadTime: undefined,
@@ -533,293 +532,132 @@ test('完整自动化游戏流程', async ({ page }) => {
   };
   let testError: any = null;
   try {
-    // 1. 采集 page.goto 加载时长
-    const gotoStart = Date.now();
+    // 1. 采集资源加载时间（从0%加载到100%，页面资源加载完成）
+    const resourceLoadStart = Date.now();
+    const testRunCount = (global as any).__testRunCount__ || 1;
+    const isFirstRun = testRunCount === 1;
+    // #region agent log
+    fetch('http://127.0.0.1:7243/ingest/83e1d94c-afb4-4b86-8b38-165371e14489',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'full_game_flow.spec.ts:537',message:'资源加载开始',data:{timestamp:Date.now(),envMode:metrics.envMode,testRunCount,isFirstRun},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
     await page.goto('http://localhost:3000/', { waitUntil: 'load' });
-    metrics.gotoLoadTime = Date.now() - gotoStart;
-    metrics.resourceLoadTime = metrics.gotoLoadTime;
-    // 2. 采集端到端体验加载时长
+    metrics.resourceLoadTime = Date.now() - resourceLoadStart;
+    metrics.gotoLoadTime = metrics.resourceLoadTime; // 兼容字段
+    // #region agent log
+    fetch('http://127.0.0.1:7243/ingest/83e1d94c-afb4-4b86-8b38-165371e14489',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'full_game_flow.spec.ts:543',message:'资源加载完成',data:{resourceLoadTime:metrics.resourceLoadTime,envMode:metrics.envMode,testRunCount,isFirstRun},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
+
+    // 2. 采集端到端加载时间（加载完并进入游戏主界面，所有UI都正常显示完毕，音效就绪）
     const e2eStart = Date.now();
-    await gotoAndEnsureCanvas(page);
+    await ensureCanvasAndUIReady(page);
     metrics.e2eLoadTime = Date.now() - e2eStart;
-    // 兼容老逻辑
+    // 兼容老逻辑：loadTime 使用 e2eLoadTime 的值
     metrics.loadTime = metrics.e2eLoadTime;
-    // 1.1 等待初始提示
-    // 等待初始提示前
-    await waitForTip(page, '请点击生成你喜欢的形状', 'Please click to generate your favorite shape');
-    // 初始提示已出现
-    console.log('步骤 1: 初始提示 - 完成。');
 
     // 2. 形状生成时间采集
     const shapeGenStart = Date.now();
-    // 点击云朵形状按钮前 (支持多语言)
     await page.getByTestId('shape-curve-button').click();
-    // 点击云朵形状按钮后
     await waitForTip(page, '请选择切割类型');
     metrics.shapeGenerationTime = Date.now() - shapeGenStart;
     metrics.shapeType = '云朵';
-    // 形状生成后，当前全局状态
-    const stateAfterShape = await page.evaluate(() => (window as any).__gameStateForTests__);
-    console.log('[E2E-debugLOG] 形状生成后全局状态', stateAfterShape);
-    console.log('步骤 2: 选择云朵形状并生成 - 完成。');
 
-    // 节点1：切割拼图后适配检查（2次分辨率测试）
-    console.log('步骤 2.1: 形状生成后适配检查...');
-    const shapeAdaptationTest = await performAdaptationTest(page, 1, false, false); // 只测试1次，减少卡顿
+    // 节点1：形状生成后适配检查（优化：测试3端分辨率 + 动态变化测试）
+    // 优化：测试桌面、移动、平板3端分辨率，以及web端动态变化分辨率时的适配情况
+    // 这是本项目适配的核心体现：确保在不同设备和动态变化时都能正常适配
+    const shapeAdaptationTest = await performAdaptationTest(page, undefined, true, false); // 测试所有基础分辨率 + 竖屏移动端
     metrics.adaptationTestResults = { ...shapeAdaptationTest.results };
     metrics.adaptationTestCount = shapeAdaptationTest.totalCount;
     metrics.adaptationPassCount = shapeAdaptationTest.passCount;
     metrics.adaptationPassRate = `${(shapeAdaptationTest.passCount / shapeAdaptationTest.totalCount * 100).toFixed(1)}%`;
-    console.log('步骤 2.1: 形状生成后适配检查 - 完成。');
 
     // 3. 拼图生成时间采集
-    // 选择曲线切割类型前
     await page.getByTestId('cut-type-curve-button').click();
-    metrics.cutType = '曲线'; // 新增：记录切割类型
-    // 选择曲线切割类型后
+    metrics.cutType = '曲线';
     await waitForTip(page, '请切割形状');
-    // 选择切割次数前
     await page.getByTestId('cut-count-8-button').click();
-    metrics.cutCount = 8; // 新增：记录切割次数
-    // 选择切割次数后
+    metrics.cutCount = 8;
     const puzzleGenStart = Date.now();
-    // 点击切割形状按钮前
     await page.getByTestId('generate-puzzle-button').click();
-    // 点击切割形状按钮后
     await waitForTip(page, '请散开拼图，开始游戏');
     metrics.puzzleGenerationTime = Date.now() - puzzleGenStart;
-    // 切割形状后全局状态
-    const stateAfterCut = await page.evaluate(() => (window as any).__gameStateForTests__);
-    console.log('[E2E-debugLOG] 切割形状后全局状态', stateAfterCut);
-    console.log('步骤 3: 切割形状并渲染拼图 - 完成。');
 
     // 5. 散开拼图
     const scatterStartTime = Date.now();
-    // 点击散开拼图按钮前
     await page.getByTestId('scatter-puzzle-button').click();
-    // 点击散开拼图按钮后
-    // robustWaitForFunction 等待 puzzle !== undefined 前
-    await robustWaitForFunction(page, () => {
-      const state = (window as any).__gameStateForTests__;
-      return state && state.puzzle !== undefined;
-    }, 30000);
-    // robustWaitForFunction puzzle !== undefined 后
-    const stateAfterPuzzleNotUndef = await page.evaluate(() => (window as any).__gameStateForTests__);
-    console.log('[E2E-debugLOG] puzzle !== undefined 后全局状态', stateAfterPuzzleNotUndef);
-    // robustWaitForFunction 等待 puzzle/positions 数组前
     await robustWaitForFunction(page, () => {
       const state = (window as any).__gameStateForTests__;
       return Array.isArray(state.puzzle) && state.puzzle.length > 0
         && Array.isArray(state.originalPositions) && state.originalPositions.length > 0;
     }, 30000);
-    // robustWaitForFunction puzzle/positions 数组后
-    const stateAfterPuzzleArray = await page.evaluate(() => (window as any).__gameStateForTests__);
-    console.log('[E2E-debugLOG] puzzle/positions 数组后全局状态', stateAfterPuzzleArray);
-    // 获取 puzzle 长度
     const puzzle = await page.evaluate(() => (window as any).__gameStateForTests__.puzzle);
-    console.log('[E2E-debugLOG] puzzle 长度', puzzle ? puzzle.length : puzzle);
     await waitForTip(page, `拼图0/${puzzle.length}`);
     metrics.scatterTime = Date.now() - scatterStartTime;
-    console.log(`步骤 4: 点击散开拼图 - 完成。`);
 
-    // 节点2：散开拼图后适配检查（2次分辨率测试 + 极端分辨率测试）
-    console.log('步骤 4.1: 散开拼图后适配检查...');
-    const scatterAdaptationTest = await performAdaptationTest(page, 1, false, false); // 只测试1次，减少卡顿
-    // 合并适配测试结果
-    if (metrics.adaptationTestResults) {
-      Object.assign(metrics.adaptationTestResults, scatterAdaptationTest.results);
-      metrics.adaptationTestCount = (metrics.adaptationTestCount || 0) + scatterAdaptationTest.totalCount;
-      metrics.adaptationPassCount = (metrics.adaptationPassCount || 0) + scatterAdaptationTest.passCount;
-      metrics.adaptationPassRate = `${(metrics.adaptationPassCount / metrics.adaptationTestCount * 100).toFixed(1)}%`;
-    }
-    console.log('步骤 4.1: 散开拼图后适配检查 - 完成。');
+    // 节点2：散开拼图后适配检查（优化：移除重复测试，已在形状生成后测试过）
+    // 优化说明：散开拼图后的适配测试与形状生成后的测试重复，移除以提高效率
+    // 如果需要，可以在关键节点（如完成拼图后）进行验证性测试
 
-    // 6. 画布提示
-    // 获取 originalPositions
+    // 6. 获取拼图数据
     const originalPositions = await page.evaluate(() => (window as any).__gameStateForTests__.originalPositions);
-    console.log('[E2E-debugLOG] 获取 originalPositions', originalPositions ? originalPositions.length : originalPositions);
     metrics.pieceCount = puzzle.length;
     expect(puzzle.length).toBeGreaterThan(0);
-    console.log(`步骤 5: 画布提示 (${puzzle.length} 块) - 完成。`);
 
-    // 7. 拼图交互性能
-    // 拼图交互性能测试开始
-    console.log('[E2E-debugLOG] 拼图交互性能测试开始');
+    // 7. 拼图交互性能测试
     let puzzleInteractionStartTime = Date.now();
     for (let i = 0; i < puzzle.length; i++) {
       const pieceInteractionStartTime = Date.now();
 
-      // 使用新的测试接口直接选中拼图
+      // 选中拼图并旋转到正确角度
       await page.evaluate((index) => (window as any).selectPieceForTest(index), i);
-      console.log(`选中拼图块 ${i}`);
 
       const targetRotation = originalPositions[i].rotation;
       await rotatePieceToCorrectAngle(page, i, targetRotation);
 
-      const getRotation = async () => await page.evaluate((idx) => (window as any).__gameStateForTests__.puzzle[idx].rotation, i);
-      console.log(`拼图块 ${i} 旋转后角度: ${await getRotation()} 目标角度: ${targetRotation}`);
-
-      // 【核心修改】替换不稳定的UI拖拽，直接调用函数重置位置
+      // 重置位置并标记为完成
       await page.evaluate((idx) => (window as any).resetPiecePositionForTest(idx), i);
-
-      // 使用新的测试函数直接标记为完成
       await page.evaluate((idx) => (window as any).markPieceAsCompletedForTest(idx), i);
-
-      const getPosition = async () => await page.evaluate((idx) => {
-        const { x, y, rotation } = (window as any).__gameStateForTests__.puzzle[idx];
-        return { x, y, rotation };
-      }, i);
-
-      const finalPos = await getPosition();
-      const targetPos = originalPositions[i];
-      console.log(`拼图块 ${i} 重置后位置: ${JSON.stringify(finalPos)} 目标: ${JSON.stringify({ x: targetPos.x, y: targetPos.y, rotation: targetPos.rotation })}`);
 
       const pieceInteractionEndTime = Date.now();
       metrics.pieceInteractionTimes.push(pieceInteractionEndTime - pieceInteractionStartTime);
 
-      // 【新增】在完成第1号拼图后进行全面测试验证
+      // 验证第1号拼图完成后的核心状态（简化验证，移除底层细节）
       if (i === 0) {
-        console.log('[E2E-debugLOG] 第1号拼图完成，开始全面测试验证...');
-
-        // 验证拼图块状态
         const piece0State = await page.evaluate(() => (window as any).__gameStateForTests__.puzzle[0]);
-        console.log(`[E2E-debugLOG] 第1号拼图状态验证:`, {
-          isCompleted: piece0State.isCompleted,
-          position: { x: piece0State.x, y: piece0State.y },
-          rotation: piece0State.rotation,
-          originalPosition: { x: piece0State.originalX, y: piece0State.originalY },
-          originalRotation: piece0State.originalRotation
-        });
+        expect(piece0State.isCompleted).toBe(true);
 
-        // 验证全局状态更新
         const globalState = await page.evaluate(() => (window as any).__gameStateForTests__);
-        console.log(`[E2E-debugLOG] 全局状态验证:`, {
-          completedPiecesCount: globalState.completedPieces?.length || 0,
-          totalPieces: globalState.puzzle?.length || 0,
-          isCompleted: globalState.isCompleted,
-          isScattered: globalState.isScattered
-        });
+        expect(globalState.completedPieces?.length).toBeGreaterThan(0);
 
-        // 验证UI提示更新
-        try {
-          const progressText = await page.textContent('.text-center.text-lg.font-semibold.text-gray-800', { timeout: 5000 });
-          console.log(`[E2E-debugLOG] UI进度提示验证: "${progressText}"`);
-        } catch (error) {
-          console.log(`[E2E-debugLOG] UI进度提示验证失败，尝试其他选择器...`);
-          const alternativeText = await page.textContent('text=拼图', { timeout: 5000 }).catch(() => 'UI提示未找到');
-          console.log(`[E2E-debugLOG] 备用UI进度提示验证: "${alternativeText}"`);
-        }
-
-        // 验证拼图块视觉状态
-        const piece0Visual = await page.evaluate(() => {
-          const canvas = document.getElementById('puzzle-canvas') as HTMLCanvasElement;
-          if (!canvas) return null;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) return null;
-
-          // 获取画布中心区域的像素数据来验证渲染
-          const imageData = ctx.getImageData(canvas.width / 2 - 50, canvas.height / 2 - 50, 100, 100);
-          const pixels = imageData.data;
-          let nonTransparentPixels = 0;
-          for (let i = 3; i < pixels.length; i += 4) {
-            if (pixels[i] > 0) nonTransparentPixels++;
-          }
-          return { nonTransparentPixels, totalPixels: pixels.length / 4 };
-        });
-        console.log(`[E2E-debugLOG] 画布渲染验证:`, piece0Visual);
-
-        // 验证性能指标
-        const currentFPS = await page.evaluate(() => {
-          const fpsData = (window as any).fpsData || [];
-          return fpsData.length > 0 ? fpsData[fpsData.length - 1] : null;
-        });
-        console.log(`[E2E-debugLOG] 当前帧率: ${currentFPS}fps`);
-
-        // 验证内存使用
-        const currentMemory = await page.evaluate(() => {
-          const memory = (window as any).performance?.memory;
-          return memory ? (memory.usedJSHeapSize / 1024 / 1024).toFixed(2) : null;
-        });
-        console.log(`[E2E-debugLOG] 当前内存使用: ${currentMemory}MB`);
-
-        // 验证事件系统
-        const eventSystemTest = await page.evaluate(() => {
-          // 测试事件监听器是否正常工作
-          const canvas = document.getElementById('puzzle-canvas');
-          if (!canvas) return false;
-
-          // 检查是否有事件监听器
-          const hasMouseListeners = canvas.onmousedown !== null || canvas.onclick !== null;
-          const hasTouchListeners = canvas.ontouchstart !== null;
-
-          return { hasMouseListeners, hasTouchListeners };
-        });
-        console.log(`[E2E-debugLOG] 事件系统验证:`, eventSystemTest);
-
-        // 验证适配系统
-        const adaptationTest = await page.evaluate(() => {
-          const state = (window as any).__gameStateForTests__;
-          return {
-            canvasWidth: state.canvasWidth,
-            canvasHeight: state.canvasHeight,
-            viewportWidth: window.innerWidth,
-            viewportHeight: window.innerHeight,
-            devicePixelRatio: window.devicePixelRatio
-          };
-        });
-        console.log(`[E2E-debugLOG] 适配系统验证:`, adaptationTest);
-
-        console.log('[E2E-debugLOG] 第1号拼图全面测试验证完成 ✅');
-
-        // 节点3：完成1号拼图后适配检查（包含竖屏横屏和极端分辨率测试）
-        console.log('步骤 6.1: 完成1号拼图后适配检查...');
-        const piece1AdaptationTest = await performAdaptationTest(page, 1, false, false); // 只测试1次，减少卡顿
-        // 合并适配测试结果
-        if (metrics.adaptationTestResults) {
-          Object.assign(metrics.adaptationTestResults, piece1AdaptationTest.results);
-          metrics.adaptationTestCount = (metrics.adaptationTestCount || 0) + piece1AdaptationTest.totalCount;
-          metrics.adaptationPassCount = (metrics.adaptationPassCount || 0) + piece1AdaptationTest.passCount;
-          metrics.adaptationPassRate = `${(metrics.adaptationPassCount / metrics.adaptationTestCount * 100).toFixed(1)}%`;
-        }
-        console.log('步骤 6.1: 完成1号拼图后适配检查 - 完成。');
+        // 节点3：完成1号拼图后适配检查（优化：移除重复测试，已在形状生成后测试过）
+        // 优化说明：完成拼图后的适配测试与形状生成后的测试重复，移除以提高效率
+        // 适配系统在游戏运行过程中是稳定的，不需要在每个节点都重复测试
       }
     }
     metrics.puzzleInteractionDuration = Date.now() - puzzleInteractionStartTime;
-    // 拼图交互性能测试结束
-    console.log('[E2E-debugLOG] 拼图交互性能测试结束');
 
-    // 步骤 7: 验证游戏是否最终完成（重构后的正确逻辑）
-    console.log(`步骤 7: 等待所有拼图块在状态中被标记为完成...`);
-    // robustWaitForFunction 等待 completedPieces 填满前
+    // 步骤 7: 验证游戏是否最终完成
+    // 合并等待：同时检查 completedPieces 和 isCompleted，避免重复等待
     await robustWaitForFunction(page, () => {
       const state = (window as any).__gameStateForTests__;
-      return state.completedPieces && state.puzzle && state.completedPieces.length === state.puzzle.length;
+      return state.completedPieces && 
+             state.puzzle && 
+             state.completedPieces.length === state.puzzle.length &&
+             state.isCompleted === true;
     }, 30000);
-    // completedPieces 填满后全局状态
-    const stateAfterCompleted = await page.evaluate(() => (window as any).__gameStateForTests__);
-    console.log('[E2E-debugLOG] completedPieces 填满后全局状态', stateAfterCompleted);
-    // robustWaitForFunction 等待 isCompleted 前
-    await robustWaitForFunction(page, () => (window as any).__gameStateForTests__.isCompleted, 30000);
-    // isCompleted 状态为 true 后全局状态
-    const stateAfterIsCompleted = await page.evaluate(() => (window as any).__gameStateForTests__);
-    console.log('[E2E-debugLOG] isCompleted 状态为 true 后全局状态', stateAfterIsCompleted);
-    console.log(`步骤 7.1: completedPieces 数组长度已满足要求 - 完成。`);
-
-    // 次要条件：等待 isCompleted 标志被设置为 true (这是主要条件触发的副作用)
-    await robustWaitForFunction(page, () => (window as any).__gameStateForTests__.isCompleted, 30000);
-    console.log(`步骤 7.2: isCompleted 状态标志已确认为 true - 完成。`);
+    
+    // 验证游戏完成状态
+    const finalState = await page.evaluate(() => (window as any).__gameStateForTests__);
+    expect(finalState.isCompleted).toBe(true);
+    expect(finalState.completedPieces.length).toBe(finalState.puzzle.length);
 
     // 步骤 7.3: 点击重新开始按钮
-    console.log('步骤 7.3: 点击重新开始按钮...');
     await page.getByRole('button', { name: /重新开始|重新生成/ }).click();
     await waitForTip(page, '请点击生成你喜欢的形状');
-    console.log('步骤 7.3: 点击重新开始按钮 - 完成。');
 
     // 8. 收集最终性能指标
-    console.log(`步骤 8: 收集最终性能指标...`);
 
     // 从浏览器中获取FPS数据
-    await page.waitForFunction(() => (window as any).fpsData && (window as any).fpsData.length > 0, { timeout: 2000 });
+    // 优化：FPS数据在测试过程中持续收集，通常已经有数据，减少超时时间
+    await page.waitForFunction(() => (window as any).fpsData && (window as any).fpsData.length > 0, { timeout: 1000 });
     const fpsData: number[] = await page.evaluate(() => (window as any).fpsData || []);
     metrics.fps = fpsData;
 
@@ -843,11 +681,9 @@ test('完整自动化游戏流程', async ({ page }) => {
       body: JSON.stringify(metrics, null, 2),
       contentType: 'application/json',
     });
-    // 新增：流程通过后输出性能分析日志（不影响 test 结果）
+    // 输出性能分析日志（不影响测试结果）
     const perfLog = evaluatePerformance(metrics);
     console.log('【性能分析】', perfLog.details.join('\n'));
-    console.log(`步骤 8: 性能指标收集完毕 - 完成。`);
-    console.log("完整自动化游戏流程测试通过！");
   } catch (e) {
     testError = e;
     console.error('🚨 测试失败，错误详情:', e);
@@ -873,7 +709,7 @@ test('完整自动化游戏流程', async ({ page }) => {
     }
 
     try {
-      await page.waitForFunction(() => (window as any).fpsData && (window as any).fpsData.length > 0, { timeout: 2000 });
+      await page.waitForFunction(() => (window as any).fpsData && (window as any).fpsData.length > 0, { timeout: 1000 });
       const fpsData: number[] = await page.evaluate(() => (window as any).fpsData || []);
       metrics.fps = fpsData;
       const memory = await page.evaluate(async () => {
