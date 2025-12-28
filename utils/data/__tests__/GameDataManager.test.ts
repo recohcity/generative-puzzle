@@ -1303,5 +1303,105 @@ describe('GameDataManager', () => {
         expect(Array.isArray(leaderboard)).toBe(true);
       });
     });
+
+    it('应该覆盖 saveGameRecord 的 catch 块（第95-96行）', () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      
+      // 模拟 validateGameRecord 抛出异常，这样在 try 块中就会失败
+      const originalValidate = (GameDataManager as any).validateGameRecord;
+      (GameDataManager as any).validateGameRecord = jest.fn(() => {
+        throw new Error('Validation failed');
+      });
+
+      const gameStats = createTestGameStats();
+      const result = GameDataManager.saveGameRecord(gameStats, 2500, {});
+
+      expect(result).toBe(false);
+      expect(consoleSpy).toHaveBeenCalledWith('[GameDataManager] 保存游戏记录失败:', expect.any(Error));
+
+      // 恢复 validateGameRecord
+      (GameDataManager as any).validateGameRecord = originalValidate;
+      consoleSpy.mockRestore();
+    });
+
+    it('应该覆盖 validateGameRecord 中难度信息无效的情况（第318-319行）', () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      
+      // 创建难度信息无效的记录
+      const invalidRecord = {
+        timestamp: Date.now(),
+        finalScore: 2000,
+        totalDuration: 120,
+        difficulty: null, // 无效的难度信息
+        deviceInfo: {
+          type: 'desktop',
+          screenWidth: 1024,
+          screenHeight: 768
+        },
+        totalRotations: 4,
+        hintUsageCount: 0,
+        dragOperations: 8,
+        rotationEfficiency: 1.0,
+        scoreBreakdown: {}
+      };
+
+      const isValid = (GameDataManager as any).validateGameRecord(invalidRecord);
+
+      expect(isValid).toBe(false);
+      expect(consoleSpy).toHaveBeenCalledWith('[GameDataManager] 难度信息无效:', null);
+
+      consoleSpy.mockRestore();
+    });
+
+    it('应该覆盖 validateGameRecord 中难度信息类型错误的情况', () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      
+      // 创建难度信息类型错误的记录
+      const invalidRecord = {
+        timestamp: Date.now(),
+        finalScore: 2000,
+        totalDuration: 120,
+        difficulty: 'invalid', // 应该是对象，但传入了字符串
+        deviceInfo: {
+          type: 'desktop',
+          screenWidth: 1024,
+          screenHeight: 768
+        },
+        totalRotations: 4,
+        hintUsageCount: 0,
+        dragOperations: 8,
+        rotationEfficiency: 1.0,
+        scoreBreakdown: {}
+      };
+
+      const isValid = (GameDataManager as any).validateGameRecord(invalidRecord);
+
+      expect(isValid).toBe(false);
+      expect(consoleSpy).toHaveBeenCalledWith('[GameDataManager] 难度信息无效:', 'invalid');
+
+      consoleSpy.mockRestore();
+    });
+
+    it('应该覆盖 getDataStats 中计算存储使用量的代码（第343-344行）', () => {
+      // 确保 mockLocalStorage.getItem 正确返回数据
+      const testData = JSON.stringify([createTestGameRecord()]);
+      mockStore['puzzle-leaderboard'] = testData;
+      mockStore['puzzle-history'] = testData;
+      
+      // 确保 mock 正确实现
+      mockLocalStorage.getItem.mockImplementation((key: string) => {
+        return mockStore[key] || null;
+      });
+
+      const stats = GameDataManager.getDataStats();
+
+      // 验证存储使用量被正确计算
+      expect(stats.storageUsed).toBeGreaterThan(0);
+      expect(stats.isStorageAvailable).toBe(true);
+      
+      // 验证 localStorage.getItem 被调用
+      expect(mockLocalStorage.getItem).toHaveBeenCalledWith('puzzle-leaderboard');
+      expect(mockLocalStorage.getItem).toHaveBeenCalledWith('puzzle-history');
+    });
   });
 });

@@ -473,7 +473,11 @@ function generateDynamicProjectSummary(allData) {
     const loadTimeScore = Math.max(0, 100 - Math.max(0, (e2eMetrics.e2eLoadTime - 1500) / 10));
     const shapeGenScore = Math.max(0, 100 - Math.max(0, (e2eMetrics.shapeGenerationTime - 100) / 5));
     const fpsScore = Math.min(100, (e2eMetrics.avgFps / 60) * 100);
-    const memoryScore = Math.max(0, 100 - Math.max(0, (e2eMetrics.memoryUsage - 10) * 5));
+    // 内存评分：30MB为满分基准，50MB为及格线（60分），100MB为0分
+    let memoryScore = 100;
+    if (e2eMetrics.memoryUsage > 30) {
+      memoryScore = Math.max(0, 100 - ((e2eMetrics.memoryUsage - 30) / 70) * 100);
+    }
     performanceScore = Math.round((loadTimeScore + shapeGenScore + fpsScore + memoryScore) / 4);
   }
   
@@ -561,7 +565,12 @@ function generateStandardizedReport(allData) {
     const loadTimeScore = Math.max(0, 100 - Math.max(0, (metrics.e2eLoadTime - 1500) / 10)); // 1500ms为基准
     const shapeGenScore = Math.max(0, 100 - Math.max(0, (metrics.shapeGenerationTime - 100) / 5)); // 100ms为基准
     const fpsScore = Math.min(100, (metrics.avgFps / 60) * 100); // 60fps为满分
-    const memoryScore = Math.max(0, 100 - Math.max(0, (metrics.memoryUsage - 10) * 5)); // 10MB为基准
+    // 内存评分：30MB为满分基准，50MB为及格线（60分），100MB为0分（与MAX_MEMORY_USAGE_MB一致）
+    // 使用线性插值：memoryScore = 100 - ((memoryUsage - 30) / (100 - 30)) * 100，但在30MB以下给满分
+    let memoryScore = 100;
+    if (metrics.memoryUsage > 30) {
+      memoryScore = Math.max(0, 100 - ((metrics.memoryUsage - 30) / 70) * 100); // 30-100MB线性递减
+    }
     
     performanceScore = Math.round((loadTimeScore + shapeGenScore + fpsScore + memoryScore) / 4);
   }

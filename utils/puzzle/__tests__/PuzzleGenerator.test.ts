@@ -59,6 +59,35 @@ describe('PuzzleGenerator - 完整功能测试', () => {
       expect(result.originalPositions.length).toBe(result.pieces.length);
     });
 
+    test('应该支持曲线切割（cutType === "curve"）', () => {
+      // 测试曲线切割分支（第37-40行）
+      const result = PuzzleGenerator.generatePuzzle(testShape, 'curve', 2);
+      
+      expect(result).toBeDefined();
+      expect(result.pieces).toBeDefined();
+      expect(result.originalPositions).toBeDefined();
+      expect(Array.isArray(result.pieces)).toBe(true);
+      expect(Array.isArray(result.originalPositions)).toBe(true);
+      expect(result.pieces.length).toBeGreaterThan(0);
+    });
+
+    test('应该支持曲线切割与不同形状类型', () => {
+      // 测试曲线切割与不同 shapeType 的组合
+      const polygonResult = PuzzleGenerator.generatePuzzle(testShape, 'curve', 2);
+      expect(polygonResult.pieces.length).toBeGreaterThan(0);
+
+      // 测试曲线形状
+      const curveShape: Point[] = [
+        { x: 100, y: 100 },
+        { x: 150, y: 80 },
+        { x: 200, y: 100 },
+        { x: 200, y: 200 },
+        { x: 100, y: 200 }
+      ];
+      const curveResult = PuzzleGenerator.generatePuzzle(curveShape, 'curve', 3);
+      expect(curveResult.pieces.length).toBeGreaterThan(0);
+    });
+
     test('应该为不同片段生成不同颜色', () => {
       const result = PuzzleGenerator.generatePuzzle(testShape, 'straight', 3);
       

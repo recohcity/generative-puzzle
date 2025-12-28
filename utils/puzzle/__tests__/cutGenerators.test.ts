@@ -73,19 +73,48 @@ describe('cutGenerators - 切割线生成测试', () => {
     });
 
     test('应该验证输入参数', () => {
-      // 测试无效形状
+      // 测试无效形状 - 覆盖第56-57行的分支
       expect(() => {
         generateCuts([], 1, 'straight');
+      }).toThrow('形状必须至少包含3个点');
+
+      expect(() => {
+        generateCuts(null as any, 1, 'straight');
+      }).toThrow('形状必须至少包含3个点');
+
+      expect(() => {
+        generateCuts(undefined as any, 1, 'straight');
       }).toThrow('形状必须至少包含3个点');
 
       expect(() => {
         generateCuts([{ x: 0, y: 0 }, { x: 1, y: 1 }], 1, 'straight');
       }).toThrow('形状必须至少包含3个点');
 
-      // 测试无效切割类型
+      // 测试无效难度级别 - 覆盖第60-61行的分支
+      expect(() => {
+        generateCuts(testShape, 0, 'straight');
+      }).toThrow('难度级别必须在1-8之间，当前值: 0');
+
+      expect(() => {
+        generateCuts(testShape, 9, 'straight');
+      }).toThrow('难度级别必须在1-8之间，当前值: 9');
+
+      expect(() => {
+        generateCuts(testShape, -1, 'straight');
+      }).toThrow('难度级别必须在1-8之间，当前值: -1');
+
+      // 测试无效切割类型 - 覆盖第64-65行的分支
       expect(() => {
         generateCuts(testShape, 1, 'invalid' as any);
-      }).toThrow('切割类型必须是');
+      }).toThrow('切割类型必须是 "straight" 或 "diagonal"，当前值: invalid');
+
+      expect(() => {
+        generateCuts(testShape, 1, 'curve' as any);
+      }).toThrow('切割类型必须是 "straight" 或 "diagonal"，当前值: curve');
+
+      expect(() => {
+        generateCuts(testShape, 1, '' as any);
+      }).toThrow('切割类型必须是 "straight" 或 "diagonal"，当前值:');
     });
 
     test('应该为所有难度级别生成有效结果', () => {

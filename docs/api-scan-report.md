@@ -1,6 +1,6 @@
 # API扫描报告
 
-> 生成时间: 2025/12/28 01:39:14
+> 生成时间: 2025/12/28 19:48:48
 > 扫描工具: API变更扫描器 v1.0
 
 ## 📊 统计概览
@@ -4787,7 +4787,7 @@ export function createOptimizedCurve(bounds: Bounds, shapeCenter?: Point, count:
 #### createRadialCurve
 
 - **类型**: function
-- **文件**: `utils/puzzle/graph/BezierCurve.ts:136`
+- **文件**: `utils/puzzle/graph/BezierCurve.ts:139`
 - **签名**: `export function createRadialCurve(bounds: Bounds, startPoint: Point, angle: number, hubRadius: number = 0): BezierCurve {`
 
 **建议文档结构**:
@@ -4810,7 +4810,7 @@ export function createRadialCurve(bounds: Bounds, startPoint: Point, angle: numb
 #### createOptimizedCurveWithAngle
 
 - **类型**: function
-- **文件**: `utils/puzzle/graph/BezierCurve.ts:171`
+- **文件**: `utils/puzzle/graph/BezierCurve.ts:174`
 - **签名**: `export function createOptimizedCurveWithAngle(bounds: Bounds, shapeCenter: Point, baseAngle: number): BezierCurve {`
 
 **建议文档结构**:

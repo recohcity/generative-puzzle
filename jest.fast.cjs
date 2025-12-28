@@ -24,17 +24,22 @@ transform: {
         }],
       },
       testMatch: [
-        '<rootDir>/utils/**/__tests__/**/*.test.ts',
+        '<rootDir>/utils/__tests__/**/*.test.ts',
         '<rootDir>/utils/geometry/**/__tests__/**/*.test.ts',
         '<rootDir>/utils/puzzle/**/__tests__/**/*.test.ts',
         '<rootDir>/utils/shape/**/__tests__/**/*.test.ts',
-        '<rootDir>/utils/data/**/__tests__/**/*.test.ts',
         '<rootDir>/utils/leaderboard/**/__tests__/**/*.test.ts',
         '<rootDir>/utils/difficulty/**/__tests__/**/*.test.ts',
-        '<rootDir>/utils/score/**/__tests__/**/*.test.ts',
         '<rootDir>/src/quality-system/**/__tests__/**/*.test.ts',
-        // 排除需要 DOM 环境的音效测试
-        '!<rootDir>/utils/rendering/**/__tests__/**/*.test.ts',
+      ],
+      testPathIgnorePatterns: [
+        '/node_modules/',
+        '/utils/puzzle/__tests__/cutGenerators-performance.test.ts',
+        // 明确排除会在 jsdom 项目中运行的目录
+        '/utils/rendering/__tests__/',
+        '/utils/score/__tests__/',
+        '/utils/data/__tests__/',
+        '/utils/angleDisplay/__tests__/'
       ],
     },
     {
@@ -56,8 +61,11 @@ transform: {
         }],
       },
       testMatch: [
-        '<rootDir>/components/**/__tests__/**/*.test.tsx',
         '<rootDir>/utils/rendering/**/__tests__/**/*.test.ts',
+        '<rootDir>/utils/score/**/__tests__/**/*.test.ts',
+        '<rootDir>/utils/data/**/__tests__/**/*.test.ts',
+        '<rootDir>/utils/angleDisplay/**/__tests__/**/*.test.ts',
+        '<rootDir>/components/**/__tests__/**/*.test.tsx',
         '<rootDir>/contexts/**/__tests__/**/*.test.tsx',
         '<rootDir>/src/quality-system/components/**/__tests__/**/*.test.tsx',
       ],

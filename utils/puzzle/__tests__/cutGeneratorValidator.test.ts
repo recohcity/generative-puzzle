@@ -494,6 +494,39 @@ beforeEach(() => {
       jest.restoreAllMocks();
     });
 
+    test('应该在不使用mock的情况下测试cutsAreTooClose返回true的分支（覆盖28-31行）', () => {
+      // 使用真实的几何函数，不使用mock，确保代码真正被执行
+      jest.restoreAllMocks();
+      
+      // 创建两条非常接近的切割线，确保 cutsAreTooClose 返回 true
+      const veryCloseCut: CutLine = {
+        x1: 50, y1: -10,
+        x2: 50, y2: 110,
+        type: 'straight'
+      };
+      
+      const existingCut: CutLine = {
+        x1: 52, y1: -10,  // 只差2像素，远小于默认最小距离15
+        x2: 52, y2: 110,
+        type: 'straight'
+      };
+      
+      const result = validator.isValid(veryCloseCut, testShape, [existingCut], false, false);
+      
+      // 应该返回 false，因为切割线太接近
+      expect(result).toBe(false);
+    });
+
+    test('应该在不使用mock的情况下测试relaxed=true时直接返回true（覆盖36-37行）', () => {
+      // 使用真实的几何函数，不使用mock，确保代码真正被执行
+      jest.restoreAllMocks();
+      
+      const result = validator.isValid(validCut, testShape, [], true, false); // relaxed = true
+      
+      // 应该返回 true，因为 relaxed=true 会跳过中心检查
+      expect(result).toBe(true);
+    });
+
     test('应该在relaxed=true时直接返回true（覆盖36-37行）', () => {
       // Mock几何函数
       (cutGeneratorGeometry as jest.Mocked<typeof cutGeneratorGeometry>).doesCutIntersectShape.mockReturnValue(2);

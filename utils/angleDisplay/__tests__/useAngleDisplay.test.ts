@@ -70,6 +70,7 @@ const createMockProvider = (state: GameState, dispatch: jest.Mock = jest.fn()) =
         rotatePiece: jest.fn(),
         showHintOutline: jest.fn(),
         resetGame: jest.fn(),
+        retryCurrentGame: jest.fn(),
         calculatePieceBounds: jest.fn(),
         ensurePieceInBounds: jest.fn(),
         trackRotation: jest.fn(),
@@ -82,7 +83,7 @@ const createMockProvider = (state: GameState, dispatch: jest.Mock = jest.fn()) =
         loadLeaderboard: jest.fn(),
         resetStats: jest.fn(),
       }
-    }, children)
+    } as any, children)
   );
 };
 
