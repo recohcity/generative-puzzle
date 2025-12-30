@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:github": "node scripts/build-for-github.cjs",
+    "build:github": "node scripts/generate-performance-data.cjs && node scripts/build-for-github.cjs",
     "start": "next start",
     "lint": "next lint",
     "test": "playwright test",

@@ -362,7 +362,14 @@ const PerformanceTrendPage: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch('/api/performance-trend');
+        let res = await fetch('/api/performance-trend');
+
+        // 如果 API 404 (静态部署环境)，尝试读取预生成的静态 JSON 文件
+        if (res.status === 404) {
+          console.log('[PerformancePage] API not found, falling back to static JSON');
+          res = await fetch('/performance-data.json');
+        }
+
         if (!res.ok) {
           throw new Error(`Failed to fetch: ${res.status} ${res.statusText}`);
         }
