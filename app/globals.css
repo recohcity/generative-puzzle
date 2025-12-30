@@ -13,12 +13,32 @@
   user-select: none;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
+  outline: none !important;
+}
+
+/* 彻底隐藏所有滚动条 */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* 显式禁用焦点轮廓，防止移动端出现虚线或色块残留 */
+button:focus,
+button:focus-visible,
+[role="button"]:focus,
+[role="button"]:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 /* 确保按钮文本不可选择 */
-button, 
-button *, 
-[role="button"], 
+button,
+button *,
+[role="button"],
 [role="button"] *,
 label,
 label * {
@@ -31,7 +51,12 @@ label * {
 }
 
 /* 游戏标题和提示文本也不可选择 */
-h1, h2, h3, h4, h5, h6,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
 .game-title,
 .game-hint,
 .game-progress {
@@ -154,10 +179,14 @@ h1, h2, h3, h4, h5, h6,
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
-  button, .button, [role="button"] {
+
+  button,
+  .button,
+  [role="button"] {
     font-family: 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Arial, 'sans-serif';
   }
 }
@@ -169,9 +198,12 @@ h1, h2, h3, h4, h5, h6,
   例如 .no-scroll-container，并把相关样式移到该类中。
 */
 .no-scroll-container {
-  overscroll-behavior: none; /* 阻止页面滚动传播到外部容器 */
-  overflow: hidden; /* 阻止页面滚动 */
-  position: fixed; /* 固定位置防止滚动 */
+  overscroll-behavior: none;
+  /* 阻止页面滚动传播到外部容器 */
+  overflow: hidden;
+  /* 阻止页面滚动 */
+  position: fixed;
+  /* 固定位置防止滚动 */
   top: 0;
   left: 0;
   right: 0;
@@ -179,27 +211,34 @@ h1, h2, h3, h4, h5, h6,
   width: 100%;
   height: 100%;
   /* 修改触摸行为设置以允许按钮点击 */
-  touch-action: pan-x pan-y; /* 允许基本的平移触摸操作，但阻止其他手势 */
-  -webkit-overflow-scrolling: touch; /* 使用更标准的设置 */
-  -webkit-user-select: none; /* 禁止用户选择文本以避免相关手势 */
+  touch-action: pan-x pan-y;
+  /* 允许基本的平移触摸操作，但阻止其他手势 */
+  -webkit-overflow-scrolling: touch;
+  /* 使用更标准的设置 */
+  -webkit-user-select: none;
+  /* 禁止用户选择文本以避免相关手势 */
   user-select: none;
-  -webkit-touch-callout: none; /* 禁止长按链接弹出菜单 */
+  -webkit-touch-callout: none;
+  /* 禁止长按链接弹出菜单 */
 }
 
 /* 特定地禁止canvas触摸事件的滚动行为，但允许按钮正常工作 */
 canvas {
-  touch-action: none !important; /* 禁用默认触摸手势，如滑动、缩放等 */
+  touch-action: none !important;
+  /* 禁用默认触摸手势，如滑动、缩放等 */
   -webkit-touch-callout: none !important;
   -webkit-user-select: none !important;
   user-select: none !important;
 }
 
 /* 确保按钮可以正常触摸点击 */
-button, 
+button,
 [role="button"],
 .cursor-pointer {
-  touch-action: manipulation !important; /* 允许按钮的点击操作 */
-  -webkit-touch-callout: default !important; /* 允许默认行为 */
+  touch-action: manipulation !important;
+  /* 允许按钮的点击操作 */
+  -webkit-touch-callout: default !important;
+  /* 允许默认行为 */
   cursor: pointer !important;
 }
 
@@ -237,6 +276,7 @@ button,
 
 /* 专门针对iPad的全屏优化 */
 @supports (-webkit-touch-callout: none) {
+
   /* iOS设备特有的CSS */
   body:has(:fullscreen),
   body:has(:-webkit-full-screen) {
@@ -252,8 +292,13 @@ button,
 
 /* 加载页面动画 */
 @keyframes float {
-  0% { transform: translateY(0) rotate(0deg); }
-  100% { transform: translateY(-20px) rotate(10deg); }
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  100% {
+    transform: translateY(-20px) rotate(10deg);
+  }
 }
 
 /* 不同的浮动动画方向 */
@@ -275,8 +320,13 @@ button,
 
 /* 加载进度条脉冲动画 - 修改为只增加不减少 */
 @keyframes loading-pulse {
-  0% { width: 15%; }
-  100% { width: 35%; }
+  0% {
+    width: 15%;
+  }
+
+  100% {
+    width: 35%;
+  }
 }
 
 .animate-loading-pulse {
@@ -289,21 +339,24 @@ canvas {
   background-color: transparent !important;
 }
 
-.rounded-3xl, .rounded-2xl {
+.rounded-3xl,
+.rounded-2xl {
   isolation: isolate;
 }
 
-/* 确保所有容器完全遵循圆角 */
+/* 
+   移除该 aggressive 样式：在现代 WebKit 中，它会导致渲染残留（如用户反馈的“橙色短线”）
 div[class*="rounded"] {
   mask-image: radial-gradient(white, black);
   -webkit-mask-image: -webkit-radial-gradient(white, black);
 }
+*/
 
 /* 添加玻璃效果和发光效果 */
 .bg-white\/20 {
   background-color: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(12px);
-  box-shadow: 
+  box-shadow:
     inset 0 0 15px rgba(255, 255, 255, 0.2),
     0 0 30px rgba(255, 255, 255, 0.1);
 }
@@ -315,8 +368,15 @@ div[class*="rounded"] {
 
 /* 添加全屏按钮的淡入动画 */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-fadeIn {
@@ -333,49 +393,52 @@ div[class*="rounded"] {
 }
 
 /* 改善移动设备触摸体验 - 包括移动端横屏 */
-@media (max-width: 1024px), (pointer: coarse) {
+@media (max-width: 1024px),
+(pointer: coarse) {
   :root {
     touch-action: none;
   }
-  
-  html, body {
+
+  html,
+  body {
     overscroll-behavior: none;
     touch-action: pan-y;
   }
-  
+
   .prevent-overscroll {
     overscroll-behavior: none;
   }
-  
+
   /* 竖屏模式下的布局调整 */
   @media (orientation: portrait) {
+
     /* 增加主控制面板的最小高度 */
     .order-2 {
       min-height: 50vh !important;
     }
-    
+
     /* 确保画布容器有足够高度 */
     .order-1 {
       min-height: 45vh !important;
     }
   }
-  
+
   /* 交互优化 */
   canvas {
     touch-action: none;
   }
-  
+
   /* 移动设备上隐藏鼠标交互的提示文本 */
   .mouse-hint {
     display: none;
   }
-  
+
   /* 移动设备上增大按钮点击区域 */
   button {
     min-height: 44px;
     min-width: 44px;
   }
-  
+
   /* 确保所有可交互元素有足够的点击范围 */
   .cursor-pointer {
     min-height: 32px;
@@ -384,7 +447,8 @@ div[class*="rounded"] {
 }
 
 /* 全屏模式下的样式优化 */
-:fullscreen, :fullscreen > div {
+:fullscreen,
+:fullscreen>div {
   width: 100% !important;
   height: 100% !important;
   max-width: 100% !important;
@@ -401,52 +465,66 @@ div[class*="rounded"] {
 
 /* 手机模式下的切换布局时的过渡动画 */
 @media (max-width: 640px) {
-  .flex-col > div {
+  .flex-col>div {
     transition: order 0.3s ease-in-out;
   }
-  
+
   /* 用于手机上滑动切换面板的效果 */
   @keyframes slideInRight {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
   }
-  
+
   @keyframes slideInLeft {
-    from { transform: translateX(-100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+    from {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
   }
-  
+
   .slide-in-right {
     animation: slideInRight 0.3s forwards;
   }
-  
+
   .slide-in-left {
     animation: slideInLeft 0.3s forwards;
   }
-  
+
   /* 手机模式下的标签切换效果 */
   .tab-content-enter {
     opacity: 0;
     transform: translateX(20px);
   }
-  
+
   .tab-content-enter-active {
     opacity: 1;
     transform: translateX(0);
     transition: opacity 300ms, transform 300ms;
   }
-  
+
   .tab-content-exit {
     opacity: 1;
     transform: translateX(0);
   }
-  
+
   .tab-content-exit-active {
     opacity: 0;
     transform: translateX(-20px);
     transition: opacity 300ms, transform 300ms;
   }
-  
+
   /* 确保所有可交互元素有足够的点击范围 */
   .cursor-pointer {
     min-height: 32px;
@@ -456,6 +534,7 @@ div[class*="rounded"] {
 
 /* 特别针对Safari的样式 */
 @supports (-webkit-touch-callout: none) {
+
   /* iOS设备的SVG修复 */
   svg {
     stroke-width: inherit !important;
@@ -466,31 +545,32 @@ div[class*="rounded"] {
 
 /* 专门为电脑全屏模式优化 */
 @media (min-width: 1024px) {
-  :fullscreen .flex-col, 
-  :-webkit-full-screen .flex-col, 
+
+  :fullscreen .flex-col,
+  :-webkit-full-screen .flex-col,
   :-moz-full-screen .flex-col {
     flex-direction: row !important;
     justify-content: center;
   }
-  
-  :fullscreen .flex-col > div, 
-  :-webkit-full-screen .flex-col > div, 
-  :-moz-full-screen .flex-col > div {
+
+  :fullscreen .flex-col>div,
+  :-webkit-full-screen .flex-col>div,
+  :-moz-full-screen .flex-col>div {
     height: calc(100vh - 32px) !important;
   }
-  
-  :fullscreen .flex-col > div:first-child, 
-  :-webkit-full-screen .flex-col > div:first-child, 
-  :-moz-full-screen .flex-col > div:first-child {
+
+  :fullscreen .flex-col>div:first-child,
+  :-webkit-full-screen .flex-col>div:first-child,
+  :-moz-full-screen .flex-col>div:first-child {
     width: 350px !important;
     min-width: 350px !important;
     flex-shrink: 0 !important;
     order: 1 !important;
   }
-  
-  :fullscreen .flex-col > div:nth-child(2), 
-  :-webkit-full-screen .flex-col > div:nth-child(2), 
-  :-moz-full-screen .flex-col > div:nth-child(2) {
+
+  :fullscreen .flex-col>div:nth-child(2),
+  :-webkit-full-screen .flex-col>div:nth-child(2),
+  :-moz-full-screen .flex-col>div:nth-child(2) {
     flex: 1 !important;
     order: 2 !important;
   }
@@ -504,7 +584,7 @@ svg {
 }
 
 /* 针对Safari浏览器的专门优化 */
-@media not all and (min-resolution:.001dpcm) { 
+@media not all and (min-resolution:.001dpcm) {
   @supports (-webkit-appearance:none) {
     svg {
       /* 在Safari中使用驼峰命名的属性 */
@@ -512,14 +592,14 @@ svg {
       stroke-linecap: inherit;
       stroke-linejoin: inherit;
     }
-    
+
     /* 解决Safari中的固定定位问题 */
     .fixed {
       position: -webkit-sticky;
       position: sticky;
       z-index: 50;
     }
-    
+
     /* 针对Safari的全屏优化 */
     :-webkit-full-screen {
       width: 100vw !important;
@@ -530,11 +610,12 @@ svg {
 
 /* 添加响应式设计的边界情况处理 */
 @media (min-width: 1024px) and (max-width: 1280px) {
+
   /* 针对中等大小屏幕的优化 */
   .lg\:w-\[350px\] {
     width: 300px !important;
   }
-  
+
   .lg\:min-w-\[350px\] {
     min-width: 300px !important;
   }

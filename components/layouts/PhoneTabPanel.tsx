@@ -29,8 +29,8 @@ interface PhoneTabPanelProps {
 
 // tabLabels 将通过翻译函数动态获取
 
-// 主标题样式
-const TITLE_CLASS = "font-bold text-[#FFB17A] text-lg md:text-xl leading-tight"; // 主标题字号、颜色、粗细
+// 主标题样式（横竖屏统一字号）
+const TITLE_CLASS = "font-bold text-[#FFB17A] text-lg leading-tight whitespace-nowrap";
 
 // 分区标题样式
 const SECTION_TITLE_CLASS = "font-semibold text-[#FFD5AB] text-md mb-1 leading-snug "; // 分区标题字号、颜色、粗细、下边距优化为4px
@@ -42,15 +42,15 @@ const CARD_TITLE_CLASS = "text-xs font-medium mb-2 text-[#FFD5AB] leading-tight 
 const TAB_BUTTON_CLASS = "flex-1 px-0 py-1 text-sm font-medium mx-0 transition-colors text-center"; // flex-1 让按钮均分
 
 // 卡片容器样式
-const CARD_CLASS = "p-2 bg-[#463E50] rounded-4xl shadow-md w-full mb-1"; // 卡片padding、背景、圆角、阴影、下边距优化为4px
+const CARD_CLASS = "p-2 bg-[#463E50] rounded-4xl w-full mb-1"; // 移除 shadow-md 防止渲染干扰
 
 // 分区容器样式
 const SECTION_CLASS = "mb-1"; // 分区下边距
 
 // 面板根容器样式 - 横屏模式优化内边距
-const PANEL_CLASS_BASE = "bg-white/30 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/30 h-full w-full flex flex-col gap-2"; // 基础样式，gap从4减少到2 (8px)
-const PANEL_PADDING_PORTRAIT = "p-3"; // 竖屏模式的内边距 (从24px减少到12px)
-const PANEL_PADDING_LANDSCAPE = "px-3 py-2"; // 横屏模式的内边距 (水平12px，垂直8px)
+const PANEL_CLASS_BASE = "bg-white/30 backdrop-blur-xl rounded-3xl border-2 border-white/30 h-full w-full flex flex-col"; // 移除 shadow-2xl 解决移动端渲染线条问题
+const PANEL_PADDING_PORTRAIT = "p-3"; // 竖屏模式的内边距 (12px)
+const PANEL_PADDING_LANDSCAPE = "px-3 py-1"; // 横屏模式的垂直内边距降至 4px
 
 // 新增：可调内容区水平padding参数
 const CONTENT_HORIZONTAL_PADDING = 0; // 可根据需要调整
@@ -59,9 +59,9 @@ const TAB_CONTAINER_HORIZONTAL_PADDING_LANDSCAPE = -60; // 横屏模式下tab容
 
 // 新增：移动端/桌面端各类按钮高度常量
 const TAB_BUTTON_HEIGHT = 36; // tab按钮
-const TAB_BUTTON_FONT_SIZE = 12; // tab按钮字体大小（竖屏）
-const TAB_BUTTON_FONT_SIZE_LANDSCAPE = 14; // tab按钮字体大小（横屏）
-const TAB_BUTTON_HEIGHT_LANDSCAPE = 40; // 横屏模式tab按钮高度（稍微增加）
+const TAB_BUTTON_FONT_SIZE = 12; // tab按钮字体大小（横竖屏统一）
+const TAB_BUTTON_FONT_SIZE_LANDSCAPE = 12; // tab按钮字体大小（横屏 - 与竖屏一致）
+const TAB_BUTTON_HEIGHT_LANDSCAPE = 36; // 横屏模式tab按钮高度（与竖屏一致）
 const SHAPE_BUTTON_HEIGHT = 60; // 形状按钮
 const MOBILE_SHAPE_BUTTON_FONT_SIZE = 14; // 形状按钮文字字号（移动端）
 const CUT_TYPE_BUTTON_HEIGHT = 36; // 直线/斜线按钮
@@ -221,7 +221,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
 
   return (
     <div
-      className={`${PANEL_CLASS_BASE} ${isLandscape ? PANEL_PADDING_LANDSCAPE : PANEL_PADDING_PORTRAIT}`}
+      className={`${PANEL_CLASS_BASE} ${isLandscape ? PANEL_PADDING_LANDSCAPE : PANEL_PADDING_PORTRAIT} ${isLandscape ? 'gap-1' : 'gap-2'}`}
       style={style}
     >
       {/* 顶部标题和全局按钮 */}
@@ -357,8 +357,8 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                 className={
                   TAB_BUTTON_CLASS +
                   (activeTab === tab
-                    ? ' bg-[#F68E5F] text-white shadow'
-                    : ' text-[#FFD5AB] hover:bg-[#463E50]')
+                    ? ' bg-[#F68E5F] text-white'
+                    : ' text-[#FFD5AB]')
                 }
                 data-testid={`tab-${tab}-button`}
                 onClick={() => onTabChange(tab)}
@@ -388,13 +388,18 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
           paddingLeft: CONTENT_HORIZONTAL_PADDING,
           paddingRight: CONTENT_HORIZONTAL_PADDING,
           width: '100%',
-          marginTop: isGameCompleted ? 8 : 0  // 游戏完成时增加上边距，因为没有tab菜单
-        }}>
+          marginTop: isGameCompleted ? 4 : 0,  // 游戏完成时极限紧凑上边距
+          flex: 1,                           // 使内容区填充剩余空间
+          overflowY: 'auto',                 // 内容过长时允许滚动
+          minHeight: 0,                      // flex 容器内必需
+          scrollbarWidth: 'none',            // 隐藏滚动条
+          msOverflowStyle: 'none',
+        }} className="no-scrollbar">
           {isGameCompleted ? (
-            /* 游戏完成时显示成绩 - 移动端紧凑样式 */
-            <div className="flex flex-col h-full">
-              {/* 成绩显示区域 - 紧凑布局 */}
-              <div className="flex-1 overflow-y-auto">
+            /* 游戏完成时显示成绩 - 移动端紧凑样式，flex布局确保按钮始终可见 */
+            <div className="flex flex-col" style={{ minHeight: 0, flex: 1 }}>
+              {/* 成绩显示区域 - 可滚动区域，确保按钮始终可见 */}
+              <div className="flex-1 overflow-y-auto min-h-0" style={{ maxHeight: 'calc(100% - 50px)' }}>
                 <MobileScoreLayout
                   gameStats={state.gameStats!}
                   currentScore={state.currentScore}
@@ -402,8 +407,8 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                   isNewRecord={state.isNewRecord}
                 />
               </div>
-              {/* 重玩本局和重开游戏按钮 - 固定在底部，左右并排 */}
-              <div className="mt-1 flex-shrink-0 flex flex-row gap-2">
+              {/* 重玩本局和重开游戏按钮 - 始终固定在底部可见，零间距 */}
+              <div className="flex-shrink-0 flex flex-row gap-2">
                 <RestartButton
                   onClick={handleRetryCurrent}
                   icon="retry"
@@ -483,10 +488,9 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                           width: 0, // 重置宽度让flex生效
                         }}
                         className={
-                          `bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md min-h-0 p-0 leading-none` +
+                          `bg-[#F68E5F] hover:bg-[#F47B42] text-white min-h-0 p-0 leading-none` +
                           ` disabled:opacity-30 disabled:pointer-events-none disabled:hover:bg-[#F68E5F]`
                         }
-                        variant="ghost"
                         onClick={handleShowHint}
                         disabled={isHintDisabled}
                         title={t('game.controls.hint')}
@@ -508,10 +512,9 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                           width: 0, // 重置宽度让flex生效
                         }}
                         className={
-                          `bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md min-h-0 p-0 leading-none` +
+                          `bg-[#F68E5F] hover:bg-[#F47B42] text-white min-h-0 p-0 leading-none` +
                           ` disabled:opacity-30 disabled:pointer-events-none disabled:hover:bg-[#F68E5F]`
                         }
-                        variant="ghost"
                         onClick={handleRotateLeft}
                         disabled={isRotateDisabled}
                         title={t('game.controls.rotateLeft')}
@@ -533,10 +536,9 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                           width: 0, // 重置宽度让flex生效
                         }}
                         className={
-                          `bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md min-h-0 p-0 leading-none` +
+                          `bg-[#F68E5F] hover:bg-[#F47B42] text-white min-h-0 p-0 leading-none` +
                           ` disabled:opacity-30 disabled:pointer-events-none disabled:hover:bg-[#F68E5F]`
                         }
-                        variant="ghost"
                         onClick={handleRotateRight}
                         disabled={isRotateDisabled}
                         title={t('game.controls.rotateRight')}
@@ -605,12 +607,14 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
         </div>
       )}
 
-      {/* 版权信息 - 移动端控制面板底部 */}
-      <div className="mt-auto pt-2 border-t border-white/10">
-        <div className="text-white text-xs text-center leading-relaxed opacity-60">
-          <div>recoh AI project 2025 | generative puzzle V{process.env.APP_VERSION || '1.3.51'} </div>
+      {/* 版权信息 - 移动端控制面板底部（游戏完成时隐藏以节省空间） */}
+      {!isGameCompleted && (
+        <div className="mt-auto pt-1">
+          <div className="text-white text-[10px] text-center leading-tight opacity-60">
+            <div>recoh AI project 2025 | generative puzzle V{process.env.APP_VERSION || '1.3.51'} </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

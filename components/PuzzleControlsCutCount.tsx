@@ -15,29 +15,29 @@ interface PuzzleControlsCutCountProps {
 }
 
 export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28, actionButtonHeight = 36 }: PuzzleControlsCutCountProps) {
-  const { 
-    state, 
-    dispatch, 
-    generatePuzzle 
+  const {
+    state,
+    dispatch,
+    generatePuzzle
   } = useGame()
   const { t } = useTranslation()
-  
+
   // 添加本地状态用于跟踪选择的次数
   const [localCutCount, setLocalCutCount] = useState<number | null>(null)
-  
+
   // 同步全局状态到本地状态
   useEffect(() => {
     if (state.cutCount) {
       setLocalCutCount(state.cutCount);
     }
   }, [state.cutCount]);
-  
+
   // 使用统一设备检测系统
   const device = useDeviceDetection();
   const isPhone = device.deviceType === 'phone';
   const isLandscape = device.layoutMode === 'landscape';
   const isSmallScreen = device.screenWidth < 600;
-  
+
   // 检查是否已生成形状
   const isShapeGenerated = state.originalShape.length > 0
   // 检查是否已选择切割类型
@@ -46,7 +46,7 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
   const canModifySettings = isShapeGenerated && !state.isScattered && hasCutType
   // 检查是否有选择次数
   const hasSelectedCount = localCutCount !== null
-  
+
   // 所有按钮共用的禁用样式类
   const disabledClass = "opacity-30 pointer-events-none";
 
@@ -60,7 +60,7 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
   const handleGeneratePuzzle = () => {
     playCutSound() // 使用切割音效替代按钮点击音效
     generatePuzzle()
-    
+
     // 生成拼图后自动跳转到下一个tab
     if (goToNextTab) {
       setTimeout(() => {
@@ -68,20 +68,20 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
       }, 300)
     }
   }
-  
+
   // 难度选择按钮的样式
   const getDifficultyButtonStyle = (num: number) => {
     return `
-      flex-1 flex items-center justify-center transition-all duration-200 shadow-sm min-w-0
-      ${localCutCount === num 
-        ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]" 
+      flex-1 flex items-center justify-center transition-all duration-200 min-w-0
+      ${localCutCount === num
+        ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]"
         : "bg-[#1E1A2A] text-white hover:bg-[#141022] active:bg-[#2A283E]"}
       ${!canModifySettings ? disabledClass : ""}
     `;
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', width: '100%', overflow: 'visible' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0', width: '100%', overflow: 'visible' }}>
       {/* 添加难度标签 - 仅在非手机设备上显示 */}
       {!isPhone && !isLandscape && (
         <div style={{ fontSize: '12px', color: '#FFD5AB', marginBottom: '4px', lineHeight: '16px' }}>
@@ -126,10 +126,10 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
       </div>
 
       {/* 切割按钮 */}
-      <Button 
-        onClick={handleGeneratePuzzle} 
-        disabled={!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType} 
-        className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md ${(!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+      <Button
+        onClick={handleGeneratePuzzle}
+        disabled={!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType}
+        className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white ${(!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
         data-testid="generate-puzzle-button"
         style={{
           fontSize: '14px',
@@ -149,7 +149,7 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
           {!hasCutType ? t('game.cutCount.hints.selectCutType') : !hasSelectedCount ? t('game.cutCount.hints.selectCount') : ""}
         </div>
       )}
-      
+
 
     </div>
   )

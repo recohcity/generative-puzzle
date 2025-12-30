@@ -1,7 +1,5 @@
 "use client"
 import { useGame } from "@/contexts/GameContext"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
 import { CutType } from "@/types/puzzleTypes"
 import { playButtonClickSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
@@ -71,111 +69,51 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--panel-scale, 1) * 16px)', width: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
       {/* 添加切割类型标签 - 仅在非手机设备上显示 */}
       {!isPhone && !isLandscape && (
         <div style={{ fontSize: 'calc(var(--panel-scale, 1) * 12px)', color: '#FFD5AB', marginBottom: 'calc(var(--panel-scale, 1) * 4px)' }}>
           {t('game.cutType.title')}
         </div>
       )}
-      <div>
-        <RadioGroup
-          value={localCutType}
-          onValueChange={canModifySettings ? handleCutTypeChange : undefined}
-          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'calc(var(--panel-scale, 1) * 8px)' }}
-          disabled={!canModifySettings}
-        >
-          <div className="relative">
-            <RadioGroupItem
-              value={CutType.Straight}
-              id="straight"
-              className="peer sr-only"
-              disabled={!canModifySettings}
-            />
-            <Label
-              htmlFor="straight"
-              data-testid="cut-type-straight-button"
-              className={`flex items-center justify-center transition-all shadow-sm \
-                ${localCutType === CutType.Straight
-                  ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]"
-                  : "bg-[#1E1A2A] text-white hover:bg-[#2A283E] active:bg-[#2A283E]"}
-                ${!canModifySettings ? disabledClass : "cursor-pointer"}
-              `}
-              style={{
-                height: buttonHeight,
-                fontSize: 'calc(var(--panel-scale, 1) * 16px)',
-                lineHeight: 'calc(var(--panel-scale, 1) * 20px)',
-                borderRadius: 'calc(var(--panel-scale, 1) * 12px)',
-                width: '100%',
-                justifyContent: 'center',
-                alignItems: 'center',
-                display: 'flex',
-              }}
-            >
-              <span style={{ fontSize: 'calc(var(--panel-scale, 1) * 14px)' }}>{t('game.cutType.straight')}</span>
-            </Label>
-          </div>
-          <div className="relative">
-            <RadioGroupItem
-              value={CutType.Diagonal}
-              id="diagonal"
-              className="peer sr-only"
-              disabled={!canModifySettings}
-            />
-            <Label
-              htmlFor="diagonal"
-              data-testid="cut-type-diagonal-button"
-              className={`flex items-center justify-center transition-all shadow-sm \
-                ${localCutType === CutType.Diagonal
-                  ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]"
-                  : "bg-[#1E1A2A] text-white hover:bg-[#2A283E] active:bg-[#2A283E]"}
-                ${!canModifySettings ? disabledClass : "cursor-pointer"}
-              `}
-              style={{
-                height: buttonHeight,
-                fontSize: 'calc(var(--panel-scale, 1) * 16px)',
-                lineHeight: 'calc(var(--panel-scale, 1) * 20px)',
-                borderRadius: 'calc(var(--panel-scale, 1) * 12px)',
-                width: '100%',
-                justifyContent: 'center',
-                alignItems: 'center',
-                display: 'flex',
-              }}
-            >
-              <span style={{ fontSize: 'calc(var(--panel-scale, 1) * 14px)' }}>{t('game.cutType.diagonal')}</span>
-            </Label>
-          </div>
-          <div className="relative">
-            <RadioGroupItem
-              value={CutType.Curve}
-              id="curve"
-              className="peer sr-only"
-              disabled={!canModifySettings}
-            />
-            <Label
-              htmlFor="curve"
-              data-testid="cut-type-curve-button"
-              className={`flex items-center justify-center transition-all shadow-sm \
-                ${localCutType === CutType.Curve
-                  ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]"
-                  : "bg-[#1E1A2A] text-white hover:bg-[#2A283E] active:bg-[#2A283E]"}
-                ${!canModifySettings ? disabledClass : "cursor-pointer"}
-              `}
-              style={{
-                height: buttonHeight,
-                fontSize: 'calc(var(--panel-scale, 1) * 16px)',
-                lineHeight: 'calc(var(--panel-scale, 1) * 20px)',
-                borderRadius: 'calc(var(--panel-scale, 1) * 12px)',
-                width: '100%',
-                justifyContent: 'center',
-                alignItems: 'center',
-                display: 'flex',
-              }}
-            >
-              <span style={{ fontSize: 'calc(var(--panel-scale, 1) * 14px)' }}>{t('game.cutType.curve')}</span>
-            </Label>
-          </div>
-        </RadioGroup>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr 1fr',
+          gap: 'calc(var(--panel-scale, 1) * 8px)',
+          width: '100%'
+        }}
+      >
+        {[
+          { id: 'straight', type: CutType.Straight, label: t('game.cutType.straight') },
+          { id: 'diagonal', type: CutType.Diagonal, label: t('game.cutType.diagonal') },
+          { id: 'curve', type: CutType.Curve, label: t('game.cutType.curve') },
+        ].map((item) => (
+          <button
+            key={item.id}
+            onClick={() => handleCutTypeChange(item.type)}
+            disabled={!canModifySettings}
+            data-testid={`cut-type-${item.id}-button`}
+            className={`flex items-center justify-center transition-colors \
+              ${localCutType === item.type
+                ? "bg-[#F68E5F] text-white"
+                : "bg-[#1E1A2A] text-white"}
+              ${!canModifySettings ? disabledClass : "cursor-pointer"}
+            `}
+            style={{
+              height: buttonHeight,
+              fontSize: 'calc(var(--panel-scale, 1) * 14px)',
+              lineHeight: 'calc(var(--panel-scale, 1) * 20px)',
+              borderRadius: 'calc(var(--panel-scale, 1) * 12px)',
+              width: '100%',
+              border: 'none',
+              outline: 'none',
+              padding: 0,
+            }}
+          >
+            {item.label}
+          </button>
+        ))}
       </div>
     </div>
   )

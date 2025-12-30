@@ -301,24 +301,37 @@ async function performAdaptationTest(page: Page, maxTests?: number, includePortr
     { width: 1440, height: 900, name: '1440x900', type: 'desktop' },  // 标准桌面
     { width: 1280, height: 720, name: '1280x720', type: 'desktop' }    // 小桌面
   ];
-  
+
   // 2. 移动端分辨率（竖屏）
   const mobileResolutions = [
     { width: 375, height: 667, name: '375x667-mobile', type: 'mobile' },   // iPhone 6/7/8
     { width: 414, height: 896, name: '414x896-mobile', type: 'mobile' },   // iPhone X/11/12
-    { width: 360, height: 640, name: '360x640-mobile', type: 'mobile' }    // Android 标准
+    { width: 360, height: 640, name: '360x640-mobile', type: 'mobile' },    // Android 标准
+    // 🚀 1.3.71 新增：iPhone 17 全系列支持
+    { width: 402, height: 874, name: 'iPhone-17-Pro', type: 'mobile' },      // iPhone 17/Pro 系列 (402x874)
+    { width: 420, height: 912, name: 'iPhone-17-Air', type: 'mobile' },      // iPhone 17 Air 系列 (420x912)
+    { width: 440, height: 956, name: 'iPhone-17-Pro-Max', type: 'mobile' },  // iPhone 17 Pro Max 系列 (440x956)
   ];
-  
+
   // 3. 平板端分辨率（横屏）
   const tabletResolutions = [
     { width: 768, height: 1024, name: '768x1024-tablet', type: 'tablet' }, // iPad 竖屏
     { width: 1024, height: 768, name: '1024x768-tablet', type: 'tablet' }, // iPad 横屏
     { width: 800, height: 600, name: '800x600-tablet', type: 'tablet' }    // 小平板
   ];
-  
+
+  // 4. 移动端横屏分辨率 (1.3.71 专项优化：画布极限利用测试)
+  const mobileLandscapeResolutions = [
+    { width: 874, height: 402, name: 'iPhone-17-Pro-Landscape', type: 'mobile-landscape' },
+    { width: 912, height: 420, name: 'iPhone-17-Air-Landscape', type: 'mobile-landscape' },
+    { width: 956, height: 440, name: 'iPhone-17-Pro-Max-Landscape', type: 'mobile-landscape' },
+    { width: 852, height: 393, name: 'iPhone-16-Landscape', type: 'mobile-landscape' },
+    { width: 667, height: 375, name: 'Standard-Phone-Landscape', type: 'mobile-landscape' }
+  ];
+
   // 合并所有分辨率
-  let resolutions = [...desktopResolutions, ...mobileResolutions, ...tabletResolutions];
-  
+  let resolutions = [...desktopResolutions, ...mobileResolutions, ...tabletResolutions, ...mobileLandscapeResolutions];
+
   // 如果包含竖屏横屏模式，添加额外的竖屏分辨率（用于测试动态变化）
   // 这些分辨率用于测试web端动态变化分辨率时的适配情况
   if (includePortrait) {
@@ -395,7 +408,7 @@ async function performAdaptationTest(page: Page, maxTests?: number, includePortr
   // 恢复到标准分辨率（使用测试开始时的分辨率，而不是固定1280x720）
   // 注意：测试开始时在beforeEach中设置了1920x1080，但为了兼容性，使用1280x720作为标准
   await page.setViewportSize({ width: 1280, height: 720 });
-  
+
   // 触发resize事件并等待适配完成
   await page.evaluate(() => {
     window.dispatchEvent(new Event('resize'));
@@ -405,7 +418,7 @@ async function performAdaptationTest(page: Page, maxTests?: number, includePortr
   // 验证页面状态：确保画布和游戏状态可用
   try {
     await page.waitForSelector('canvas#puzzle-canvas', { state: 'visible', timeout: 5000 });
-    
+
     // 验证游戏状态可用（适配测试时游戏可能还在进行中，所以只检查基本状态）
     await page.waitForFunction(() => {
       const gameState = (window as any).__gameStateForTests__;
@@ -444,7 +457,7 @@ async function waitForTip(page: Page, expectedCN: string, expectedEN?: string) {
 }
 
 test.beforeEach(async ({ page, context }) => {
-  
+
   // 设置测试环境的语言偏好（模拟中文用户）
   await page.addInitScript(() => {
     // 模拟中文用户的浏览器环境
@@ -599,8 +612,10 @@ test('完整自动化游戏流程', async ({ page }) => {
 
       // 验证第1号拼图完成后的核心状态（简化验证，移除底层细节）
       if (i === 0) {
-        const piece0State = await page.evaluate(() => (window as any).__gameStateForTests__.puzzle[0]);
-        expect(piece0State.isCompleted).toBe(true);
+        await robustWaitForFunction(page, () => {
+          const state = (window as any).__gameStateForTests__;
+          return state.puzzle && state.puzzle[0] && state.puzzle[0].isCompleted === true;
+        }, 5000);
 
         const globalState = await page.evaluate(() => (window as any).__gameStateForTests__);
         expect(globalState.completedPieces?.length).toBeGreaterThan(0);
@@ -616,12 +631,12 @@ test('完整自动化游戏流程', async ({ page }) => {
     // 合并等待：同时检查 completedPieces 和 isCompleted，避免重复等待
     await robustWaitForFunction(page, () => {
       const state = (window as any).__gameStateForTests__;
-      return state.completedPieces && 
-             state.puzzle && 
-             state.completedPieces.length === state.puzzle.length &&
-             state.isCompleted === true;
+      return state.completedPieces &&
+        state.puzzle &&
+        state.completedPieces.length === state.puzzle.length &&
+        state.isCompleted === true;
     }, 30000);
-    
+
     // 验证游戏完成状态
     const finalState = await page.evaluate(() => (window as any).__gameStateForTests__);
     expect(finalState.isCompleted).toBe(true);

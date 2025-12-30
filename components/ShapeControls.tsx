@@ -69,12 +69,12 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
     const isActive = state.shapeType === shapeType;
     let base =
       isActive
-        ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]"
-        : "bg-[#1E1A2A] text-white hover:bg-[#2A283E] active:bg-[#2A283E]";
+        ? "bg-[#F68E5F] text-white"
+        : "bg-[#1E1A2A] text-white";
     if (isShapeButtonDisabled) {
       base += " opacity-30 cursor-not-allowed text-white";
     }
-    return `flex flex-col items-center justify-center shadow-sm transition-all duration-200 ${base}`;
+    return `flex flex-col items-center justify-center transition-colors duration-200 ${base}`;
   };
 
   // --- 响应式样式 ---
@@ -102,7 +102,7 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
   };
 
   return (
-    <div className="space-y-[1px] w-full" style={{}}>
+    <div className="space-y-0 w-full" style={{}}>
       {/* 添加形状类型标签 - 仅在非手机设备上显示 */}
       {!isPhone && !isLandscape && (
         <div className="text-[12px] text-[#FFD5AB] mb-[10px] leading-[22px] font-medium">{t('game.shapes.title')}</div>

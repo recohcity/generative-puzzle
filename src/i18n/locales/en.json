@@ -21,17 +21,17 @@
             "progress": "{completed}/{total} pieces done",
             "gameStats": "P:{completed}/{total} H:{hints}/{allowedHints}",
             "completionMessages": [
-                "You're awesome !",
-                "Good job !",
-                "Super cool !",
-                "Pro player !",
-                "Nice one !",
-                "Awesome !",
-                "Looks sick !",
-                "Smooth sailing !",
-                "Flawless !",
-                "You know how to play !",
-                "So stylish !"
+                "Awesome!",
+                "Nice!",
+                "Cool!",
+                "Pro!",
+                "GG!",
+                "Lit!",
+                "Sick!",
+                "Smooth!",
+                "Flawless!",
+                "Nice plays!",
+                "Stylish!"
             ]
         },
         "shapes": {
@@ -133,7 +133,7 @@
             "rotationScore": "Rotation",
             "hintScore": "Hint",
             "dragPenalty": "Drag Penalty",
-            "multiplier": "Difficulty Multiplier",
+            "multiplier": "Difficulty Mult.",
             "baseMultiplier": "Base",
             "multiplierDetail": "Base×{base} · {cutType}×{cutMult} · {shape}×{shapeMult}",
             "multiplierBreakdown": "= {base} × {cutMult} × {shapeMult}",

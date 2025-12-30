@@ -40,15 +40,10 @@ const PhoneLandscapeLayout: React.FC<PhoneLandscapeLayoutProps> = ({
     const canvasSizeValue = landscapeResult.canvasSize;
     const canvasMargin = MOBILE_ADAPTATION.LANDSCAPE.CANVAS_MARGIN;
 
-    // 智能计算面板宽度：优先使用画布尺寸，如果空间不够则使用原始计算值
-    const idealPanelWidth = canvasSizeValue; // 理想情况下与画布尺寸一致
-    const totalRequiredWidth = idealPanelWidth + canvasSizeValue + canvasMargin * 3; // 面板 + 画布 + 3个边距
-    const availableWidth = device.screenWidth;
-    const hasEnoughSpace = availableWidth >= totalRequiredWidth;
+    // 直接使用 canvasAdaptation.ts 中精心计算的面板宽度（320-340px）
+    // 不再使用画布尺寸作为面板宽度，避免内容被截断
+    const panelWidth = landscapeResult.panelWidth;
 
-    // 如果空间足够，使用理想宽度；否则使用原始计算的宽度
-    const panelWidth = hasEnoughSpace ? idealPanelWidth : landscapeResult.panelWidth;
-    
     return { canvasSizeValue, canvasMargin, panelWidth };
   }, [device.screenWidth, device.screenHeight]);
 
@@ -58,50 +53,58 @@ const PhoneLandscapeLayout: React.FC<PhoneLandscapeLayoutProps> = ({
     <div style={{
       display: 'flex',
       flexDirection: 'row',
-      height: '100vh',
-      alignItems: 'flex-start',
-      justifyContent: 'center',
-      overflow: 'auto',
-      paddingTop: MOBILE_ADAPTATION.LANDSCAPE.SAFE_AREA_TOP,
-      paddingBottom: MOBILE_ADAPTATION.LANDSCAPE.SAFE_AREA_BOTTOM,
-      paddingLeft: canvasMargin,
-      paddingRight: canvasMargin,
+      height: '100dvh', // 使用 dynamic viewport height，精准适配移动工具栏
+      width: '100vw', // 确保占满全宽
+      alignItems: 'center', // 垂直居中
+      justifyContent: 'center', // 🎯 优化：改为居中紧凑对齐，解决 Arc 等浏览器边缘裁切问题
+      overflow: 'hidden', // 网页端严防滚动条
+      paddingTop: 4, // 浏览器横屏下垂直空间极度珍贵，使用最小 4px 边距
+      paddingBottom: 4,
+      gap: 10, // 🎯 优化：左右面板间距从 12 降至 10
     }}>
-      {/* 🎯 优化：画布移至左侧，提升用户体验连贯性 */}
+      {/* 🎯 优化：左侧区域不再强行撑开，改为紧凑排列 */}
       <div
-        ref={containerRef}
         style={{
-          width: canvasSizeValue,
-          height: canvasSizeValue,
-          marginRight: 5, // 画布和面板间距设为5px
-          marginTop: 0,   // 移除顶部边距，避免重复间距
-          background: 'rgba(255,255,255,0.12)',
-          borderRadius: 24,
-          boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
-          border: '2px solid rgba(255,255,255,0.3)',
+          height: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           position: 'relative',
         }}
       >
-        {/* 智能提示区域 - 使用统一覆盖元素样式 */}
-        <div className="overlay-element smart-hints-overlay top-2">
-          <MobileSmartHints />
+        <div
+          ref={containerRef}
+          style={{
+            width: canvasSizeValue,
+            height: canvasSizeValue,
+            background: 'rgba(255,255,255,0.12)',
+            borderRadius: 24,
+            boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+            border: '2px solid rgba(255,255,255,0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'relative',
+          }}
+        >
+          {/* 智能提示区域 - 使用统一覆盖元素样式 */}
+          <div className="overlay-element smart-hints-overlay top-2">
+            <MobileSmartHints />
+          </div>
+          <PuzzleCanvas />
         </div>
-        <PuzzleCanvas />
       </div>
-      {/* 🎯 优化：控制面板移至右侧，符合移动端交互习惯 */}
+
+      {/* 🎯 优化：控制面板宽度严格受控 */}
       <div
         id="panel-container"
         style={{
-          width: panelWidth, // 使用计算出的面板宽度
-          minWidth: panelWidth, // 最小宽度
-          maxWidth: panelWidth, // 最大宽度
-          height: canvasSizeValue,
+          width: panelWidth,
+          minWidth: panelWidth,
+          maxWidth: panelWidth,
+          height: canvasSizeValue, // 面板高度对齐画布高度
           display: 'flex',
-          alignItems: 'flex-start',
-          marginTop: 0,   // 移除顶部边距，避免重复间距
+          alignItems: 'stretch',
         }}
       >
         <PhoneTabPanel

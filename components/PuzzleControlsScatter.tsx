@@ -13,20 +13,20 @@ interface PuzzleControlsScatterProps {
 }
 
 export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 34 }: PuzzleControlsScatterProps) {
-  const { 
+  const {
     state,
-    scatterPuzzle 
+    scatterPuzzle
   } = useGame()
   const { t } = useTranslation()
-  
+
   // 使用统一设备检测系统
   const device = useDeviceDetection();
   const isPhone = device.deviceType === 'phone';
   const isLandscape = device.layoutMode === 'landscape';
-  
+
   // 检查是否已生成拼图
   const isPuzzleGenerated = state.puzzle !== null
-  
+
   // 所有按钮共用的禁用样式类
   const disabledClass = "opacity-30 pointer-events-none";
 
@@ -37,7 +37,7 @@ export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 34 }
     console.log('🔧 准备调用scatterPuzzle');
     scatterPuzzle()
     console.log('🔧 scatterPuzzle调用完成');
-    
+
     // 散开拼图后自动跳转到下一个tab
     if (goToNextTab) {
       setTimeout(() => {
@@ -47,11 +47,11 @@ export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 34 }
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', width: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0', width: '100%' }}>
       <Button
         onClick={handleScatterPuzzle}
         disabled={!isPuzzleGenerated || state.isScattered}
-        className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md ${(!isPuzzleGenerated || state.isScattered) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+        className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white ${(!isPuzzleGenerated || state.isScattered) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
         data-testid="scatter-puzzle-button"
         style={{
           fontSize: '14px',
@@ -78,7 +78,7 @@ export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 34 }
         color: '#FFD5AB',
         lineHeight: '16px',
       }}>
-        {state.isScattered 
+        {state.isScattered
           ? t('game.hints.gameInProgress')
           : " "
         }

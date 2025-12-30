@@ -57,12 +57,12 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
     const shapeName = getShapeDisplayName(difficulty.shapeType);
     const cutTypeName = getCutTypeDisplayName(difficulty.cutType);
     const piecesPart = `${difficulty.actualPieces}${t('stats.piecesUnit')}`;
-    
+
     const parts = [difficultyLevel];
     if (shapeName) parts.push(shapeName);
     if (cutTypeName) parts.push(cutTypeName);
     parts.push(piecesPart);
-    
+
     return parts.join(' · ');
   };
 
@@ -92,11 +92,11 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
     const shapeMult = getShapeTypeMultiplier(difficulty.shapeType);
     // 反推基础系数（基础系数 = 最终系数 / 切割系数 / 形状系数）
     const baseMult = multiplier / cutMult / shapeMult;
-    
+
     const cutTypeName = getCutTypeDisplayName(difficulty.cutType) || t('cutType.straight');
     const shapeName = getShapeDisplayName(difficulty.shapeType) || t('game.shapes.names.polygon');
     const baseLabel = t('score.breakdown.baseMultiplier');
-    
+
     return `${baseLabel}${baseMult.toFixed(2)}×${cutTypeName}${cutMult.toFixed(2)}×${shapeName}${shapeMult.toFixed(2)}`;
   };
 
@@ -115,10 +115,10 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
     const { difficulty } = gameStats;
     const pieceCount = difficulty?.actualPieces || 0;
     const difficultyLevel = difficulty?.cutCount || 1;
-    
+
     // 获取速度奖励详细信息
     const speedDetails = getSpeedBonusDetails(duration, pieceCount, difficultyLevel);
-    
+
     // 格式化时间显示（用于阈值）
     const formatTimeStr = (seconds: number): string => {
       if (seconds < 60) {
@@ -126,11 +126,11 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
       }
       const mins = Math.floor(seconds / 60);
       const secs = seconds % 60;
-      return locale === 'en' 
-        ? `${mins}m${secs > 0 ? `${secs}s` : ''}` 
+      return locale === 'en'
+        ? `${mins}m${secs > 0 ? `${secs}s` : ''}`
         : `${mins}分${secs > 0 ? `${secs}秒` : ''}`;
     };
-    
+
     // 根据当前等级生成描述文本
     if (speedDetails.currentLevel) {
       const levelNameMap: Record<string, { zh: string; en: string }> = {
@@ -141,51 +141,51 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
         '一般': { zh: '一般', en: 'Slow' },
         '慢': { zh: '慢', en: 'Too Slow' }
       };
-      
+
       const levelName = levelNameMap[speedDetails.currentLevel.name]?.[locale === 'en' ? 'en' : 'zh'] || speedDetails.currentLevel.name;
-      
+
       // 如果是慢等级（无奖励），显示"超出X秒"
       if (speedDetails.currentLevel.name === '慢') {
         const timeStr = formatTimeStr(speedDetails.currentLevel.maxTime);
-        return locale === 'en' 
+        return locale === 'en'
           ? `${levelName} (exceeded ${timeStr})`
           : `${levelName}（超出${timeStr}）`;
       }
-      
+
       // 其他等级显示"少于X秒内"
       const timeStr = formatTimeStr(speedDetails.currentLevel.maxTime);
-      return locale === 'en' 
+      return locale === 'en'
         ? `${levelName} (less than ${timeStr})`
         : `${levelName}（少于${timeStr}内）`;
     }
-    
+
     // 如果没有匹配的等级（理论上不应该发生）
     const avgTimePerPiece = difficultyLevel <= 2 ? 3 : difficultyLevel <= 4 ? 5 : difficultyLevel <= 6 ? 8 : 15;
     const baseTime = pieceCount * avgTimePerPiece;
     const slowThreshold = Math.round(baseTime * 1.5);
     const timeStr = formatTimeStr(slowThreshold);
-    return locale === 'en' 
+    return locale === 'en'
       ? `Too Slow (exceeded ${timeStr})`
       : `慢（超出${timeStr}）`;
   };
 
   return (
     <div className="w-full">
-      {/* 超紧凑标题区域 */}
-      <div className="flex items-center gap-1 mb-1.5">
+      {/* 极限紧凑标题区域 */}
+      <div className="flex items-center gap-1 mb-0.5">
         <span className="text-yellow-400 text-sm">🏆</span>
         <h3 className="text-[#FFD5AB] text-sm font-medium">{t('stats.currentGameScore')}</h3>
       </div>
 
-      {/* 超紧凑分数详情卡片 - 黑色背景与重新开始按钮一致 */}
-      <div className="bg-[#1E1A2A] rounded-xl p-2.5">
+      {/* 极限紧凑分数详情卡片 - 减少内边距 */}
+      <div className="bg-[#1E1A2A] rounded-xl p-1.5">
         {scoreBreakdown ? (
           <div className="space-y-1">
             {/* 难度基础 */}
             <div className="flex justify-between items-center">
               <span className="text-[#FFD5AB] text-xs flex items-center gap-1 flex-1 min-w-0">
                 <span>{t('score.breakdown.base')}：</span>
-                <span className="text-[10px] leading-tight truncate">{getDifficultyWithShape(gameStats.difficulty)}</span>
+                <span className="text-xs truncate">{getDifficultyWithShape(gameStats.difficulty)}</span>
               </span>
               <span className="text-[#FFD5AB] text-xs font-medium flex-shrink-0 ml-1">{formatScore(scoreBreakdown.baseScore)}</span>
             </div>
@@ -194,7 +194,7 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
             {scoreBreakdown.timeBonus > 0 && (
               <div className="flex justify-between items-center">
                 <span className="text-[#FFD5AB] text-xs">
-                  {t('score.breakdown.timeBonus')}：<span className="text-[10px]">{getSpeedRankText(gameStats.totalDuration)}</span>
+                  {t('score.breakdown.timeBonus')}：<span className="text-xs">{getSpeedRankText(gameStats.totalDuration)}</span>
                 </span>
                 <span className="text-green-400 text-xs font-medium">+{formatScore(scoreBreakdown.timeBonus)}</span>
               </div>
@@ -203,7 +203,7 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
             {/* 旋转技巧 */}
             <div className="flex justify-between items-center">
               <span className="text-[#FFD5AB] text-xs">
-                {t('score.breakdown.rotationScore')}：<span className="text-[10px]">{gameStats.totalRotations}/{gameStats.minRotations}（{gameStats.totalRotations === gameStats.minRotations ? t('rotation.perfect') : t('rotation.excess', { count: gameStats.totalRotations - gameStats.minRotations })}）</span>
+                {t('score.breakdown.rotationScore')}：<span className="text-xs">{gameStats.totalRotations}/{gameStats.minRotations}（{gameStats.totalRotations === gameStats.minRotations ? t('rotation.perfect') : t('rotation.excess', { count: gameStats.totalRotations - gameStats.minRotations })}）</span>
               </span>
               <span className={`text-xs font-medium ${scoreBreakdown.rotationScore >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                 {scoreBreakdown.rotationScore >= 0 ? '+' : ''}{formatScore(scoreBreakdown.rotationScore)}
@@ -213,7 +213,7 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
             {/* 提示使用 */}
             <div className="flex justify-between items-center">
               <span className="text-[#FFD5AB] text-xs">
-                {t('score.breakdown.hintScore')}：<span className="text-[10px]">{gameStats.hintUsageCount}/{scoreBreakdown.hintAllowance}{t('leaderboard.timesUnit')}</span>
+                {t('score.breakdown.hintScore')}：<span className="text-xs">{gameStats.hintUsageCount}/{scoreBreakdown.hintAllowance}{t('leaderboard.timesUnit')}</span>
               </span>
               <span className={`text-xs font-medium ${scoreBreakdown.hintScore >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                 {scoreBreakdown.hintScore >= 0 ? '+' : ''}{formatScore(scoreBreakdown.hintScore)}
@@ -231,15 +231,13 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
               </span>
             </div>
 
-            {/* 难度系数分解显示 */}
-            <div className="flex flex-col gap-0.5">
-              <div className="flex justify-between items-center">
-                <span className="text-[#FFD5AB] text-xs">{t('score.breakdown.multiplier')}：</span>
-                <span className="text-[#FFD5AB] text-xs font-medium">×{formatMultiplier(scoreBreakdown.difficultyMultiplier)}</span>
-              </div>
-              <div className="text-[#FFD5AB]/70 text-[10px] text-right">
-                ({getMultiplierBreakdown(gameStats.difficulty, scoreBreakdown.difficultyMultiplier)})
-              </div>
+            {/* 难度系数 - 单行紧凑显示，防止英文换行 */}
+            <div className="flex justify-between items-center">
+              <span className="text-[#FFD5AB] text-xs flex items-center gap-0.5 flex-1 min-w-0 whitespace-nowrap">
+                <span className="flex-shrink-0">{t('score.breakdown.multiplier')}：</span>
+                <span className="text-xs truncate">({getMultiplierBreakdown(gameStats.difficulty, scoreBreakdown.difficultyMultiplier)})</span>
+              </span>
+              <span className="text-[#FFD5AB] text-xs font-medium flex-shrink-0 ml-1">×{formatMultiplier(scoreBreakdown.difficultyMultiplier)}</span>
             </div>
 
             {/* 最终得分 */}
