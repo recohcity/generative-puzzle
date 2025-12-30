@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine
 } from 'recharts';
+import { GameDataManager } from "@/utils/data/GameDataManager";
 
 // 1. 明确定义数据类型
 interface TrendData {
@@ -302,6 +303,7 @@ const PerformanceTrendPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedMetric, setSelectedMetric] = useState<'performance' | 'system' | 'adaptation'>('performance');
+  const [globalStats, setGlobalStats] = useState({ visitorCount: 0, gameStartCount: 0, historyCount: 0 });
   // 分页相关
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
@@ -380,6 +382,10 @@ const PerformanceTrendPage: React.FC = () => {
         setError(e.message);
         setTrendData([]);
       }
+
+      // 获取全局统计
+      setGlobalStats(GameDataManager.getGlobalStats());
+
       setLoading(false);
     }
     fetchData();
@@ -587,6 +593,39 @@ const PerformanceTrendPage: React.FC = () => {
                 <span className="text-lg font-extrabold text-gray-700">{complianceStats.totalRuns}</span>
               </div>
               <p className="text-xs text-gray-600 mt-1">测试执行次数</p>
+            </div>
+          </div>
+        </section>
+
+        {/* 运营概览 - 新增访客与游戏统计 */}
+        <section className="mb-4">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="bg-indigo-50 p-3 rounded-lg border border-indigo-100 flex items-center gap-3">
+              <div className="bg-indigo-600 p-2 rounded-full text-white">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 005.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+              </div>
+              <div>
+                <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-wider">累计进入用户</p>
+                <p className="text-xl font-black text-indigo-900 leading-none">{globalStats.visitorCount}</p>
+              </div>
+            </div>
+            <div className="bg-emerald-50 p-3 rounded-lg border border-emerald-100 flex items-center gap-3">
+              <div className="bg-emerald-600 p-2 rounded-full text-white">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              </div>
+              <div>
+                <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">累计开局次数</p>
+                <p className="text-xl font-black text-emerald-900 leading-none">{globalStats.gameStartCount}</p>
+              </div>
+            </div>
+            <div className="bg-amber-50 p-3 rounded-lg border border-amber-100 flex items-center gap-3 col-span-2 lg:col-span-1">
+              <div className="bg-amber-600 p-2 rounded-full text-white">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              </div>
+              <div>
+                <p className="text-[10px] text-amber-600 font-bold uppercase tracking-wider">本地历史记录</p>
+                <p className="text-xl font-black text-amber-900 leading-none">{globalStats.historyCount}</p>
+              </div>
             </div>
           </div>
         </section>
@@ -1084,8 +1123,8 @@ const PerformanceTrendPage: React.FC = () => {
                   key={pageNumber}
                   onClick={() => setCurrentPage(pageNumber)}
                   className={`px-4 py-2 text-sm font-medium border rounded-md ${currentPage === pageNumber
-                      ? 'bg-blue-600 text-white border-blue-600'
-                      : 'text-gray-600 bg-white border-gray-300 hover:bg-gray-100'
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'text-gray-600 bg-white border-gray-300 hover:bg-gray-100'
                     }`}
                 >
                   {pageNumber}

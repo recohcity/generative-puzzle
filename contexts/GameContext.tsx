@@ -16,6 +16,7 @@ import { OptimizedShapeGenerator } from "@/utils/shape/OptimizedShapeGenerator";
 import { PuzzleGenerator } from "@/utils/puzzle/PuzzleGenerator";
 import { calculateCenter } from "@/utils/geometry/puzzleGeometry";
 import { adaptAllElements } from "@/utils/SimpleAdapter";
+import { GameDataManager } from "@/utils/data/GameDataManager";
 import {
   Point,
   PuzzlePiece,
@@ -31,7 +32,6 @@ import {
   GameRecord,
   DifficultyConfig,
 } from "@/types/puzzleTypes";
-import { GameDataManager } from "@/utils/data/GameDataManager";
 import {
   calculateFinalScore,
   calculateMinimumRotations,
@@ -1304,6 +1304,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
     );
     dispatch({ type: "SCATTER_PUZZLE" });
     console.log("[scatterPuzzle] SCATTER_PUZZLE dispatched");
+    // 追踪游戏开启
+    GameDataManager.trackGameStart();
   }, [state.isScattered, state.canvasSize, state.originalShape, dispatch]);
 
   useEffect(() => {

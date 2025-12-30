@@ -8,6 +8,8 @@ import { GameRecord, GameStats, DifficultyLevel, DifficultyConfig, CutType } fro
 export class GameDataManager {
   private static readonly LEADERBOARD_KEY = 'puzzle-leaderboard';
   private static readonly GAME_HISTORY_KEY = 'puzzle-history';
+  private static readonly VISITOR_COUNT_KEY = 'puzzle-visitor-count';
+  private static readonly GAME_START_COUNT_KEY = 'puzzle-game-start-count';
   private static readonly MAX_LEADERBOARD_RECORDS = 5;
   private static readonly MAX_HISTORY_RECORDS = 50;
 
@@ -58,7 +60,7 @@ export class GameDataManager {
   static saveGameRecord(gameStats: GameStats, finalScore: number, scoreBreakdown: any): boolean {
     try {
       console.log('[GameDataManager] 开始保存游戏记录:', { gameStats, finalScore, scoreBreakdown });
-      
+
       const record: GameRecord = {
         timestamp: Date.now(),
         finalScore,
@@ -186,14 +188,14 @@ export class GameDataManager {
     try {
       // 获取所有历史记录（不限制数量）来计算准确排名
       const allHistoryRecords = this.getGameHistory();
-      
+
       // 将新记录加入并按分数排序
       const allRecords = [...allHistoryRecords, record].sort((a, b) => b.finalScore - a.finalScore);
       const rank = allRecords.findIndex(r => r.timestamp === record.timestamp) + 1;
-      
+
       // 检查是否进入前5名
       const isNewRecord = rank <= this.MAX_LEADERBOARD_RECORDS;
-      
+
       return { isNewRecord, rank };
     } catch (error) {
       console.error('[GameDataManager] 检查新记录失败:', error);
@@ -223,16 +225,16 @@ export class GameDataManager {
   private static addToHistory(record: GameRecord): void {
     try {
       let history = this.getGameHistory();
-      
+
       // 添加新记录
       history.unshift(record);
-      
+
       // 限制记录数量
       history = history.slice(0, this.MAX_HISTORY_RECORDS);
-      
+
       // 保存到本地存储
       localStorage.setItem(this.GAME_HISTORY_KEY, JSON.stringify(history));
-      
+
       // 更新内存缓存
       this.memoryHistory = history;
     } catch (error) {
@@ -249,19 +251,19 @@ export class GameDataManager {
   private static updateLeaderboard(record: GameRecord): void {
     try {
       let leaderboard = this.getLeaderboard();
-      
+
       // 添加新记录
       leaderboard.push(record);
-      
+
       // 按分数排序
       leaderboard.sort((a, b) => b.finalScore - a.finalScore);
-      
+
       // 限制记录数量
       leaderboard = leaderboard.slice(0, this.MAX_LEADERBOARD_RECORDS);
-      
+
       // 保存到本地存储
       localStorage.setItem(this.LEADERBOARD_KEY, JSON.stringify(leaderboard));
-      
+
       // 更新内存缓存
       this.memoryLeaderboard = leaderboard;
     } catch (error) {
@@ -297,11 +299,11 @@ export class GameDataManager {
 
     // 检查数据类型
     if (typeof record.timestamp !== 'number' ||
-        typeof record.finalScore !== 'number' ||
-        typeof record.totalDuration !== 'number' ||
-        typeof record.totalRotations !== 'number' ||
-        typeof record.hintUsageCount !== 'number' ||
-        typeof record.dragOperations !== 'number') {
+      typeof record.finalScore !== 'number' ||
+      typeof record.totalDuration !== 'number' ||
+      typeof record.totalRotations !== 'number' ||
+      typeof record.hintUsageCount !== 'number' ||
+      typeof record.dragOperations !== 'number') {
       console.warn('[GameDataManager] 数据类型不正确:', {
         timestamp: typeof record.timestamp,
         finalScore: typeof record.finalScore,
@@ -335,10 +337,10 @@ export class GameDataManager {
     try {
       const leaderboard = this.getLeaderboard();
       const history = this.getGameHistory();
-      
+
       let storageUsed = 0;
       let isStorageAvailable = true;
-      
+
       try {
         const leaderboardData = localStorage.getItem(this.LEADERBOARD_KEY) || '';
         const historyData = localStorage.getItem(this.GAME_HISTORY_KEY) || '';
@@ -411,7 +413,7 @@ export class GameDataManager {
       // 直接保存到localStorage
       localStorage.setItem(this.LEADERBOARD_KEY, JSON.stringify(testRecords));
       localStorage.setItem(this.GAME_HISTORY_KEY, JSON.stringify(testRecords));
-      
+
       // 更新内存缓存
       this.memoryLeaderboard = testRecords;
       this.memoryHistory = testRecords;
@@ -421,6 +423,51 @@ export class GameDataManager {
     } catch (error) {
       console.error('[GameDataManager] 生成测试数据失败:', error);
       return false;
+    }
+  }
+
+  /**
+   * 追踪访客进入
+   */
+  static trackVisitor(): void {
+    try {
+      const current = parseInt(localStorage.getItem(this.VISITOR_COUNT_KEY) || '0');
+      // 使用 session 标识来避免刷新网页重复计算同一“会话”
+      if (typeof window !== 'undefined' && !sessionStorage.getItem('puzzle-visited')) {
+        localStorage.setItem(this.VISITOR_COUNT_KEY, (current + 1).toString());
+        sessionStorage.setItem('puzzle-visited', 'true');
+        console.log(`[GameDataManager] 新访客进入，当前累计访客: ${current + 1}`);
+      }
+    } catch (e) {
+      console.warn('[GameDataManager] 追踪访客失败:', e);
+    }
+  }
+
+  /**
+   * 追踪游戏开启
+   */
+  static trackGameStart(): void {
+    try {
+      const current = parseInt(localStorage.getItem(this.GAME_START_COUNT_KEY) || '0');
+      localStorage.setItem(this.GAME_START_COUNT_KEY, (current + 1).toString());
+      console.log(`[GameDataManager] 游戏开启，当前累计开局次数: ${current + 1}`);
+    } catch (e) {
+      console.warn('[GameDataManager] 追踪游戏开启失败:', e);
+    }
+  }
+
+  /**
+   * 获取综合统计数据（访客、开局等）
+   */
+  static getGlobalStats() {
+    try {
+      return {
+        visitorCount: parseInt(localStorage.getItem(this.VISITOR_COUNT_KEY) || '0'),
+        gameStartCount: parseInt(localStorage.getItem(this.GAME_START_COUNT_KEY) || '0'),
+        historyCount: this.getGameHistory().length
+      };
+    } catch (e) {
+      return { visitorCount: 0, gameStartCount: 0, historyCount: 0 };
     }
   }
 }

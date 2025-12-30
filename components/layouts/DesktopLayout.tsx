@@ -47,7 +47,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   // 从GameContext获取state和resetGame函数，以及翻译函数
   const { state, resetGame, retryCurrentGame } = useGame();
   const { t, locale } = useTranslation();
-  
+
   // 个人最佳成绩显示状态
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showRecentGameDetails, setShowRecentGameDetails] = useState(false);
@@ -127,12 +127,12 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
     const cutTypeName = getCutTypeDisplayName(difficulty?.cutType);
     const difficultyLevel = t('difficulty.levelLabel', { level: difficulty.cutCount });
     const piecesPart = `${difficulty.actualPieces}${t('stats.piecesUnit')}`;
-    
+
     const parts = [difficultyLevel];
     if (shapeName) parts.push(shapeName);
     if (cutTypeName) parts.push(cutTypeName);
     parts.push(piecesPart);
-    
+
     return parts.join(' · ');
   };
 
@@ -164,11 +164,11 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
     const deviceMult = 1.0;
     // 反推基础系数
     const baseMult = multiplier / cutMult / shapeMult / deviceMult;
-    
+
     const cutTypeName = getCutTypeDisplayName(difficulty?.cutType) || t('cutType.straight');
     const shapeName = getShapeDisplayName(difficulty?.shapeType) || t('game.shapes.names.polygon');
     const baseLabel = t('score.breakdown.baseMultiplier');
-    
+
     return `${baseLabel}${baseMult.toFixed(2)} × ${cutTypeName}${cutMult.toFixed(2)} × ${shapeName}${shapeMult.toFixed(2)}`;
   };
 
@@ -187,10 +187,10 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
     const { difficulty } = state.gameStats;
     const pieceCount = difficulty?.actualPieces || 0;
     const difficultyLevel = difficulty?.cutCount || 1;
-    
+
     // 获取速度奖励详细信息
     const speedDetails = getSpeedBonusDetails(duration, pieceCount, difficultyLevel);
-    
+
     // 格式化时间显示（用于阈值）
     const formatTimeStr = (seconds: number): string => {
       if (seconds < 60) {
@@ -198,11 +198,11 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
       }
       const mins = Math.floor(seconds / 60);
       const secs = seconds % 60;
-      return locale === 'en' 
-        ? `${mins}m${secs > 0 ? `${secs}s` : ''}` 
+      return locale === 'en'
+        ? `${mins}m${secs > 0 ? `${secs}s` : ''}`
         : `${mins}分${secs > 0 ? `${secs}秒` : ''}`;
     };
-    
+
     // 根据当前等级生成描述文本
     if (speedDetails.currentLevel) {
       const levelNameMap: Record<string, { zh: string; en: string }> = {
@@ -213,30 +213,30 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
         '一般': { zh: '一般', en: 'Slow' },
         '慢': { zh: '慢', en: 'Too Slow' }
       };
-      
+
       const levelName = levelNameMap[speedDetails.currentLevel.name]?.[locale === 'en' ? 'en' : 'zh'] || speedDetails.currentLevel.name;
-      
+
       // 如果是慢等级（无奖励），显示"超出X秒"
       if (speedDetails.currentLevel.name === '慢') {
         const timeStr = formatTimeStr(speedDetails.currentLevel.maxTime);
-        return locale === 'en' 
+        return locale === 'en'
           ? `${levelName} (exceeded ${timeStr})`
           : `${levelName}（超出${timeStr}）`;
       }
-      
+
       // 其他等级显示"少于X秒内"
       const timeStr = formatTimeStr(speedDetails.currentLevel.maxTime);
-      return locale === 'en' 
+      return locale === 'en'
         ? `${levelName} (less than ${timeStr})`
         : `${levelName}（少于${timeStr}内）`;
     }
-    
+
     // 如果没有匹配的等级（理论上不应该发生）
     const avgTimePerPiece = difficultyLevel <= 2 ? 3 : difficultyLevel <= 4 ? 5 : difficultyLevel <= 6 ? 8 : 15;
     const baseTime = pieceCount * avgTimePerPiece;
     const slowThreshold = Math.round(baseTime * 1.5);
     const timeStr = formatTimeStr(slowThreshold);
-    return locale === 'en' 
+    return locale === 'en'
       ? `Too Slow (exceeded ${timeStr})`
       : `慢（超出${timeStr}）`;
   };
@@ -489,7 +489,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                       🏆 {t('stats.gameComplete')}
                     </h3>
                   </div>
-                  
+
                   {/* 滚动内容区域 */}
                   <div className="flex-1 overflow-y-auto space-y-3 mb-4" style={{ fontSize: panelScale <= 0.5 ? 12 : 'calc(0.75rem * var(--panel-scale))' }}>
                     {/* 本局成绩 */}
@@ -497,7 +497,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                       <h4 className="text-[#FFD5AB] font-medium mb-3 text-sm flex items-center gap-1">
                         🏆 {t('stats.currentGameScore')}
                       </h4>
-                      
+
                       {/* 最终得分和游戏时长 - 统一格式 */}
                       <div className="text-center mb-4 p-3 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg border border-blue-400/30">
                         <div className="text-3xl font-bold text-blue-300 mb-1 tracking-wider">
@@ -515,7 +515,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                           </div>
                         )}
                       </div>
-                      
+
                       {/* 分数构成 - 统一格式 */}
                       {state.scoreBreakdown && (
                         <div className="bg-white/5 rounded-lg p-3 border border-white/10">
@@ -571,7 +571,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                           </div>
                         </div>
                       )}
-                      
+
                       {/* 游戏时间 */}
                       <div className="mt-3 text-center">
                         <div className="text-sm text-[#FFD5AB] opacity-80">
@@ -586,10 +586,10 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                         </div>
                       </div>
                     </div>
-                    
+
 
                   </div>
-                  
+
                   {/* 重玩本局和重开游戏按钮 */}
                   <div className="flex flex-col gap-2 mt-4">
                     <RestartButton
@@ -616,16 +616,23 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                   <PuzzleControlsCutType goToNextTab={goToNextTab} />
                   <PuzzleControlsCutCount goToNextTab={goToNextTab} />
                   <PuzzleControlsScatter goToNextTab={goToNextTab} />
-                  
+
                   {/* 控制按钮部分 */}
                   <h3 className="font-medium mt-4 mb-3 text-[#FFD5AB]" style={{ fontSize: panelScale <= 0.5 ? 16 : 'calc(0.9rem * var(--panel-scale))' }}>{t('game.controls.title')}</h3>
                   <ActionButtons layout="desktop" buttonHeight={DESKTOP_CONTROL_BUTTON_HEIGHT} />
-                  {/* 正常游戏状态下只显示重开游戏按钮 */}
-                  <div className="mt-4">
+                  {/* 正常游戏状态下显示重玩本局和重开游戏按钮 */}
+                  <div className="flex flex-row gap-2 mt-4">
+                    <RestartButton
+                      onClick={handleRetryCurrentGame}
+                      icon="retry"
+                      style={{ flex: 1, height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 14 : 'calc(0.95rem * var(--panel-scale))' }}
+                    >
+                      {t('game.controls.retryCurrent')}
+                    </RestartButton>
                     <RestartButton
                       onClick={handleDesktopResetGame}
                       icon="refresh"
-                      style={{ height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 14 : 'calc(0.95rem * var(--panel-scale))' }}
+                      style={{ flex: 1, height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 14 : 'calc(0.95rem * var(--panel-scale))' }}
                     >
                       {t('game.controls.restartGame')}
                     </RestartButton>
