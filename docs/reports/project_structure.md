@@ -1,6 +1,6 @@
 # 项目结构（Project Structure）
 
-> 自动生成时间：2025/12/31 00:30:11  
+> 自动生成时间：2025/12/31 17:37:04  
 > 生成工具：项目结构文档生成器 v3.1.0 - 开发导航版
 
 **开发者导航工具** - 快速理解项目架构，精准定位代码位置，提升开发效率。
@@ -14,9 +14,9 @@
 
 | 统计项 | 数量 | 说明 |
 |--------|------|------|
-| 总目录数 | 60 | 项目目录结构层次 |
-| 总文件数 | 306 | 代码文件和资源文件总数 |
-| 项目容量 | 4.86 MB | 不包含node_modules的项目大小 |
+| 总目录数 | 62 | 项目目录结构层次 |
+| 总文件数 | 305 | 代码文件和资源文件总数 |
+| 项目容量 | 4.85 MB | 不包含node_modules的项目大小 |
 
 ---
 
@@ -208,8 +208,10 @@ npm run lint                   # 代码检查
 - core/
 - coverage/
 - docs/
+  - archive/
   - configuration/
   - i18n/
+  - reports/
   - testing/
 - e2e/
 - hooks/
@@ -390,6 +392,15 @@ npm run lint                   # 代码检查
   📄 `ValidationService.ts`
 📁 **coverage/**
 📁 **docs/**
+  📁 **archive/**
+    📄 `coverage-strategy-legacy.md`
+    📄 `CUT_LOGIC_FIX_REPORT.md`
+    📄 `cutGenerators-refactoring-report.md`
+    📄 `DEPLOY_SUMMARY.md`
+    📄 `dynamic-report-optimization-summary.md`
+    📄 `GITIGNORE_OPTIMIZATION_SUMMARY.md`
+    📄 `hint-reward-impact.md`
+    📄 `performance-optimization-results.md`
   📁 **configuration/**
     📄 `adaptation-system.md`
     📄 `build-dev.md`
@@ -403,33 +414,25 @@ npm run lint                   # 代码检查
     📄 `shape-generation.md`
   📁 **i18n/**
     📄 `README.md` - 项目说明文档
+  📁 **reports/**
+    📄 `api-classification-report.md`
+    📄 `api-scan-report.md`
+    📄 `code-quality-report.md`
+    📄 `dependency-analysis-report.md`
+    📄 `Generative Puzzle 项目代码质量全面体检报告.md`
+    📄 `project_structure.md`
   📁 **testing/**
     📄 `button-testids.md`
     📄 `playwright-automation.md`
     📄 `README.md` - 项目说明文档
   📄 `API_DOCUMENTATION.md`
-  📄 `api-classification-report.md`
-  📄 `api-scan-report.md`
-  📄 `code-quality-report.md`
-  📄 `coverage-strategy.md`
   📄 `CURRENT_ADAPTATION_SYSTEM.md`
-  📄 `CUT_LOGIC_FIX_REPORT.md`
-  📄 `cutGenerators-migration-guide.md`
-  📄 `cutGenerators-refactoring-report.md`
-  📄 `dependency-analysis-report.md`
-  📄 `DEPLOY_SUMMARY.md`
-  📄 `dynamic-report-optimization-summary.md`
   📄 `game-development-milestones.md`
   📄 `game-rules-unified.md`
-  📄 `Generative Puzzle 项目代码质量全面体检报告.md`
   📄 `GETTING_STARTED.md`
   📄 `GITHUB_PAGES_DEPLOYMENT.md`
-  📄 `GITIGNORE_OPTIMIZATION_SUMMARY.md`
-  📄 `hint-reward-impact.md`
   📄 `icon-configuration.md`
-  📄 `performance-optimization-results.md`
   📄 `PRD_生成式拼图游戏.md`
-  📄 `project_structure.md`
   📄 `README.md` - 项目说明文档
   📄 `SUPREME_ADAPTATION_DIRECTIVE.md`
 📁 **e2e/**
@@ -663,4 +666,4 @@ npm run generate-structure  # 一键更新项目结构文档
 
 ---
 
-*📅 生成时间：2025/12/31 00:30:11 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*
+*📅 生成时间：2025/12/31 17:37:04 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*

@@ -1,6 +1,6 @@
 # 设备响应式配置
 
-> 修订日期：2025-01-04 (v1.3.39)
+> 修订日期：2025-12-31 (v1.3.71)
 
 本文档详细说明设备检测和响应式系统的配置参数，基于当前简化的useDeviceDetection Hook。
 
@@ -94,6 +94,29 @@ export const IPHONE16_MODELS = {
     width: 430, height: 932,
     scale: 3, 
     safeArea: { top: 59, bottom: 34 }
+  }
+};
+```
+
+### iPhone 17 系列配置
+```typescript
+// src/config/deviceConfig.ts
+export const IPHONE17_MODELS = {
+  'iPhone17': {
+    width: 402, height: 874,
+    scale: 3, safeArea: { top: 59, bottom: 34 }
+  },
+  'iPhone17Pro': {
+    width: 402, height: 874,
+    scale: 3, safeArea: { top: 59, bottom: 34 }
+  },
+  'iPhone17Air': {
+    width: 420, height: 912,
+    scale: 3, safeArea: { top: 59, bottom: 34 }
+  },
+  'iPhone17ProMax': {
+    width: 440, height: 956,
+    scale: 3, safeArea: { top: 59, bottom: 34 }
   }
 };
 ```
@@ -374,7 +397,13 @@ const MEMORY_OPTIMIZATION = {
 
 ## 📈 配置更新历史
 
-### v1.3.39 (当前版本)
+
+### v1.3.71 (2025/12/31)
+- ✅ iPhone 17全系列物理分辨率支持
+- ✅ 移动端横屏极限空间利用算法
+- ✅ 优化Webkit渲染去除黑影
+
+### v1.3.39
 - ✅ 简化为useDeviceDetection Hook
 - ✅ 统一设备检测逻辑
 - ✅ 优化iPhone 16系列检测
@@ -399,5 +428,5 @@ const MEMORY_OPTIMIZATION = {
 ---
 
 *📝 文档维护: 本文档基于v1.3.39的实际实现*  
-*🔄 最后更新: 2025年1月4日*  
+*🔄 最后更新: 2025年12月31日*  
 *✅ 监督指令合规: 完全符合简化设备检测原则*

@@ -21,7 +21,7 @@ const CONFIG = {
     '*.log',
     '*.tsbuildinfo'
   ],
-  
+
   // 架构分层定义
   architecture: {
     presentation: {
@@ -31,7 +31,7 @@ const CONFIG = {
       color: '🎨'
     },
     business: {
-      name: '业务层 (Business Layer)', 
+      name: '业务层 (Business Layer)',
       description: '业务逻辑和状态管理',
       paths: ['hooks/', 'contexts/', 'providers/'],
       color: '⚡'
@@ -49,7 +49,7 @@ const CONFIG = {
       color: '⚙️'
     }
   },
-  
+
   // 功能模块定义
   modules: {
     gameCore: {
@@ -57,7 +57,7 @@ const CONFIG = {
       description: '游戏主要逻辑和界面',
       files: [
         'components/GameInterface.tsx',
-        'components/PuzzleCanvas.tsx', 
+        'components/PuzzleCanvas.tsx',
         'contexts/GameContext.tsx',
         'utils/puzzle/',
         'hooks/usePuzzleInteractions.ts'
@@ -95,7 +95,7 @@ const CONFIG = {
       ]
     }
   },
-  
+
   // 技术栈定义
   techStack: {
     framework: { name: 'Next.js 15', files: ['app/', 'next.config.mjs'] },
@@ -105,7 +105,7 @@ const CONFIG = {
     testing: { name: 'Playwright + Jest', files: ['e2e/', 'tests/', 'jest.config.js'] },
     ui: { name: 'Shadcn UI', files: ['components/ui/', 'components.json'] }
   },
-  
+
   // 关键文件标记
   keyFiles: [
     { path: 'app/page.tsx', importance: '🔥', role: '应用入口' },
@@ -114,7 +114,7 @@ const CONFIG = {
     { path: 'core/DeviceManager.ts', importance: '⭐', role: '设备管理' },
     { path: 'utils/adaptation/UnifiedAdaptationEngine.ts', importance: '⭐', role: '适配引擎' }
   ],
-  
+
   // 文件和目录描述
   descriptions: {
     // 根目录文件
@@ -130,7 +130,7 @@ const CONFIG = {
     'playwright.config.ts': 'Playwright E2E 测试配置',
     'components.json': 'Shadcn UI 组件配置',
     '.gitignore': 'Git 忽略文件配置',
-    
+
     // 目录
     'src/': '源代码目录',
     'app/': 'Next.js 应用目录',
@@ -149,7 +149,7 @@ const CONFIG = {
     'tests/': '测试文件',
     'public/': '静态资源',
     'temp/': '临时开发文件',
-    
+
     // 核心文件
     'app/page.tsx': 'Next.js 应用主页',
     'app/layout.tsx': '全局布局',
@@ -160,11 +160,11 @@ const CONFIG = {
     'public/bgm.mp3': '游戏音效文件',
     'public/texture-tile.png': '拼图材质纹理'
   },
-  
+
   output: {
-    path: 'docs/project_structure.md'
+    path: 'docs/reports/project_structure.md'
   },
-  
+
   maxDepth: 6
 };
 
@@ -186,7 +186,7 @@ async function loadGitignorePatterns() {
 function shouldIgnore(filePath, ignorePatterns, gitignorePatterns = []) {
   const fileName = path.basename(filePath);
   const relativePath = path.relative('.', filePath);
-  
+
   // 检查基础忽略规则
   const matchesBasic = ignorePatterns.some(pattern => {
     if (pattern.includes('*')) {
@@ -195,9 +195,9 @@ function shouldIgnore(filePath, ignorePatterns, gitignorePatterns = []) {
     }
     return fileName === pattern || relativePath === pattern || relativePath.startsWith(pattern + '/');
   });
-  
+
   if (matchesBasic) return true;
-  
+
   // 检查 gitignore 规则
   return gitignorePatterns.some(pattern => {
     if (pattern.startsWith('/')) {
@@ -208,37 +208,37 @@ function shouldIgnore(filePath, ignorePatterns, gitignorePatterns = []) {
       }
       return relativePath === cleanPattern || relativePath.startsWith(cleanPattern + '/');
     }
-    
+
     if (pattern.includes('*')) {
       const regex = new RegExp(pattern.replace(/\*/g, '.*'));
       return regex.test(fileName) || regex.test(relativePath);
     }
-    
-    return fileName === pattern || relativePath === pattern || 
-           relativePath.startsWith(pattern + '/') || relativePath.includes('/' + pattern + '/');
+
+    return fileName === pattern || relativePath === pattern ||
+      relativePath.startsWith(pattern + '/') || relativePath.includes('/' + pattern + '/');
   });
 }
 
 // 扫描目录
 async function scanDirectory(dirPath, config, currentDepth = 0, gitignorePatterns = []) {
   if (currentDepth >= config.maxDepth) return [];
-  
+
   try {
     const items = await fs.readdir(dirPath, { withFileTypes: true });
     const nodes = [];
-    
+
     for (const item of items) {
       const fullPath = path.join(dirPath, item.name);
-      
+
       if (shouldIgnore(fullPath, config.ignore, gitignorePatterns)) continue;
       if (item.name.startsWith('.') && item.name !== '.gitignore') continue;
-      
+
       const node = {
         name: item.name,
         path: fullPath,
         type: item.isDirectory() ? 'directory' : 'file'
       };
-      
+
       if (item.isDirectory()) {
         node.children = await scanDirectory(fullPath, config, currentDepth + 1, gitignorePatterns);
       } else {
@@ -250,10 +250,10 @@ async function scanDirectory(dirPath, config, currentDepth = 0, gitignorePattern
           // 忽略无法访问的文件
         }
       }
-      
+
       nodes.push(node);
     }
-    
+
     return nodes.sort((a, b) => {
       if (a.type !== b.type) return a.type === 'directory' ? -1 : 1;
       return a.name.localeCompare(b.name);
@@ -268,7 +268,7 @@ function calculateStats(nodes) {
   let totalFiles = 0;
   let totalDirectories = 0;
   let totalSize = 0;
-  
+
   function traverse(nodes) {
     for (const node of nodes) {
       if (node.type === 'directory') {
@@ -280,9 +280,9 @@ function calculateStats(nodes) {
       }
     }
   }
-  
+
   traverse(nodes);
-  
+
   return {
     totalFiles,
     totalDirectories,
@@ -303,7 +303,7 @@ function formatBytes(bytes) {
 function generateDirectoryList(nodes, level = 0) {
   let result = '';
   const indent = '  '.repeat(level);
-  
+
   for (const node of nodes) {
     if (node.type === 'directory') {
       result += `${indent}- ${node.name}/\n`;
@@ -312,34 +312,34 @@ function generateDirectoryList(nodes, level = 0) {
       }
     }
   }
-  
+
   return result;
 }
 
 // 生成架构概览
 function generateArchitectureOverview() {
   let result = '';
-  
+
   for (const [key, layer] of Object.entries(CONFIG.architecture)) {
     result += `### ${layer.name}\n`;
     result += `${layer.description}\n`;
     result += `**主要目录**: ${layer.paths.map(p => `\`${p}\``).join(', ')}\n\n`;
   }
-  
+
   return result;
 }
 
 // 生成功能模块
 function generateFunctionalModules() {
   let result = '';
-  
+
   for (const [key, module] of Object.entries(CONFIG.modules)) {
     // 移除模块名称中的emoji，只保留文字
     const moduleName = module.name.replace(/^[🎮📱🎨🧪]\s*/, '').replace(/[\u{1F300}-\u{1F9FF}]/gu, '').trim();
     result += `### ${moduleName}\n`;
     result += `${module.description}\n\n`;
     result += `**关键文件**:\n`;
-    
+
     for (const file of module.files) {
       const desc = CONFIG.descriptions[file] || '';
       const descText = desc ? ` - ${desc}` : '';
@@ -347,7 +347,7 @@ function generateFunctionalModules() {
     }
     result += '\n';
   }
-  
+
   return result;
 }
 
@@ -355,12 +355,12 @@ function generateFunctionalModules() {
 function generateTechStack() {
   let result = '| 分类 | 技术 | 主要文件 |\n';
   result += '|------|------|----------|\n';
-  
+
   for (const [key, tech] of Object.entries(CONFIG.techStack)) {
     const files = Array.isArray(tech.files) ? tech.files.slice(0, 3).map(f => `\`${f}\``).join(', ') : `\`${tech.files}\``;
     result += `| ${key} | ${tech.name} | ${files} |\n`;
   }
-  
+
   return result;
 }
 
@@ -423,17 +423,17 @@ npm run lint                   # 代码检查
 function generateDetailedStructure(nodes, level = 0) {
   let result = '';
   const indent = '  '.repeat(level);
-  
+
   for (const node of nodes) {
     const relativePath = path.relative('.', node.path);
     const description = CONFIG.descriptions[relativePath] || CONFIG.descriptions[node.name] || '';
-    
+
     // 检查是否是关键文件
     const keyFile = CONFIG.keyFiles.find(kf => kf.path === relativePath);
     const importance = keyFile ? `${keyFile.importance} ` : '';
-    
+
     const descText = description ? ` - ${description}` : '';
-    
+
     if (node.type === 'directory') {
       result += `${indent}📁 **${node.name}/**${descText}\n`;
       if (node.children && node.children.length > 0) {
@@ -443,7 +443,7 @@ function generateDetailedStructure(nodes, level = 0) {
       result += `${indent}📄 ${importance}\`${node.name}\`${descText}\n`;
     }
   }
-  
+
   return result;
 }
 
@@ -451,23 +451,23 @@ function generateDetailedStructure(nodes, level = 0) {
 async function main() {
   try {
     console.log('🚀 开始生成项目结构文档...');
-    
+
     // 加载 gitignore 规则
     const gitignorePatterns = await loadGitignorePatterns();
     console.log(`✅ 已加载 ${gitignorePatterns.length} 条 .gitignore 规则`);
-    
+
     // 扫描目录
     const fileTree = await scanDirectory('.', CONFIG, 0, gitignorePatterns);
     console.log('✅ 目录扫描完成');
-    
+
     // 计算统计信息
     const stats = calculateStats(fileTree);
-    
+
     // 生成内容
     const generatedTime = new Date().toLocaleString('zh-CN');
     const directoryList = generateDirectoryList(fileTree);
     const detailedStructure = generateDetailedStructure(fileTree);
-    
+
     const document = `# 项目结构（Project Structure）
 
 > 自动生成时间：${generatedTime}  
@@ -594,16 +594,16 @@ npm run generate-structure  # 一键更新项目结构文档
 
 *📅 生成时间：${generatedTime} | 🔧 版本：v3.1.0 | 🎯 开发导航工具*
 `;
-    
+
     // 写入文件
     await fs.writeFile(CONFIG.output.path, document, 'utf8');
-    
+
     console.log(`✅ 文档已生成：${CONFIG.output.path}`);
     console.log('\\n📊 生成统计：');
     console.log(`   文件总数：${stats.totalFiles}`);
     console.log(`   目录总数：${stats.totalDirectories}`);
     console.log(`   项目大小：${stats.totalSize}`);
-    
+
   } catch (error) {
     console.error('❌ 生成失败：', error.message);
     process.exit(1);

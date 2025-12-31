@@ -1,5 +1,16 @@
 # 生成式拼图游戏 Changelog
+## [v1.3.72] - 2025-12-31
 
+### 📚 文档重构 (Documentation Refactor)
+- **体系升级**: 全面重构 `docs/` 目录结构，分离"手动指南"与"自动报告"。
+- **报告归纳**: 创建 `docs/reports/` 目录，统一管理所有自动化生成的质量报告（体检报告、API扫描、项目结构等）。
+- **脚本适配**: 更新 6 个相关脚本及 `package.json`，确保所有自动化流程适配新的文档路径。
+- **索引优化**: 重写 `docs/README.md`，提供清晰的文档索引表和详细的指令速查手册。
+- **滞后清理**: 归档过时的 `coverage-strategy.md`，并在 `API_DOCUMENTATION.md` 中添加实时报告导引，解决文档滞后问题。
+
+### 🔧 维护 (Maintenance)
+- 修正 `docs:check` 等命令的输出路径提示。
+- 优化 `update-health-report.cjs` 中的相对路径链接逻辑。
 
 
 ## [v1.3.71] - 2024-12-31

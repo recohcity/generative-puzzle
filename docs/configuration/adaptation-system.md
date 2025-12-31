@@ -1,8 +1,16 @@
 # 适配系统配置
 
-> 修订日期：2025-08-04 (v1.3.39)
+> 修订日期：2025-12-31 (v1.3.71)
 
 本文档详细说明当前简化的适配系统配置，基于SimpleAdapter的统一适配方案。
+
+
+### v3.0 (2025/01/05) - 3端统一适配
+- **桌面端**: 左画布+右面板布局优化
+- **移动端**: 按钮平分布局，双指旋转15度控制
+- **iPad端**: 智能设备检测，横竖屏布局切换
+- **跨端**: 单图响应式背景方案适配参数配置
+- **useDeviceDetection**: 设备检测Hook
 
 ---
 
@@ -67,6 +75,24 @@ export const IPHONE16_OPTIMIZATION = {
   precisionTouch: true,       // 精确触摸检测
   orientationLock: false      // 方向锁定
 };
+
+### iPhone 17 系列优化配置
+```typescript
+// src/config/adaptationConfig.ts
+export const IPHONE17_OPTIMIZATION = {
+  dynamicViewport: true,      // 动态视口适配
+  elasticCanvas: true,        // 弹性画布尺寸算法
+  panelWidthConfig: {
+    base: 360,                // 基础面板宽度 (px)
+    max: 380                  // 最大面板宽度 (px)
+  },
+  webkitFixes: {
+    removeShadows: true,      // 移除投影消除黑线
+    removeBorders: true,      // 移除边框消除间隙
+    optimizeTransitions: true // 优化过渡性能
+  }
+};
+```
 ```
 
 ### 高分辨率移动设备配置
@@ -153,6 +179,29 @@ export const IPHONE16_MODELS = {
   },
   'iPhone16ProMax': { 
     width: 430, height: 932,
+    scale: 3, safeArea: { top: 59, bottom: 34 }
+  }
+};
+```
+
+### iPhone 17 系列检测配置
+```typescript
+// src/config/deviceConfig.ts
+export const IPHONE17_MODELS = {
+  'iPhone17': {
+    width: 402, height: 874,
+    scale: 3, safeArea: { top: 59, bottom: 34 }
+  },
+  'iPhone17Pro': {
+    width: 402, height: 874,
+    scale: 3, safeArea: { top: 59, bottom: 34 }
+  },
+  'iPhone17Air': {
+    width: 420, height: 912,
+    scale: 3, safeArea: { top: 59, bottom: 34 }
+  },
+  'iPhone17ProMax': {
+    width: 440, height: 956,
     scale: 3, safeArea: { top: 59, bottom: 34 }
   }
 };
@@ -296,6 +345,11 @@ const MEMORY_CONFIG = {
 - ✅ iPhone 16系列优化配置
 - ✅ 高分辨率设备支持
 
+### v1.3.71
+- ✅ iPhone 17全系列原生支持
+- ✅ 移动端横屏极限空间优化
+- ✅ Webkit渲染黑影消除方案
+
 ### v1.3.38
 - 🔧 修复坐标转换问题
 - 🔧 优化移动端适配参数
@@ -315,5 +369,5 @@ const MEMORY_CONFIG = {
 ---
 
 *📝 文档维护: 本文档基于v1.3.39的实际配置*  
-*🔄 最后更新: 2025年8月4日*  
+*🔄 最后更新: 2025年12月31日*  
 *✅ 监督指令合规: 完全符合简化架构原则*

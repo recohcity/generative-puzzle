@@ -1,8 +1,8 @@
-# 难度配置
+# 难度配置与切割算法
 
-> 修订日期：2025-01-04 (v1.3.39)
+> 修订日期：2025-12-31 (v3.4 - 统一规则版)
 
-本文档详细说明游戏难度系统和切割算法的配置参数，基于当前简化的拼图生成系统。
+本文档详细说明游戏难度系统和切割算法的配置参数，**完全基于 `docs/game-rules-unified.md` 统一规则**。
 
 ---
 
@@ -10,327 +10,136 @@
 
 ### 主要配置文件
 ```
-utils/puzzle/cutGenerators.ts      # 切割生成器
-utils/puzzle/PuzzleGenerator.ts    # 拼图生成器
-contexts/GameContext.tsx           # 游戏状态管理
-components/PuzzleControlsCutCount.tsx  # 难度控制UI
+utils/puzzle/cutGeneratorConfig.ts # 难度具体配置 (核心事实来源)
+utils/puzzle/cutGenerators.ts      # 切割生成器逻辑
+utils/puzzle/graph/NetworkCutter.ts # 图形切割算法
+utils/score/ScoreCalculator.ts     # 分数计算器
 ```
 
 ---
 
-## 🎯 难度级别配置
+## 🎯 难度级别配置 (v3.4)
 
-### 难度级别定义
-```typescript
-// utils/puzzle/cutGenerators.ts
-/**
- * 拼图切割难度级别配置 (已优化):
- * 
- * 简单难度 (1-3)：
- * - 级别1: 2块拼图，1条切割线，切割线穿过中心，角度变化小
- * - 级别2: 3块拼图，2条切割线，切割线更倾向于穿过中心，布局均匀
- * - 级别3: 4块拼图，3条切割线，有一定随机性但仍保持可预测性
- * 
- * 中等难度 (4-6)：
- * - 级别4: 5块拼图，4条切割线，增加随机性和非中心切割
- * - 级别5: 7块拼图，6条切割线，更多方向变化，角度更复杂
- * - 级别6: 9块拼图，8条切割线，偏移更大，部分切割线不穿过中心
- * 
- * 高难度 (7-8)：
- * - 级别7: 12块拼图，11条切割线，高度随机，切割线方向多变
- * - 级别8: 15块拼图，14条切割线，最高难度，完全随机切割
- */
-```
+### 难度映射表
+基于 `DIFFICULTY_SETTINGS` 配置，定义了8个难度级别的切割线数量和拼图块数范围。
 
-### 难度映射配置
 ```typescript
-// 难度级别到拼图块数的映射
-const DIFFICULTY_MAPPING = {
-  1: { pieces: 2, cuts: 1, complexity: 0.1 },
-  2: { pieces: 3, cuts: 2, complexity: 0.2 },
-  3: { pieces: 4, cuts: 3, complexity: 0.3 },
-  4: { pieces: 5, cuts: 4, complexity: 0.4 },
-  5: { pieces: 7, cuts: 6, complexity: 0.6 },
-  6: { pieces: 9, cuts: 8, complexity: 0.7 },
-  7: { pieces: 12, cuts: 11, complexity: 0.9 },
-  8: { pieces: 15, cuts: 14, complexity: 1.0 }
+// utils/puzzle/cutGeneratorConfig.ts
+export const DIFFICULTY_SETTINGS = {
+  1: { targetCuts: 2,  pieceRange: { min: 3, max: 4 },   baseScore: 500,  label: '入门难度' },
+  2: { targetCuts: 3,  pieceRange: { min: 4, max: 6 },   baseScore: 800,  label: '简单难度' },
+  3: { targetCuts: 4,  pieceRange: { min: 5, max: 8 },   baseScore: 1200, label: '初级难度' },
+  4: { targetCuts: 6,  pieceRange: { min: 7, max: 12 },  baseScore: 1800, label: '中级难度' },
+  5: { targetCuts: 8,  pieceRange: { min: 9, max: 16 },  baseScore: 2500, label: '中高级难度' },
+  6: { targetCuts: 10, pieceRange: { min: 11, max: 20 }, baseScore: 3500, label: '高级难度' },
+  7: { targetCuts: 12, pieceRange: { min: 13, max: 24 }, baseScore: 5000, label: '专家难度' },
+  8: { targetCuts: 15, pieceRange: { min: 16, max: 30 }, baseScore: 8000, label: '大师难度' }
 };
 ```
 
 ---
 
-## ⚙️ 切割配置参数
+## ⚙️ 难度系数配置
 
-### 切割类型配置
+### 1. 切割类型系数 (Cut Type Multipliers)
+基于 v3.2 平衡优化版本。
+
 ```typescript
-// utils/puzzle/cutGenerators.ts
-type CutLine = {
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
-  type: "straight" | "diagonal";
+export const CUT_TYPE_MULTIPLIERS = {
+  straight: 1.0,   // 直线切割：标准难度
+  diagonal: 1.15,  // 斜线切割：增加15%难度 (三角形识别)
+  curve: 1.25      // 曲线切割：增加25%难度 (放射状扇形)
 };
 ```
 
-### 切割生成配置
+### 2. 形状难度系数 (Shape Multipliers)
+基于 v3.2 平衡优化版本。
+
 ```typescript
-// 切割生成参数
-const CUT_GENERATION_CONFIG = {
-  // 简单难度配置
-  SIMPLE_DIFFICULTY: {
-    centerBias: 0.8,          // 中心偏向权重
-    angleVariation: 15,       // 角度变化范围 (度)
-    randomOffset: 0.1,        // 随机偏移系数
-    minCutLength: 0.6         // 最小切割长度比例
-  },
-  
-  // 中等难度配置
-  MEDIUM_DIFFICULTY: {
-    centerBias: 0.5,          // 中心偏向权重
-    angleVariation: 45,       // 角度变化范围 (度)
-    randomOffset: 0.3,        // 随机偏移系数
-    minCutLength: 0.4         // 最小切割长度比例
-  },
-  
-  // 高难度配置
-  HARD_DIFFICULTY: {
-    centerBias: 0.2,          // 中心偏向权重
-    angleVariation: 90,       // 角度变化范围 (度)
-    randomOffset: 0.5,        // 随机偏移系数
-    minCutLength: 0.3         // 最小切割长度比例
-  }
+export const SHAPE_MULTIPLIER = {
+  polygon: 1.0,   // 多边形：标准难度
+  cloud: 1.1,     // 云朵形：增加10%难度 (曲线边缘增加匹配难度)
+  jagged: 1.05    // 锯齿形：增加5%难度 (独特形状易识别)
+};
+```
+
+### 3. 设备难度系数 (Device Multipliers)
+
+```typescript
+export const DEVICE_MULTIPLIER = {
+  desktop: 1.0,   // 桌面端
+  ipad: 1.0,      // iPad端
+  mobile: 1.1     // 移动端 (操作空间受限，给予1.1倍加成)
 };
 ```
 
 ---
 
-## 🎮 游戏状态配置
+## 🔪 切割算法配置
 
-### 难度状态管理
+### 算法策略区分
+
+#### 直线与斜线切割 (Graph Network)
+*   **策略**: 使用 `targetCuts` 条线互相交叉。
+*   **结果**: 产生约 `2 * targetCuts` 块拼图。
+*   **逻辑**: 线段在容器内随机生成，计算所有交点，构建多边形网络。
+
+#### 曲线切割 (Radial Slices)
+*   **策略**: 使用 `pieceRange.max` 作为放射线条数。
+*   **结果**: 产生约 `n` 块拼图 (不交叉)。
+*   **逻辑**: 从几何中心向外发射正弦/贝塞尔曲线，形成扇形切片。
+*   **优化**: v3.2 版本修复了数量过少的问题，现在通过直接使用最大片数来平衡难度。
+
+---
+
+## ⚡️ 速度奖励配置 (v3.4)
+
+### 动态时间阈值
+不再使用固定时间，而是根据拼图数量动态计算"标准完成时间"。
+
+**每片平均基准时间 (Avg Time Per Piece):**
+*   难度 1-2: **5秒** (优化后)
+*   难度 3-4: **7秒**
+*   难度 5-6: **10秒**
+*   难度 7-8: **18秒**
+
+### 奖励倍率 (Threshold Multipliers)
+基于基础时间 (`count * avgTime`) 的倍数判定等级：
+
+| 等级 | 时间倍数 | 基础奖励分 |
+|------|---------|-----------|
+| 极速 | < 1.0x | 600 |
+| 快速 | < 1.3x | 400 |
+| 良好 | < 1.6x | 300 |
+| 标准 | < 2.0x | 200 |
+| 一般 | < 2.5x | 100 |
+
+*最终速度奖励 = 基础奖励分 × 难度等级加成 (1.0~2.0倍)*
+
+---
+
+## 📊 性能与渲染配置
+
+### 渲染优化
 ```typescript
-// contexts/GameContext.tsx
-interface GameState {
-  cutCount: number;           // 当前难度级别 (1-8)
-  cutType: 'straight' | 'diagonal';  // 切割类型
-  pieces: PuzzlePiece[];      // 生成的拼图块
-  difficulty: DifficultyLevel; // 难度配置
-}
+const RENDER_CONFIG = {
+  shadows: false,       // 移动端禁用投影优化性能 (v1.3.71)
+  backdropBlur: false,  // 禁用背景模糊以消除Webkit黑线
+  animationDuration: 300, // 动画时长 (ms)
+  responsiveScale: true // 启用响应式缩放
+};
 ```
 
-### 难度控制配置
+### 调试配置
 ```typescript
-// 难度控制参数
-const DIFFICULTY_CONTROL = {
-  minDifficulty: 1,           // 最小难度级别
-  maxDifficulty: 8,           // 最大难度级别
-  defaultDifficulty: 3,       // 默认难度级别
-  stepSize: 1,                // 难度调整步长
-  autoAdjust: false           // 自动难度调整
+const DEBUG_CONFIG = {
+  showCutLines: process.env.NODE_ENV === 'development', // 显示切割辅助线
+  logCalculations: false // 日志记录
 };
 ```
 
 ---
 
-## 🔧 切割算法配置
-
-### 直线切割配置
-```typescript
-// 直线切割参数
-const STRAIGHT_CUT_CONFIG = {
-  horizontalProbability: 0.5,  // 水平切割概率
-  verticalProbability: 0.5,    // 垂直切割概率
-  minSpacing: 0.1,            // 最小切割间距 (形状尺寸比例)
-  safetyMargin: 0.05,         // 边界安全距离 (形状尺寸比例)
-  parallelAvoidance: 0.3      // 平行线避免系数
-};
-```
-
-### 对角切割配置
-```typescript
-// 对角切割参数
-const DIAGONAL_CUT_CONFIG = {
-  angleRange: [30, 150],      // 角度范围 (度)
-  preferredAngles: [45, 135], // 首选角度
-  intersectionTolerance: 0.05, // 交点容差
-  lengthVariation: 0.2,       // 长度变化系数
-  curvatureEnabled: false     // 曲线切割 (暂未实现)
-};
-```
-
----
-
-## 📊 性能优化配置
-
-### 切割性能配置
-```typescript
-// 切割性能优化参数
-const CUTTING_PERFORMANCE = {
-  maxIterations: 100,         // 最大迭代次数
-  convergenceThreshold: 0.01, // 收敛阈值
-  enableCaching: true,        // 启用缓存
-  batchSize: 10,             // 批处理大小
-  timeoutMs: 5000            // 超时时间 (毫秒)
-};
-```
-
-### 内存优化配置
-```typescript
-// 内存使用优化
-const MEMORY_OPTIMIZATION = {
-  maxCachedCuts: 50,         // 最大缓存切割数
-  cleanupInterval: 30000,     // 清理间隔 (毫秒)
-  enableGC: true,            // 启用垃圾回收提示
-  poolSize: 100              // 对象池大小
-};
-```
-
----
-
-## 🔧 配置修改指南
-
-### 调整难度级别
-```typescript
-// 增加新的难度级别
-const CUSTOM_DIFFICULTY = {
-  9: { pieces: 20, cuts: 19, complexity: 1.2 },
-  10: { pieces: 25, cuts: 24, complexity: 1.5 }
-};
-
-// 修改现有难度
-const MODIFIED_DIFFICULTY = {
-  ...DIFFICULTY_MAPPING,
-  3: { pieces: 6, cuts: 5, complexity: 0.4 }  // 增加级别3的难度
-};
-```
-
-### 调整切割参数
-```typescript
-// 使切割更简单
-const EASIER_CUTTING = {
-  ...SIMPLE_DIFFICULTY,
-  centerBias: 0.9,          // 增加中心偏向
-  angleVariation: 10,       // 减少角度变化
-  randomOffset: 0.05        // 减少随机偏移
-};
-
-// 使切割更复杂
-const HARDER_CUTTING = {
-  ...HARD_DIFFICULTY,
-  centerBias: 0.1,          // 减少中心偏向
-  angleVariation: 120,      // 增加角度变化
-  randomOffset: 0.7         // 增加随机偏移
-};
-```
-
-### 调整切割类型比例
-```typescript
-// 修改切割类型偏好
-const CUT_TYPE_PREFERENCE = {
-  straightProbability: 0.7,   // 70% 直线切割
-  diagonalProbability: 0.3,   // 30% 对角切割
-  mixedCutting: true,         // 允许混合切割
-  adaptiveType: false         // 自适应切割类型
-};
-```
-
----
-
-## 🐛 故障排除
-
-### 常见难度问题
-
-#### 1. 拼图块过多或过少
-**原因**: 难度映射配置不当  
-**解决**: 调整 `DIFFICULTY_MAPPING` 中的 `pieces` 参数
-
-#### 2. 切割线重叠
-**原因**: 切割间距设置过小  
-**解决**: 增加 `minSpacing` 和 `safetyMargin` 参数
-
-#### 3. 拼图过于简单或复杂
-**原因**: 复杂度系数设置不当  
-**解决**: 调整 `complexity` 参数和切割算法配置
-
-#### 4. 性能问题
-**原因**: 高难度级别计算量过大  
-**解决**: 优化 `maxIterations` 和启用缓存
-
-### 调试方法
-```typescript
-// 启用难度调试
-const DEBUG_DIFFICULTY = process.env.NODE_ENV === 'development';
-
-if (DEBUG_DIFFICULTY) {
-  console.log('Difficulty Level:', cutCount);
-  console.log('Generated Pieces:', pieces.length);
-  console.log('Cut Lines:', cuts.length);
-  console.log('Complexity:', complexity);
-}
-```
-
----
-
-## 📊 难度平衡
-
-### 难度曲线配置
-```typescript
-// 难度曲线参数
-const DIFFICULTY_CURVE = {
-  // 线性增长
-  linear: (level: number) => level * 0.125,
-  
-  // 指数增长
-  exponential: (level: number) => Math.pow(1.5, level - 1) * 0.1,
-  
-  // 对数增长
-  logarithmic: (level: number) => Math.log(level + 1) * 0.3,
-  
-  // 当前使用的曲线
-  current: 'exponential'
-};
-```
-
-### 用户体验配置
-```typescript
-// 用户体验优化
-const UX_OPTIMIZATION = {
-  progressiveUnlock: true,    // 渐进式解锁难度
-  hintSystem: true,          // 提示系统
-  undoSupport: true,         // 撤销支持
-  autoSave: true,            // 自动保存进度
-  adaptiveDifficulty: false  // 自适应难度调整
-};
-```
-
----
-
-## 📈 配置更新历史
-
-### v1.3.39 (当前版本)
-- ✅ 简化难度配置结构
-- ✅ 优化切割算法参数
-- ✅ 增强性能配置
-- ✅ 统一难度映射
-
-### v1.3.38
-- 🔧 优化难度平衡
-- 🔧 调整切割参数
-
-### v1.3.37
-- 🔧 简化难度系统
-- 🔧 删除冗余配置
-
----
-
-## 📚 相关文档
-
-- **[核心架构配置](./core-architecture.md)** - 整体架构说明
-- **[形状生成配置](./shape-generation.md)** - 形状生成配置
-- **[性能配置](./performance.md)** - 性能优化配置
-
----
-
-*📝 文档维护: 本文档基于v1.3.39的实际实现*  
-*🔄 最后更新: 2025年1月4日*  
-*✅ 监督指令合规: 完全符合简化难度系统原则*
+*📝 文档状态: 已修订与之 v3.4 统一规则同步*  
+*🔄 最后更新: 2025/12/31*  
+*✅ 准确性: 此文档已修正，不再滞后于 game-rules-unified.md*

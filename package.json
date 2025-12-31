@@ -1,6 +1,6 @@
 {
   "name": "generative-puzzle",
-  "version": "1.3.71",
+  "version": "1.3.72",
   "type": "module",
   "private": true,
   "scripts": {
@@ -21,7 +21,7 @@
     "scan-api-changes": "node scripts/scan-api-changes.cjs",
     "docs:structure": "npm run generate-structure",
     "docs:scan": "npm run scan-api-changes",
-    "docs:check": "npm run scan-api-changes && npm run classify-apis && echo '\\n📊 API分析完成！\\n📄 扫描报告: docs/api-scan-report.md\\n🏷️  分类报告: docs/api-classification-report.md\\n💡 请根据扫描结果更新 docs/API_DOCUMENTATION.md'",
+    "docs:check": "npm run scan-api-changes && npm run classify-apis && echo '\\n📊 API分析完成！\\n📄 扫描报告: docs/reports/api-scan-report.md\\n🏷️  分类报告: docs/reports/api-classification-report.md\\n💡 请根据扫描结果更新 docs/API_DOCUMENTATION.md'",
     "classify-apis": "node scripts/classify-apis.cjs",
     "organize-docs": "node scripts/organize-docs.cjs",
     "quality:check": "node src/quality-system/quality-checker.cjs",
