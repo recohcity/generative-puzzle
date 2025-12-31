@@ -35,16 +35,16 @@ interface TrendData {
 }
 
 const BENCHMARKS = {
-  resourceLoadTime: 1000, // 资源加载时间（从0%加载到100%）
-  e2eLoadTime: 1800, // 端到端加载时间（加载完并进入游戏主界面，所有UI都正常显示完毕，音效就绪）
-  loadTime: 1000, // 兼容历史字段
-  shapeGenerationTime: 500,
-  puzzleGenerationTime: 800,
-  scatterTime: 800,
-  pieceInteractionTime: 1200,
-  minFps: 30,
-  maxMemoryUsage: 100, // MB
-  adaptationPassRate: 90 // 适配通过率（百分比）
+  resourceLoadTime: 800,      // 资源加载时间（从0%加载到100%）
+  e2eLoadTime: 1800,          // 端到端加载时间
+  loadTime: 800,              // 兼容历史字段
+  shapeGenerationTime: 300,   // 形状生成基准
+  puzzleGenerationTime: 600,  // 切割生成基准
+  scatterTime: 600,           // 散开时间基准
+  pieceInteractionTime: 800,  // 交互响应基准
+  minFps: 45,                 // 帧率基准
+  maxMemoryUsage: 40,         // 内存基准 (MB)
+  adaptationPassRate: 95      // 适配通过率（百分比）
 };
 
 // 1. 增加新指标
@@ -84,14 +84,14 @@ const getPerformanceGrade = (metric: MetricKey, value: number) => {
   }
   switch (metric) {
     case 'resourceLoadTime':
-      if (value <= 800) return { grade: '极优', color: 'text-green-700', bg: 'bg-green-100' };
-      if (value <= 1000) return { grade: '达标', color: 'text-blue-600', bg: 'bg-blue-100' };
-      if (value <= 1200) return { grade: '预警', color: 'text-yellow-600', bg: 'bg-yellow-100' };
+      if (value <= 400) return { grade: '极优', color: 'text-green-700', bg: 'bg-green-100' };
+      if (value <= 800) return { grade: '达标', color: 'text-blue-600', bg: 'bg-blue-100' };
+      if (value <= 1000) return { grade: '预警', color: 'text-yellow-600', bg: 'bg-yellow-100' };
       return { grade: '超标', color: 'text-red-600', bg: 'bg-red-100' };
     case 'e2eLoadTime':
       if (value <= 1200) return { grade: '极优', color: 'text-green-700', bg: 'bg-green-100' };
       if (value <= 1800) return { grade: '达标', color: 'text-blue-600', bg: 'bg-blue-100' };
-      if (value <= 2000) return { grade: '预警', color: 'text-yellow-600', bg: 'bg-yellow-100' };
+      if (value <= 2200) return { grade: '预警', color: 'text-yellow-600', bg: 'bg-yellow-100' };
       return { grade: '超标', color: 'text-red-600', bg: 'bg-red-100' };
     case 'shapeGenerationTime':
       if (value <= BENCHMARKS.shapeGenerationTime * 0.8) return { grade: '优秀', color: 'text-green-600', bg: 'bg-green-100' };
@@ -649,14 +649,34 @@ const PerformanceTrendPage: React.FC = () => {
             </button>
           </div>
           <div className="text-xs text-blue-700 mt-2 space-y-1">
-            <div><strong>资源加载</strong> ≤1000ms · <strong>端到端加载</strong> ≤1800ms · <strong>形状生成</strong> ≤500ms</div>
-            <div><strong>切割生成</strong> ≤800ms · <strong>交互响应</strong> ≤1200ms · <strong>FPS</strong> ≥30 · <strong>适配通过率</strong> ≥90%</div>
+            <div><strong>资源加载</strong> ≤800ms · <strong>端到端加载</strong> ≤1800ms · <strong>形状生成</strong> ≤300ms</div>
+            <div><strong>切割生成</strong> ≤600ms · <strong>交互响应</strong> ≤800ms · <strong>FPS</strong> ≥45 · <strong>适配通过率</strong> ≥95%</div>
           </div>
           {benchmarkDetailsOpen && (
-            <div className="mt-3 text-xs text-blue-600 space-y-1">
-              <div>📱 <strong>适配测试覆盖</strong>: 桌面端(1920×1080, 1280×720) · 移动端(iPhone 17全系, iPhone X-16, Android) · 横屏模式(874×402, 912×420, 956×440 等) · 平板与动态比例</div>
-              <div>🎯 <strong>评估维度</strong>: 布局完整性 · 交互可用性 · 性能稳定性 · 视觉一致性</div>
-              <div>🔄 <strong>动态适配</strong>: 测试web端窗口大小动态变化时的适配响应能力 (包含 iPhone 17 Pro/Air/Max 专项机型)</div>
+            <div className="mt-4 border-t border-blue-100 pt-3 space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <h3 className="text-blue-800 font-bold text-[11px] uppercase tracking-wider">📊 评测体系说明 (Phased Evaluation)</h3>
+                  <ul className="text-[11px] text-blue-600 space-y-1 list-disc pl-4">
+                    <li><strong>分阶段架构</strong>: 采用冷热隔离模式。Phase 1-3 在纯净环境下完成全游戏闭环模拟，确保核心指标不受后续压力测试干扰。</li>
+                    <li><strong>内存锁定 (Memory Locked)</strong>: 采样于 Phase 3（即游戏链路结束点）。此举精准排除了 Phase 5 压力测试中渲染层生成的临时缓冲区干扰，反映逻辑层真实占位。</li>
+                    <li><strong>端到端加载 (E2E)</strong>: 采集点位于 UI 就绪且音频预加载完成。涵盖资源 DNS/载入、Hydration 激活及 150ms 的音频缓冲硬延迟。</li>
+                    <li><strong>高压适配流</strong>: 在指标锁定后的 Phase 5 执行。横跨 19 组设备分辨率地毯式切换，验证极端屏幕比例下的布局原地保护机制。</li>
+                  </ul>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-blue-800 font-bold text-[11px] uppercase tracking-wider">📱 测试环境资产 (Environments)</h3>
+                  <ul className="text-[11px] text-blue-600 space-y-1">
+                    <li><strong>桌面端</strong>: 1920x1080 (FHD), 1440x900, 1280x720</li>
+                    <li><strong>移动端</strong>: iPhone 17 (Pro/Air/Max) 全系, iPhone 16/X, Android 标准</li>
+                    <li><strong>横屏专场</strong>: 针对长屏手机 (956x440 等) 的双侧面板极限空间利用测试</li>
+                    <li><strong>动态场景</strong>: 测试浏览器窗口实时缩放产生的 Layout 抖动与原地保护机制</li>
+                  </ul>
+                </div>
+              </div>
+              <div className="text-[10px] text-blue-400 italic pt-1 border-t border-blue-50 border-dashed">
+                * 本仪表板所有数据均由 Playwright E2E 自动化脚本在受控环境下真实跑测并自动上报。
+              </div>
             </div>
           )}
         </div>

@@ -1,6 +1,6 @@
 # 适配系统配置
 
-> 修订日期：2025-12-31 (v1.3.71)
+> 修订日期：2025-12-31 (v1.3.73)
 
 本文档详细说明当前简化的适配系统配置，基于SimpleAdapter的统一适配方案。
 
@@ -294,9 +294,17 @@ export const DEVICE_THRESHOLDS = {
 **原因**: DPI适配参数不当  
 **解决**: 调整 `HIGH_RESOLUTION_MOBILE` 配置
 
-#### 4. iPhone 16 系列适配问题
-**原因**: 安全区域配置错误  
-**解决**: 检查 `IPHONE16_OPTIMIZATION.safeAreaInsets` 配置
+#### 4. iPad 浏览器非全屏布局偏下
+**原因**: 使用 `100vh` 作为高度基准时，移动浏览器地址栏占据了部分可视面积，导致居中计算偏下。  
+**解决**: 使用 `100dvh` (Dynamic Viewport Height) 替代 `100vh`，确保在地址栏出现/收起时都能保持完美居中。
+
+#### 5. PWA 图标打开非全屏
+**原因**: 缺少 `manifest.json` 或配置不当。  
+**解决**: 添加 `public/manifest.json` 并设置 `"display": "standalone"`。
+
+#### 6. 全屏模式按钮点击无响应
+**原因**: 过度拦截 `touchstart` 和 `touchend` 的默认行为 (`preventDefault`)。  
+**解决**: 移除对点击类事件的拦截，仅保留 `touchmove` 以防止橡皮筋滚动。
 
 ### 调试方法
 ```typescript
@@ -339,16 +347,22 @@ const MEMORY_CONFIG = {
 
 ## 📈 配置更新历史
 
-### v1.3.39 (当前版本)
-- ✅ 简化为SimpleAdapter统一适配
-- ✅ 统一配置文件结构
-- ✅ iPhone 16系列优化配置
-- ✅ 高分辨率设备支持
+### v1.3.73
+- ✅ iPad 浏览器深度适配：引入 `dvh` 单位解决垂直偏移
+- ✅ PWA 增强：新增 `manifest.json` 支持 Standalone 模式
+- ✅ 全屏交互修复：优化触摸事件拦截逻辑，恢复按钮响应
+- ✅ 布局矫正：全屏自动隐藏版权信息消除位移
 
 ### v1.3.71
 - ✅ iPhone 17全系列原生支持
 - ✅ 移动端横屏极限空间优化
 - ✅ Webkit渲染黑影消除方案
+
+### v1.3.39 
+- ✅ 简化为SimpleAdapter统一适配
+- ✅ 统一配置文件结构
+- ✅ iPhone 16系列优化配置
+- ✅ 高分辨率设备支持
 
 ### v1.3.38
 - 🔧 修复坐标转换问题

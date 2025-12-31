@@ -61,6 +61,6 @@ npx playwright show-report
 ## 🔗 相关链接
 
 - [项目主文档](../README.md)
-- [配置文档](../configuration/README.md)
+- [配置文档](../configuration/)
 - [性能优化](../configuration/performance.md)
 - [适配系统](../configuration/adaptation-system.md)

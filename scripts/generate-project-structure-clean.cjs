@@ -568,7 +568,7 @@ ${detailedStructure}
 | 📖 项目说明 | [README.md](/README.md) | 项目介绍和快速开始 |
 | 📝 更新日志 | [CHANGELOG.md](/CHANGELOG.md) | 版本历史和变更记录 |
 | 🔌 API文档 | [API_DOCUMENTATION.md](/docs/API_DOCUMENTATION.md) | 接口规范和使用指南 |
-| ⚙️ 配置指南 | [configuration/](/docs/configuration/README.md) | 环境配置和部署指南 |
+| ⚙️ 配置指南 | [configuration/](/docs/configuration/) | 环境配置和部署指南 |
 
 ---
 

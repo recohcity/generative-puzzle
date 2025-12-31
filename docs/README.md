@@ -13,7 +13,9 @@
 | :--- | :--- | :--- |
 | **[快速开始](./GETTING_STARTED.md)** | 项目搭建、环境要求与运行指南 | 新手入门 / 环境搭建 |
 | **[API 核心文档](./API_DOCUMENTATION.md)** | 核心模块设计与关键接口说明 | 查阅核心逻辑 / 接口设计 |
-| **[配置指南](./configuration/)** | 性能、适配、音效等参数配置详解 | 修改系统参数 / 调优 |
+| **设备适配指南** | [适配系统](./configuration/adaptation-system.md) / [响应式](./configuration/device-responsive.md) | 屏幕适配、响应式参数调优 |
+| **系统参数指南** | [性能](./configuration/performance.md) / [日志](./configuration/logging.md) / [构建](./configuration/build-dev.md) | 性能优化、日志级别、构建配置 |
+| **核心算法配置** | [形状生成](./configuration/shape-generation.md) / [切割难度](./configuration/difficulty-cutting.md) | 生成算法逻辑参数配置 |
 | **[适配监督指令](./SUPREME_ADAPTATION_DIRECTIVE.md)** | **最高级别**的跨设备适配规范 | **必须遵守**的开发准则 |
 | **[当前适配系统](./CURRENT_ADAPTATION_SYSTEM.md)** | 适配技术方案与架构解析 | 理解适配实现原理 |
 | **[部署指南](./GITHUB_PAGES_DEPLOYMENT.md)** | GitHub Pages 发布与工作流说明 | 上线发布 / CI配置 |

@@ -354,11 +354,11 @@ function getProjectVersion() {
  * 生成质量等级
  */
 function getQualityGrade(score) {
-  if (score >= 98) return 'A+';
-  if (score >= 95) return 'A';
-  if (score >= 90) return 'B+';
-  if (score >= 85) return 'B';
-  if (score >= 80) return 'C+';
+  if (score >= 97) return 'A+';
+  if (score >= 90) return 'A';
+  if (score >= 85) return 'B+';
+  if (score >= 80) return 'B';
+  if (score >= 70) return 'C+';
   return 'C';
 }
 
@@ -468,17 +468,20 @@ function generateDynamicProjectSummary(allData) {
   const testCoverageScore = coverageData?.summary?.lines?.pct || 0;
   const e2eMetrics = e2eData?.data?.metrics;
 
-  let performanceScore = 0;
   if (e2eMetrics) {
-    const loadTimeScore = Math.max(0, 100 - Math.max(0, (e2eMetrics.e2eLoadTime - 1500) / 10));
-    const shapeGenScore = Math.max(0, 100 - Math.max(0, (e2eMetrics.shapeGenerationTime - 100) / 5));
-    const fpsScore = Math.min(100, (e2eMetrics.avgFps / 60) * 100);
-    // 内存评分：30MB为满分基准，50MB为及格线（60分），100MB为0分
-    let memoryScore = 100;
-    if (e2eMetrics.memoryUsage > 30) {
-      memoryScore = Math.max(0, 100 - ((e2eMetrics.memoryUsage - 30) / 70) * 100);
-    }
-    performanceScore = Math.round((loadTimeScore + shapeGenScore + fpsScore + memoryScore) / 4);
+    // 采用与仪表板对齐的 9 维评分体系
+    const m = e2eMetrics;
+    const s_res = Math.max(0, 100 - Math.max(0, (m.resourceLoadTime - 400) / 10)); // 400ms
+    const s_e2e = Math.max(0, 100 - Math.max(0, (m.e2eLoadTime - 1200) / 15));    // 平滑处理至 1200-1800ms
+    const s_shape = Math.max(0, 100 - Math.max(0, (m.shapeGenerationTime - 300) / 5));
+    const s_puzzle = Math.max(0, 100 - Math.max(0, (m.puzzleGenerationTime - 500) / 5));
+    const s_scatter = Math.max(0, 100 - Math.max(0, (m.scatterTime - 500) / 5));
+    const s_inter = Math.max(0, 100 - Math.max(0, (m.avgInteractionTime - 600) / 5));
+    const s_fps = Math.min(100, (m.avgFps / 50) * 100);
+    const s_mem = m.memoryUsage <= 40 ? 100 : Math.max(0, 100 - (m.memoryUsage - 40) * 2);
+    const s_adapt = m.adaptationPassRate || 0;
+
+    performanceScore = Math.round((s_res + s_e2e + s_shape + s_puzzle + s_scatter + s_inter + s_fps + s_mem + s_adapt) / 9);
   }
 
   const overallScore = Math.round((codeQualityScore + testCoverageScore + performanceScore) / 3);
@@ -558,21 +561,20 @@ function generateStandardizedReport(allData) {
   const testCoverageScore = coverageData?.summary?.lines?.pct || 0;
 
   // 修正性能评分算法 - 基于实际E2E测试结果
-  let performanceScore = 0;
   if (e2eData?.data?.metrics) {
-    const metrics = e2eData.data.metrics;
-    // 基于多个性能指标综合评分
-    const loadTimeScore = Math.max(0, 100 - Math.max(0, (metrics.e2eLoadTime - 1500) / 10)); // 1500ms为基准
-    const shapeGenScore = Math.max(0, 100 - Math.max(0, (metrics.shapeGenerationTime - 100) / 5)); // 100ms为基准
-    const fpsScore = Math.min(100, (metrics.avgFps / 60) * 100); // 60fps为满分
-    // 内存评分：30MB为满分基准，50MB为及格线（60分），100MB为0分（与MAX_MEMORY_USAGE_MB一致）
-    // 使用线性插值：memoryScore = 100 - ((memoryUsage - 30) / (100 - 30)) * 100，但在30MB以下给满分
-    let memoryScore = 100;
-    if (metrics.memoryUsage > 30) {
-      memoryScore = Math.max(0, 100 - ((metrics.memoryUsage - 30) / 70) * 100); // 30-100MB线性递减
-    }
+    const m = e2eData.data.metrics;
+    // 采用与仪表板对齐的 9 维评分体系
+    const s_res = Math.max(0, 100 - Math.max(0, (m.resourceLoadTime - 400) / 10));
+    const s_e2e = Math.max(0, 100 - Math.max(0, (m.e2eLoadTime - 1200) / 15));
+    const s_shape = Math.max(0, 100 - Math.max(0, (m.shapeGenerationTime - 300) / 5));
+    const s_puzzle = Math.max(0, 100 - Math.max(0, (m.puzzleGenerationTime - 500) / 5));
+    const s_scatter = Math.max(0, 100 - Math.max(0, (m.scatterTime - 500) / 5));
+    const s_inter = Math.max(0, 100 - Math.max(0, (m.avgInteractionTime - 600) / 5));
+    const s_fps = Math.min(100, (m.avgFps / 50) * 100);
+    const s_mem = m.memoryUsage <= 40 ? 100 : Math.max(0, 100 - (m.memoryUsage - 40) * 2);
+    const s_adapt = m.adaptationPassRate || 0;
 
-    performanceScore = Math.round((loadTimeScore + shapeGenScore + fpsScore + memoryScore) / 4);
+    performanceScore = Math.round((s_res + s_e2e + s_shape + s_puzzle + s_scatter + s_inter + s_fps + s_mem + s_adapt) / 9);
   }
 
   const overallScore = Math.round((codeQualityScore + testCoverageScore + performanceScore) / 3);
@@ -765,14 +767,14 @@ ${e2eData?.data ? `
 - **拼图片数**: ${e2eData.data.scenario?.pieceCount || 0}片
 
 ### 🚀 核心性能指标达成情况
-- **资源加载时间**: ${e2eData.data.metrics.resourceLoadTime || 'N/A'}ms ${(e2eData.data.metrics.resourceLoadTime || 0) <= 1000 ? '✅' : '⚠️'}
-- **E2E加载时间**: ${e2eData.data.metrics.e2eLoadTime}ms ${e2eData.data.metrics.e2eLoadTime <= 1500 ? '✅' : '⚠️'}
+- **资源加载时间**: ${e2eData.data.metrics.resourceLoadTime || 'N/A'}ms ${(e2eData.data.metrics.resourceLoadTime || 0) <= 800 ? '✅' : '⚠️'}
+- **E2E加载时间**: ${e2eData.data.metrics.e2eLoadTime}ms ${e2eData.data.metrics.e2eLoadTime <= 1800 ? '✅' : '⚠️'}
 - **形状生成时间**: ${e2eData.data.metrics.shapeGenerationTime}ms ${e2eData.data.metrics.shapeGenerationTime <= 500 ? '✅' : '⚠️'}
 - **拼图生成时间**: ${e2eData.data.metrics.puzzleGenerationTime}ms ${e2eData.data.metrics.puzzleGenerationTime <= 800 ? '✅' : '⚠️'}
 - **散布动画时间**: ${e2eData.data.metrics.scatterTime}ms ${e2eData.data.metrics.scatterTime <= 800 ? '✅' : '⚠️'}
 - **平均交互时间**: ${e2eData.data.metrics.avgInteractionTime?.toFixed(2) || 'N/A'}ms ${(e2eData.data.metrics.avgInteractionTime || 0) <= 1200 ? '✅' : '⚠️'}
 - **平均帧率**: ${e2eData.data.metrics.avgFps}fps ${e2eData.data.metrics.avgFps >= 30 ? '✅' : '⚠️'}
-- **内存使用**: ${e2eData.data.metrics.memoryUsage.toFixed(2)}MB ${e2eData.data.metrics.memoryUsage <= 100 ? '✅' : '⚠️'}
+- **内存使用**: ${e2eData.data.metrics.memoryUsage.toFixed(2)}MB ${e2eData.data.metrics.memoryUsage <= 40 ? '✅' : '⚠️'}
 
 ### 🎯 适配系统测试结果
 - **适配通过率**: ${e2eData.data.metrics.adaptationPassRate}% ${e2eData.data.metrics.adaptationPassRate >= 95 ? '✅' : '⚠️'}

@@ -69,8 +69,8 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
     const isActive = state.shapeType === shapeType;
     let base =
       isActive
-        ? "bg-[#F68E5F] text-white"
-        : "bg-[#1E1A2A] text-white";
+        ? "!bg-[#F68E5F] !text-white" // 使用 !important 强制覆盖 hover 状态
+        : "bg-[#1E1A2A] text-white hover:bg-[#2A253A]"; // 仅在非激活态添加 hover
     if (isShapeButtonDisabled) {
       base += " opacity-30 cursor-not-allowed text-white";
     }

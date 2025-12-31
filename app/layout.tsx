@@ -51,6 +51,7 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
     title: '生成式拼图游戏',
   },
+  manifest: '/manifest.json',
 }
 
 declare global {
@@ -67,8 +68,8 @@ export default function RootLayout({
   return (
     <html lang="zh-CN" suppressHydrationWarning>
       <head>
-        <meta 
-          name="viewport" 
+        <meta
+          name="viewport"
           content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
         />
         {/* 小尺寸 PNG - 浏览器标签页（优先使用，文件更小） */}

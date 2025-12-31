@@ -1,6 +1,6 @@
 # 项目结构（Project Structure）
 
-> 自动生成时间：2025/12/31 17:37:04  
+> 自动生成时间：2025/12/31 22:46:55  
 > 生成工具：项目结构文档生成器 v3.1.0 - 开发导航版
 
 **开发者导航工具** - 快速理解项目架构，精准定位代码位置，提升开发效率。
@@ -15,8 +15,8 @@
 | 统计项 | 数量 | 说明 |
 |--------|------|------|
 | 总目录数 | 62 | 项目目录结构层次 |
-| 总文件数 | 305 | 代码文件和资源文件总数 |
-| 项目容量 | 4.85 MB | 不包含node_modules的项目大小 |
+| 总文件数 | 307 | 代码文件和资源文件总数 |
+| 项目容量 | 5.01 MB | 不包含node_modules的项目大小 |
 
 ---
 
@@ -410,7 +410,6 @@ npm run lint                   # 代码检查
     📄 `difficulty-cutting.md`
     📄 `media-sound.md`
     📄 `performance.md`
-    📄 `README.md` - 项目说明文档
     📄 `shape-generation.md`
   📁 **i18n/**
     📄 `README.md` - 项目说明文档
@@ -462,6 +461,7 @@ npm run lint                   # 代码检查
   📄 `icon-32.png`
   📄 `icon-512.png`
   📄 `icon.ico`
+  📄 `manifest.json`
   📄 `performance-data.json`
   📄 `scatter.mp3`
   📄 `split.mp3`
@@ -535,6 +535,7 @@ npm run lint                   # 代码检查
   📁 **data/**
     📁 **__tests__/**
       📄 `GameDataManager.test.ts`
+      📄 `GameDataManagerCoverage.test.ts`
     📄 `GameDataManager.ts`
   📁 **data-tools/**
     📄 `clearGameData.ts`
@@ -598,6 +599,7 @@ npm run lint                   # 代码检查
     📁 **__tests__/**
       📄 `RotationEfficiencyCalculator.test.ts`
       📄 `ScoreCalculator.test.ts`
+      📄 `ScoreCalculatorCoverage.test.ts`
     📄 `RotationEfficiencyCalculator.ts`
     📄 `ScoreCalculator.ts`
   📁 **shape/**
@@ -642,7 +644,7 @@ npm run lint                   # 代码检查
 | 📖 项目说明 | [README.md](/README.md) | 项目介绍和快速开始 |
 | 📝 更新日志 | [CHANGELOG.md](/CHANGELOG.md) | 版本历史和变更记录 |
 | 🔌 API文档 | [API_DOCUMENTATION.md](/docs/API_DOCUMENTATION.md) | 接口规范和使用指南 |
-| ⚙️ 配置指南 | [configuration/](/docs/configuration/README.md) | 环境配置和部署指南 |
+| ⚙️ 配置指南 | [configuration/](/docs/configuration/) | 环境配置和部署指南 |
 
 ---
 
@@ -666,4 +668,4 @@ npm run generate-structure  # 一键更新项目结构文档
 
 ---
 
-*📅 生成时间：2025/12/31 17:37:04 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*
+*📅 生成时间：2025/12/31 22:46:55 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*

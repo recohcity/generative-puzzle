@@ -416,7 +416,7 @@ npm run test:e2e     # 生成最新测试数据
 
 ## 📚 相关文档
 
-- [项目配置文档](../configuration/README.md)
+- **[配置手册](./configuration/)**: 性能、内存及适配的具体数值阈值配置。
 - [测试系统文档](../testing/playwright-automation.md)
 - [性能优化指南](../configuration/performance.md)
 - [API处理脚本](../scripts/build-for-github.cjs)

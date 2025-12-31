@@ -113,34 +113,25 @@ export default function CurveTestOptimized() {
       }
 
       // 阻止iOS上可能导致退出全屏的触摸开始行为
-      if (device.isIOS) {
-        e.preventDefault();
-      }
+      // if (device.isIOS) {
+      //   e.preventDefault();
+      // }
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      // 检查是否是按钮或可点击元素
-      if (e.target instanceof Element) {
-        // 检查目标元素是否是按钮或其子元素
-        const isButton = e.target.tagName === 'BUTTON' ||
-          e.target.closest('button') ||
-          e.target.hasAttribute('role') && e.target.getAttribute('role') === 'button' ||
-          e.target.classList.contains('cursor-pointer');
-
-        // 🔧 修复：检查是否是画布元素
-        const isCanvas = e.target.tagName === 'CANVAS' ||
-          e.target.id === 'puzzle-canvas' ||
-          e.target.closest('canvas');
-
-        // 如果是按钮或画布，不阻止默认行为
-        if (isButton || isCanvas) {
-          return;
-        }
-      }
-
       // 🔧 修复：对于多指触摸（双指旋转），不进行全屏手势检测
       if (e.touches.length >= 2) {
         return; // 让双指触摸事件正常传递给画布
+      }
+
+      // 防止iOS橡皮筋效果，但允许内部可滚动区域（如果有）
+      // 检查是否是canvas，如果是则不阻止，交给Canvas处理
+      const isCanvas = e.target instanceof Element && (e.target.tagName === 'CANVAS' || e.target.closest('canvas'));
+      if (isCanvas) return;
+
+      // 对于其他非滚动区域，阻止默认滚动
+      if (e.cancelable) {
+        e.preventDefault();
       }
 
       // 确保是单指触摸
@@ -183,10 +174,10 @@ export default function CurveTestOptimized() {
       // 重置触摸开始位置
       touchStartY = 0;
 
-      // 阻止某些可能触发退出全屏的结束事件
-      if (device.isIOS) {
-        e.preventDefault();
-      }
+      // 🔧 移除：不再在 touchend 阻止默认行为，以恢复点击能力
+      // if (device.isIOS) {
+      //   e.preventDefault();
+      // }
     };
 
     // 只监听可能导致退出全屏的手势
@@ -623,8 +614,9 @@ export default function CurveTestOptimized() {
           {layoutToRender}
 
           {/* 版权信息 - 仅桌面端显示，移动端在控制面板中显示 */}
-          {shouldUseDesktopLayout && (
-            <div className="absolute bottom-2 left-0 right-0 flex justify-center z-10">
+          {/* 版权信息 - 仅桌面端显示，全屏模式下隐藏以避免布局问题 */}
+          {(shouldUseDesktopLayout && !isFullscreen) && (
+            <div className="absolute bottom-2 left-0 right-0 flex justify-center z-10 transition-opacity duration-300">
               <div className="text-white text-xs text-center leading-relaxed">
                 <div>recoh AI project 2025 | generative-puzzle V{process.env.APP_VERSION || '1.3.51'}</div>
               </div>

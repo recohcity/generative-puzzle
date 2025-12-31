@@ -321,7 +321,8 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   return (
     <div style={{
       minWidth: '100vw',
-      minHeight: '100vh',
+      minHeight: '100dvh', // 使用 dvh 适配移动端浏览器地址栏
+
       boxSizing: 'border-box',
       display: 'flex',
       flexDirection: 'column',

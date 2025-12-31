@@ -1,6 +1,6 @@
 # 设备响应式配置
 
-> 修订日期：2025-12-31 (v1.3.71)
+> 修订日期：2025-12-31 (v1.3.73)
 
 本文档详细说明设备检测和响应式系统的配置参数，基于当前简化的useDeviceDetection Hook。
 
@@ -238,8 +238,19 @@ const RESPONSIVE_CONFIG = {
   autoResize: true,             // 自动调整大小
   debounceDelay: 100,           // 防抖延迟 (毫秒)
   orientationChange: true,      // 方向变化检测
-  viewportMeta: true            // 视口元标签
+  viewportMeta: true,           // 视口元标签
+  useDynamicViewportUnits: true // 强制使用 dvh/lvh/svh 单位
 };
+```
+
+### PWA 深度适配配置
+```json
+// public/manifest.json
+{
+  "display": "standalone",      // 必须：确保无地址栏体验
+  "orientation": "landscape",   // 可选：锁定横屏
+  "start_url": "/"              // 入口路径
+}
 ```
 
 ---
@@ -349,6 +360,10 @@ export const STRICT_DETECTION = {
 **原因**: 防抖延迟设置过长  
 **解决**: 减少 `debounceDelay` 参数
 
+#### 5. iPad/手机浏览器布局垂直偏移
+**原因**: `100vh` 包含地址栏高度  
+**解决**: 采用 `100dvh` 作为容器最小高度，确保内容始终对齐可视中心。
+
 ### 调试方法
 ```typescript
 // 启用设备检测调试
@@ -398,7 +413,12 @@ const MEMORY_OPTIMIZATION = {
 ## 📈 配置更新历史
 
 
-### v1.3.71 (2025/12/31)
+### v1.3.73 (2025/12/31)
+- ✅ 引入 `dvh` 单位标准，解决移动端浏览器垂直居中偏移
+- ✅ PWA Standalone 全屏模式配置支持
+- ✅ 优化全屏交互手势拦截策略
+
+### v1.3.71 
 - ✅ iPhone 17全系列物理分辨率支持
 - ✅ 移动端横屏极限空间利用算法
 - ✅ 优化Webkit渲染去除黑影

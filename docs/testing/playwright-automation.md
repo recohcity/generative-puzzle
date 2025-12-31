@@ -430,7 +430,7 @@ const PERFORMANCE_BENCHMARKS = {
 
 ## 📚 相关文档
 
-- [项目配置文档](../configuration/README.md)
+- **[配置参数详情](./configuration/)**: 性能、内存及适配的具体数值阈值配置。
 - [性能优化指南](../configuration/performance.md)
 - [适配系统文档](../configuration/adaptation-system.md)
 - [设备响应式设计](../configuration/device-responsive.md)
