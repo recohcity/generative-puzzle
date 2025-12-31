@@ -29,13 +29,13 @@ function log(message, color = 'reset') {
  */
 function runTypeScriptCheck() {
   log('📝 运行TypeScript编译检查...', 'cyan');
-  
+
   try {
-    execSync('npx tsc --noEmit --pretty false', { 
+    execSync('npx tsc --noEmit --pretty false', {
       encoding: 'utf8',
       stdio: 'pipe'
     });
-    
+
     return {
       passed: true,
       score: 100,
@@ -43,19 +43,19 @@ function runTypeScriptCheck() {
       warnings: [],
       output: 'TypeScript编译检查通过，无错误和警告。'
     };
-    
+
   } catch (error) {
     const output = error.stdout || error.stderr || '';
     const lines = output.split('\n').filter(line => line.trim());
-    
+
     const errors = lines.filter(line => line.includes('error TS'));
     const warnings = lines.filter(line => line.includes('warning TS'));
-    
+
     // 计算分数：每个错误扣10分，每个警告扣2分
     const errorPenalty = errors.length * 10;
     const warningPenalty = warnings.length * 2;
     const score = Math.max(0, 100 - errorPenalty - warningPenalty);
-    
+
     return {
       passed: errors.length === 0,
       score: score,
@@ -71,21 +71,21 @@ function runTypeScriptCheck() {
  */
 function runESLintCheck() {
   log('🔧 运行ESLint代码检查...', 'cyan');
-  
+
   try {
     // 尝试运行ESLint并获取JSON格式输出
-    const eslintOutput = execSync('npx eslint . --format json', { 
+    const eslintOutput = execSync('npx eslint . --format json', {
       encoding: 'utf8',
       stdio: 'pipe'
     });
-    
+
     const eslintResults = JSON.parse(eslintOutput);
-    
+
     // 统计错误和警告
     let totalErrors = 0;
     let totalWarnings = 0;
     const fileResults = [];
-    
+
     eslintResults.forEach(result => {
       if (result.errorCount > 0 || result.warningCount > 0) {
         fileResults.push({
@@ -98,12 +98,12 @@ function runESLintCheck() {
       totalErrors += result.errorCount;
       totalWarnings += result.warningCount;
     });
-    
+
     // 计算分数：每个错误扣5分，每个警告扣1分
     const errorPenalty = totalErrors * 5;
     const warningPenalty = totalWarnings * 1;
     const score = Math.max(0, 100 - errorPenalty - warningPenalty);
-    
+
     return {
       passed: totalErrors === 0,
       score: score,
@@ -112,15 +112,15 @@ function runESLintCheck() {
       fileResults: fileResults,
       output: totalErrors === 0 && totalWarnings === 0 ? 'ESLint检查通过，无错误和警告。' : null
     };
-    
+
   } catch (error) {
     // 如果JSON格式失败，尝试普通格式
     try {
-      execSync('npm run lint', { 
+      execSync('npm run lint', {
         encoding: 'utf8',
         stdio: 'pipe'
       });
-      
+
       return {
         passed: true,
         score: 100,
@@ -129,22 +129,22 @@ function runESLintCheck() {
         fileResults: [],
         output: 'ESLint检查通过，无错误和警告。'
       };
-      
+
     } catch (lintError) {
       const output = lintError.stdout || lintError.stderr || '';
       const lines = output.split('\n').filter(line => line.trim());
-      
+
       // 简单解析错误和警告数量
       const errorLines = lines.filter(line => line.includes('error') || line.includes('✖'));
       const warningLines = lines.filter(line => line.includes('warning') || line.includes('⚠'));
-      
+
       const totalErrors = errorLines.length;
       const totalWarnings = warningLines.length;
-      
+
       const errorPenalty = totalErrors * 5;
       const warningPenalty = totalWarnings * 1;
       const score = Math.max(0, 100 - errorPenalty - warningPenalty);
-      
+
       return {
         passed: totalErrors === 0,
         score: score,
@@ -163,7 +163,7 @@ function runESLintCheck() {
 function generateLintReport(tsResult, eslintResult) {
   const currentDate = new Date().toISOString().split('T')[0];
   const currentTime = new Date().toLocaleTimeString('zh-CN');
-  
+
   // 获取项目版本
   let version = 'unknown';
   try {
@@ -172,10 +172,10 @@ function generateLintReport(tsResult, eslintResult) {
   } catch (error) {
     // 忽略错误
   }
-  
+
   // 计算总体评分
   const overallScore = Math.round((tsResult.score + eslintResult.score) / 2);
-  
+
   // 生成等级
   function getGrade(score) {
     if (score >= 98) return 'A+';
@@ -185,7 +185,7 @@ function generateLintReport(tsResult, eslintResult) {
     if (score >= 80) return 'C+';
     return 'C';
   }
-  
+
   const reportContent = `# 📋 代码质量检查报告
 
 **生成时间**: ${currentDate} ${currentTime}  
@@ -295,36 +295,36 @@ ${tsResult.passed && eslintResult.passed ? `
 function main() {
   try {
     log('📋 开始生成代码质量检查报告...', 'bold');
-    
+
     // 运行TypeScript检查
     const tsResult = runTypeScriptCheck();
-    log(`TypeScript检查完成: ${tsResult.passed ? '✅ 通过' : '❌ 失败'} (${tsResult.score}分)`, 
-        tsResult.passed ? 'green' : 'red');
-    
+    log(`TypeScript检查完成: ${tsResult.passed ? '✅ 通过' : '❌ 失败'} (${tsResult.score}分)`,
+      tsResult.passed ? 'green' : 'red');
+
     // 运行ESLint检查
     const eslintResult = runESLintCheck();
-    log(`ESLint检查完成: ${eslintResult.passed ? '✅ 通过' : '❌ 失败'} (${eslintResult.score}分)`, 
-        eslintResult.passed ? 'green' : 'red');
-    
+    log(`ESLint检查完成: ${eslintResult.passed ? '✅ 通过' : '❌ 失败'} (${eslintResult.score}分)`,
+      eslintResult.passed ? 'green' : 'red');
+
     // 生成报告
     const reportContent = generateLintReport(tsResult, eslintResult);
-    
+
     // 确保docs目录存在
     const docsDir = path.join(process.cwd(), 'docs');
     if (!fs.existsSync(docsDir)) {
       fs.mkdirSync(docsDir, { recursive: true });
     }
-    
+
     // 确保quality-reports目录存在（用于JSON数据）
     const reportsDir = path.join(process.cwd(), 'quality-reports');
     if (!fs.existsSync(reportsDir)) {
       fs.mkdirSync(reportsDir, { recursive: true });
     }
-    
+
     // 写入Markdown报告文件到docs目录
-    const reportPath = path.join(docsDir, 'code-quality-report.md');
+    const reportPath = path.join(docsDir, 'reports', 'code-quality-report.md');
     fs.writeFileSync(reportPath, reportContent, 'utf8');
-    
+
     // 同时生成JSON格式的数据到quality-reports目录
     const jsonData = {
       timestamp: new Date().toISOString(),
@@ -335,21 +335,21 @@ function main() {
         passed: tsResult.passed && eslintResult.passed
       }
     };
-    
+
     const jsonPath = path.join(reportsDir, 'lint-report.json');
     fs.writeFileSync(jsonPath, JSON.stringify(jsonData, null, 2), 'utf8');
-    
+
     log('\n✅ 代码质量检查报告生成完成！', 'green');
     log(`📄 Markdown报告: ${reportPath}`, 'blue');
     log(`📊 JSON数据: ${jsonPath}`, 'blue');
     log('💡 报告已保存到docs目录，便于统一文档管理', 'cyan');
-    
+
     // 显示总体结果
     const overallScore = Math.round((tsResult.score + eslintResult.score) / 2);
     log(`\n🏆 整体评分: ${overallScore}/100`, overallScore >= 95 ? 'green' : overallScore >= 80 ? 'yellow' : 'red');
-    
+
     return jsonData;
-    
+
   } catch (error) {
     log(`❌ 生成报告失败: ${error.message}`, 'red');
     process.exit(1);

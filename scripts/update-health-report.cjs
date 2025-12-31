@@ -41,24 +41,24 @@ function getLatestQualityData() {
     // 运行质量检查
     log('🔍 运行最新质量检查...', 'cyan');
     execSync('npm run quality:check', { stdio: 'pipe' });
-    
+
     // 读取最新的质量报告
     const qualityReportsDir = path.join(process.cwd(), 'quality-reports');
     const files = fs.readdirSync(qualityReportsDir)
       .filter(file => file.startsWith('quality-report-') && file.endsWith('.json'))
       .sort()
       .reverse();
-    
+
     if (files.length === 0) {
       throw new Error('未找到质量报告文件');
     }
-    
+
     const latestReportPath = path.join(qualityReportsDir, files[0]);
     const qualityData = JSON.parse(fs.readFileSync(latestReportPath, 'utf8'));
-    
+
     log(`✅ 读取质量数据: ${files[0]}`, 'green');
     return qualityData;
-    
+
   } catch (error) {
     log(`❌ 获取质量数据失败: ${error.message}`, 'red');
     throw error;
@@ -71,19 +71,19 @@ function getLatestQualityData() {
 function getLintCheckData() {
   try {
     log('📋 运行代码质量检查...', 'cyan');
-    
+
     // 运行代码质量检查并生成报告
     execSync('npm run quality:lint-report', { stdio: 'pipe' });
-    
+
     // 读取生成的报告数据
     const lintReportPath = path.join(process.cwd(), 'quality-reports', 'lint-report.json');
-    
+
     if (fs.existsSync(lintReportPath)) {
       const lintData = JSON.parse(fs.readFileSync(lintReportPath, 'utf8'));
       log('✅ 获取代码质量检查数据成功', 'green');
       return lintData;
     }
-    
+
     return null;
   } catch (error) {
     log(`⚠️ 获取代码质量检查数据失败: ${error.message}`, 'yellow');
@@ -97,46 +97,46 @@ function getLintCheckData() {
 function getLatestE2ETestData() {
   try {
     log('🎮 获取最新E2E测试数据...', 'cyan');
-    
+
     const e2eReportsDir = path.join(process.cwd(), 'playwright-test-logs');
     if (!fs.existsSync(e2eReportsDir)) {
       log('⚠️ E2E测试报告目录不存在', 'yellow');
       return null;
     }
-    
+
     const files = fs.readdirSync(e2eReportsDir)
       .filter(file => file.startsWith('test-report-') && file.endsWith('.md'))
       .sort()
       .reverse();
-    
+
     if (files.length === 0) {
       log('⚠️ 未找到E2E测试报告文件', 'yellow');
       return null;
     }
-    
+
     const latestReportPath = path.join(e2eReportsDir, files[0]);
     const reportContent = fs.readFileSync(latestReportPath, 'utf8');
-    
+
     // 解析报告中的JSON数据
     const jsonMatch = reportContent.match(/<!--\s*(\{[\s\S]*?\})\s*-->/);
     if (jsonMatch) {
       const e2eData = JSON.parse(jsonMatch[1]);
-      
+
       // 验证必要的性能指标是否完整
       const requiredMetrics = [
-        'resourceLoadTime', 'e2eLoadTime', 'shapeGenerationTime', 
+        'resourceLoadTime', 'e2eLoadTime', 'shapeGenerationTime',
         'puzzleGenerationTime', 'scatterTime', 'avgFps', 'memoryUsage',
         'adaptationPassRate', 'adaptationTestCount', 'adaptationPassCount'
       ];
-      
-      const missingMetrics = requiredMetrics.filter(metric => 
+
+      const missingMetrics = requiredMetrics.filter(metric =>
         !e2eData.data?.metrics?.hasOwnProperty(metric)
       );
-      
+
       if (missingMetrics.length > 0) {
         log(`⚠️ E2E数据缺少指标: ${missingMetrics.join(', ')}`, 'yellow');
       }
-      
+
       // 补充缺失的测试环境信息
       if (e2eData.data && !e2eData.data.testEnvironment) {
         e2eData.data.testEnvironment = {
@@ -147,7 +147,7 @@ function getLatestE2ETestData() {
           nodeVersion: process.version
         };
       }
-      
+
       // 补充缺失的兼容性测试信息
       if (e2eData.data && !e2eData.data.compatibility) {
         e2eData.data.compatibility = {
@@ -158,12 +158,12 @@ function getLatestE2ETestData() {
           keyboardSupport: true
         };
       }
-      
+
       log(`✅ 读取E2E测试数据: ${files[0]}`, 'green');
       log(`📊 包含性能指标: ${Object.keys(e2eData.data?.metrics || {}).length}个`, 'cyan');
       return e2eData;
     }
-    
+
     log('⚠️ E2E测试报告格式异常', 'yellow');
     return null;
   } catch (error) {
@@ -178,25 +178,25 @@ function getLatestE2ETestData() {
 function getCoverageData() {
   try {
     log('🧪 获取测试覆盖率数据...', 'cyan');
-    
+
     // 运行测试覆盖率检查
     execSync('npm run test:coverage', { stdio: 'pipe' });
-    
+
     // 读取覆盖率数据
     const coveragePath = path.join(process.cwd(), 'coverage', 'coverage-summary.json');
     const coverageReportPath = path.join(process.cwd(), 'coverage', 'coverage-simple-report.md');
-    
+
     let coverageData = null;
     let coverageReport = null;
-    
+
     if (fs.existsSync(coveragePath)) {
       coverageData = JSON.parse(fs.readFileSync(coveragePath, 'utf8'));
     }
-    
+
     if (fs.existsSync(coverageReportPath)) {
       coverageReport = fs.readFileSync(coverageReportPath, 'utf8');
     }
-    
+
     log('✅ 获取覆盖率数据成功', 'green');
     return {
       summary: coverageData?.total || null,
@@ -214,24 +214,24 @@ function getCoverageData() {
 function getAPIAnalysisData() {
   try {
     log('📊 获取API分析数据...', 'cyan');
-    
+
     // 运行API分析
     execSync('npm run docs:check', { stdio: 'pipe' });
-    
-    const apiScanPath = path.join(process.cwd(), 'docs', 'api-scan-report.md');
-    const apiClassificationPath = path.join(process.cwd(), 'docs', 'api-classification-report.md');
-    
+
+    const apiScanPath = path.join(process.cwd(), 'docs', 'reports', 'api-scan-report.md');
+    const apiClassificationPath = path.join(process.cwd(), 'docs', 'reports', 'api-classification-report.md');
+
     let apiScanReport = null;
     let apiClassificationReport = null;
-    
+
     if (fs.existsSync(apiScanPath)) {
       apiScanReport = fs.readFileSync(apiScanPath, 'utf8');
     }
-    
+
     if (fs.existsSync(apiClassificationPath)) {
       apiClassificationReport = fs.readFileSync(apiClassificationPath, 'utf8');
     }
-    
+
     log('✅ 获取API分析数据成功', 'green');
     return {
       scanReport: apiScanReport,
@@ -249,18 +249,18 @@ function getAPIAnalysisData() {
 function getProjectStructureData() {
   try {
     log('🏗️ 获取项目结构数据...', 'cyan');
-    
+
     // 运行项目结构生成
     execSync('npm run generate-structure', { stdio: 'pipe' });
-    
-    const structurePath = path.join(process.cwd(), 'docs', 'project_structure.md');
-    
+
+    const structurePath = path.join(process.cwd(), 'docs', 'reports', 'project_structure.md');
+
     if (fs.existsSync(structurePath)) {
       const structureReport = fs.readFileSync(structurePath, 'utf8');
       log('✅ 获取项目结构数据成功', 'green');
       return structureReport;
     }
-    
+
     return null;
   } catch (error) {
     log(`⚠️ 获取项目结构数据失败: ${error.message}`, 'yellow');
@@ -274,16 +274,16 @@ function getProjectStructureData() {
 function getDependencyAnalysisData() {
   try {
     log('📦 获取依赖分析数据...', 'cyan');
-    
+
     // 运行依赖分析
-    const result = execSync('npm run analyze:unused-deps', { 
+    const result = execSync('npm run analyze:unused-deps', {
       encoding: 'utf8',
       stdio: 'pipe'
     });
-    
+
     // 清理ANSI颜色代码
     const cleanResult = result.replace(/\x1b\[[0-9;]*m/g, '');
-    
+
     log('✅ 获取依赖分析数据成功', 'green');
     return cleanResult;
   } catch (error) {
@@ -298,18 +298,18 @@ function getDependencyAnalysisData() {
 function getChangelogData() {
   try {
     log('📝 获取版本变更日志...', 'cyan');
-    
+
     const changelogPath = path.join(process.cwd(), 'CHANGELOG.md');
-    
+
     if (fs.existsSync(changelogPath)) {
       const changelogContent = fs.readFileSync(changelogPath, 'utf8');
-      
+
       // 提取最新版本的变更内容
       const lines = changelogContent.split('\n');
       let latestVersionContent = [];
       let foundFirstVersion = false;
       let foundSecondVersion = false;
-      
+
       for (const line of lines) {
         if (line.startsWith('## ') && line.includes('[')) {
           if (!foundFirstVersion) {
@@ -323,14 +323,14 @@ function getChangelogData() {
           latestVersionContent.push(line);
         }
       }
-      
+
       log('✅ 获取版本变更日志成功', 'green');
       return {
         full: changelogContent,
         latest: latestVersionContent.join('\n').trim()
       };
     }
-    
+
     return null;
   } catch (error) {
     log(`⚠️ 获取版本变更日志失败: ${error.message}`, 'yellow');
@@ -367,27 +367,27 @@ function getQualityGrade(score) {
  */
 function generateDynamicOptimizationSuggestions(allData) {
   const { qualityData, lintData, e2eData, coverageData, apiData, dependencyData } = allData;
-  
+
   const suggestions = {
     achieved: [],
     improvements: [],
     specificTargets: []
   };
-  
+
   // 计算核心指标
   const codeQualityScore = lintData?.overall?.score || qualityData?.overall?.score || 0;
   const testCoverageScore = coverageData?.summary?.lines?.pct || 0;
   const e2eMetrics = e2eData?.data?.metrics;
-  
+
   // 已达到的优秀标准
   if (codeQualityScore >= 95) {
     suggestions.achieved.push(`**代码质量**: ${codeQualityScore}分，${getQualityGrade(codeQualityScore)}级别标准`);
   }
-  
+
   if (testCoverageScore >= 95) {
     suggestions.achieved.push(`**测试覆盖率**: ${testCoverageScore.toFixed(2)}%，行业领先水平`);
   }
-  
+
   if (e2eMetrics) {
     const performanceIssues = [];
     if (e2eMetrics.e2eLoadTime <= 1500) {
@@ -400,18 +400,18 @@ function generateDynamicOptimizationSuggestions(allData) {
       suggestions.achieved.push(`**内存使用**: ${e2eMetrics.memoryUsage.toFixed(2)}MB，资源控制优秀`);
     }
   }
-  
+
   suggestions.achieved.push(`**开发流程**: 完整的自动化质量保证体系`);
-  
+
   // 持续改进方向
   if (codeQualityScore < 100) {
     suggestions.improvements.push(`**代码质量提升**: 从${codeQualityScore}分提升到100分满分标准`);
   }
-  
+
   if (testCoverageScore < 99) {
     suggestions.improvements.push(`**测试覆盖率增强**: 从${testCoverageScore.toFixed(2)}%提升到99%+完美覆盖`);
   }
-  
+
   if (e2eMetrics) {
     if (e2eMetrics.shapeGenerationTime > 100) {
       suggestions.improvements.push(`**形状生成优化**: 从${e2eMetrics.shapeGenerationTime}ms优化到100ms以内`);
@@ -423,19 +423,19 @@ function generateDynamicOptimizationSuggestions(allData) {
       suggestions.improvements.push(`**帧率优化**: 从${e2eMetrics.avgFps}fps提升到60fps满帧`);
     }
   }
-  
+
   suggestions.improvements.push(`**文档完善**: 继续完善API文档和使用指南`);
   suggestions.improvements.push(`**工具升级**: 跟进最新的开发工具和最佳实践`);
-  
+
   // 具体改进目标
   if (e2eMetrics?.shapeGenerationTime > 100) {
     suggestions.specificTargets.push(`**形状生成性能**: 从当前${e2eMetrics.shapeGenerationTime}ms优化到100ms以内`);
   }
-  
+
   if (testCoverageScore < 99) {
     suggestions.specificTargets.push(`**测试覆盖率**: 从${testCoverageScore.toFixed(2)}%提升到99%+`);
   }
-  
+
   // 查找覆盖率较低的具体文件
   if (coverageData?.summary) {
     const lowCoverageThreshold = 95;
@@ -443,17 +443,17 @@ function generateDynamicOptimizationSuggestions(allData) {
       suggestions.specificTargets.push(`**整体覆盖率**: 从${coverageData.summary.lines.pct.toFixed(2)}%提升到99%+`);
     }
   }
-  
+
   if (e2eMetrics?.e2eLoadTime > 1000) {
     suggestions.specificTargets.push(`**E2E加载时间**: 从${e2eMetrics.e2eLoadTime}ms优化到1000ms以内`);
   }
-  
+
   // 计算整体评分目标
   const overallScore = Math.round((codeQualityScore + testCoverageScore + (e2eMetrics ? 90 : 80)) / 3);
   if (overallScore < 95) {
     suggestions.specificTargets.push(`**整体评分**: 从${overallScore}分(${getQualityGrade(overallScore)}级)提升到95分+(A级)`);
   }
-  
+
   return suggestions;
 }
 
@@ -462,12 +462,12 @@ function generateDynamicOptimizationSuggestions(allData) {
  */
 function generateDynamicProjectSummary(allData) {
   const { qualityData, lintData, e2eData, coverageData } = allData;
-  
+
   // 计算核心指标
   const codeQualityScore = lintData?.overall?.score || qualityData?.overall?.score || 0;
   const testCoverageScore = coverageData?.summary?.lines?.pct || 0;
   const e2eMetrics = e2eData?.data?.metrics;
-  
+
   let performanceScore = 0;
   if (e2eMetrics) {
     const loadTimeScore = Math.max(0, 100 - Math.max(0, (e2eMetrics.e2eLoadTime - 1500) / 10));
@@ -480,19 +480,19 @@ function generateDynamicProjectSummary(allData) {
     }
     performanceScore = Math.round((loadTimeScore + shapeGenScore + fpsScore + memoryScore) / 4);
   }
-  
+
   const overallScore = Math.round((codeQualityScore + testCoverageScore + performanceScore) / 3);
-  
+
   const summary = {
     coreAdvantages: [],
     developmentPotential: [],
     comprehensiveEvaluation: ''
   };
-  
+
   // 核心优势
   summary.coreAdvantages.push(`**卓越的代码质量**: ${codeQualityScore}分整体评分，${getQualityGrade(codeQualityScore)}级别标准`);
   summary.coreAdvantages.push(`**优秀的测试覆盖**: ${testCoverageScore.toFixed(2)}%覆盖率，质量保证完善`);
-  
+
   if (e2eMetrics) {
     if (performanceScore >= 90) {
       summary.coreAdvantages.push(`**出色的性能表现**: 各项性能指标均达到预期基准`);
@@ -502,14 +502,14 @@ function generateDynamicProjectSummary(allData) {
       summary.coreAdvantages.push(`**基础的性能表现**: 性能指标需要进一步优化`);
     }
   }
-  
+
   summary.coreAdvantages.push(`**完善的开发流程**: 现代化工具链，质量保证体系完整`);
   summary.coreAdvantages.push(`**持续的优化改进**: 版本迭代稳定，功能持续增强`);
-  
+
   // 发展潜力
   summary.developmentPotential.push(`**技术领先**: 采用最新技术栈，架构设计优秀`);
   summary.developmentPotential.push(`**质量保证**: 完整的测试和质量检查体系`);
-  
+
   if (e2eMetrics) {
     if (e2eMetrics.avgFps >= 50 && e2eMetrics.e2eLoadTime <= 1500) {
       summary.developmentPotential.push(`**性能优秀**: 用户体验流畅，响应迅速`);
@@ -517,9 +517,9 @@ function generateDynamicProjectSummary(allData) {
       summary.developmentPotential.push(`**性能潜力**: 具备进一步优化的空间和基础`);
     }
   }
-  
+
   summary.developmentPotential.push(`**文档完善**: 开发和使用文档齐全`);
-  
+
   // 综合评价
   if (overallScore >= 95) {
     summary.comprehensiveEvaluation = `这是一个**技术实力雄厚、质量标准极高、发展前景广阔**的优秀项目，完全达到了企业级产品的质量要求。`;
@@ -530,7 +530,7 @@ function generateDynamicProjectSummary(allData) {
   } else {
     summary.comprehensiveEvaluation = `这是一个**技术基础可行、需要持续改进**的项目，建议重点关注代码质量和性能优化。`;
   }
-  
+
   return summary;
 }
 
@@ -542,21 +542,21 @@ function generateDynamicProjectSummary(allData) {
 function generateStandardizedReport(allData) {
   const { qualityData, lintData, e2eData, coverageData, apiData, structureData, dependencyData, changelogData } = allData;
   const version = getProjectVersion();
-  
+
   // 生成完整的时间戳（日期+时间）
   const now = new Date();
-  const currentDate = now.getFullYear() + '-' + 
-    String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+  const currentDate = now.getFullYear() + '-' +
+    String(now.getMonth() + 1).padStart(2, '0') + '-' +
     String(now.getDate()).padStart(2, '0');
-  const currentTime = String(now.getHours()).padStart(2, '0') + ':' + 
-    String(now.getMinutes()).padStart(2, '0') + ':' + 
+  const currentTime = String(now.getHours()).padStart(2, '0') + ':' +
+    String(now.getMinutes()).padStart(2, '0') + ':' +
     String(now.getSeconds()).padStart(2, '0');
   const currentDateTime = `${currentDate} ${currentTime}`;
-  
+
   // 计算核心指标
   const codeQualityScore = lintData?.overall?.score || qualityData?.overall?.score || 0;
   const testCoverageScore = coverageData?.summary?.lines?.pct || 0;
-  
+
   // 修正性能评分算法 - 基于实际E2E测试结果
   let performanceScore = 0;
   if (e2eData?.data?.metrics) {
@@ -571,12 +571,12 @@ function generateStandardizedReport(allData) {
     if (metrics.memoryUsage > 30) {
       memoryScore = Math.max(0, 100 - ((metrics.memoryUsage - 30) / 70) * 100); // 30-100MB线性递减
     }
-    
+
     performanceScore = Math.round((loadTimeScore + shapeGenScore + fpsScore + memoryScore) / 4);
   }
-  
+
   const overallScore = Math.round((codeQualityScore + testCoverageScore + performanceScore) / 3);
-  
+
   // 生成报告内容
   const reportContent = `# Generative Puzzle 项目代码质量全面体检报告
 
@@ -745,7 +745,7 @@ ${coverageData?.summary ? `
 - **新增测试用例**: **50+**个高质量边界测试
 - **测试通过率**: **100%** (1220/1221通过，1个跳过)
 
-[📄 查看完整覆盖率报告](../coverage/coverage-simple-report.md) | [📋 测试覆盖率改进总结](./test-coverage-improvement-summary.md)
+[📄 查看完整覆盖率报告](../../coverage/coverage-simple-report.md) | [📋 测试覆盖率改进总结](./test-coverage-improvement-summary.md)
 ` : ''}
 
 ---
@@ -799,7 +799,7 @@ ${e2eData?.data ? `
 - **触摸交互**: ${e2eData.data.compatibility?.touchSupport ? '✅ 支持' : '❌ 不支持'}
 - **键盘交互**: ${e2eData.data.compatibility?.keyboardSupport ? '✅ 支持' : '❌ 不支持'}
 
-[📊 查看E2E测试详细报告](../playwright-test-logs/) | [🎮 性能数据可视化](http://localhost:3000/test)
+[📊 查看E2E测试详细报告](../../playwright-test-logs/) | [🎮 性能数据可视化](http://localhost:3000/test)
 ` : ''}
 
 ---
@@ -904,7 +904,7 @@ ${changelogData.latest}
 - **质量提升**: 不断改进的代码质量和测试覆盖
 - **用户体验**: 持续优化的交互体验和性能
 
-[📝 查看完整变更日志](../CHANGELOG.md)
+[📝 查看完整变更日志](../../CHANGELOG.md)
 ` : ''}
 
 ---
@@ -912,27 +912,27 @@ ${changelogData.latest}
 ## 🎯 优化建议
 
 ${(() => {
-  const suggestions = generateDynamicOptimizationSuggestions(allData);
-  
-  let content = '### ✅ 已达到的优秀标准\n';
-  suggestions.achieved.forEach((item, index) => {
-    content += `${index + 1}. ${item}\n`;
-  });
-  
-  content += '\n### 🎯 持续改进方向\n';
-  suggestions.improvements.forEach((item, index) => {
-    content += `${index + 1}. ${item}\n`;
-  });
-  
-  if (suggestions.specificTargets.length > 0) {
-    content += '\n### 📊 具体改进目标\n';
-    suggestions.specificTargets.forEach(item => {
-      content += `- ${item}\n`;
-    });
-  }
-  
-  return content;
-})()}
+      const suggestions = generateDynamicOptimizationSuggestions(allData);
+
+      let content = '### ✅ 已达到的优秀标准\n';
+      suggestions.achieved.forEach((item, index) => {
+        content += `${index + 1}. ${item}\n`;
+      });
+
+      content += '\n### 🎯 持续改进方向\n';
+      suggestions.improvements.forEach((item, index) => {
+        content += `${index + 1}. ${item}\n`;
+      });
+
+      if (suggestions.specificTargets.length > 0) {
+        content += '\n### 📊 具体改进目标\n';
+        suggestions.specificTargets.forEach(item => {
+          content += `- ${item}\n`;
+        });
+      }
+
+      return content;
+    })()}
 
 ---
 
@@ -941,22 +941,22 @@ ${(() => {
 **Generative Puzzle** 项目在代码质量方面表现${getQualityGrade(overallScore) === 'A+' ? '卓越' : getQualityGrade(overallScore) === 'A' ? '优秀' : '良好'}，达到了企业级${getQualityGrade(overallScore)}标准。项目具备：
 
 ${(() => {
-  const summary = generateDynamicProjectSummary(allData);
-  
-  let content = '### ✅ 核心优势\n';
-  summary.coreAdvantages.forEach((item, index) => {
-    content += `${index + 1}. ${item}\n`;
-  });
-  
-  content += '\n### 🎯 发展潜力\n';
-  summary.developmentPotential.forEach(item => {
-    content += `- ${item}\n`;
-  });
-  
-  content += `\n**综合评价**: ${summary.comprehensiveEvaluation}`;
-  
-  return content;
-})()}
+      const summary = generateDynamicProjectSummary(allData);
+
+      let content = '### ✅ 核心优势\n';
+      summary.coreAdvantages.forEach((item, index) => {
+        content += `${index + 1}. ${item}\n`;
+      });
+
+      content += '\n### 🎯 发展潜力\n';
+      summary.developmentPotential.forEach(item => {
+        content += `- ${item}\n`;
+      });
+
+      content += `\n**综合评价**: ${summary.comprehensiveEvaluation}`;
+
+      return content;
+    })()}
 
 ---
 
@@ -968,11 +968,11 @@ ${(() => {
 - [API分类报告](./api-classification-report.md) - API优先级分类
 
 ### 🧪 测试与质量报告
-- [测试覆盖率报告](../coverage/coverage-simple-report.md) - 详细覆盖率分析
+- [测试覆盖率报告](../../coverage/coverage-simple-report.md) - 详细覆盖率分析
 - [代码质量检查报告](./code-quality-report.md) - ESLint和TypeScript检查详情
 - [依赖分析报告](./dependency-analysis-report.md) - 项目依赖使用情况分析
-- [质量检查报告](../quality-reports/) - 自动化质量检查结果
-- [E2E测试报告](../playwright-test-logs/) - 端到端测试详细数据
+- [质量检查报告](../../quality-reports/) - 自动化质量检查结果
+- [E2E测试报告](../../playwright-test-logs/) - 端到端测试详细数据
 
 ### 📝 版本与变更
 ${changelogData?.latest ? `
@@ -981,16 +981,16 @@ ${changelogData?.latest ? `
 ${changelogData.latest}
 \`\`\`
 ` : ''}
-- [完整变更日志](../CHANGELOG.md) - 版本迭代历史
+- [完整变更日志](../../CHANGELOG.md) - 版本迭代历史
 
 ---
 
 *报告生成时间: ${currentDateTime} | 项目版本: v${version} | 下次体检建议: ${(() => {
-    const nextDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-    return nextDate.getFullYear() + '-' + 
-      String(nextDate.getMonth() + 1).padStart(2, '0') + '-' + 
-      String(nextDate.getDate()).padStart(2, '0');
-  })()}*`;
+      const nextDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      return nextDate.getFullYear() + '-' +
+        String(nextDate.getMonth() + 1).padStart(2, '0') + '-' +
+        String(nextDate.getDate()).padStart(2, '0');
+    })()}*`;
 
   return reportContent;
 }
@@ -1001,18 +1001,18 @@ ${changelogData.latest}
 function updateHealthReport(allData) {
   try {
     log('📝 生成标准化体检报告...', 'cyan');
-    
-    const reportPath = path.join(process.cwd(), 'docs', 'Generative Puzzle 项目代码质量全面体检报告.md');
-    
+
+    const reportPath = path.join(process.cwd(), 'docs', 'reports', 'Generative Puzzle 项目代码质量全面体检报告.md');
+
     // 生成新的标准化报告内容
     const newReportContent = generateStandardizedReport(allData);
-    
+
     // 写入更新后的内容
     fs.writeFileSync(reportPath, newReportContent, 'utf8');
-    
+
     log('✅ 体检报告更新完成', 'green');
     log(`📄 报告路径: ${reportPath}`, 'blue');
-    
+
   } catch (error) {
     log(`❌ 更新体检报告失败: ${error.message}`, 'red');
     throw error;
@@ -1026,7 +1026,7 @@ async function main() {
   try {
     log('🏥 开始更新项目体检报告...', 'bold');
     log('📋 收集所有相关报告数据...', 'cyan');
-    
+
     // 收集所有数据
     const allData = {
       qualityData: getLatestQualityData(),
@@ -1038,10 +1038,10 @@ async function main() {
       dependencyData: getDependencyAnalysisData(),
       changelogData: getChangelogData()
     };
-    
+
     // 生成标准化体检报告
     updateHealthReport(allData);
-    
+
     log('\n🎉 项目体检报告更新完成！', 'green');
     log('📊 报告包含以下数据:', 'cyan');
     log(`   ${allData.qualityData ? '✅' : '❌'} 整体质量检查数据`, allData.qualityData ? 'green' : 'yellow');
@@ -1053,7 +1053,7 @@ async function main() {
     log(`   ${allData.dependencyData ? '✅' : '❌'} 依赖分析数据`, allData.dependencyData ? 'green' : 'yellow');
     log(`   ${allData.changelogData ? '✅' : '❌'} 版本变更数据`, allData.changelogData ? 'green' : 'yellow');
     log('\n💡 建议查看更新后的标准化报告内容', 'cyan');
-    
+
   } catch (error) {
     log(`\n❌ 更新失败: ${error.message}`, 'red');
     process.exit(1);
@@ -1064,8 +1064,8 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { 
-  updateHealthReport, 
+module.exports = {
+  updateHealthReport,
   getLatestQualityData,
   getLintCheckData,
   getCoverageData,

@@ -1,6 +1,6 @@
 # 性能配置
 
-> 修订日期：2025-08-04 (v1.3.39)
+> 修订日期：2025-12-31 (v1.3.71)
 
 本文档详细说明项目的性能监控和优化配置，包括事件处理、内存管理、渲染优化等。
 
@@ -204,7 +204,12 @@ export const OPTIMIZATION_FLAGS = {
   // Network optimizations
   ENABLE_REQUEST_CACHING: true,       // 启用请求缓存
   ENABLE_RESOURCE_PRELOADING: true,   // 启用资源预加载
-  ENABLE_COMPRESSION: true            // 启用压缩
+  ENABLE_COMPRESSION: true,            // 启用压缩
+
+  // v1.3.71 Visual Optimizations
+  DISABLE_SHADOWS: true,              // 禁用投影 (消除Webkit黑线)
+  DISABLE_BACKDROP_BLUR: true,        // 禁用背景模糊 (消除渲染伪影)
+  DISABLE_BORDERS: true               // 禁用边框 (实现0px缝隙)
 };
 ```
 
@@ -386,7 +391,12 @@ const generatePerformanceReport = () => {
 
 ## 📈 配置更新历史
 
-### v1.3.39 (当前版本)
+### v1.3.71 (2025/12/31)
+- ✅ 新增视觉渲染优化标志 (Shadow/Blur禁用)
+- ✅ 优化 Webkit 渲染性能
+- ✅ 提升移动端渲染效率
+
+### v1.3.39
 - ✅ 统一性能配置文件
 - ✅ 优化事件处理配置
 - ✅ 增强内存管理配置
@@ -410,6 +420,6 @@ const generatePerformanceReport = () => {
 
 ---
 
-*📝 文档维护: 本文档基于v1.3.39的实际配置*  
-*🔄 最后更新: 2025年8月4日*  
+*📝 文档维护: 本文档基于v1.3.71的实际配置*  
+*🔄 最后更新: 2025年12月31日*  
 *✅ 监督指令合规: 完全符合性能优化原则*

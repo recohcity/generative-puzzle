@@ -431,6 +431,18 @@ function adaptAllElements<T extends Scalable>(
 - **行业标准实现**: 采用现代前端响应式背景处理最佳实践
 - **加载性能**: 减少67%背景图资源，降低网络传输成本和包体积
 
+### 📱 **iPhone 17 & 极致视觉优化 (2025/12/31)**
+- **iPhone 17原生支持**: 
+  - 精准适配 iPhone 17 / Pro / Air / Pro Max 四款机型物理分辨率
+  - 动态面板宽度算法 (360px-380px)
+- **纯净渲染架构**:
+  - 移除所有 `shadow-2xl`, `backdrop-blur` 引起的Webkit亚像素黑线
+  - 消除 `border-t` 等多余装饰，实现 0px 缝隙闭合
+- **极限空间利用**:
+  - 横屏模式采用 `windowHeight - 24` 算法，最大化画布区域
+  - 解决浏览器工具栏遮挡问题
+
+
 ## 技术债务
 
 ### 已知限制
@@ -449,6 +461,11 @@ function adaptAllElements<T extends Scalable>(
 
 ## 版本更新记录
 
+### v3.1 (2025/12/31) - iPhone 17 & 视觉进化
+- **新机型**: iPhone 17全系列原生支持
+- **视觉**: 移除所有黑影与伪影，实现纯净渲染
+- **布局**: 横屏极限空间优化，动态面板宽度
+
 ### v3.0 (2025/01/05) - 3端统一适配
 - **桌面端**: 左画布+右面板布局优化
 - **移动端**: 按钮平分布局，双指旋转15度控制
@@ -466,7 +483,7 @@ function adaptAllElements<T extends Scalable>(
 ---
 
 **文档类型**: 技术方案与实现记录  
-**最后更新**: 2025/08/05  
+**最后更新**: 2025/12/31  
 **维护状态**: 持续更新  
 **相关文档**: [SUPREME_ADAPTATION_DIRECTIVE.md](./SUPREME_ADAPTATION_DIRECTIVE.md) (监督指令)
 

@@ -27,7 +27,7 @@ const API_CLASSIFICATION = {
     ],
     keywords: ['public', 'main', 'core', 'primary']
   },
-  
+
   // 优先级2: 团队API (建议文档化)
   TEAM: {
     priority: 2,
@@ -47,7 +47,7 @@ const API_CLASSIFICATION = {
     ],
     keywords: ['service', 'util', 'helper', 'adapter']
   },
-  
+
   // 优先级3: 内部API (选择性文档化)
   INTERNAL: {
     priority: 3,
@@ -76,12 +76,12 @@ class APIClassifier {
       INTERNAL: []
     };
   }
-  
+
   async loadAPIs() {
     // 从扫描报告中加载API列表
-    const reportPath = 'docs/api-scan-report.md';
+    const reportPath = 'docs/reports/api-scan-report.md';
     const content = await fs.readFile(reportPath, 'utf8');
-    
+
     // 解析API信息
     const apiMatches = content.match(/#### ([a-zA-Z_$][a-zA-Z0-9_$]*)/g);
     if (apiMatches) {
@@ -90,14 +90,14 @@ class APIClassifier {
         this.apis.set(apiName, { name: apiName });
       }
     }
-    
+
     console.log(`📊 加载了 ${this.apis.size} 个API`);
   }
-  
+
   classifyAPIs() {
     for (const [name, api] of this.apis) {
       let classified = false;
-      
+
       // 按优先级顺序分类
       for (const [category, config] of Object.entries(API_CLASSIFICATION)) {
         if (this.matchesCategory(name, config)) {
@@ -106,14 +106,14 @@ class APIClassifier {
           break;
         }
       }
-      
+
       // 默认分类为内部API
       if (!classified) {
         this.classified.INTERNAL.push({ ...api, category: 'INTERNAL' });
       }
     }
   }
-  
+
   matchesCategory(apiName, config) {
     // 检查模式匹配
     for (const pattern of config.patterns) {
@@ -121,7 +121,7 @@ class APIClassifier {
         return true;
       }
     }
-    
+
     // 检查关键词匹配
     const lowerName = apiName.toLowerCase();
     for (const keyword of config.keywords) {
@@ -129,21 +129,21 @@ class APIClassifier {
         return true;
       }
     }
-    
+
     return false;
   }
-  
+
   generateReport() {
     console.log('\n📋 API分类报告');
     console.log('='.repeat(60));
-    
+
     for (const [category, apis] of Object.entries(this.classified)) {
       const config = API_CLASSIFICATION[category];
       const percentage = ((apis.length / this.apis.size) * 100).toFixed(1);
-      
+
       console.log(`\n🎯 ${category} (优先级${config.priority}) - ${apis.length}个 (${percentage}%)`);
       console.log(`   ${config.description}`);
-      
+
       if (apis.length > 0) {
         console.log('   API列表:');
         for (const api of apis.slice(0, 10)) { // 只显示前10个
@@ -154,58 +154,58 @@ class APIClassifier {
         }
       }
     }
-    
+
     this.generateRecommendations();
   }
-  
+
   generateRecommendations() {
     const publicCount = this.classified.PUBLIC.length;
     const teamCount = this.classified.TEAM.length;
     const internalCount = this.classified.INTERNAL.length;
-    
+
     console.log('\n💡 文档化建议');
     console.log('='.repeat(60));
-    
+
     console.log(`\n📈 推荐文档化策略:`);
     console.log(`   1. 立即文档化: ${publicCount}个公开API (必须)`);
     console.log(`   2. 逐步文档化: ${teamCount}个团队API (建议)`);
     console.log(`   3. 选择性文档化: ${internalCount}个内部API (可选)`);
-    
+
     const targetCoverage = ((publicCount + teamCount) / this.apis.size * 100).toFixed(1);
     console.log(`\n🎯 目标文档覆盖率: ${targetCoverage}% (行业标准)`);
-    
+
     console.log(`\n🚀 实施计划:`);
-    console.log(`   阶段1: 文档化${publicCount}个公开API → 覆盖率${(publicCount/this.apis.size*100).toFixed(1)}%`);
+    console.log(`   阶段1: 文档化${publicCount}个公开API → 覆盖率${(publicCount / this.apis.size * 100).toFixed(1)}%`);
     console.log(`   阶段2: 文档化${teamCount}个团队API → 覆盖率${targetCoverage}%`);
     console.log(`   阶段3: 根据需要文档化内部API`);
   }
-  
+
   async saveClassificationReport() {
-    const reportPath = 'docs/api-classification-report.md';
+    const reportPath = 'docs/reports/api-classification-report.md';
     let report = `# API分类报告\n\n`;
     report += `> 生成时间: ${new Date().toLocaleString('zh-CN')}\n`;
     report += `> 分类工具: API分类器 v1.0\n\n`;
-    
+
     report += `## 📊 分类统计\n\n`;
     report += `| 分类 | 数量 | 占比 | 优先级 | 建议 |\n`;
     report += `|------|------|------|--------|------|\n`;
-    
+
     for (const [category, apis] of Object.entries(this.classified)) {
       const config = API_CLASSIFICATION[category];
       const percentage = ((apis.length / this.apis.size) * 100).toFixed(1);
-      const action = category === 'PUBLIC' ? '必须文档化' : 
-                    category === 'TEAM' ? '建议文档化' : '选择性文档化';
-      
+      const action = category === 'PUBLIC' ? '必须文档化' :
+        category === 'TEAM' ? '建议文档化' : '选择性文档化';
+
       report += `| ${category} | ${apis.length} | ${percentage}% | ${config.priority} | ${action} |\n`;
     }
-    
+
     report += `\n## 📋 详细分类\n\n`;
-    
+
     for (const [category, apis] of Object.entries(this.classified)) {
       const config = API_CLASSIFICATION[category];
       report += `### ${category} (优先级${config.priority})\n\n`;
       report += `**描述**: ${config.description}\n\n`;
-      
+
       if (apis.length > 0) {
         report += `**API列表** (${apis.length}个):\n\n`;
         for (const api of apis) {
@@ -214,7 +214,7 @@ class APIClassifier {
         report += `\n`;
       }
     }
-    
+
     await fs.writeFile(reportPath, report, 'utf8');
     console.log(`\n📄 详细分类报告已保存到: ${reportPath}`);
   }

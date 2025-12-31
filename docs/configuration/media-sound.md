@@ -1,6 +1,6 @@
 # 媒体资源与音效配置
 
-> 修订日期：2025-01-22 (v1.3.58)
+> 修订日期：2025-12-31 (v1.3.71)
 
 本文档详细说明媒体资源和音效系统的配置参数，包括背景音乐、交互音效、静态资源等核心配置。
 
@@ -114,37 +114,40 @@
 - **文件路径**：`/public/finish.mp3`
 - **音频参数**：
   - 音量：0.8
-  - 播放方式：HTML5 Audio API直接播放
-- **优势**：
-  - 真实质感：专业录制的完成音效
-  - 高品质：比程序生成音效更自然
-  - 一致性：每次播放完全相同
+  - **播放方式**：**Web Audio API (BufferSource)** 优先，HTML5 Audio 降级
+- **技术亮点**：
+  - **零延迟**：使用预解码的 `AudioBuffer` 播放，无加载等待。
+  - **高可靠**：若 Web Audio 失败，自动降级回退到 HTMLAudioElement。
 - **配置/代码位置**：`utils/rendering/soundEffects.ts`（playFinishSound函数）
 
 ---
 
-## 2.1 预加载与自动播放策略（v1.3.59）
+## 2.1 预加载与自动播放策略 (Advanced)
 
-- 背景音乐与真实音效在应用初始化阶段统一预加载，减少首次播放延迟。
-- 预加载范围：`bgm.mp3`、`split.mp3`、`scatter.mp3`、`finish.mp3`。
-- 背景音乐仅预加载不自动播放，仍遵循浏览器自动播放策略：需要用户交互或通过喇叭按钮触发。
-- 播放函数复用已预加载的 `HTMLAudioElement`，避免重复创建造成的卡顿与内存抖动。
-- 初始化位置：在 `components/GameInterface.tsx` 的首次挂载中调用：
+### 全局交互解锁 (Global Unlock)
+- **机制**：通过 `handleFirstInteraction` 监听全局 `click`, `touchstart`, `keydown` 事件。
+- **行为**：
+  1. **无感解锁**：在用户首次交互瞬间恢复 `AudioContext`。
+  2. **BGM智能启动**：尝试播放背景音乐（如果启用）。
+  3. **资源预热**：解码 `finish.mp3` 为 `AudioBuffer`，加载其他音频元素。
+- **优势**：确保 iOS/Android 等移动端设备的自动播放策略被正确处理。
+
+### 混合预加载策略
+- **背景音乐 (`bgm.mp3`)**：`preload='metadata'`，流式加载，节省流量。
+- **交互音效 (`split.mp3`, `scatter.mp3`)**：`preload='auto'`，HTMLMediaElement 预加载。
+- **高频关键音效 (`finish.mp3`)**：**双重预加载**。
+  - 1. 加载 HTMLAudioElement 作为回退。
+  - 2. **Fetch + Decode**: 获取 ArrayBuffer 并解码为 `AudioBuffer`，用于 Web Audio API 零延迟播放。
 
 ```typescript
-import { initBackgroundMusic, preloadAllSoundEffects } from '@/utils/rendering/soundEffects';
-
-useEffect(() => {
-  if (typeof window !== 'undefined') {
-    initBackgroundMusic();
-    preloadAllSoundEffects();
-  }
-}, []);
+// 初始化逻辑 (utils/rendering/soundEffects.ts)
+const handleFirstInteraction = async (event?: Event) => {
+  // 1. 启动BGM
+  // 2. 恢复 AudioContext (ctx.resume())
+  // 3. 执行 preloadAllSoundEffects()
+  // 4. 清理监听器 (removeFirstInteractionListeners)
+};
 ```
-
-- 相关实现：`utils/rendering/soundEffects.ts`
-  - `preloadAllSoundEffects()`：创建并缓存 `backgroundMusic`、`cutAudioElement`、`scatterAudioElement`、`finishAudio`，统一设置 `preload='auto'` 并调用 `.load()`。
-  - `toggleBackgroundMusic()`：在用户交互时控制背景音乐播放/暂停，并在必要时恢复 `AudioContext`。
 
 ---
 
@@ -152,12 +155,12 @@ useEffect(() => {
 
 ### backgroundImage
 - **作用**：游戏背景图片配置
-- **文件路径**：`public/bg.jpg`
-- **图片规格**：高分辨率，支持多种屏幕尺寸
+- **文件路径**：`public/bg-mobile-portrait.webp`
+- **图片规格**：WebP格式，高压缩率，支持跨端响应式
 - **加载策略**：预加载，缓存优化
 - **默认值**：启用背景图片
 - **影响点**：视觉体验、加载性能
-- **配置/代码位置**：`public/bg.jpg`、CSS背景配置
+- **配置/代码位置**：`public/bg-mobile-portrait.webp` (单图响应式方案)
 
 ### audioFiles
 - **作用**：游戏音效文件配置

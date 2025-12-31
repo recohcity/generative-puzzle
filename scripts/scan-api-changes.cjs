@@ -20,7 +20,7 @@ const CONFIG = {
     'utils/**/*.ts',
     'app/api/**/*.ts'
   ],
-  
+
   // 忽略模式
   ignore: [
     '**/*.test.*',
@@ -28,7 +28,7 @@ const CONFIG = {
     '**/temp/**',
     '**/*.d.ts'
   ],
-  
+
   // API分类
   categories: {
     '配置管理API': {
@@ -52,7 +52,7 @@ const CONFIG = {
       keywords: ['GET', 'POST', 'route']
     }
   },
-  
+
   // 当前API文档路径
   apiDocPath: 'docs/API_DOCUMENTATION.md'
 };
@@ -62,30 +62,30 @@ class APIScanner {
     this.currentAPIs = new Map();
     this.documentedAPIs = new Set();
   }
-  
+
   async scan() {
     console.log('🔍 开始扫描API变更...');
-    
+
     // 1. 扫描当前代码中的API
     await this.scanCodeAPIs();
     console.log(`✅ 发现 ${this.currentAPIs.size} 个API`);
-    
+
     // 2. 解析现有文档中的API
     await this.parseDocumentedAPIs();
     console.log(`📚 文档中已记录 ${this.documentedAPIs.size} 个API`);
-    
+
     // 3. 对比分析
     const analysis = this.analyzeChanges();
-    
+
     // 4. 生成报告
     this.generateReport(analysis);
-    
+
     return analysis;
   }
-  
+
   async scanCodeAPIs() {
     const files = [];
-    
+
     // 收集所有文件
     for (const pattern of CONFIG.scanPaths) {
       const matchedFiles = glob.sync(pattern, {
@@ -93,13 +93,13 @@ class APIScanner {
       });
       files.push(...matchedFiles);
     }
-    
+
     // 扫描每个文件
     for (const filePath of files) {
       try {
         const content = await fs.readFile(filePath, 'utf8');
         const apis = this.extractAPIsFromFile(content, filePath);
-        
+
         for (const api of apis) {
           this.currentAPIs.set(api.name, api);
         }
@@ -108,14 +108,14 @@ class APIScanner {
       }
     }
   }
-  
+
   extractAPIsFromFile(content, filePath) {
     const apis = [];
     const lines = content.split('\n');
-    
+
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
-      
+
       // 匹配导出的函数
       const functionMatch = line.match(/^export\s+(function|const|let)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/);
       if (functionMatch) {
@@ -128,7 +128,7 @@ class APIScanner {
           category: this.determineCategory(filePath)
         });
       }
-      
+
       // 匹配导出的类
       const classMatch = line.match(/^export\s+class\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/);
       if (classMatch) {
@@ -141,7 +141,7 @@ class APIScanner {
           category: this.determineCategory(filePath)
         });
       }
-      
+
       // 匹配导出的接口
       const interfaceMatch = line.match(/^export\s+interface\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/);
       if (interfaceMatch) {
@@ -154,7 +154,7 @@ class APIScanner {
           category: this.determineCategory(filePath)
         });
       }
-      
+
       // 匹配导出的类型
       const typeMatch = line.match(/^export\s+type\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/);
       if (typeMatch) {
@@ -167,7 +167,7 @@ class APIScanner {
           category: this.determineCategory(filePath)
         });
       }
-      
+
       // 匹配导出的常量
       const constMatch = line.match(/^export\s+const\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/);
       if (constMatch) {
@@ -181,13 +181,13 @@ class APIScanner {
         });
       }
     }
-    
+
     return apis;
   }
-  
+
   extractSignature(lines, startIndex) {
     let signature = lines[startIndex].trim();
-    
+
     // 如果行末没有分号或大括号，继续读取下一行
     if (!signature.endsWith(';') && !signature.endsWith('{') && !signature.includes('=>')) {
       for (let i = startIndex + 1; i < Math.min(startIndex + 5, lines.length); i++) {
@@ -198,10 +198,10 @@ class APIScanner {
         }
       }
     }
-    
+
     return signature;
   }
-  
+
   determineCategory(filePath) {
     for (const [categoryName, config] of Object.entries(CONFIG.categories)) {
       for (const pathPattern of config.paths) {
@@ -212,19 +212,19 @@ class APIScanner {
     }
     return '其他API';
   }
-  
+
   async parseDocumentedAPIs() {
     try {
       const docContent = await fs.readFile(CONFIG.apiDocPath, 'utf8');
       const lines = docContent.split('\n');
-      
+
       for (const line of lines) {
         // 匹配文档中的API标题 (### APIName)
         const apiMatch = line.match(/^###\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/);
         if (apiMatch) {
           this.documentedAPIs.add(apiMatch[1]);
         }
-        
+
         // 匹配代码块中的API名称
         const codeMatch = line.match(/`([a-zA-Z_$][a-zA-Z0-9_$]*)`/g);
         if (codeMatch) {
@@ -240,32 +240,32 @@ class APIScanner {
       console.warn('⚠️ 读取API文档失败:', error.message);
     }
   }
-  
+
   analyzeChanges() {
     const newAPIs = [];
     const missingAPIs = [];
     const categorizedAPIs = {};
-    
+
     // 分析新增API
     for (const [name, api] of this.currentAPIs) {
       if (!this.documentedAPIs.has(name)) {
         newAPIs.push(api);
       }
-      
+
       // 按分类组织
       if (!categorizedAPIs[api.category]) {
         categorizedAPIs[api.category] = [];
       }
       categorizedAPIs[api.category].push(api);
     }
-    
+
     // 分析可能缺失的API（在文档中但代码中找不到）
     for (const docAPI of this.documentedAPIs) {
       if (!this.currentAPIs.has(docAPI)) {
         missingAPIs.push(docAPI);
       }
     }
-    
+
     return {
       total: this.currentAPIs.size,
       documented: this.documentedAPIs.size,
@@ -275,16 +275,16 @@ class APIScanner {
       coverage: ((this.documentedAPIs.size / this.currentAPIs.size) * 100).toFixed(1)
     };
   }
-  
+
   generateReport(analysis) {
     console.log('\n📊 API扫描报告');
     console.log('='.repeat(50));
-    
+
     console.log(`\n📈 总体统计:`);
     console.log(`   API总数: ${analysis.total}`);
     console.log(`   已文档化: ${analysis.documented}`);
     console.log(`   文档覆盖率: ${analysis.coverage}%`);
-    
+
     if (analysis.newAPIs.length > 0) {
       console.log(`\n🆕 新增API (${analysis.newAPIs.length}个):`);
       for (const api of analysis.newAPIs) {
@@ -293,19 +293,19 @@ class APIScanner {
         console.log(`      📝 ${api.signature}`);
       }
     }
-    
+
     if (analysis.missingAPIs.length > 0) {
       console.log(`\n❓ 可能已删除的API (${analysis.missingAPIs.length}个):`);
       for (const api of analysis.missingAPIs) {
         console.log(`   🗑️ ${api}`);
       }
     }
-    
+
     console.log(`\n📂 按分类统计:`);
     for (const [category, apis] of Object.entries(analysis.categorizedAPIs)) {
       console.log(`   ${category}: ${apis.length}个API`);
     }
-    
+
     if (analysis.newAPIs.length > 0) {
       console.log(`\n💡 建议操作:`);
       console.log(`   1. 检查新增API是否需要添加到文档`);
@@ -313,19 +313,19 @@ class APIScanner {
       console.log(`   3. 更新快捷导航和分类索引`);
       console.log(`   4. 运行 npm run generate-structure 更新项目结构`);
     }
-    
+
     // 生成详细报告文件
     this.saveDetailedReport(analysis);
   }
-  
+
   async saveDetailedReport(analysis) {
-    const reportPath = 'docs/api-scan-report.md';
+    const reportPath = 'docs/reports/api-scan-report.md';
     const timestamp = new Date().toLocaleString('zh-CN');
-    
+
     let report = `# API扫描报告\n\n`;
     report += `> 生成时间: ${timestamp}\n`;
     report += `> 扫描工具: API变更扫描器 v1.0\n\n`;
-    
+
     report += `## 📊 统计概览\n\n`;
     report += `| 项目 | 数量 | 说明 |\n`;
     report += `|------|------|------|\n`;
@@ -334,10 +334,10 @@ class APIScanner {
     report += `| 文档覆盖率 | ${analysis.coverage}% | 文档化程度 |\n`;
     report += `| 新增API | ${analysis.newAPIs.length} | 需要添加到文档的API |\n`;
     report += `| 可能删除 | ${analysis.missingAPIs.length} | 文档中存在但代码中找不到 |\n\n`;
-    
+
     if (analysis.newAPIs.length > 0) {
       report += `## 🆕 新增API详情\n\n`;
-      
+
       const groupedNew = {};
       for (const api of analysis.newAPIs) {
         if (!groupedNew[api.category]) {
@@ -345,7 +345,7 @@ class APIScanner {
         }
         groupedNew[api.category].push(api);
       }
-      
+
       for (const [category, apis] of Object.entries(groupedNew)) {
         report += `### ${category}\n\n`;
         for (const api of apis) {
@@ -368,7 +368,7 @@ class APIScanner {
         }
       }
     }
-    
+
     report += `## 📂 分类统计\n\n`;
     for (const [category, apis] of Object.entries(analysis.categorizedAPIs)) {
       report += `### ${category} (${apis.length}个)\n\n`;
@@ -378,7 +378,7 @@ class APIScanner {
       }
       report += `\n`;
     }
-    
+
     await fs.writeFile(reportPath, report, 'utf8');
     console.log(`\n📄 详细报告已保存到: ${reportPath}`);
   }

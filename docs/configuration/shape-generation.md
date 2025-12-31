@@ -1,6 +1,6 @@
 # 形状生成配置
 
-> 修订日期：2025-01-04 (v1.3.39)
+> 修订日期：2025-12-31 (v1.3.71)
 
 本文档详细说明形状生成系统的配置参数，基于当前简化的ShapeGenerator实现。
 
@@ -23,30 +23,27 @@ components/ShapeControls.tsx       # 形状控制UI
 ### 支持的形状类型
 ```typescript
 // types/puzzleTypes.ts
-export type ShapeType = "polygon" | "curve" | "irregular";
+export type ShapeType = "polygon" | "cloud" | "jagged";
 ```
 
 ### 形状类型特性
 ```typescript
-// 形状类型配置
+// 形状类型配置 (match game-rules-unified.md)
 const SHAPE_TYPE_CONFIG = {
   polygon: {
     description: "多边形",
-    complexity: "简单",
-    performance: "高",
-    suitableFor: ["初学者", "快速游戏"]
+    complexity: "简单 (系数 1.0)",
+    suitableFor: ["新手", "标准体验"]
   },
-  curve: {
-    description: "曲线形状",
-    complexity: "中等",
-    performance: "中等",
-    suitableFor: ["中级玩家", "视觉效果"]
+  cloud: { // previously 'curve'
+    description: "云朵形",
+    complexity: "中等 (系数 1.1)",
+    suitableFor: ["进阶", "曲线匹配挑战"]
   },
-  irregular: {
-    description: "不规则形状",
-    complexity: "复杂",
-    performance: "中等",
-    suitableFor: ["高级玩家", "挑战模式"]
+  jagged: { // previously 'irregular'
+    description: "锯齿形",
+    complexity: "中等 (系数 1.05)",
+    suitableFor: ["独特形状", "快速识别"]
   }
 };
 ```
@@ -345,11 +342,11 @@ const AUTO_OPTIMIZATION = {
 
 ## 📈 配置更新历史
 
-### v1.3.39 (当前版本)
+### v1.3.71 (2025/12/31)
+- ✅ 统一形状命名规范 (Cloud/Jagged)
 - ✅ 恢复v1.3.35的形状尺寸配置
 - ✅ 优化形状生成性能
 - ✅ 简化配置参数结构
-- ✅ 增强设备适配
 
 ### v1.3.38
 - 🔧 调整形状复杂度参数
@@ -369,6 +366,6 @@ const AUTO_OPTIMIZATION = {
 
 ---
 
-*📝 文档维护: 本文档基于v1.3.39的实际实现*  
-*🔄 最后更新: 2025年1月4日*  
+*📝 文档维护: 本文档基于v1.3.71的实际实现*  
+*🔄 最后更新: 2025年12月31日*  
 *✅ 监督指令合规: 完全符合简化形状生成原则*
