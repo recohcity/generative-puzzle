@@ -112,6 +112,11 @@ export function usePuzzleInteractions({
     [canvasRef, containerRef, state.puzzle, state.completedPieces, state.isScattered],
   );
 
+  // [P1-HR-03 PROTECT] 触摸/鼠标交互路径属于多端适配关键链路：
+  // - 画布事件放行策略
+  // - 坐标缩放转换
+  // - touchstart/move/end 与拖拽吸附协同
+  // 未完成 iOS/Android/iPad 回归前，禁止结构性重写。
   // 鼠标按下事件
   const handleMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (e.button !== 0) return; // 只响应鼠标左键
@@ -409,6 +414,7 @@ export function usePuzzleInteractions({
     dispatch({ type: "SET_DRAGGING_PIECE", payload: null })
   }, [state, dispatch]);
 
+  // [P1-HR-03 PROTECT] 触摸起始事件：涉及移动端命中判定与拖拽起点计算，禁止未经验证的删除/重构。
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
     // 在React事件中，preventDefault通常是安全的
     // 如果仍有问题，浏览器会忽略而不会抛出错误
@@ -557,6 +563,7 @@ export function usePuzzleInteractions({
   }, [state, canvasRef, dispatch]);
   
   // 触摸移动事件处理
+  // [P1-HR-03 PROTECT] 触摸移动事件：涉及边界约束、缩放坐标与吸附过程，禁止未经验证的结构性改动。
   const handleTouchMove = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
     // 在React合成事件中，preventDefault通常是安全的
     e.preventDefault();
@@ -757,6 +764,7 @@ export function usePuzzleInteractions({
   }, [state, canvasRef, dispatch]);
   
   // 处理触摸结束事件
+  // [P1-HR-03 PROTECT] 触摸结束事件：涉及状态收敛与完成判定，禁止未经多端回归的行为改动。
   const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
     // 在React合成事件中，preventDefault通常是安全的
     e.preventDefault();

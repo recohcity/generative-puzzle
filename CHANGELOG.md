@@ -1,4 +1,36 @@
 # 生成式拼图游戏 Changelog
+## [v1.3.74] - 2026-03-25
+
+### 🧱 架构整改阶段化执行（Phase P + Phase 0 完成）
+- **执行编排统一**：将整改前计划与整改计划统一到 `docs/architecture/architecture-master-plan-2026.md`，改为按“阶段/节点”推进，并新增可勾选任务清单。
+- **适配护栏冻结（P1）**：在关键路径增加 `PROTECT` 注释与约束说明，覆盖：
+  - `UPDATE_CANVAS_SIZE` 保护分支（`skipAdaptation`/`forceUpdate`/protection condition）
+  - `PuzzleCanvas` 冻结-解冻链路（含 `setTimeout(..., 100)`）
+  - 触摸交互路径与 canvas 放行逻辑
+  - iPad/横竖屏布局分流策略
+- **候选归档与低风险清理（P2/P3）**：完成候选项分级归档（MR/LR），并执行首批低风险清理：
+  - 清理重复 `RESTART_GAME` 分支（单入口）
+  - 移除 `pg` 与 `@types/pg` 依赖
+  - 收敛部分低风险调试日志
+
+### 🛡️ 阶段 0（止血）
+- **0-1 发布暴露面收敛**：`scripts/build-for-github.cjs` 增强为构建前移除 `app/api` + `app/test`，构建后兜底清理 `out/test` 与 `out/performance-data.json`，并在 finally 中恢复路由。
+- **0-2 Reducer 纯度修复**：
+  - 将 `GAME_COMPLETED` 中 `GameDataManager` 持久化读写搬出 reducer，迁移至 `GameProvider` 的副作用流程
+  - 新增 `APPLY_COMPLETION_RESULT` action 回填排行榜/排名等结果
+  - `SCATTER_PUZZLE` 从动态 `require()` 改为静态导入
+- **0-3 重复分支清理**：确认 `RESTART_GAME` 仅保留 1 个分支。
+
+### ✅ 验证结果（E2E 全流程）
+- 命令：`npm run test:e2e`
+- 结果：`1 passed`
+- 核心指标（最新一轮）：
+  - 平均 FPS：`52.8`
+  - 端到端加载时间：`1559ms`
+  - 平均拼图交互时间：`58.70ms`
+  - JS Heap：`9.54MB`
+  - 19 组分辨率适配：全部通过
+
 ## [v1.3.73] - 2025-12-31
 
 ### 📱 iPad 深度适配与体验优化 (iPad & PWA Adaptation)

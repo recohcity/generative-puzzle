@@ -91,6 +91,8 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
   style,
   isLandscape = false
 }) => {
+  // [P1-HR-04 PROTECT] 横竖屏布局分流参数（isLandscape）为移动端稳定布局关键输入。
+  // 未完成 iOS/Android/iPad 回归前，禁止删除分支或强行统一布局样式。
   // 新增：引入游戏核心逻辑和翻译
   const { state, rotatePiece, showHintOutline, resetGame, retryCurrentGame, trackHintUsage, trackRotation } = useGame();
   const { t } = useTranslation();

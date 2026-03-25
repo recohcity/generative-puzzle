@@ -23,6 +23,8 @@ interface DeviceDetectionState {
  * 专门处理微信浏览器等特殊环境
  */
 function detectDeviceType(userAgent: string, screenWidth: number, screenHeight: number) {
+  // [P1-HR-04 PROTECT] iPad/横竖屏分流是多端布局稳定性的核心策略。
+  // 禁止在无多端回归证据（iOS Safari/Android/iPad）的前提下合并或删除该分流逻辑。
   // 微信浏览器检测
   const isWeChat = /MicroMessenger/i.test(userAgent);
   const isWeChatWork = /wxwork/i.test(userAgent);

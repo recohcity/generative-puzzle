@@ -176,6 +176,14 @@ export type GameAction =
   | { type: 'HIDE_LEADERBOARD' }
   | { type: 'LOAD_LEADERBOARD' }
   | { type: 'RESET_STATS' }
+  | {
+      type: 'APPLY_COMPLETION_RESULT';
+      payload: {
+        leaderboard: GameRecord[];
+        isNewRecord: boolean;
+        currentRank: number | null;
+      };
+    }
   // 角度显示增强功能相关的Action
   | { type: 'UPDATE_ANGLE_DISPLAY_MODE'; payload: { cutCount: number } }
   | { type: 'SET_TEMPORARY_ANGLE_VISIBLE'; payload: { pieceId: number } }

@@ -32,6 +32,9 @@ function useCanvasResizeObserver(
   onResize: (width: number, height: number) => void,
   onUnfreeze: (width: number, height: number) => void
 ) {
+  // [P1-HR-02 PROTECT] 冻结-解冻机制是当前画布适配核心方法，禁止删除或大改。
+  // 关键约束：窗口变化先冻结，稳定后再解冻；100ms 为实机验证阈值。
+  // 任何调整必须附带 iOS Safari(软键盘/地址栏/旋转) 与 iPad/Android 回归记录。
   const containerRef = useRef<HTMLDivElement>(null);
   const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isFrozenRef = useRef(false);
@@ -59,7 +62,7 @@ function useCanvasResizeObserver(
             clearTimeout(resizeTimeoutRef.current);
           }
 
-          // 解冻机制：窗口稳定100ms后解冻
+          // [P1-HR-02 PROTECT] 解冻机制：窗口稳定100ms后解冻（核心阈值，勿随意修改）
           resizeTimeoutRef.current = setTimeout(() => {
             if (pendingResizeRef.current && isFrozenRef.current) {
               onUnfreeze(pendingResizeRef.current.width, pendingResizeRef.current.height);
