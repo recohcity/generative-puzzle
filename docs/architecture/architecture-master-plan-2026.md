@@ -286,12 +286,44 @@
 - [x] 0-3 节点：重复分支清理
 
 #### 阶段 1（状态与交互解耦）
-- [ ] 1-1 节点：Context 职责切分
-- [ ] 1-2 节点：高频状态切片化
-- [ ] 1-3 节点：交互 Hook 拆分
+- [x] 1-1 节点：Context 职责切分
+- [x] 1-2 节点：高频状态切片化
+- [x] 1-3 节点：交互 Hook 拆分
+
+##### 1-1 子节点进度清单（Context 职责切分）
+- [x] 1-1.a 建立分域 Provider 聚合层（`GameDomainProviders`）
+- [x] 1-1.b 顶层接入分域 Provider（`GameInterface`）
+- [x] 1-1.c `GameTimer` 迁移至 `useGameSession`
+- [x] 1-1.d `ScoreDisplay` 迁移至 `useGameSession`
+- [x] 1-1.e `LiveScore` 迁移至 `useGameSession`
+- [x] 1-1.f `ActionButtons` 迁移至分域上下文（Board/Session/UI）
+- [x] 1-1.g `PuzzleControlsScatter` 迁移至 `useGameBoard`
+- [x] 1-1.h 继续迁移低风险控制组件（`PuzzleControls*`）
+- [x] 1-1.i 全量回归验证（`npm run test:e2e` + 可视化报告复核，连续稳定后通过）
+- [x] 1-1.j 满足门禁后勾选 1-1 完成
+
+##### 1-2 子节点进度清单（高频状态切片化 / 订阅防抖）
+- [x] 1-2.a 消除拖拽每帧污染 `gameStats`：`UPDATE_PIECE_POSITION` 仅更新拼图几何，拖拽次数仅在 `TRACK_DRAG_OPERATION`（拾取块时）递增，使 `useMemo(sessionValue)` 在纯位移路径上保持稳定引用，`GameSessionContext` 消费者不与画布同频重渲染。
+- [x] 1-2.b 行为核对：`dragOperations` 语义与 `usePuzzleInteractions` 中既有 `trackDragOperation()` 一致，不再与位移事件重复累计。
+- [x] 1-2.c 门禁：`npm run lint`、`npm run test:unit`、`npm run test:e2e` 已复核通过（全链路 + 多分辨率适配）。
+
+> 后续可选（1-3 或阶段 2 联动）：指针中间态迁入 `useSyncExternalStore`/轻量 Store、或拖拽提交与健康检查合并，需在 HR-03 回归清单下单项推进。
+
+##### 1-3 子节点进度清单（交互 Hook 拆分 / 单一数据源）
+- [x] 1-3.a 抽取共享命中检测（当前落位 `hooks/puzzleInteractions/pieceHitTest.ts`；阶段 2-1 再迁入 `game-engine/`）。
+- [x] 1-3.b `usePieceSelection`：鼠标 down + 单指拾取；`usePieceRotationTouch`：双指起始与旋转 move；`usePieceDrag`：鼠标拖拽、单指 touch 拖拽、touchend 状态收敛（边界震动与磁吸逻辑保持原路径）。
+- [x] 1-3.c `usePuzzleInteractions` 仅作编排，**移除内部 `useGame()`**；`trackDragOperation` / `trackRotation` 由 `PuzzleCanvas` 通过 `useGameSession()` 注入，消除 MR-01 所指「钩内再订一份 Context」的双源问题。
+- [x] 1-3.d 门禁：`npm run lint`、`npm run test:unit`、`npm run test:e2e` 已复核通过（含 19 组分辨率适配与 HR-03 全链路）。
+
+##### 2-1 子节点进度清单（`game-engine` 落地）
+- [ ] 2-1.a 建立 `game-engine/puzzle/`，迁入 `findPieceIndexAtCanvasPoint`（无 React；几何暂依赖 `utils/geometry`）。
+- [ ] 2-1.b Jest：`jest.fast.cjs` / `jest.coverage.cjs` 的 `node` 项目已包含 `game-engine/**/__tests__`。
+- [ ] 2-1.c `game-engine/puzzle/__tests__/pieceHitTest.test.ts` 单测覆盖空集、遮挡次序、负容差与宽松命中。
+
+> 暂停说明：2-1 相关改动已落地在工作区，但按阶段门槛要求，当前视为“待阶段 1 封版后再正式勾选”。在 `CHANGELOG.md` 完成阶段 1 版本说明并同步 GitHub 之前，不得继续推进 2-2/2-3。
 
 #### 阶段 2（领域边界固化）
-- [ ] 2-1 节点：`game-engine` 目录落地
+- [ ] 2-1 节点：`game-engine` 目录落地（等待“阶段 1 封版门槛”通过后再开启）
 - [ ] 2-2 节点：依赖方向约束生效
 - [ ] 2-3 节点：`core/utils/engine` 三层边界定稿
 

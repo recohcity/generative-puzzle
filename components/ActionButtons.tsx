@@ -1,9 +1,8 @@
 "use client"
-import { useGame } from "@/contexts/GameContext"
+import { useGameBoardInteraction, useGameSession, useGameUI } from "@/contexts/GameDomainContexts"
 import { Button } from "@/components/ui/button"
 import { Lightbulb, RotateCcw, RotateCw } from "lucide-react"
 import { playButtonClickSound, playRotateSound } from "@/utils/rendering/soundEffects"
-import { useState, useEffect } from "react"
 import { useDeviceDetection } from "@/hooks/useDeviceDetection"
 import { useTranslation } from '@/contexts/I18nContext'
 import { useAngleDisplay } from '@/utils/angleDisplay'
@@ -15,33 +14,37 @@ interface ActionButtonsProps {
 
 export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: ActionButtonsProps) {
   const {
-    state,
+    puzzle,
+    selectedPiece,
+    completedPieces,
+    isScattered,
+    isCompleted,
     rotatePiece,
-    showHintOutline,
+  } = useGameBoardInteraction()
+  const {
     trackRotation,
     trackHintUsage,
-  } = useGame()
+  } = useGameSession()
+  const {
+    showHintOutline,
+  } = useGameUI()
   const { t } = useTranslation()
   
   // 角度显示增强功能
   const {
     shouldShowAngle,
-    getDisplayState,
     isTemporaryDisplay,
     needsHintEnhancement
   } = useAngleDisplay()
 
   // 使用统一设备检测系统
   const device = useDeviceDetection();
-  const isPhone = layout === 'mobile' ? device.deviceType === 'phone' : false;
   const isLandscape = layout === 'mobile' ? device.layoutMode === 'landscape' : false;
 
 
   // Common disabled style
   const disabledClass = "opacity-30 pointer-events-none";
 
-  // 检查是否有切割类型选择
-  const hasCutTypeSelected = state.cutType !== "";
 
   const handleShowHint = () => {
     playButtonClickSound()
@@ -56,7 +59,6 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
   }
 
   const handleRotatePiece = (clockwise: boolean) => {
-    console.log(`[ActionButtons] handleRotatePiece called, clockwise: ${clockwise}`);
     playRotateSound()
     rotatePiece(clockwise)
 
@@ -66,8 +68,6 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
     } catch (error) {
       console.warn('统计追踪失败 (按钮旋转):', error);
     }
-
-    console.log('[ActionButtons] handleRotatePiece finished');
   }
 
   // Determine styles based on layout prop or detected device state
@@ -86,11 +86,11 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
         <Button
           onClick={handleShowHint}
           disabled={
-            !state.isScattered ||
-            state.selectedPiece === null ||
-            state.completedPieces.includes(state.selectedPiece ?? -1)
+            !isScattered ||
+            selectedPiece === null ||
+            completedPieces.includes(selectedPiece ?? -1)
           }
-          className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md ${!state.isScattered || state.selectedPiece === null || state.completedPieces.includes(state.selectedPiece ?? -1) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+          className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md ${!isScattered || selectedPiece === null || completedPieces.includes(selectedPiece ?? -1) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
           data-testid="hint-button"
           style={{
             height: buttonHeight,
@@ -112,8 +112,8 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
 
         <Button
           onClick={() => handleRotatePiece(false)}
-          disabled={!state.isScattered || state.selectedPiece === null || state.isCompleted}
-          className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md ${!state.isScattered || state.selectedPiece === null || state.isCompleted ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+          disabled={!isScattered || selectedPiece === null || isCompleted}
+          className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md ${!isScattered || selectedPiece === null || isCompleted ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
           data-testid="rotate-left-button"
           style={{
             height: buttonHeight,
@@ -135,8 +135,8 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
 
         <Button
           onClick={() => handleRotatePiece(true)}
-          disabled={!state.isScattered || state.selectedPiece === null || state.isCompleted}
-          className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md ${!state.isScattered || state.selectedPiece === null || state.isCompleted ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+          disabled={!isScattered || selectedPiece === null || isCompleted}
+          className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md ${!isScattered || selectedPiece === null || isCompleted ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
           data-testid="rotate-right-button"
           style={{
             height: buttonHeight,
@@ -158,14 +158,14 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
       </div>
 
       {/* 角度显示 - 增强版多语言支持 */}
-      {state.selectedPiece !== null && state.puzzle && (
+      {selectedPiece !== null && puzzle && (
         <div style={{ textAlign: 'center', fontSize: '14px', marginTop: '6px', color: '#FFD5AB', fontWeight: 500 }}>
-          {shouldShowAngle(state.selectedPiece) ? (
+          {shouldShowAngle(selectedPiece) ? (
             <>
               <div className={isTemporaryDisplay() ? 'animate-pulse' : ''}>
                 {isTemporaryDisplay() 
-                  ? t('game.controls.angleTemporary', { angle: Math.round(state.puzzle[state.selectedPiece].rotation) })
-                  : t('game.controls.currentAngle', { angle: Math.round(state.puzzle[state.selectedPiece].rotation) })
+                  ? t('game.controls.angleTemporary', { angle: Math.round(puzzle[selectedPiece].rotation) })
+                  : t('game.controls.currentAngle', { angle: Math.round(puzzle[selectedPiece].rotation) })
                 }
               </div>
               <div style={{ fontSize: '12px', marginTop: '2px', color: '#FFD5AB', fontWeight: 500 }}>

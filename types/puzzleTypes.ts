@@ -31,10 +31,11 @@ export interface PuzzlePiece {
 
 export interface DraggingPiece {
   index: number;
-  offsetX: number;
-  offsetY: number;
   startX: number;
   startY: number;
+  /** 历史字段；当前拖拽路径主要使用 startX/startY + 增量 dx/dy */
+  offsetX?: number;
+  offsetY?: number;
 }
 
 // 画布尺寸类型
@@ -142,7 +143,7 @@ export type GameAction =
   | { type: "GENERATE_PUZZLE" }
   | { type: "SCATTER_PUZZLE" }
   | { type: "ROTATE_PIECE"; payload: { clockwise: boolean } }
-  | { type: "UPDATE_PIECE_POSITION"; payload: { index: number; x: number; y: number; dx: number; dy: number } }
+  | { type: "UPDATE_PIECE_POSITION"; payload: { index: number; dx: number; dy: number } }
   | { type: "RESET_PIECE_TO_ORIGINAL"; payload: number }
   | { type: "SHOW_HINT" }
   | { type: "HIDE_HINT" }

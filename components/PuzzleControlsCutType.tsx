@@ -1,9 +1,8 @@
 "use client"
-import { useGame } from "@/contexts/GameContext"
+import { useGameBoardData, useGameBoardInteraction, useGameUI } from "@/contexts/GameDomainContexts"
 import { CutType } from "@/types/puzzleTypes"
 import { playButtonClickSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
-import { useDeviceDetection } from "@/hooks/useDeviceDetection"
 import { useTranslation } from '@/contexts/I18nContext'
 
 interface PuzzleControlsCutTypeProps {
@@ -12,37 +11,33 @@ interface PuzzleControlsCutTypeProps {
 }
 
 export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }: PuzzleControlsCutTypeProps) {
-  const { state, dispatch } = useGame()
+  const { originalShape } = useGameBoardData()
+  const { isScattered } = useGameBoardInteraction()
+  const { cutType, dispatch } = useGameUI()
   const { t } = useTranslation()
   // 添加本地状态，初始值为空字符串，表示未选择
   const [localCutType, setLocalCutType] = useState<string>("")
 
   // 同步全局状态到本地状态，但仅当本地状态为空且全局状态有值时才同步
   useEffect(() => {
-    if (state.cutType !== "" && localCutType === "") {
-      setLocalCutType(state.cutType);
+    if (cutType !== "" && localCutType === "") {
+      setLocalCutType(cutType);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.cutType]); // 移除localCutType依赖，避免循环
+  }, [cutType]); // 移除localCutType依赖，避免循环
 
   // 监听游戏重置事件，当原始形状被清空（即游戏重置）时，清除本地选择状态
   useEffect(() => {
-    if (state.originalShape.length === 0 && localCutType !== "") {
-      console.log("游戏已重置，清除切割类型选择");
+    if (originalShape.length === 0 && localCutType !== "") {
       setLocalCutType("");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.originalShape.length]); // 移除localCutType依赖，避免循环
-
-  // 使用统一设备检测系统
-  const device = useDeviceDetection();
-  const isPhone = device.deviceType === 'phone';
-  const isLandscape = device.layoutMode === 'landscape';
+  }, [originalShape.length]); // 移除localCutType依赖，避免循环
 
   // 检查是否已生成形状
-  const isShapeGenerated = state.originalShape.length > 0
+  const isShapeGenerated = originalShape.length > 0
   // 检查是否可以修改拼图设置
-  const canModifySettings = isShapeGenerated && !state.isScattered
+  const canModifySettings = isShapeGenerated && !isScattered
 
 
   // 所有按钮共用的禁用样式类
@@ -70,12 +65,10 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-      {/* 添加切割类型标签 - 仅在非手机设备上显示 */}
-      {!isPhone && !isLandscape && (
-        <div style={{ fontSize: 'calc(var(--panel-scale, 1) * 12px)', color: '#FFD5AB', marginBottom: 'calc(var(--panel-scale, 1) * 4px)' }}>
-          {t('game.cutType.title')}
-        </div>
-      )}
+      {/* 切割类型标签 */}
+      <div style={{ fontSize: 'calc(var(--panel-scale, 1) * 12px)', color: '#FFD5AB', marginBottom: 'calc(var(--panel-scale, 1) * 4px)' }}>
+        {t('game.cutType.title')}
+      </div>
       <div
         style={{
           display: 'grid',

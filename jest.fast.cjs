@@ -24,6 +24,7 @@ transform: {
         }],
       },
       testMatch: [
+        '<rootDir>/hooks/puzzleInteractions/**/__tests__/**/*.test.ts',
         '<rootDir>/utils/__tests__/**/*.test.ts',
         '<rootDir>/utils/geometry/**/__tests__/**/*.test.ts',
         '<rootDir>/utils/puzzle/**/__tests__/**/*.test.ts',

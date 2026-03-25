@@ -304,19 +304,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         isOriginal: point.isOriginal,
       }));
 
-      // 更新拖拽统计
-      let updatedGameStats = state.gameStats;
-      if (state.gameStats && state.isGameActive) {
-        updatedGameStats = {
-          ...state.gameStats,
-          dragOperations: state.gameStats.dragOperations + 1,
-        };
-      }
-
+      // 拖拽统计仅由 TRACK_DRAG_OPERATION 递增（拾取块时），避免此处每帧刷新 gameStats
+      // 导致 GameSessionContext 订阅树与 LiveScore/Timer 等与画布同频重渲染。
       return {
         ...state,
         puzzle: positionUpdatedPuzzle,
-        gameStats: updatedGameStats,
       };
     }
     case "RESET_PIECE_TO_ORIGINAL": {

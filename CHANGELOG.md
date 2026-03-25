@@ -1,4 +1,19 @@
 # 生成式拼图游戏 Changelog
+## [v1.3.75] - 2026-03-25
+
+### 🚩 阶段1封版（状态与交互解耦）
+- **封版门槛执行**：阶段1完成后暂停推进阶段2，先完成版本封版、变更记录与远端同步。
+- **Context 分域落地**：新增 `contexts/GameDomainContexts.tsx`，将 Board / Session / UI 的消费入口标准化。
+- **交互层解耦**：`usePuzzleInteractions` 改为编排层，拆分为 `usePieceSelection`、`usePieceDrag`、`usePieceRotationTouch`，并保持单一状态来源。
+- **共享命中检测内聚**：新增 `hooks/puzzleInteractions/pieceHitTest.ts` 与对应单测，作为阶段1域内实现；`game-engine` 迁移推迟到阶段2正式开启后。
+- **阶段边界回收**：回滚阶段2-1先行落地痕迹（`game-engine` 目录及对应测试入口），避免跨阶段耦合导致回滚边界不清。
+- **测试配置同步**：`jest.fast.cjs` / `jest.coverage.cjs` 调整为匹配 `hooks/puzzleInteractions/**/__tests__`。
+- **文档同步**：`docs/architecture/architecture-master-plan-2026.md` 更新阶段门槛与暂停说明，明确“先封版再进阶段2”。
+
+### ✅ 封版验证
+- `npm run test:unit -- hooks/puzzleInteractions/__tests__/pieceHitTest.test.ts`：通过
+- `npm run test:e2e`：通过（1 passed，19 组分辨率适配通过）
+
 ## [v1.3.74] - 2026-03-25
 
 ### 🧱 架构整改阶段化执行（Phase P + Phase 0 完成）

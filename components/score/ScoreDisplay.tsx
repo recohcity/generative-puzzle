@@ -1,5 +1,5 @@
 import React from 'react';
-import { useGame } from '@/contexts/GameContext';
+import { useGameSession } from '@/contexts/GameDomainContexts';
 import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 import DesktopScoreLayout from './DesktopScoreLayout';
 import MobileScoreLayout from './MobileScoreLayout';
@@ -21,22 +21,29 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
   showAnimation = true,
   embedded = false
 }) => {
-  const { state } = useGame();
+  const {
+    gameStats,
+    currentScore,
+    scoreBreakdown,
+    isNewRecord,
+    currentRank,
+    isGameComplete,
+  } = useGameSession();
   // Hook必须在条件返回之前调用
   const { deviceType } = useDeviceDetection();
 
   // 如果游戏未完成，不显示统计面板
-  if (!state.isCompleted || !state.gameStats) {
+  if (!isGameComplete || !gameStats) {
     return null;
   }
 
   // 使用现有适配系统的设备检测
   const commonProps = {
-    gameStats: state.gameStats!,
-    scoreBreakdown: state.scoreBreakdown || undefined,
-    currentScore: state.currentScore,
-    isNewRecord: state.isNewRecord,
-    currentRank: state.currentRank ?? undefined, // 将null转换为undefined
+    gameStats,
+    scoreBreakdown: scoreBreakdown || undefined,
+    currentScore,
+    isNewRecord,
+    currentRank: currentRank ?? undefined, // 将null转换为undefined
     onClose,
     showAnimation,
     embedded

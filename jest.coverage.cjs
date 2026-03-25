@@ -47,6 +47,7 @@ module.exports = {
       },
       // 仅包含不依赖 DOM 的 Node 环境测试，避免与 jsdom 项目重复
       testMatch: [
+        '<rootDir>/hooks/puzzleInteractions/**/__tests__/**/*.test.ts',
         '<rootDir>/utils/__tests__/**/*.test.ts',
         '<rootDir>/utils/geometry/**/__tests__/**/*.test.ts',
         '<rootDir>/utils/puzzle/**/__tests__/**/*.test.ts',

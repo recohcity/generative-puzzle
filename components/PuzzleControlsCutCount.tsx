@@ -1,11 +1,9 @@
 "use client"
-import { useGame } from "@/contexts/GameContext"
+import { useGameBoard, useGameUI } from "@/contexts/GameDomainContexts"
 import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
 import { PuzzleIcon } from "lucide-react"
 import { playButtonClickSound, playCutSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
-import { useDeviceDetection } from "@/hooks/useDeviceDetection"
 import { useTranslation } from '@/contexts/I18nContext'
 
 interface PuzzleControlsCutCountProps {
@@ -15,11 +13,8 @@ interface PuzzleControlsCutCountProps {
 }
 
 export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28, actionButtonHeight = 36 }: PuzzleControlsCutCountProps) {
-  const {
-    state,
-    dispatch,
-    generatePuzzle
-  } = useGame()
+  const { originalShape, isScattered, generatePuzzle } = useGameBoard()
+  const { cutType, cutCount, dispatch } = useGameUI()
   const { t } = useTranslation()
 
   // 添加本地状态用于跟踪选择的次数
@@ -27,23 +22,17 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
 
   // 同步全局状态到本地状态
   useEffect(() => {
-    if (state.cutCount) {
-      setLocalCutCount(state.cutCount);
+    if (cutCount) {
+      setLocalCutCount(cutCount);
     }
-  }, [state.cutCount]);
-
-  // 使用统一设备检测系统
-  const device = useDeviceDetection();
-  const isPhone = device.deviceType === 'phone';
-  const isLandscape = device.layoutMode === 'landscape';
-  const isSmallScreen = device.screenWidth < 600;
+  }, [cutCount]);
 
   // 检查是否已生成形状
-  const isShapeGenerated = state.originalShape.length > 0
+  const isShapeGenerated = originalShape.length > 0
   // 检查是否已选择切割类型
-  const hasCutType = !!state.cutType
+  const hasCutType = !!cutType
   // 检查是否可以修改拼图设置
-  const canModifySettings = isShapeGenerated && !state.isScattered && hasCutType
+  const canModifySettings = isShapeGenerated && !isScattered && hasCutType
   // 检查是否有选择次数
   const hasSelectedCount = localCutCount !== null
 
@@ -82,12 +71,10 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0', width: '100%', overflow: 'visible' }}>
-      {/* 添加难度标签 - 仅在非手机设备上显示 */}
-      {!isPhone && !isLandscape && (
-        <div style={{ fontSize: '12px', color: '#FFD5AB', marginBottom: '4px', lineHeight: '16px' }}>
-          {t('game.cutCount.title')}
-        </div>
-      )}
+      {/* 难度标签 */}
+      <div style={{ fontSize: '12px', color: '#FFD5AB', marginBottom: '4px', lineHeight: '16px' }}>
+        {t('game.cutCount.title')}
+      </div>
       <div className="w-full">
         {/* 所有按钮放在一行：1-8 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', gap: '3px', marginBottom: '4px' }}>
@@ -128,8 +115,8 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
       {/* 切割按钮 */}
       <Button
         onClick={handleGeneratePuzzle}
-        disabled={!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType}
-        className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white ${(!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+        disabled={!isShapeGenerated || isScattered || !hasSelectedCount || !hasCutType}
+        className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white ${(!isShapeGenerated || isScattered || !hasSelectedCount || !hasCutType) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
         data-testid="generate-puzzle-button"
         style={{
           fontSize: '14px',
@@ -144,7 +131,7 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
         <span style={{ fontSize: '14px' }}>{t('game.cutCount.button')}</span>
       </Button>
       {/* 添加提示信息，当按钮不可点击时显示原因 */}
-      {isShapeGenerated && !state.isScattered && (!hasCutType || !hasSelectedCount) && (
+      {isShapeGenerated && !isScattered && (!hasCutType || !hasSelectedCount) && (
         <div style={{ fontSize: '12px', color: '#FFD5AB', textAlign: 'center', marginTop: '4px', lineHeight: '16px' }}>
           {!hasCutType ? t('game.cutCount.hints.selectCutType') : !hasSelectedCount ? t('game.cutCount.hints.selectCount') : ""}
         </div>

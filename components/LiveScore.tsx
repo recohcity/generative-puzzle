@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useGame } from '@/contexts/GameContext';
+import { useGameSession } from '@/contexts/GameDomainContexts';
 import styles from './LiveScore.module.css';
 
 interface LiveScoreProps {
@@ -15,7 +15,7 @@ interface LiveScoreProps {
  * 与GameTimer组件保持样式一致性
  */
 export const LiveScore: React.FC<LiveScoreProps> = ({ className = '', style = {} }) => {
-  const { state } = useGame();
+  const { currentScore, gameStats, isGameActive, isGameComplete } = useGameSession();
   const [displayScore, setDisplayScore] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const animationFrameRef = useRef<number | null>(null);
@@ -73,10 +73,10 @@ export const LiveScore: React.FC<LiveScoreProps> = ({ className = '', style = {}
 
   // 监听分数变化
   useEffect(() => {
-    const newScore = state.currentScore || 0;
-    
+    const newScore = currentScore || 0;
+
     // 如果分数有变化且不是初始状态，启动动画（包括游戏完成状态）
-    if (newScore !== currentScoreRef.current && (state.gameStats || state.isGameActive || state.isGameComplete)) {
+    if (newScore !== currentScoreRef.current && (gameStats || isGameActive || isGameComplete)) {
       if (currentScoreRef.current === 0) {
         // 初始设置，不需要动画
         setDisplayScore(newScore);
@@ -87,11 +87,11 @@ export const LiveScore: React.FC<LiveScoreProps> = ({ className = '', style = {}
         startScoreAnimation(newScore);
       }
     }
-  }, [state.currentScore, state.gameStats, state.isGameActive, state.isGameComplete, startScoreAnimation]);
+  }, [currentScore, gameStats, isGameActive, isGameComplete, startScoreAnimation]);
 
   // 游戏重置时重置分数（但游戏完成时保持显示最终分数）
   useEffect(() => {
-    if (!state.gameStats && !state.isGameActive && !state.isGameComplete) {
+    if (!gameStats && !isGameActive && !isGameComplete) {
       setDisplayScore(0);
       currentScoreRef.current = 0;
       targetScoreRef.current = 0;
@@ -101,7 +101,7 @@ export const LiveScore: React.FC<LiveScoreProps> = ({ className = '', style = {}
       }
       setIsAnimating(false);
     }
-  }, [state.gameStats, state.isGameActive, state.isGameComplete]);
+  }, [gameStats, isGameActive, isGameComplete]);
 
   // 清理动画
   useEffect(() => {

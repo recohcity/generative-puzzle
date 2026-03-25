@@ -3,6 +3,7 @@
 import type React from "react"
 import { useEffect, useRef, useState, useMemo, useCallback } from "react"
 import { useGame } from "@/contexts/GameContext"
+import { useGameSession } from "@/contexts/GameDomainContexts"
 import { playPieceSelectSound, playPieceSnapSound, playFinishSound, playRotateSound } from "@/utils/rendering/soundEffects"
 import { useTranslation } from '@/contexts/I18nContext'
 
@@ -107,6 +108,7 @@ function useCanvasResizeObserver(
 
 export default function PuzzleCanvas() {
   const { state, dispatch, canvasRef, backgroundCanvasRef, ensurePieceInBounds, calculatePieceBounds, rotatePiece } = useGame();
+  const { trackDragOperation, trackRotation } = useGameSession();
   const { t, getRandomCompletionMessage } = useTranslation();
 
   // 解冻专用函数：从冻结前尺寸适配到当前尺寸
@@ -243,6 +245,8 @@ export default function PuzzleCanvas() {
     playPieceSnapSound,
     playFinishSound,
     playRotateSound,
+    trackDragOperation,
+    trackRotation,
   });
 
 

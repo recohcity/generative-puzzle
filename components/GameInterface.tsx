@@ -1,6 +1,7 @@
 "use client"
 // import { GameProvider, useGame } from "@/contexts/GameContext" // useGame is called in child components now
 import { GameProvider } from "@/contexts/GameContext"
+import { GameDomainProviders } from "@/contexts/GameDomainContexts"
 import { I18nProvider } from "@/contexts/I18nContext"
 import DynamicTitle from "@/components/DynamicTitle"
 // Removed custom ThemeProvider/useTheme import
@@ -594,6 +595,7 @@ export default function CurveTestOptimized() {
   return (
     <I18nProvider>
       <GameProvider>
+        <GameDomainProviders>
         <div
           ref={gameContainerRef}
           className="min-h-screen w-full relative overflow-hidden"
@@ -623,6 +625,7 @@ export default function CurveTestOptimized() {
             </div>
           )}
         </div>
+        </GameDomainProviders>
       </GameProvider>
     </I18nProvider>
   )
