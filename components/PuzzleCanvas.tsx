@@ -146,6 +146,7 @@ export default function PuzzleCanvas() {
     }, handleUnfreeze);
 
   const [showDebugElements] = useDebugToggle();
+  const isDebugEnv = process.env.NODE_ENV !== 'production';
   const [isShaking, setIsShaking] = useState(false);
 
   // 画布尺寸计算
@@ -437,7 +438,7 @@ export default function PuzzleCanvas() {
 
 
       {/* 调试信息 - 添加测试按钮 */}
-      {showDebugElements && (
+      {isDebugEnv && showDebugElements && (
         <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white p-2 rounded text-xs z-50">
           <div>Pieces: {state.puzzle?.length || 0}</div>
           <div>Completed: {(state.completedPieces as number[])?.length || 0}</div>

@@ -36,6 +36,7 @@ import {
   calculateFinalScore,
   calculateMinimumRotations,
   calculateLiveScore,
+  getHintAllowanceByCutCount,
 } from "@/utils/score/ScoreCalculator";
 import { calculateDifficultyLevel } from "@/utils/difficulty/DifficultyUtils";
 // 导入音效函数（确保路径正确）
@@ -261,19 +262,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           height: state.canvasSize?.height || 640,
         },
         minRotations: calculateMinimumRotations(state.puzzle || []), // 游戏开始时计算最小旋转次数
-        hintAllowance: (() => {
-          // 与统一计分配置保持一致：所有难度统一免费次数
-          try {
-            // 延迟导入以避免循环依赖
-            const {
-              getHintAllowanceByCutCount,
-            } = require("@/utils/score/ScoreCalculator");
-            return getHintAllowanceByCutCount(state.cutCount || 1);
-          } catch (e) {
-            console.warn("[GameContext] 无法读取统一提示配置，使用默认3");
-            return 3;
-          }
-        })(), // 统一计算提示次数
+        // 与统一计分配置保持一致：所有难度统一免费次数
+        hintAllowance: getHintAllowanceByCutCount(state.cutCount || 1), // 统一计算提示次数
         rotationEfficiency: 0, // 将在游戏结束时计算
         // 分数相关字段初始化
         baseScore: 0,
@@ -286,9 +276,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         finalScore: 0,
       };
 
-      // 使用新的分数计算系统计算初始分数
-      const currentLeaderboard = GameDataManager.getLeaderboard();
-      const initialScore = calculateLiveScore(gameStats, currentLeaderboard);
+      // 使用当前状态中的排行榜计算实时分数（避免reducer内存储读取）
+      const initialScore = calculateLiveScore(gameStats, state.leaderboard || []);
 
       // 调试信息
       console.log("[SCATTER_PUZZLE] Creating game stats:", {
@@ -540,11 +529,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         totalRotations: state.gameStats.totalRotations + 1,
       };
 
-      // 使用新的实时分数计算系统
-      const currentLeaderboard = GameDataManager.getLeaderboard();
+      // 使用当前状态中的排行榜计算实时分数（避免reducer内存储读取）
       const updatedScore = calculateLiveScore(
         updatedGameStats,
-        currentLeaderboard,
+        state.leaderboard || [],
       );
 
       return {
@@ -562,11 +550,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         hintUsageCount: state.gameStats.hintUsageCount + 1,
       };
 
-      // 使用新的实时分数计算系统
-      const currentLeaderboard = GameDataManager.getLeaderboard();
+      // 使用当前状态中的排行榜计算实时分数（避免reducer内存储读取）
       const updatedScore = calculateLiveScore(
         updatedGameStats,
-        currentLeaderboard,
+        state.leaderboard || [],
       );
 
       return {
@@ -585,67 +572,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...state.gameStats,
           dragOperations: state.gameStats.dragOperations + 1,
         },
-      };
-    }
-
-    case "COMPLETE_GAME": {
-      if (!state.gameStats || !state.isGameActive) return state;
-
-      const completionTime = Date.now();
-      const totalDuration = Math.round(
-        (completionTime - state.gameStats.gameStartTime) / 1000,
-      );
-
-      const completedStats: GameStats = {
-        ...state.gameStats,
-        totalDuration,
-        deviceType: getDeviceType(), // 动态获取设备类型
-        canvasSize: state.canvasSize || { width: 640, height: 640 },
-      };
-
-      // 创建游戏记录
-      const gameRecord: GameRecord = {
-        timestamp: completionTime,
-        finalScore: completedStats.finalScore,
-        totalDuration: completedStats.totalDuration,
-        difficulty: {
-          difficultyLevel: completedStats.difficulty.difficultyLevel,
-          cutType: completedStats.difficulty.cutType,
-          cutCount: completedStats.difficulty.cutCount,
-          actualPieces: completedStats.difficulty.actualPieces,
-        },
-        deviceInfo: {
-          type: completedStats.deviceType,
-          screenWidth: completedStats.canvasSize.width,
-          screenHeight: completedStats.canvasSize.height,
-        },
-        totalRotations: completedStats.totalRotations,
-        hintUsageCount: completedStats.hintUsageCount,
-        dragOperations: completedStats.dragOperations,
-        rotationEfficiency: completedStats.rotationEfficiency,
-        scoreBreakdown: state.scoreBreakdown,
-      };
-
-      // 更新排行榜（保持最多5条记录）
-      const updatedLeaderboard = [...state.leaderboard, gameRecord]
-        .sort((a, b) => a.totalDuration - b.totalDuration)
-        .slice(0, 5);
-
-      return {
-        ...state,
-        gameStats: completedStats,
-        isGameActive: false,
-        isGameComplete: true,
-        leaderboard: updatedLeaderboard,
-      };
-    }
-
-    case "RESTART_GAME": {
-      return {
-        ...state,
-        gameStats: null,
-        isGameActive: false,
-        isGameComplete: false,
       };
     }
 
@@ -674,7 +600,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         return state;
       }
 
-      // 计算游戏完成时的统计数据
+      // 计算游戏完成时的统计数据（纯计算，不做持久化）
       const gameEndTime = Date.now();
       const totalDuration = Math.round(
         (gameEndTime - state.gameStats.gameStartTime) / 1000,
@@ -686,63 +612,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         totalDuration,
       };
 
-      // 计算最终分数
-      const currentLeaderboard = GameDataManager.getLeaderboard();
+      // 基于当前状态中的排行榜计算最终分数（避免reducer内存储读取）
       const scoreBreakdown = calculateFinalScore(
         completedStats,
         state.puzzle || [],
-        currentLeaderboard,
+        state.leaderboard || [],
       );
       const finalScore = scoreBreakdown.finalScore;
-
-      // 保存游戏记录
-      console.log("🎮 [GameContext] 准备保存游戏记录");
-      console.log("📊 [GameContext] completedStats:", completedStats);
-      console.log("🏆 [GameContext] finalScore:", finalScore);
-      console.log("📈 [GameContext] scoreBreakdown:", scoreBreakdown);
-
-      const saveSuccess = GameDataManager.saveGameRecord(
-        completedStats,
-        finalScore,
-        scoreBreakdown,
-      );
-
-      console.log("💾 [GameContext] 保存结果:", saveSuccess ? "成功" : "失败");
-
-      // 验证保存后的数据
-      const savedLeaderboard = GameDataManager.getLeaderboard();
-      const savedHistory = GameDataManager.getGameHistory();
-      console.log("📋 [GameContext] 保存后排行榜:", savedLeaderboard);
-      console.log("📚 [GameContext] 保存后历史:", savedHistory);
-
-      // 保存成功后检查是否创造新记录
-      let isNewRecord = false;
-      let rank = 999;
-
-      if (saveSuccess) {
-        // 创建用于检查的记录结构（与GameDataManager内部结构一致）
-        const recordForCheck = {
-          timestamp: gameEndTime,
-          finalScore,
-          totalDuration,
-          difficulty: completedStats.difficulty,
-          deviceType: completedStats.deviceType,
-          totalRotations: completedStats.totalRotations,
-          hintUsageCount: completedStats.hintUsageCount,
-          dragOperations: completedStats.dragOperations,
-          rotationEfficiency: completedStats.rotationEfficiency,
-          scoreBreakdown,
-        };
-
-        const recordCheck = GameDataManager.checkNewRecord(
-          recordForCheck as any,
-        );
-        isNewRecord = recordCheck.isNewRecord;
-        rank = recordCheck.rank;
-      }
-
-      // 获取更新后的排行榜
-      const updatedLeaderboard = GameDataManager.getLeaderboard();
 
       return {
         ...state,
@@ -752,9 +628,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         isCompleted: true,
         currentScore: finalScore,
         scoreBreakdown,
-        isNewRecord,
-        currentRank: rank,
-        leaderboard: updatedLeaderboard,
+        isNewRecord: false,
+        currentRank: null,
       };
     }
 
@@ -776,109 +651,29 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case "RETRY_CURRENT_GAME": {
-      // 重玩本局：恢复至散开拼图时的状态，重新开始计时
+      // 重计算迁移到effect内执行，这里仅触发状态过渡
       if (!state.puzzle || !state.originalShape || state.originalShape.length === 0) {
-        // 如果没有拼图或形状，无法重玩
         return state;
       }
-
-      // 重新散开拼图（恢复到散开状态）
-      const canvasSize = state.canvasSize || { width: 640, height: 640 };
-      let canvasWidth = canvasSize.width;
-      let canvasHeight = canvasSize.height;
-
-      let targetShape = null;
-      if (state.originalShape && state.originalShape.length > 0) {
-        const bounds = state.originalShape.reduce(
-          (
-            acc: { minX: number; minY: number; maxX: number; maxY: number },
-            point: Point,
-          ) => ({
-            minX: Math.min(acc.minX, point.x),
-            minY: Math.min(acc.minY, point.y),
-            maxX: Math.max(acc.maxX, point.x),
-            maxY: Math.max(acc.maxY, point.y),
-          }),
-          {
-            minX: Infinity,
-            minY: Infinity,
-            maxX: -Infinity,
-            maxY: -Infinity,
-          },
-        );
-        const centerX = (bounds.minX + bounds.maxX) / 2;
-        const centerY = (bounds.minY + bounds.maxY) / 2;
-        const radius =
-          Math.max(
-            (bounds.maxX - bounds.minX) / 2,
-            (bounds.maxY - bounds.minY) / 2,
-          ) * 1.2;
-        targetShape = {
-          center: { x: centerX, y: centerY },
-          radius: radius,
-        };
-      }
-
-      // 获取原始拼图（未散开前的状态）
-      const originalPuzzle = state.originalPositions || state.puzzle;
-      const scatteredPuzzle = ScatterPuzzle.scatterPuzzle(originalPuzzle, {
-        canvasSize: { width: canvasWidth, height: canvasHeight },
-        targetShape: targetShape,
-      });
-
-      if (
-        !scatteredPuzzle ||
-        !Array.isArray(scatteredPuzzle) ||
-        scatteredPuzzle.length === 0
-      ) {
-        return state;
-      }
-
-      // 创建新的游戏统计（重新开始计时）
-      const gameStartTime = Date.now();
-      const difficulty: DifficultyConfig = {
-        cutCount: state.cutCount,
-        cutType: state.cutType as CutType,
-        shapeType: state.shapeType as ShapeType,
-        actualPieces: scatteredPuzzle.length,
-        difficultyLevel: calculateDifficultyLevel(state.cutCount),
-      };
-
-      const gameStats: GameStats = {
-        difficulty,
-        totalDuration: 0,
-        totalRotations: 0,
-        minRotations: 0, // 将在游戏开始时计算
-        hintUsageCount: 0,
-        hintAllowance: 3, // 统一3次免费提示
-        dragOperations: 0,
-        rotationEfficiency: 100,
-        gameStartTime,
-        timeBonus: 0,
-        timeBonusRank: 0,
-        isTimeRecord: false,
-        rotationScore: 0,
-        hintScore: 0,
-        difficultyMultiplier: 1.0,
-        finalScore: 0,
-        baseScore: 0,
-        deviceType: getDeviceType(), // deviceType 属于 GameStats，不属于 DifficultyConfig
-        canvasSize: state.canvasSize || { width: 640, height: 640 },
-      };
-
-      const currentLeaderboard = GameDataManager.getLeaderboard();
-      const initialScore = calculateLiveScore(gameStats, currentLeaderboard);
 
       return {
         ...state,
-        puzzle: scatteredPuzzle as any,
+        isGameActive: false,
+        isGameComplete: false,
+      };
+    }
+
+    case "RETRY_CURRENT_GAME_RESOLVE": {
+      return {
+        ...state,
+        puzzle: action.payload.puzzle,
         completedPieces: [],
         isCompleted: false,
         isScattered: true,
-        gameStats,
+        gameStats: action.payload.gameStats,
         isGameActive: true,
         isGameComplete: false,
-        currentScore: initialScore,
+        currentScore: action.payload.initialScore,
         scoreBreakdown: null,
         isNewRecord: false,
         currentRank: null,
@@ -906,6 +701,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...state.gameStats,
           ...action.payload,
         },
+      };
+    }
+
+    case "UPDATE_COMPLETION_META": {
+      return {
+        ...state,
+        leaderboard: action.payload.leaderboard,
+        isNewRecord: action.payload.isNewRecord,
+        currentRank: action.payload.currentRank,
       };
     }
 
@@ -1026,6 +830,56 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
     state.puzzle,
     state.isGameActive,
     state.isGameComplete,
+  ]);
+
+  useEffect(() => {
+    if (!state.isGameComplete || !state.gameStats || !state.scoreBreakdown) {
+      return;
+    }
+
+    const finalScore = state.scoreBreakdown.finalScore;
+
+    const saveSuccess = GameDataManager.saveGameRecord(
+      state.gameStats,
+      finalScore,
+      state.scoreBreakdown,
+    );
+
+    let isNewRecord = false;
+    let currentRank: number | null = null;
+
+    if (saveSuccess) {
+      const recordForCheck = {
+        timestamp: state.gameStats.gameEndTime || Date.now(),
+        finalScore,
+        totalDuration: state.gameStats.totalDuration,
+        difficulty: state.gameStats.difficulty,
+        deviceType: state.gameStats.deviceType,
+        totalRotations: state.gameStats.totalRotations,
+        hintUsageCount: state.gameStats.hintUsageCount,
+        dragOperations: state.gameStats.dragOperations,
+        rotationEfficiency: state.gameStats.rotationEfficiency,
+        scoreBreakdown: state.scoreBreakdown,
+      };
+
+      const recordCheck = GameDataManager.checkNewRecord(recordForCheck as any);
+      isNewRecord = recordCheck.isNewRecord;
+      currentRank = recordCheck.rank;
+    }
+
+    dispatch({
+      type: "UPDATE_COMPLETION_META",
+      payload: {
+        leaderboard: GameDataManager.getLeaderboard(),
+        isNewRecord,
+        currentRank,
+      },
+    });
+  }, [
+    state.isGameComplete,
+    state.gameStats,
+    state.scoreBreakdown,
+    dispatch,
   ]);
 
   const generateShape = useCallback(
@@ -1309,40 +1163,13 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
   }, [state.isScattered, state.canvasSize, state.originalShape, dispatch]);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (
+      typeof window !== "undefined" &&
+      process.env.NODE_ENV !== "production" &&
+      process.env.NEXT_PUBLIC_E2E === "true"
+    ) {
       (window as any).__gameStateForTests__ = {
         puzzle: state.puzzle,
-        completedPieces: state.completedPieces,
-        originalPositions: state.originalPositions,
-        isCompleted: state.isCompleted,
-        isScattered: state.isScattered,
-        originalShape: state.originalShape,
-        canvasWidth: state.canvasSize ? state.canvasSize.width : null,
-        canvasHeight: state.canvasSize ? state.canvasSize.height : null,
-        shapeType: state.shapeType,
-        cutType: state.cutType,
-        cutCount: state.cutCount,
-      };
-
-      (window as any).__GAME_STATE__ = {
-        originalShape: state.originalShape,
-        canvasWidth: state.canvasSize ? state.canvasSize.width : null,
-        canvasHeight: state.canvasSize ? state.canvasSize.height : null,
-        puzzle: state.puzzle,
-        isCompleted: state.isCompleted,
-        shapeType: state.shapeType,
-        _debug: {
-          originalShapeLength: state.originalShape?.length || 0,
-          hasValidCanvas: state.canvasSize
-            ? state.canvasSize.width > 0 && state.canvasSize.height > 0
-            : false,
-          timestamp: Date.now(),
-        },
-      };
-
-      (window as any).gameStateForDebug = {
-        puzzle: state.puzzle,
-        puzzlePieces: state.puzzle,
         completedPieces: state.completedPieces,
         originalPositions: state.originalPositions,
         isCompleted: state.isCompleted,
@@ -1358,53 +1185,66 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
   }, [state]);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      // 设置全局dispatch引用，用于异步统计触发
-      (window as any).gameContextDispatch = dispatch;
-
-      (window as any).selectPieceForTest = (pieceIndex: number) =>
-        dispatch({ type: "SET_SELECTED_PIECE", payload: pieceIndex });
-      (window as any).markPieceAsCompletedForTest = (pieceIndex: number) =>
-        dispatch({ type: "ADD_COMPLETED_PIECE", payload: pieceIndex });
-      (window as any).rotatePieceForTest = (clockwise: boolean) =>
-        rotatePiece(clockwise);
-      (window as any).resetPiecePositionForTest = (pieceIndex: number) =>
-        dispatch({ type: "RESET_PIECE_TO_ORIGINAL", payload: pieceIndex });
-
-      window.testAPI = {
-        generateShape: (shapeType) => {
-          dispatch({ type: "SET_SHAPE_TYPE", payload: shapeType as any });
-          setTimeout(() => {
-            generateShape(shapeType as any);
-          }, 100);
-        },
-        generatePuzzle: (cutCount) => {
-          dispatch({ type: "SET_CUT_TYPE", payload: "straight" as any });
-          dispatch({ type: "SET_CUT_COUNT", payload: cutCount });
-          generatePuzzle();
-        },
-        scatterPuzzle: () => scatterPuzzle(),
-        movePiece: (pieceIndex, x, y) =>
-          dispatch({ type: "MOVE_PIECE", payload: { pieceIndex, x, y } }),
-        snapPiece: (pieceIndex) => {
-          dispatch({ type: "RESET_PIECE_TO_ORIGINAL", payload: pieceIndex });
-          dispatch({ type: "ADD_COMPLETED_PIECE", payload: pieceIndex });
-        },
-        getPieceCenter: (pieceIndex) => {
-          if (!state.puzzle) return { x: 0, y: 0 } as Point;
-          const piece = state.puzzle[pieceIndex];
-          return piece
-            ? (calculateCenter(piece.points) as Point)
-            : ({ x: 0, y: 0 } as Point);
-        },
-        getPieceTargetCenter: (pieceIndex) => {
-          if (!state.originalPositions) return { x: 0, y: 0 } as Point;
-          const piece = state.originalPositions[pieceIndex];
-          return piece
-            ? (calculateCenter(piece.points) as Point)
-            : ({ x: 0, y: 0 } as Point);
+    if (
+      typeof window !== "undefined" &&
+      process.env.NODE_ENV !== "production" &&
+      process.env.NEXT_PUBLIC_E2E === "true"
+    ) {
+      (window as any).__E2E__ = {
+        gameContextDispatch: dispatch,
+        selectPieceForTest: (pieceIndex: number) =>
+          dispatch({ type: "SET_SELECTED_PIECE", payload: pieceIndex }),
+        markPieceAsCompletedForTest: (pieceIndex: number) =>
+          dispatch({ type: "ADD_COMPLETED_PIECE", payload: pieceIndex }),
+        rotatePieceForTest: (clockwise: boolean) => rotatePiece(clockwise),
+        resetPiecePositionForTest: (pieceIndex: number) =>
+          dispatch({ type: "RESET_PIECE_TO_ORIGINAL", payload: pieceIndex }),
+        testAPI: {
+          generateShape: (shapeType: ShapeType) => {
+            dispatch({ type: "SET_SHAPE_TYPE", payload: shapeType as any });
+            setTimeout(() => {
+              generateShape(shapeType as any);
+            }, 100);
+          },
+          generatePuzzle: (cutCount: number) => {
+            dispatch({ type: "SET_CUT_TYPE", payload: "straight" as any });
+            dispatch({ type: "SET_CUT_COUNT", payload: cutCount });
+            generatePuzzle();
+          },
+          scatterPuzzle: () => scatterPuzzle(),
+          movePiece: (pieceIndex: number, x: number, y: number) =>
+            dispatch({ type: "MOVE_PIECE", payload: { pieceIndex, x, y } }),
+          snapPiece: (pieceIndex: number) => {
+            dispatch({ type: "RESET_PIECE_TO_ORIGINAL", payload: pieceIndex });
+            dispatch({ type: "ADD_COMPLETED_PIECE", payload: pieceIndex });
+          },
+          getPieceCenter: (pieceIndex: number) => {
+            if (!state.puzzle) return { x: 0, y: 0 } as Point;
+            const piece = state.puzzle[pieceIndex];
+            return piece
+              ? (calculateCenter(piece.points) as Point)
+              : ({ x: 0, y: 0 } as Point);
+          },
+          getPieceTargetCenter: (pieceIndex: number) => {
+            if (!state.originalPositions) return { x: 0, y: 0 } as Point;
+            const piece = state.originalPositions[pieceIndex];
+            return piece
+              ? (calculateCenter(piece.points) as Point)
+              : ({ x: 0, y: 0 } as Point);
+          },
         },
       };
+      return;
+    }
+
+    if (typeof window !== "undefined") {
+      delete (window as any).__E2E__;
+      delete (window as any).testAPI;
+      delete (window as any).gameContextDispatch;
+      delete (window as any).selectPieceForTest;
+      delete (window as any).markPieceAsCompletedForTest;
+      delete (window as any).rotatePieceForTest;
+      delete (window as any).resetPiecePositionForTest;
     }
   }, [
     state,
@@ -1466,13 +1306,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
     dispatch({ type: "TRACK_DRAG_OPERATION" });
   }, [dispatch]);
 
-  const completeGame = useCallback(
-    (playerName?: string) => {
-      dispatch({ type: "COMPLETE_GAME", payload: { playerName } });
-    },
-    [dispatch],
-  );
-
   const restartGame = useCallback(() => {
     dispatch({ type: "RESTART_GAME" });
   }, [dispatch]);
@@ -1483,8 +1316,109 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
       console.warn("[retryCurrentGame] Cannot retry: No puzzle or shape");
       return;
     }
-    dispatch({ type: "RETRY_CURRENT_GAME" });
-  }, [dispatch, state.puzzle, state.originalShape]);
+
+    const canvasSize = state.canvasSize || { width: 640, height: 640 };
+    const canvasWidth = canvasSize.width;
+    const canvasHeight = canvasSize.height;
+
+    let targetShape: { center: { x: number; y: number }; radius: number } | null = null;
+    if (state.originalShape && state.originalShape.length > 0) {
+      const bounds = state.originalShape.reduce(
+        (
+          acc: { minX: number; minY: number; maxX: number; maxY: number },
+          point: Point,
+        ) => ({
+          minX: Math.min(acc.minX, point.x),
+          minY: Math.min(acc.minY, point.y),
+          maxX: Math.max(acc.maxX, point.x),
+          maxY: Math.max(acc.maxY, point.y),
+        }),
+        {
+          minX: Infinity,
+          minY: Infinity,
+          maxX: -Infinity,
+          maxY: -Infinity,
+        },
+      );
+      const centerX = (bounds.minX + bounds.maxX) / 2;
+      const centerY = (bounds.minY + bounds.maxY) / 2;
+      const radius =
+        Math.max(
+          (bounds.maxX - bounds.minX) / 2,
+          (bounds.maxY - bounds.minY) / 2,
+        ) * 1.2;
+      targetShape = {
+        center: { x: centerX, y: centerY },
+        radius,
+      };
+    }
+
+    const originalPuzzle = state.originalPositions || state.puzzle;
+    const scatteredPuzzle = ScatterPuzzle.scatterPuzzle(originalPuzzle, {
+      canvasSize: { width: canvasWidth, height: canvasHeight },
+      targetShape,
+    });
+
+    if (
+      !scatteredPuzzle ||
+      !Array.isArray(scatteredPuzzle) ||
+      scatteredPuzzle.length === 0
+    ) {
+      return;
+    }
+
+    const gameStartTime = Date.now();
+    const difficulty: DifficultyConfig = {
+      cutCount: state.cutCount,
+      cutType: state.cutType as CutType,
+      shapeType: state.shapeType as ShapeType,
+      actualPieces: scatteredPuzzle.length,
+      difficultyLevel: calculateDifficultyLevel(state.cutCount),
+    };
+
+    const gameStats: GameStats = {
+      difficulty,
+      totalDuration: 0,
+      totalRotations: 0,
+      minRotations: 0,
+      hintUsageCount: 0,
+      hintAllowance: 3,
+      dragOperations: 0,
+      rotationEfficiency: 100,
+      gameStartTime,
+      timeBonus: 0,
+      timeBonusRank: 0,
+      isTimeRecord: false,
+      rotationScore: 0,
+      hintScore: 0,
+      difficultyMultiplier: 1.0,
+      finalScore: 0,
+      baseScore: 0,
+      deviceType: getDeviceType(),
+      canvasSize: state.canvasSize || { width: 640, height: 640 },
+    };
+
+    const initialScore = calculateLiveScore(gameStats, state.leaderboard || []);
+
+    dispatch({
+      type: "RETRY_CURRENT_GAME_RESOLVE",
+      payload: {
+        puzzle: scatteredPuzzle as any,
+        gameStats,
+        initialScore,
+      },
+    });
+  }, [
+    dispatch,
+    state.puzzle,
+    state.originalShape,
+    state.canvasSize,
+    state.originalPositions,
+    state.cutCount,
+    state.cutType,
+    state.shapeType,
+    state.leaderboard,
+  ]);
 
   const showLeaderboard = useCallback(() => {
     dispatch({ type: "SHOW_LEADERBOARD" });
@@ -1826,17 +1760,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
     if (!isCanvasReady) return;
   }, [isCanvasReady, state.originalShape, state.cutType, state.cutCount]);
 
-  // 监听游戏完成状态，自动触发统计
-  useEffect(() => {
-    if (state.isCompleted && state.gameStats && state.isGameActive) {
-      // 游戏刚完成时触发统计
-      try {
-        completeGame();
-      } catch (error) {
-        console.warn("游戏完成统计触发失败:", error);
-      }
-    }
-  }, [state.isCompleted, state.gameStats, state.isGameActive, completeGame]);
   const contextValue: GameContextProps = {
     state,
     dispatch,
@@ -1855,7 +1778,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
     trackRotation,
     trackHintUsage,
     trackDragOperation,
-    completeGame,
     restartGame,
     showLeaderboard,
     hideLeaderboard,
@@ -1876,25 +1798,29 @@ export const useGame = () => {
   return context;
 };
 
-// 开发环境调试工具
-if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
+// 开发环境调试工具（显式开关）
+if (
+  typeof window !== "undefined" &&
+  process.env.NODE_ENV === "development" &&
+  process.env.NEXT_PUBLIC_DEBUG_TOOLS === "true"
+) {
   (window as any).GameDataManager = GameDataManager;
   (window as any).generateTestData = () => {
     const success = GameDataManager.generateTestData();
     if (success) {
-      console.log("✅ 测试数据生成成功！刷新页面查看榜单。");
-      console.log("📊 当前数据统计:", GameDataManager.getDataStats());
+      console.log("测试数据生成成功，刷新页面查看榜单。");
+      console.log("当前数据统计:", GameDataManager.getDataStats());
     }
     return success;
   };
   (window as any).clearGameData = () => {
     const success = GameDataManager.clearAllData();
     if (success) {
-      console.log("🗑️ 游戏数据已清除！");
+      console.log("游戏数据已清除。");
     }
     return success;
   };
-  console.log("🔧 开发调试工具已加载:");
+  console.log("开发调试工具已加载:");
   console.log("  - window.generateTestData() - 生成测试数据");
   console.log("  - window.clearGameData() - 清除所有数据");
   console.log("  - window.GameDataManager - 数据管理器");

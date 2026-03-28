@@ -116,7 +116,6 @@ export interface GameContextProps {
   trackRotation: () => void;
   trackHintUsage: () => void;
   trackDragOperation: () => void;
-  completeGame: (playerName?: string) => void;
   restartGame: () => void;
   showLeaderboard: () => void;
   hideLeaderboard: () => void;
@@ -157,6 +156,22 @@ export type GameAction =
   | { type: "HIDE_LEADERBOARD" }
   | { type: "UPDATE_LIVE_SCORE"; payload: number }
   | { type: "UPDATE_GAME_STATS"; payload: Partial<GameStats> }
+  | {
+      type: "UPDATE_COMPLETION_META";
+      payload: {
+        leaderboard: GameRecord[];
+        isNewRecord: boolean;
+        currentRank: number | null;
+      };
+    }
+  | {
+      type: "RETRY_CURRENT_GAME_RESOLVE";
+      payload: {
+        puzzle: PuzzlePiece[];
+        gameStats: GameStats;
+        initialScore: number;
+      };
+    }
   | { type: "SET_CUT_COUNT"; payload: number }
   | { type: "BATCH_UPDATE"; payload: { puzzle: PuzzlePiece[]; originalPositions: PuzzlePiece[] } }
   | { type: "SYNC_ALL_POSITIONS"; payload: { originalShape: Point[]; puzzle: PuzzlePiece[]; originalPositions: PuzzlePiece[]; shapeOffset: { offsetX: number; offsetY: number } } }
@@ -170,7 +185,6 @@ export type GameAction =
   | { type: 'TRACK_ROTATION' }
   | { type: 'TRACK_HINT_USAGE' }
   | { type: 'TRACK_DRAG_OPERATION' }
-  | { type: 'COMPLETE_GAME'; payload: { playerName?: string } }
   | { type: 'RESTART_GAME' }
   | { type: 'SHOW_LEADERBOARD' }
   | { type: 'HIDE_LEADERBOARD' }

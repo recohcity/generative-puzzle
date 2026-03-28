@@ -6,9 +6,11 @@ import { useEffect, useState } from 'react';
  * 🔑 修复：使用localStorage持久化状态，防止极端分辨率变化时状态丢失
  */
 export function useDebugToggle(): [boolean, (v: boolean) => void] {
+  const isDebugEnv = process.env.NODE_ENV !== 'production';
+
   // 🔑 关键修复：从localStorage读取初始状态，防止组件重新挂载时丢失
   const [showDebugElements, setShowDebugElements] = useState(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && isDebugEnv) {
       const saved = localStorage.getItem('debug-mode-enabled');
       return saved === 'true';
     }
@@ -17,13 +19,17 @@ export function useDebugToggle(): [boolean, (v: boolean) => void] {
 
   // 🔑 关键修复：同步状态到localStorage
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && isDebugEnv) {
       localStorage.setItem('debug-mode-enabled', showDebugElements.toString());
       console.log(`[F10调试] 状态已保存: ${showDebugElements}`);
     }
-  }, [showDebugElements]);
+  }, [showDebugElements, isDebugEnv]);
 
   useEffect(() => {
+    if (!isDebugEnv || typeof window === 'undefined') {
+      return;
+    }
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'F10') {
         e.preventDefault();
@@ -38,7 +44,12 @@ export function useDebugToggle(): [boolean, (v: boolean) => void] {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [isDebugEnv]);
 
-  return [showDebugElements, setShowDebugElements];
+  const setDebugElements = (v: boolean) => {
+    if (!isDebugEnv) return;
+    setShowDebugElements(v);
+  };
+
+  return [isDebugEnv ? showDebugElements : false, setDebugElements];
 } 

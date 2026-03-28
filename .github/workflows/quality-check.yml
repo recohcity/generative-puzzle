@@ -1,5 +1,8 @@
 name: Code Quality Check
 
+env:
+  QUALITY_ENV: production
+
 on:
   push:
     branches: [ main, develop ]
@@ -30,20 +33,31 @@ jobs:
       run: npm ci
     
     - name: Run TypeScript compilation check
-      run: npx tsc --noEmit --skipLibCheck || echo "TypeScript check completed with warnings"
-      continue-on-error: true
+      run: npx tsc --noEmit --skipLibCheck
     
     - name: Run ESLint
       run: npm run lint
-      continue-on-error: true
     
     - name: Run unit tests with coverage
       run: npm run test:unit -- --coverage --coverageReporters=json --coverageReporters=lcov
-      continue-on-error: true
     
+    - name: Run reducer purity check
+      run: npm run quality:reducer-purity
+
+    - name: Run production exposure scan
+      run: npm run quality:exposure-scan
+
+    - name: Run SSR boundary scan
+      run: npm run quality:ssr-scan
+
+    - name: Run docs consistency check
+      run: npm run quality:docs-consistency
+
     - name: Run project quality check
       run: npm run quality:check
-      continue-on-error: true
+
+    - name: Run production guard E2E check
+      run: npm run test:prod-guard
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
@@ -54,9 +68,14 @@ jobs:
         fail_ci_if_error: false
     
     - name: Generate quality report
+      if: always()
       run: |
         mkdir -p quality-reports
-        npm run quality:report > quality-reports/quality-report.txt 2>&1 || true
+        if npm run quality:report > quality-reports/quality-report.txt 2>&1; then
+          echo "quality report generated"
+        else
+          echo "quality report generation failed (non-blocking informational step)" >> quality-reports/quality-report.txt
+        fi
     
     - name: Upload quality reports
       uses: actions/upload-artifact@v4
@@ -152,15 +171,15 @@ jobs:
         echo "🚪 Running Quality Gate Check..."
         
         # Run quality check and capture output
-        npm run quality:check > quality-output.txt 2>&1 || true
+        npm run quality:check > quality-output.txt 2>&1
         
         # Extract quality score
         QUALITY_SCORE=$(grep -o "总体评分: [0-9.]*" quality-output.txt | grep -o "[0-9.]*" | head -1)
         
         echo "Quality Score: $QUALITY_SCORE"
         
-        # Set quality gate threshold (lowered for initial setup)
-        QUALITY_THRESHOLD=10
+        # Use configured quality gate threshold
+        QUALITY_THRESHOLD=$(node -e "const c=require('./quality-gate.config.cjs');const env=process.env.QUALITY_ENV||'production';const base=c.qualityGate?.minimumScore??70;const ov=c.environments?.[env]?.qualityGate?.minimumScore;process.stdout.write(String(ov??base));")
         
         if [ -z "$QUALITY_SCORE" ]; then
           echo "❌ Could not determine quality score"
@@ -175,8 +194,8 @@ jobs:
           echo "❌ Quality gate failed! Score: $QUALITY_SCORE < $QUALITY_THRESHOLD"
           echo "QUALITY_GATE_STATUS=failed" >> $GITHUB_ENV
           
-          # Don't fail the build, just warn
-          echo "::warning::Quality gate threshold not met. Current: $QUALITY_SCORE, Required: $QUALITY_THRESHOLD"
+          echo "::error::Quality gate threshold not met. Current: $QUALITY_SCORE, Required: $QUALITY_THRESHOLD"
+          exit 1
         fi
     
     - name: Update commit status

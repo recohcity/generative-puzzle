@@ -1,6 +1,6 @@
 {
   "name": "generative-puzzle",
-  "version": "1.3.73",
+  "version": "1.3.74",
   "type": "module",
   "private": true,
   "scripts": {
@@ -31,6 +31,11 @@
     "quality:ci": "CI=true SILENT=true node src/quality-system/quality-checker.cjs",
     "quality:update-report": "node scripts/update-health-report.cjs",
     "quality:lint-report": "node scripts/generate-lint-report.cjs",
+    "quality:reducer-purity": "node scripts/check-reducer-purity.cjs",
+    "quality:exposure-scan": "node scripts/scan-production-exposure.cjs",
+    "quality:ssr-scan": "node scripts/scan-ssr-boundary.cjs",
+    "quality:docs-consistency": "node scripts/check-docs-consistency.cjs",
+    "test:prod-guard": "playwright test e2e/production_guard.spec.ts",
     "test:quality": "playwright test e2e/ --grep='quality|performance'",
     "analyze:unused-deps": "node scripts/analyze-unused-deps.cjs",
     "analyze:bundle": "ANALYZE=true npm run build"

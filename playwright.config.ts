@@ -17,14 +17,14 @@ export default defineConfig({
   retries: 2, // 如需更快反馈可设为1
   // 本地服务自动启动
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
+    command: 'npm run dev -- --hostname 127.0.0.1 --port 3000',
+    url: 'http://127.0.0.1:3000',
+    reuseExistingServer: true,
     timeout: 120 * 1000,
   },
   // 全局use配置，提升调试和CI友好性
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://127.0.0.1:3000',
     headless: true, // CI建议true，本地可false
     viewport: { width: 1280, height: 800 },
     ignoreHTTPSErrors: true,

@@ -8,6 +8,7 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const qualityGateConfig = require('../../quality-gate.config.cjs');
 
 class ProjectQualityChecker {
   constructor() {
@@ -22,6 +23,13 @@ class ProjectQualityChecker {
     this.isCI = process.env.CI === 'true';
     this.isSilent = process.env.SILENT === 'true';
     this.isVerbose = process.env.VERBOSE === 'true';
+    this.environment = process.env.QUALITY_ENV || (this.isCI ? 'production' : 'development');
+
+    this.config = qualityGateConfig;
+    this.activeQualityGate = {
+      ...this.config.qualityGate,
+      ...(this.config.environments?.[this.environment]?.qualityGate || {})
+    };
   }
   
   /**
@@ -221,8 +229,8 @@ class ProjectQualityChecker {
       this.results.tests.score * weights.tests
     );
     
-    // 修复"通过"逻辑：基于总体分数而不是所有项目都必须完美
-    this.results.overall.passed = this.results.overall.score >= 70;
+    // 按配置阈值判断是否通过
+    this.results.overall.passed = this.results.overall.score >= this.activeQualityGate.minimumScore;
   }
 
   /**
@@ -333,7 +341,7 @@ class ProjectQualityChecker {
   /**
    * 检查是否通过质量门禁
    */
-  passesQualityGate(threshold = 70) {
+  passesQualityGate(threshold = this.activeQualityGate.minimumScore) {
     return this.results.overall.score >= threshold;
   }
 }

@@ -73,20 +73,25 @@ export const OPTIMIZATION_FLAGS = {
 } as const;
 
 // Browser compatibility settings
+const isBrowser = typeof window !== 'undefined';
+const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent || '' : '';
+
 export const BROWSER_SUPPORT = {
-  // Feature detection
+  // Feature detection（SSR 安全）
   SUPPORTS_RESIZE_OBSERVER: typeof ResizeObserver !== 'undefined',
-  SUPPORTS_INTERSECTION_OBSERVER: typeof IntersectionObserver !== 'undefined',
-  SUPPORTS_PERFORMANCE_OBSERVER: typeof PerformanceObserver !== 'undefined',
-  
+  SUPPORTS_INTERSECTION_OBSERVER:
+    typeof IntersectionObserver !== 'undefined',
+  SUPPORTS_PERFORMANCE_OBSERVER:
+    typeof PerformanceObserver !== 'undefined',
+
   // Fallback strategies
   FALLBACK_TO_WINDOW_RESIZE: true, // 回退到window.resize事件
-  FALLBACK_TO_POLLING: false,      // 回退到轮询检测
-  
-  // Browser-specific optimizations
-  SAFARI_OPTIMIZATIONS: /Safari/.test(navigator.userAgent || ''),
-  CHROME_OPTIMIZATIONS: /Chrome/.test(navigator.userAgent || ''),
-  FIREFOX_OPTIMIZATIONS: /Firefox/.test(navigator.userAgent || ''),
+  FALLBACK_TO_POLLING: false, // 回退到轮询检测
+
+  // Browser-specific optimizations（SSR 安全）
+  SAFARI_OPTIMIZATIONS: /Safari/.test(userAgent),
+  CHROME_OPTIMIZATIONS: /Chrome/.test(userAgent),
+  FIREFOX_OPTIMIZATIONS: /Firefox/.test(userAgent),
 } as const;
 
 // Error handling and recovery

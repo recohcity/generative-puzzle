@@ -9,7 +9,10 @@ declare global {
 
 export default function EnvModeClient() {
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (
+      typeof window !== "undefined" &&
+      process.env.NODE_ENV !== "production"
+    ) {
       window.__ENV_MODE__ = process.env.NODE_ENV || "unknown";
     }
   }, []);

@@ -9,7 +9,7 @@ module.exports = {
   qualityGate: {
     enabled: true,
     minimumScore: 70,
-    failOnThreshold: false, // Set to true to fail builds on threshold breach
+    failOnThreshold: true, // CI/门禁默认阻断阈值未达标
     requiredChecks: [
       'TypeScript Compilation',
       'Test Coverage'

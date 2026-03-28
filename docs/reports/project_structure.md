@@ -1,6 +1,6 @@
 # 项目结构（Project Structure）
 
-> 自动生成时间：2025/12/31 22:46:55  
+> 自动生成时间：2026/3/27 13:38:30  
 > 生成工具：项目结构文档生成器 v3.1.0 - 开发导航版
 
 **开发者导航工具** - 快速理解项目架构，精准定位代码位置，提升开发效率。
@@ -14,9 +14,9 @@
 
 | 统计项 | 数量 | 说明 |
 |--------|------|------|
-| 总目录数 | 62 | 项目目录结构层次 |
-| 总文件数 | 307 | 代码文件和资源文件总数 |
-| 项目容量 | 5.01 MB | 不包含node_modules的项目大小 |
+| 总目录数 | 63 | 项目目录结构层次 |
+| 总文件数 | 317 | 代码文件和资源文件总数 |
+| 项目容量 | 5.09 MB | 不包含node_modules的项目大小 |
 
 ---
 
@@ -212,6 +212,7 @@ npm run lint                   # 代码检查
   - configuration/
   - i18n/
   - reports/
+  - Review/
   - testing/
 - e2e/
 - hooks/
@@ -420,6 +421,12 @@ npm run lint                   # 代码检查
     📄 `dependency-analysis-report.md`
     📄 `Generative Puzzle 项目代码质量全面体检报告.md`
     📄 `project_structure.md`
+  📁 **Review/**
+    📄 `2026-current-codebase-architecture-review-and-refactor-plan.md`
+    📄 `2026-web-game-architecture-assessment-report.md`
+    📄 `architecture-plan-0322.md`
+    📄 `web_game_arch_references_2026.docx`
+    📄 `web_game_arch_review_2026.html`
   📁 **testing/**
     📄 `button-testids.md`
     📄 `playwright-automation.md`
@@ -436,6 +443,7 @@ npm run lint                   # 代码检查
   📄 `SUPREME_ADAPTATION_DIRECTIVE.md`
 📁 **e2e/**
   📄 `full_game_flow.spec.ts`
+  📄 `production_guard.spec.ts`
 📁 **hooks/**
   📄 `use-mobile.tsx`
   📄 `use-toast.ts`
@@ -472,7 +480,9 @@ npm run lint                   # 代码检查
   📄 `archive-test-results.cjs`
   📄 `build-for-github.cjs`
   📄 `check-architecture-conflicts.ts`
+  📄 `check-docs-consistency.cjs`
   📄 `check-gitignore.sh`
+  📄 `check-reducer-purity.cjs`
   📄 `classify-apis.cjs`
   📄 `cleanup-code.cjs`
   📄 `generate-lint-report.cjs`
@@ -483,6 +493,8 @@ npm run lint                   # 代码检查
   📄 `organize-docs.cjs`
   📄 `run-comprehensive-tests.cjs`
   📄 `scan-api-changes.cjs`
+  📄 `scan-production-exposure.cjs`
+  📄 `scan-ssr-boundary.cjs`
   📄 `simple-coverage-report.cjs`
   📄 `test-cicd-integration.cjs`
   📄 `update-health-report.cjs`
@@ -668,4 +680,4 @@ npm run generate-structure  # 一键更新项目结构文档
 
 ---
 
-*📅 生成时间：2025/12/31 22:46:55 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*
+*📅 生成时间：2026/3/27 13:38:30 | 🔧 版本：v3.1.0 | 🎯 开发导航工具*
