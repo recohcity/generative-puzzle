@@ -42,10 +42,10 @@
 
 ## D. 阶段 2：切换发布到 gh-pages（当前域名：`www.citylivepark.com`）
 
-- [ ] 在 `game-only` 添加工作流：`.github/workflows/deploy-game-only-pages.yml`
-- [ ] Actions 构建命令确认：`BUILD_STATIC=true npm run build`
-- [ ] 发布目录确认：`out/`
-- [ ] 检查是否存在旧的 `main` 发布工作流，避免双通道发布冲突
+- [x] 在 `game-only` 添加工作流：`.github/workflows/deploy-game-only-pages.yml`
+- [x] Actions 构建命令确认：`BUILD_STATIC=true npm run build`
+- [x] 发布目录确认：`out/`
+- [x] 检查是否存在旧的 `main` 发布工作流，避免双通道发布冲突
 - [ ] GitHub Pages Source 改为 `gh-pages`
 - [ ] 自定义域名保持 `www.citylivepark.com`，并确认发布产物保留 `CNAME`（如已使用）
 - [ ] 首次发布验证：
