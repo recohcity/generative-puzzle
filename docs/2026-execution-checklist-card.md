@@ -49,9 +49,9 @@
 - [x] GitHub Pages Source 改为 `gh-pages`
 - [x] 自定义域名保持 `www.citylivepark.com`，并确认发布产物保留 `CNAME`（如已使用）
 - [ ] 首次发布验证：
-  - [ ] 页面可访问
+  - [x] 页面可访问
   - [ ] 主流程可玩（开始、拼图、结算）
-  - [ ] `www.citylivepark.com` 正常
+  - [x] `www.citylivepark.com` 正常
 
 ---
 
