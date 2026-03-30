@@ -28,6 +28,9 @@ jobs:
       - name: Build static site
         run: BUILD_STATIC=true npm run build
 
+      - name: Add CNAME for custom domain
+        run: echo "www.citylivepark.com" > out/CNAME
+
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
