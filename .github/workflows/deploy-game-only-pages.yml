@@ -31,10 +31,6 @@ jobs:
       - name: Add CNAME for custom domain
         run: echo "www.citylivepark.com" > out/CNAME
 
-      - name: Add CNAME for custom domain
-        run: echo "game.citylivepark.com" > out/CNAME
-
- 
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:

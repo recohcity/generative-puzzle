@@ -10,6 +10,12 @@ import { calculateCenter, isPointInPolygon, rotatePoint, calculateAngle } from "
 import { playPieceSelectSound, playPieceSnapSound, playFinishSound, playRotateSound } from "@/utils/rendering/soundEffects";
 import { drawPuzzle } from "@/utils/rendering/puzzleDrawing";
 
+// 拖拽跟手系数：
+// - 1.0: 与鼠标/手指目标位移完全一致（当前推荐默认）
+// - <1.0: 更柔和、更有阻尼感
+// - >1.0: 更激进，可能出现轻微过冲
+const DRAG_FOLLOW_GAIN = 1.05;
+
 interface UsePuzzleInteractionsProps {
   canvasRef: RefObject<HTMLCanvasElement | null>;
   containerRef: RefObject<HTMLDivElement | null>;
@@ -42,18 +48,18 @@ export function usePuzzleInteractions({
   playPieceSnapSound,
   playRotateSound,
 }: UsePuzzleInteractionsProps) {
-  const { 
-    state: gameState, 
-    dispatch: gameDispatch, 
-    ensurePieceInBounds: gameEnsurePieceInBounds, 
-    calculatePieceBounds: gameCalculatePieceBounds, 
+  const {
+    state: gameState,
+    dispatch: gameDispatch,
+    ensurePieceInBounds: gameEnsurePieceInBounds,
+    calculatePieceBounds: gameCalculatePieceBounds,
     rotatePiece: gameRotatePiece,
     // 统计方法
     trackRotation,
     trackDragOperation
   } = useGame();
   const isDragging = useRef(false); // 追踪是否正在拖拽
-  const [touchStartAngle, setTouchStartAngle] = useState(0); 
+  const [touchStartAngle, setTouchStartAngle] = useState(0);
   const lastTouchRef = useRef<Point | null>(null);
   const animationFrameRef = useRef<number | null>(null); // 动画帧引用
 
@@ -121,12 +127,12 @@ export function usePuzzleInteractions({
     if (!state.isScattered) return // 如果拼图没有散开，不允许交互
 
     const rect = canvas.getBoundingClientRect()
-    
+
     // 🔧 关键修复：考虑画布缩放比例进行坐标转换
     // 画布的CSS尺寸可能与逻辑尺寸不同，需要进行缩放转换
     const scaleX = canvas.width / rect.width
     const scaleY = canvas.height / rect.height
-    
+
     const x = (e.clientX - rect.left) * scaleX
     const y = (e.clientY - rect.top) * scaleY
 
@@ -141,11 +147,11 @@ export function usePuzzleInteractions({
 
         const piece = state.puzzle[i]
         const center = calculateCenter(piece.points)
-        
+
         // 将点击点逆向旋转，以匹配未旋转的形状
         const rotationAngle = -piece.rotation // 逆向旋转
         const rotatedPoint = rotatePoint(x, y, center.x, center.y, rotationAngle)
-        
+
         // 检查旋转后的点是否在形状内
         if (isPointInPolygon(rotatedPoint.x, rotatedPoint.y, piece.points)) {
           clickedPieceIndex = i
@@ -178,25 +184,30 @@ export function usePuzzleInteractions({
     }
 
     if (clickedPieceIndex !== -1) {
+      const clickedPiece = state.puzzle?.[clickedPieceIndex];
+      const clickedCenter = clickedPiece ? calculateCenter(clickedPiece.points) : { x, y };
+
       // 设置选中的拼图块
       dispatch({ type: "SET_SELECTED_PIECE", payload: clickedPieceIndex })
       // 设置拖动信息
-      dispatch({ 
-        type: "SET_DRAGGING_PIECE", 
+      dispatch({
+        type: "SET_DRAGGING_PIECE",
         payload: {
-            index: clickedPieceIndex,
-            startX: x,
-            startY: y,
-        } 
+          index: clickedPieceIndex,
+          offsetX: x - clickedCenter.x,
+          offsetY: y - clickedCenter.y,
+          startX: x,
+          startY: y,
+        }
       })
-      
+
       // 统计触发：追踪拖拽操作
       try {
         trackDragOperation();
       } catch (error) {
         console.warn('统计追踪失败 (拖拽):', error);
       }
-      
+
       // 播放音效
       playPieceSelectSound()
     } else {
@@ -215,24 +226,28 @@ export function usePuzzleInteractions({
     if (!canvas) return
 
     const rect = canvas.getBoundingClientRect()
-    
+
     // 🔧 关键修复：考虑画布缩放比例进行坐标转换
     const scaleX = canvas.width / rect.width
     const scaleY = canvas.height / rect.height
-    
+
     const x = (e.clientX - rect.left) * scaleX
     const y = (e.clientY - rect.top) * scaleY
 
-    const dx = x - state.draggingPiece.startX
-    const dy = y - state.draggingPiece.startY
-
     // 获取当前拖动的拼图
     const piece = state.puzzle[state.draggingPiece.index];
-    
+    const pieceCenter = calculateCenter(piece.points);
+    const anchorOffsetX = state.draggingPiece.offsetX ?? 0;
+    const anchorOffsetY = state.draggingPiece.offsetY ?? 0;
+    const targetCenterX = x - anchorOffsetX;
+    const targetCenterY = y - anchorOffsetY;
+    const dx = (targetCenterX - pieceCenter.x) * DRAG_FOLLOW_GAIN;
+    const dy = (targetCenterY - pieceCenter.y) * DRAG_FOLLOW_GAIN;
+
     // 使用GameContext提供的统一边界处理函数，确保在所有地方使用一致的边界逻辑
     // 使用1像素的安全边距，所有拼图使用完全相同的边界设置
     const { constrainedDx, constrainedDy, hitBoundary } = ensurePieceInBounds(piece, dx, dy, 1);
-    
+
     // 更新拼图位置
     dispatch({
       type: "UPDATE_PIECE_POSITION",
@@ -243,116 +258,75 @@ export function usePuzzleInteractions({
     if (hitBoundary) {
       // 只有在碰到画布边缘时才停止拖拽，而不是目标轮廓
       dispatch({ type: "SET_DRAGGING_PIECE", payload: null });
+      dispatch({ type: "SET_SELECTED_PIECE", payload: null });
       setIsShaking(false); // 更新本地状态，停止拖拽视觉反馈
-      
+
       // 保存碰撞位置基准点
       const hitPiece = { ...piece };
       const pieceIndex = state.draggingPiece.index;
-      
+
       // 震动动画序列 - 增大震动幅度以使回弹更明显
       let animationStep = 0;
       const maxSteps = 6; // 震动次数
       // 增大震动幅度，使回弹效果更明显
       const shakeAmount = [8, -6, 5, -4, 3, -2]; // 震动幅度序列
-      
+
       // 确定震动方向 - 根据碰撞面决定
       let shakeDirectionX = 0;
       let shakeDirectionY = 0;
-      
+
       // 根据碰撞边确定震动方向 - 使用1像素的边界值与ensurePieceInBounds保持一致
       const bounds = calculatePieceBounds(piece);
       const safeMargin = 1; // 使用与ensurePieceInBounds相同的边界值
       if (bounds.minX <= safeMargin) shakeDirectionX = 1; // 碰左边，向右震动
       else if (bounds.maxX >= canvasWidth - safeMargin) shakeDirectionX = -1; // 碰右边，向左震动
-      
+
       if (bounds.minY <= safeMargin) shakeDirectionY = 1; // 碰上边，向下震动
       else if (bounds.maxY >= canvasHeight - safeMargin) shakeDirectionY = -1; // 碰下边，向上震动
-      
+
       // 如果没有确定方向，根据移动速度判断
       if (shakeDirectionX === 0 && Math.abs(dx) > Math.abs(dy)) shakeDirectionX = -Math.sign(dx);
       if (shakeDirectionY === 0 && Math.abs(dy) > Math.abs(dx)) shakeDirectionY = -Math.sign(dy);
-      
+
       // 如果依然没有方向，至少有一个默认方向
       if (shakeDirectionX === 0 && shakeDirectionY === 0) {
         shakeDirectionX = dx < 0 ? 1 : -1;
       }
-      
+
       // 执行震动动画
       const shakeAnimation = () => {
         if (animationStep >= maxSteps || !canvasRef.current) return;
-        
+
         // 计算震动位移
         const shakeX = shakeDirectionX * shakeAmount[animationStep];
         const shakeY = shakeDirectionY * shakeAmount[animationStep];
-        
+
         // 应用震动位移
-      dispatch({
+        dispatch({
           type: "UPDATE_PIECE_POSITION",
           payload: { index: pieceIndex, dx: shakeX, dy: shakeY },
         });
-        
+
         // 安排下一次震动
         animationStep++;
         setTimeout(shakeAnimation, 30); // 每次震动间隔30ms，实现快速震动效果
       };
-      
+
       // 开始震动动画
       setTimeout(shakeAnimation, 10); // 短暂延迟后开始震动
     }
-    
+
     // 设置新的拖拽起始点，这样下一次移动事件中的dx/dy会基于最新位置计算
     if (!hitBoundary) {
-      dispatch({ type: "SET_DRAGGING_PIECE", payload: {
-        index: state.draggingPiece.index,
-        startX: x,
-        startY: y,
-      }});
-      
-      // 更新磁吸感应
-      if (state.selectedPiece !== null && state.originalPositions) {
-        const pieceIndex = state.selectedPiece;
-        const piece = state.puzzle[pieceIndex];
-        const originalPiece = state.originalPositions[pieceIndex];
-        
-        // 计算当前拼图中心点和目标位置中心点
-        const pieceCenter = calculateCenter(piece.points);
-        const originalCenter = calculateCenter(originalPiece.points);
-        
-        // 检查是否接近目标位置
-        if (pieceCenter && originalCenter) {
-          const magnetThreshold = 50; // 增大磁吸范围
-          const dx = pieceCenter.x - originalCenter.x;
-          const dy = pieceCenter.y - originalCenter.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          
-          // 如果拼图接近正确位置，应用磁吸效果
-          if (distance < magnetThreshold) {
-            // 计算磁吸力 - 距离越近，吸力越大
-            const magnetStrength = 0.15; // 磁吸强度因子
-            const attractionFactor = 1 - (distance / magnetThreshold); // 0到1之间的值
-            const attractionX = -dx * attractionFactor * magnetStrength;
-            const attractionY = -dy * attractionFactor * magnetStrength;
-            
-            // 应用磁吸力
-            if (Math.abs(attractionX) > 0.1 || Math.abs(attractionY) > 0.1) {
-              dispatch({
-                type: "UPDATE_PIECE_POSITION",
-                payload: { index: pieceIndex, dx: attractionX, dy: attractionY },
-              });
-              
-              // 更新拖动起始点，确保下一次移动计算正确
-              dispatch({
-                type: "SET_DRAGGING_PIECE",
-                payload: {
-                  index: pieceIndex,
-                  startX: x,
-                  startY: y
-                },
-              });
-            }
-          }
+      dispatch({
+        type: "SET_DRAGGING_PIECE", payload: {
+          index: state.draggingPiece.index,
+          offsetX: anchorOffsetX,
+          offsetY: anchorOffsetY,
+          startX: x,
+          startY: y,
         }
-      }
+      });
     }
   }, [state, canvasRef, dispatch]);
 
@@ -367,7 +341,7 @@ export function usePuzzleInteractions({
 
     // 增强磁吸效果 - 降低吸附阈值并检查旋转是否接近正确值
     let isNearOriginal = false
-    
+
     // 确保角度在0-360度范围内并计算差异
     const pieceRotation = (piece.rotation % 360 + 360) % 360;
     const originalRotation = (originalPiece.rotation % 360 + 360) % 360;
@@ -375,7 +349,7 @@ export function usePuzzleInteractions({
       Math.abs(pieceRotation - originalRotation),
       360 - Math.abs(pieceRotation - originalRotation)
     );
-    
+
     const isRotationCorrect = rotationDiff < 15; // 允许15度误差，适配旋转按钮15度的增量
 
     if (isRotationCorrect) {
@@ -396,11 +370,11 @@ export function usePuzzleInteractions({
       // 如果旋转和位置都接近正确，将其设置为完全正确的位置和旋转
       dispatch({ type: "RESET_PIECE_TO_ORIGINAL", payload: pieceIndex })
       dispatch({ type: "ADD_COMPLETED_PIECE", payload: pieceIndex })
-      
+
       // 强制清除选中状态 - 放在添加完成拼图之后
       dispatch({ type: "SET_SELECTED_PIECE", payload: null })
       setIsShaking(false)
-      
+
       // 播放拼图吸附音效
       playPieceSnapSound()
     }
@@ -418,7 +392,7 @@ export function usePuzzleInteractions({
     if (!state.isScattered) return // 如果拼图没有散开，不允许交互
 
     const rect = canvasRef.current.getBoundingClientRect()
-    
+
     // 🔧 关键修复：考虑画布缩放比例进行坐标转换
     const scaleX = canvasRef.current.width / rect.width
     const scaleY = canvasRef.current.height / rect.height
@@ -444,11 +418,11 @@ export function usePuzzleInteractions({
 
           const piece = state.puzzle[i]
           const center = calculateCenter(piece.points)
-          
+
           // 将触摸点逆向旋转，以匹配未旋转的形状
           const rotationAngle = -piece.rotation // 逆向旋转
           const rotatedPoint = rotatePoint(touchX, touchY, center.x, center.y, rotationAngle)
-          
+
           // 检查旋转后的点是否在形状内
           if (isPointInPolygon(rotatedPoint.x, rotatedPoint.y, piece.points)) {
             clickedPieceIndex = i
@@ -481,18 +455,23 @@ export function usePuzzleInteractions({
       }
 
       if (clickedPieceIndex !== -1) {
+        const clickedPiece = state.puzzle?.[clickedPieceIndex];
+        const clickedCenter = clickedPiece ? calculateCenter(clickedPiece.points) : { x: touchX, y: touchY };
+
         // 设置选中的拼图块
         dispatch({ type: "SET_SELECTED_PIECE", payload: clickedPieceIndex })
         // 设置拖动信息
-        dispatch({ 
-          type: "SET_DRAGGING_PIECE", 
+        dispatch({
+          type: "SET_DRAGGING_PIECE",
           payload: {
             index: clickedPieceIndex,
+            offsetX: touchX - clickedCenter.x,
+            offsetY: touchY - clickedCenter.y,
             startX: touchX,
             startY: touchY,
-          } 
+          }
         })
-        
+
         // 统计触发：追踪拖拽操作
         try {
           trackDragOperation();
@@ -502,21 +481,21 @@ export function usePuzzleInteractions({
         // 播放音效
         playPieceSelectSound()
       }
-    } 
+    }
     else if (e.touches.length === 2) {
       // 双指触摸 - 处理旋转
       // 🔧 修复：不需要已选中拼图，双指触摸时自动选中触摸区域的拼图
       const touch1 = e.touches[0]
       const touch2 = e.touches[1]
-      
+
       // 计算双指中心点，用于确定要旋转的拼图
       const centerX = ((touch1.clientX + touch2.clientX) / 2 - rect.left) * scaleX
       const centerY = ((touch1.clientY + touch2.clientY) / 2 - rect.top) * scaleY
-      
+
       // 如果没有选中拼图，先尝试选中双指中心点下的拼图
       if (state.selectedPiece === null) {
         let clickedPieceIndex = -1
-        
+
         if (state.puzzle) {
           for (let i = state.puzzle.length - 1; i >= 0; i--) {
             if (state.completedPieces.includes(i)) continue
@@ -525,21 +504,21 @@ export function usePuzzleInteractions({
             const center = calculateCenter(piece.points)
             const rotationAngle = -piece.rotation
             const rotatedPoint = rotatePoint(centerX, centerY, center.x, center.y, rotationAngle)
-            
+
             if (isPointInPolygon(rotatedPoint.x, rotatedPoint.y, piece.points)) {
               clickedPieceIndex = i
               break
             }
           }
         }
-        
+
         // 如果找到拼图，选中它
         if (clickedPieceIndex !== -1) {
           dispatch({ type: "SET_SELECTED_PIECE", payload: clickedPieceIndex })
           playPieceSelectSound()
         }
       }
-      
+
       // 计算两个触摸点形成的角度
       const angle = calculateAngle(
         (touch1.clientX - rect.left) * scaleX,
@@ -547,33 +526,33 @@ export function usePuzzleInteractions({
         (touch2.clientX - rect.left) * scaleX,
         (touch2.clientY - rect.top) * scaleY
       )
-      
+
       // 保存初始角度用于计算旋转
       setTouchStartAngle(angle)
-      
+
       // 清除拖拽状态，因为双指操作是旋转而不是拖拽
       dispatch({ type: "SET_DRAGGING_PIECE", payload: null })
     }
   }, [state, canvasRef, dispatch]);
-  
+
   // 触摸移动事件处理
   const handleTouchMove = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
     // 在React合成事件中，preventDefault通常是安全的
     e.preventDefault();
-    
+
     const canvas = canvasRef.current
     if (!canvas) return
 
     const rect = canvas.getBoundingClientRect()
-    
+
     // 处理多点触摸旋转
     if (e.touches.length >= 2 && state.selectedPiece !== null) {
-      
+
       // 多点触摸 - 处理旋转
       // 🔧 关键修复：考虑画布缩放比例进行坐标转换
       const scaleX = canvas.width / rect.width
       const scaleY = canvas.height / rect.height
-      
+
       const touch1 = e.touches[0]
       const touch2 = e.touches[1]
       const touch1X = (touch1.clientX - rect.left) * scaleX
@@ -582,11 +561,11 @@ export function usePuzzleInteractions({
       const touch2Y = (touch2.clientY - rect.top) * scaleY
 
       const currentAngle = calculateAngle(touch1X, touch1Y, touch2X, touch2Y)
-      
+
       // 🔧 修复：确保touchStartAngle已初始化且不为0
       if (touchStartAngle !== 0) {
         let rotationChange = currentAngle - touchStartAngle
-        
+
         // 🔧 修复：处理角度跨越-180/180度边界的情况
         if (rotationChange > 180) {
           rotationChange -= 360
@@ -598,22 +577,22 @@ export function usePuzzleInteractions({
         if (Math.abs(rotationChange) >= 15) {
           // 只执行一次15度旋转，避免重复
           const isClockwise = rotationChange > 0;
-          
 
-          
+
+
           // 只执行一次15度旋转
           rotatePiece(isClockwise);
-          
+
           // 统计触发：追踪旋转操作
           try {
             trackRotation();
           } catch (error) {
             console.warn('统计追踪失败 (旋转):', error);
           }
-          
+
           // 播放旋转音效
           playRotateSound();
-          
+
           // 🔧 关键修复：直接设置为当前角度，而不是累加
           setTouchStartAngle(currentAngle);
         }
@@ -621,7 +600,7 @@ export function usePuzzleInteractions({
         // 如果touchStartAngle为0，重新初始化
         setTouchStartAngle(currentAngle);
       }
-      
+
       // 双指旋转时不处理拖拽
       return
     } else if (e.touches.length === 1) {
@@ -629,23 +608,27 @@ export function usePuzzleInteractions({
       // 🔧 关键修复：考虑画布缩放比例进行坐标转换
       const scaleX = canvas.width / rect.width
       const scaleY = canvas.height / rect.height
-      
+
       const touch = e.touches[0]
       const touchX = (touch.clientX - rect.left) * scaleX
       const touchY = (touch.clientY - rect.top) * scaleY
 
       // 使用上一次触摸位置计算移动距离
       if (lastTouchRef.current) {
-        const dx = touchX - lastTouchRef.current.x
-        const dy = touchY - lastTouchRef.current.y
-
         // 获取当前拖动的拼图
         if (!state.puzzle || !state.draggingPiece) return;
         const piece = state.puzzle[state.draggingPiece.index];
-        
+        const pieceCenter = calculateCenter(piece.points);
+        const anchorOffsetX = state.draggingPiece.offsetX ?? 0;
+        const anchorOffsetY = state.draggingPiece.offsetY ?? 0;
+        const targetCenterX = touchX - anchorOffsetX;
+        const targetCenterY = touchY - anchorOffsetY;
+        const dx = (targetCenterX - pieceCenter.x) * DRAG_FOLLOW_GAIN;
+        const dy = (targetCenterY - pieceCenter.y) * DRAG_FOLLOW_GAIN;
+
         // 使用GameContext提供的统一边界处理函数，确保所有拼图使用完全相同的边界设置
         const { constrainedDx, constrainedDy, hitBoundary } = ensurePieceInBounds(piece, dx, dy, 1);
-        
+
         // 更新拼图位置
         dispatch({
           type: "UPDATE_PIECE_POSITION",
@@ -656,98 +639,65 @@ export function usePuzzleInteractions({
         if (hitBoundary) {
           // 只有在碰到画布边缘时才停止拖拽
           dispatch({ type: "SET_DRAGGING_PIECE", payload: null });
+          dispatch({ type: "SET_SELECTED_PIECE", payload: null });
           setIsShaking(false);
-          
+
           // 保存碰撞位置基准点
           const hitPiece = { ...piece };
           const pieceIndex = state.draggingPiece.index;
-          
+
           // 震动动画序列 - 增大震动幅度以使回弹更明显
           let animationStep = 0;
           const maxSteps = 6; // 震动次数
           // 增大震动幅度，使回弹效果更明显
           const shakeAmount = [8, -6, 5, -4, 3, -2]; // 震动幅度序列
-          
+
           // 确定震动方向 - 根据碰撞面决定
           let shakeDirectionX = 0;
           let shakeDirectionY = 0;
-          
+
           // 根据碰撞边确定震动方向 - 使用1像素的边界值
           const bounds = calculatePieceBounds(piece);
           const safeMargin = 1; // 使用统一的边界值
           if (bounds.minX <= safeMargin) shakeDirectionX = 1; // 碰左边，向右震动
           else if (bounds.maxX >= canvasWidth - safeMargin) shakeDirectionX = -1; // 碰右边，向左震动
-          
+
           if (bounds.minY <= safeMargin) shakeDirectionY = 1; // 碰上边，向下震动
           else if (bounds.maxY >= canvasHeight - safeMargin) shakeDirectionY = -1; // 碰下边，向上震动
-          
+
           // 如果没有确定方向，根据移动速度判断
           if (shakeDirectionX === 0 && Math.abs(dx) > Math.abs(dy)) shakeDirectionX = -Math.sign(dx);
           if (shakeDirectionY === 0 && Math.abs(dy) > Math.abs(dx)) shakeDirectionY = -Math.sign(dy);
-          
+
           // 如果依然没有方向，至少有一个默认方向
           if (shakeDirectionX === 0 && shakeDirectionY === 0) {
             shakeDirectionX = dx < 0 ? 1 : -1;
           }
-          
+
           // 执行震动动画
           const shakeAnimation = () => {
             if (animationStep >= maxSteps || !canvasRef.current) return;
-            
+
             // 计算震动位移
             const shakeX = shakeDirectionX * shakeAmount[animationStep];
             const shakeY = shakeDirectionY * shakeAmount[animationStep];
-            
+
             // 应用震动位移
             dispatch({
               type: "UPDATE_PIECE_POSITION",
               payload: { index: pieceIndex, dx: shakeX, dy: shakeY },
             });
-            
+
             // 安排下一次震动
             animationStep++;
             setTimeout(shakeAnimation, 30); // 每次震动间隔30ms，实现快速震动效果
           };
-          
+
           // 开始震动动画
           setTimeout(shakeAnimation, 10); // 短暂延迟后开始震动
         } else {
           // 更新最后触摸位置
           lastTouchRef.current = { x: touchX, y: touchY };
-          
-          // 更新磁吸感应
-          if (state.selectedPiece !== null && state.originalPositions && state.puzzle) {
-            const pieceIndex = state.selectedPiece;
-            const piece = state.puzzle[pieceIndex];
-            const originalPiece = state.originalPositions[pieceIndex];
-            
-            // 计算当前拼图中心点和目标位置中心点
-            const pieceCenter = calculateCenter(piece.points);
-            const originalCenter = calculateCenter(originalPiece.points);
-            
-            // 检查是否接近目标位置
-            if (pieceCenter && originalCenter) {
-              const magnetThreshold = 50; // 磁吸范围
-              const dx = pieceCenter.x - originalCenter.x;
-              const dy = pieceCenter.y - originalCenter.y;
-              const distance = Math.sqrt(dx * dx + dy * dy);
-              
-              // 应用磁吸效果
-              if (distance < magnetThreshold) {
-                const magnetStrength = 0.15;
-                const attractionFactor = 1 - (distance / magnetThreshold);
-                const attractionX = -dx * attractionFactor * magnetStrength;
-                const attractionY = -dy * attractionFactor * magnetStrength;
-                
-                if (Math.abs(attractionX) > 0.1 || Math.abs(attractionY) > 0.1) {
-                dispatch({
-                    type: "UPDATE_PIECE_POSITION",
-                    payload: { index: pieceIndex, dx: attractionX, dy: attractionY },
-                  });
-                }
-              }
-            }
-          }
         }
       } else {
         // 首次触摸，记录位置
@@ -755,21 +705,21 @@ export function usePuzzleInteractions({
       }
     }
   }, [state, canvasRef, dispatch]);
-  
+
   // 处理触摸结束事件
   const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
     // 在React合成事件中，preventDefault通常是安全的
     e.preventDefault();
     e.stopPropagation();
-    
+
     // 检查是否所有触摸点都已结束
     if (e.touches.length === 0) {
       // 复用鼠标释放的逻辑处理拖动结束
       handleMouseUp()
-      
+
       // 只清除拖动状态，但保留选中状态
       setIsShaking(false)
-      
+
       // 重置触摸状态
       lastTouchRef.current = null
       setTouchStartAngle(0)
@@ -778,32 +728,36 @@ export function usePuzzleInteractions({
     else if (e.touches.length === 1) {
       const canvas = canvasRef.current
       if (!canvas) return
-      
+
       const rect = canvas.getBoundingClientRect()
-      
+
       // 🔧 关键修复：考虑画布缩放比例进行坐标转换
       const scaleX = canvas.width / rect.width
       const scaleY = canvas.height / rect.height
-      
+
       const touch = e.touches[0]
       const touchX = (touch.clientX - rect.left) * scaleX
       const touchY = (touch.clientY - rect.top) * scaleY
-      
+
       // 更新lastTouch为当前位置，准备单指拖拽
       lastTouchRef.current = { x: touchX, y: touchY }
-      
+
       // 重置旋转状态，因为不再是双指操作
       setTouchStartAngle(0)
-      
+
       // 🔧 修复：如果有选中的拼图，设置拖拽状态
-      if (state.selectedPiece !== null) {
-        dispatch({ 
-          type: "SET_DRAGGING_PIECE", 
+      if (state.selectedPiece !== null && state.puzzle?.[state.selectedPiece]) {
+        const selectedPiece = state.puzzle[state.selectedPiece];
+        const selectedCenter = calculateCenter(selectedPiece.points);
+        dispatch({
+          type: "SET_DRAGGING_PIECE",
           payload: {
             index: state.selectedPiece,
+            offsetX: touchX - selectedCenter.x,
+            offsetY: touchY - selectedCenter.y,
             startX: touchX,
             startY: touchY,
-          } 
+          }
         })
       }
     }
@@ -812,14 +766,14 @@ export function usePuzzleInteractions({
       // 清除拖拽状态，准备旋转
       dispatch({ type: "SET_DRAGGING_PIECE", payload: null })
       lastTouchRef.current = null
-      
+
       // 重新计算双指角度
       const canvas = canvasRef.current
       if (canvas) {
         const rect = canvas.getBoundingClientRect()
         const scaleX = canvas.width / rect.width
         const scaleY = canvas.height / rect.height
-        
+
         const touch1 = e.touches[0]
         const touch2 = e.touches[1]
         const angle = calculateAngle(
