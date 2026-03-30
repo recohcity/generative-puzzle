@@ -48,7 +48,7 @@
 - [x] 检查是否存在旧的 `main` 发布工作流，避免双通道发布冲突
 - [x] GitHub Pages Source 改为 `gh-pages`
 - [x] 自定义域名保持 `www.citylivepark.com`，并确认发布产物保留 `CNAME`（如已使用）
-- [ ] 首次发布验证：
+- [x] 首次发布验证：
   - [x] 页面可访问
   - [x] 主流程可玩（开始、拼图、结算）
   - [x] `www.citylivepark.com` 正常
