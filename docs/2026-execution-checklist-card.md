@@ -46,7 +46,7 @@
 - [x] Actions 构建命令确认：`BUILD_STATIC=true npm run build`
 - [x] 发布目录确认：`out/`
 - [x] 检查是否存在旧的 `main` 发布工作流，避免双通道发布冲突
-- [ ] GitHub Pages Source 改为 `gh-pages`
+- [x] GitHub Pages Source 改为 `gh-pages`
 - [x] 自定义域名保持 `www.citylivepark.com`，并确认发布产物保留 `CNAME`（如已使用）
 - [ ] 首次发布验证：
   - [ ] 页面可访问
