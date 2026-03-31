@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/lib/supabase/browserClient";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase/browserClient";
 
 export default function SupabaseAuthWidget() {
   const [email, setEmail] = useState("");
@@ -16,6 +16,11 @@ export default function SupabaseAuthWidget() {
   }, [userId]);
 
   useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) {
+      setError("Supabase 未配置：请在 Vercel / 环境变量中设置 NEXT_PUBLIC_SUPABASE_URL 和 NEXT_PUBLIC_SUPABASE_ANON_KEY。");
+      return;
+    }
+
     let subscription: { unsubscribe: () => void } | null = null;
 
     supabase.auth
@@ -41,6 +46,10 @@ export default function SupabaseAuthWidget() {
       setError("请输入邮箱地址");
       return;
     }
+    if (!isSupabaseConfigured || !supabase) {
+      setError("Supabase 未配置，无法登录。");
+      return;
+    }
 
     setBusy(true);
     try {
@@ -63,6 +72,11 @@ export default function SupabaseAuthWidget() {
     setError(null);
     setBusy(true);
     try {
+      if (!isSupabaseConfigured || !supabase) {
+        setError("Supabase 未配置，无法登出。");
+        return;
+      }
+
       const { error } = await supabase.auth.signOut();
       if (error) setError(error.message);
       setUserId(null);

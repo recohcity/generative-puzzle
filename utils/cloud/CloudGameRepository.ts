@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase/browserClient";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase/browserClient";
 import {
   CutType,
   DifficultyConfig,
@@ -71,6 +71,7 @@ const mapPublicRowToGameRecord = (row: PublicLeaderboardRow): GameRecord => {
 
 export const CloudGameRepository = {
   async getCurrentUserId(): Promise<string | null> {
+    if (!isSupabaseConfigured || !supabase) return null;
     const { data, error } = await supabase.auth.getSession();
     if (error) {
       console.warn("[CloudGameRepository] getSession error:", error);
@@ -84,6 +85,7 @@ export const CloudGameRepository = {
     finalScore: number;
     scoreBreakdown: any;
   }): Promise<{ skipped: boolean }> {
+    if (!isSupabaseConfigured || !supabase) return { skipped: true };
     const userId = await this.getCurrentUserId();
     if (!userId) return { skipped: true };
 
@@ -121,6 +123,7 @@ export const CloudGameRepository = {
     limit?: number;
     difficulty?: DifficultyLevel | "all";
   }): Promise<GameRecord[]> {
+    if (!isSupabaseConfigured || !supabase) return [];
     const limit = params?.limit ?? 50;
     const difficulty = params?.difficulty ?? "all";
 
