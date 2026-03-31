@@ -335,19 +335,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         isOriginal: point.isOriginal,
       }));
 
-      // 更新拖拽统计
-      let updatedGameStats = state.gameStats;
-      if (state.gameStats && state.isGameActive) {
-        updatedGameStats = {
-          ...state.gameStats,
-          dragOperations: state.gameStats.dragOperations + 1,
-        };
-      }
-
       return {
         ...state,
         puzzle: positionUpdatedPuzzle,
-        gameStats: updatedGameStats,
       };
     }
     case "RESET_PIECE_TO_ORIGINAL": {
