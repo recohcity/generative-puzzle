@@ -58,9 +58,43 @@
 ## E. 阶段 3：启动 game-cloud（下一步）
 
 - [ ] 从 `game-only` 或指定基线创建 `game-cloud`
-- [ ] 接入 Supabase（Auth + Postgres）
-- [ ] 设计表：`profiles` / `game_sessions` / `leaderboards` / `user_settings`
-- [ ] 完成账号登录与历史记录云同步 MVP
+- [ ] 建立 Supabase 项目（`dev` / `prod`）
+- [ ] 接入 Supabase Auth（Email + Magic Link）
+- [ ] 配置 Auth Redirect URL（本地 / 预发 / 生产）
+- [ ] 建表：`profiles` / `game_sessions` / `user_settings` / `leaderboards`（或视图）
+- [ ] 为 `game_sessions` 建索引（`user_id, created_at`）
+- [ ] 开启并验证 RLS：
+  - [ ] 私有表仅允许 `auth.uid() = user_id` 读写
+  - [ ] 匿名用户无法读取私有数据
+  - [ ] 排行榜仅开放必要只读字段
+- [ ] 前端接入 `@supabase/supabase-js` 与环境变量
+- [ ] 实现登录/登出/Session 恢复
+- [ ] 实现历史记录云端读写（在线）
+- [ ] 实现离线队列与联网补同步（离线 -> 在线）
+- [ ] 完成登录后本地历史一次性迁移上云
+- [ ] 完成多端一致验证（同账号双设备）
+
+### E-1. game-cloud 部署（前端）
+
+- [ ] 选择部署平台（建议 `Vercel`）
+- [ ] 配置 `Preview` / `Production` 环境变量
+- [ ] 绑定域名并验证 HTTPS
+- [ ] 验证登录回调 URL 与正式域名一致
+
+### E-2. game-cloud 部署（服务端 / Supabase）
+
+- [ ] 应用 schema migration（建表、索引、策略）
+- [ ] 校验 RLS 在生产环境已启用
+- [ ] 校验策略：跨用户数据不可读写
+- [ ] 准备回滚 SQL（策略/字段回滚）
+
+### E-3. 发布后冒烟验证
+
+- [ ] 登录成功并可读取个人资料
+- [ ] 新开一局后可写入 `game_sessions`
+- [ ] 第二设备登录后可看到同一条记录
+- [ ] 离线完成一局，联网后自动补同步成功
+- [ ] 同步失败时可重试且不影响继续游戏
 
 ---
 
@@ -77,6 +111,7 @@
 - 路线图：`docs/2026-game-only-and-game-cloud-roadmap.md`
 - 瘦身清单：`docs/2026-game-only-slimming-checklist.md`
 - 发布手册：`docs/2026-game-only-gh-pages-deploy-manual.md`
+- Supabase MVP SQL：`docs/game-cloud-supabase-mvp.sql`
 
 ---
 

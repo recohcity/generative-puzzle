@@ -180,6 +180,88 @@
 2. 引入登录后：本地数据一次性上云迁移。
 3. 新局优先写云端，离线时写本地，联网后同步。
 
+#### 实施任务清单（Supabase + 前后端部署）
+
+##### A) Supabase 初始化（Auth + 表 + RLS）
+
+1. 创建 Supabase 项目（建议独立 `dev` / `prod` 两套项目）。
+2. 启用 Auth：
+   - Email + Magic Link（MVP 推荐优先）
+   - 预留 OAuth（Google / GitHub）为后续迭代
+3. 创建基础表：
+   - `profiles`（`user_id` 关联 `auth.users.id`）
+   - `game_sessions`（每局记录，append-only）
+   - `user_settings`（用户偏好，单用户单行）
+   - `leaderboards`（可先用视图实现聚合）
+4. 打开并配置 RLS（必须）：
+   - 所有用户私有表仅允许 `auth.uid() = user_id` 读写
+   - 排行榜允许只读公开视图（必要字段脱敏）
+5. 建立索引与约束：
+   - `game_sessions(user_id, created_at desc)` 复合索引
+   - 幂等字段（如 `idempotency_key`）唯一约束
+6. 准备迁移脚本：
+   - 建表 SQL、策略 SQL、回滚 SQL 分离存放
+   - 统一通过迁移文件执行，避免手工点选漂移
+
+##### B) 前端任务（Web 客户端）
+
+1. 接入 `@supabase/supabase-js` 与环境变量：
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+2. 新增认证模块：
+   - 登录、登出、Session 恢复、过期重登
+3. 新增数据仓储层（Repository）：
+   - 屏蔽本地/云端差异，业务逻辑不直接调用 Supabase SDK
+4. 新增同步模块：
+   - 离线队列（pending writes）
+   - 联网后重试（指数退避）
+   - 幂等重放（防重复写）
+5. UI 侧新增同步反馈：
+   - 同步中 / 已同步 / 失败可重试 / 离线模式
+6. 登录后执行一次本地历史迁移：
+   - 本地历史去重后上云
+   - 迁移完成写入本地标记，避免重复迁移
+
+##### C) 后端任务（Supabase DB/Function）
+
+1. MVP 优先走 Supabase 直连（RLS 兜底），减少中间层复杂度。
+2. 对高风险写操作补 Edge Function（可选）：
+   - 排行榜写入校验
+   - 限流与反作弊规则
+3. 数据校验规则：
+   - 分数上下限、难度枚举、时长合理区间
+4. 可观测性：
+   - 关键失败链路日志（登录失败、写入失败、同步冲突）
+   - 为重试与补偿留出错误码
+
+##### D) 部署任务清单（前端 + 服务端）
+
+1. 前端部署建议：
+   - `game-only`：继续 GitHub Pages（纯静态）
+   - `game-cloud`：建议 Vercel（更适配 Auth 回调与动态能力）
+2. Vercel 环境配置：
+   - 配置 `Preview` / `Production` 环境变量
+   - 绑定项目域名与 HTTPS
+3. Supabase 环境配置：
+   - 配置 Auth Redirect URL（本地 + 预发 + 生产）
+   - 配置 Site URL 为正式域名
+4. 发布前检查：
+   - RLS 开启且策略生效
+   - 匿名用户不可读取私有数据
+   - 登录用户跨端可读取同一账号历史
+5. 发布后冒烟验证：
+   - 登录/登出流程
+   - 新开一局写入成功
+   - 第二设备刷新可见同一条记录
+   - 离线一局后联网可自动补同步
+
+##### E) 多端一致验收口径（MVP）
+
+1. 同账号两端登录后，`profiles` 与 `user_settings` 保持一致。
+2. `game_sessions` 不丢失、不重复（幂等生效）。
+3. 离线写入在恢复网络后可在可接受时间内补齐。
+4. 同步失败可重试，且不阻断核心游戏流程。
+
 #### 验收标准
 
 - 同一账号在多端可查看一致历史与榜单。
