@@ -470,4 +470,61 @@ export class GameDataManager {
       return { visitorCount: 0, gameStartCount: 0, historyCount: 0 };
     }
   }
+  /**
+   * 将云端记录同步到本地存储
+   * 实现多端一致性的核心：将从云端获取的记录合并到本地，并保留最高分和最新记录
+   */
+  static syncWithCloudRecords(cloudRecords: GameRecord[]): void {
+    try {
+      console.log('[GameDataManager] 正在同步云端记录到本地:', cloudRecords.length);
+      
+      // 1. 同步历史记录
+      let localHistory = this.getGameHistory();
+      const mergedHistory = [...localHistory];
+      
+      for (const cloudRecord of cloudRecords) {
+        // 使用时间戳和分数作为唯一标识进行去重
+        const exists = mergedHistory.some(local => 
+          local.timestamp === cloudRecord.timestamp && 
+          local.finalScore === cloudRecord.finalScore
+        );
+        if (!exists) {
+          mergedHistory.push(cloudRecord);
+        }
+      }
+      
+      // 按时间从新到旧排序并限制数量
+      mergedHistory.sort((a, b) => b.timestamp - a.timestamp);
+      const finalHistory = mergedHistory.slice(0, this.MAX_HISTORY_RECORDS);
+      
+      localStorage.setItem(this.GAME_HISTORY_KEY, JSON.stringify(finalHistory));
+      this.memoryHistory = finalHistory;
+
+      // 2. 同步排行榜
+      // 注意：这里我们简单地将所有记录考虑进排行榜，updateLeaderboard 会处理排序和限制
+      let localLeaderboard = this.getLeaderboard();
+      const mergedLeaderboard = [...localLeaderboard];
+      
+      for (const record of cloudRecords) {
+        const exists = mergedLeaderboard.some(local => 
+          local.timestamp === record.timestamp && 
+          local.finalScore === record.finalScore
+        );
+        if (!exists) {
+          mergedLeaderboard.push(record);
+        }
+      }
+      
+      // 按分数从高到低排序并限制数量
+      mergedLeaderboard.sort((a, b) => b.finalScore - a.finalScore);
+      const finalLeaderboard = mergedLeaderboard.slice(0, this.MAX_LEADERBOARD_RECORDS);
+      
+      localStorage.setItem(this.LEADERBOARD_KEY, JSON.stringify(finalLeaderboard));
+      this.memoryLeaderboard = finalLeaderboard;
+
+      console.log(`[GameDataManager] 同步完成。当前本地历史: ${finalHistory.length}, 排行榜: ${finalLeaderboard.length}`);
+    } catch (error) {
+      console.error('[GameDataManager] 同步云端记录失败:', error);
+    }
+  }
 }

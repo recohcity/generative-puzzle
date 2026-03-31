@@ -39,8 +39,10 @@ import {
 } from "@/utils/score/ScoreCalculator";
 import { calculateDifficultyLevel } from "@/utils/difficulty/DifficultyUtils";
 import { CloudGameRepository } from "@/utils/cloud/CloudGameRepository";
-// 导入音效函数（确保路径正确）
 import { playFinishSound } from "@/utils/rendering/soundEffects";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase/browserClient";
+
+
 // 获取设备类型的工具函数
 const getDeviceType = ():
   | "desktop"
@@ -655,10 +657,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case "LOAD_LEADERBOARD": {
-      // 这里可以从localStorage或API加载排行榜数据
-      // 暂时返回当前状态，实际实现时会加载数据
-      return state;
+      const records = GameDataManager.getLeaderboard();
+      return {
+        ...state,
+        leaderboard: records,
+      };
     }
+
+
 
     case "GAME_COMPLETED": {
       if (!state.gameStats || !state.isGameActive) {
@@ -1049,6 +1055,75 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     if (state.isGameActive) lastUploadedGameKeyRef.current = null;
   }, [state.isGameActive]);
+
+  // Handle offline session synchronization when online or on mount.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleOnline = () => {
+      console.log("[GameContext] Network recovered, syncing sessions...");
+      CloudGameRepository.syncOfflineSessions();
+    };
+
+    window.addEventListener("online", handleOnline);
+
+    // Initial sync check
+    if (navigator.onLine) {
+      CloudGameRepository.syncOfflineSessions();
+    }
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+    };
+  }, []);
+
+  // Sync on login (after magic link redirect or manual session recovery)
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return;
+
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session) {
+        const userId = session.user.id;
+        console.log(`[GameContext] Auth event (${event}) for ${userId}, syncing...`);
+
+        // 1. First, sync any sessions that were completed while offline but potentially while logged in.
+        CloudGameRepository.syncOfflineSessions();
+
+        // 2. Second, perform a one-time migration of local history records to the cloud for this user.
+        const migrationKey = `supabase_migration_done_${userId}`;
+        if (typeof window !== "undefined" && !localStorage.getItem(migrationKey)) {
+          console.log("[GameContext] One-time local history migration triggered.");
+          const localHistory = GameDataManager.getGameHistory();
+          if (localHistory.length > 0) {
+            CloudGameRepository.migrateLocalHistoryToCloud(localHistory).then((res) => {
+              // We mark as done if we attempted it and had no fatal error.
+              // Idempotency keys in the cloud will handle duplicates if this runs multiple times.
+              localStorage.setItem(migrationKey, "true");
+              console.log(`[GameContext] Local history migration finished: ${res.successCount} success, ${res.failedCount} fail.`);
+            });
+          } else {
+            localStorage.setItem(migrationKey, "true");
+          }
+        }
+
+        // 3. fetch all cloud records for this user to ensure multi-device consistency.
+        CloudGameRepository.fetchUserGameHistory().then((cloudRecords) => {
+          if (cloudRecords.length > 0) {
+            GameDataManager.syncWithCloudRecords(cloudRecords);
+            // Refresh local state to show synced data
+            dispatch({ type: "LOAD_LEADERBOARD" });
+          }
+        });
+      }
+    });
+
+
+    return () => {
+      data.subscription.unsubscribe();
+    };
+  }, []);
+
+
 
   const generateShape = useCallback(
     (shapeType?: ShapeType) => {
@@ -1916,8 +1991,11 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
     }
     return success;
   };
+  (window as any).CloudGameRepository = CloudGameRepository;
   console.log("🔧 开发调试工具已加载:");
   console.log("  - window.generateTestData() - 生成测试数据");
   console.log("  - window.clearGameData() - 清除所有数据");
   console.log("  - window.GameDataManager - 数据管理器");
+  console.log("  - window.CloudGameRepository - 云端仓库");
 }
+
