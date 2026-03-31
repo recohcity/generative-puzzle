@@ -154,6 +154,25 @@ begin
 end;
 $$;
 
+-- Keep global leaderboard in sync automatically.
+-- When a new game_session row is inserted, recompute the user's aggregated entry.
+create or replace function public.trg_refresh_leaderboard_after_game_session_insert()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.refresh_leaderboard_for_user(new.user_id, new.difficulty);
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_game_sessions_refresh_leaderboard on public.game_sessions;
+create trigger trg_game_sessions_refresh_leaderboard
+after insert on public.game_sessions
+for each row execute function public.trg_refresh_leaderboard_after_game_session_insert();
+
 drop trigger if exists trg_profiles_updated_at on public.profiles;
 create trigger trg_profiles_updated_at
 before update on public.profiles
@@ -233,25 +252,27 @@ create policy "leaderboard_read_all"
   for select
   using (true);
 
--- Only service role should write leaderboard snapshot rows.
-drop policy if exists "leaderboard_service_insert" on public.public_leaderboard_entries;
-create policy "leaderboard_service_insert"
+-- Users can only upsert/delete their own aggregated leaderboard row.
+-- This enables the trigger (which runs in the inserting user's auth context)
+-- to update the row without exposing raw game_sessions.
+drop policy if exists "leaderboard_entries_upsert_own" on public.public_leaderboard_entries;
+create policy "leaderboard_entries_upsert_own"
   on public.public_leaderboard_entries
   for insert
-  with check (auth.jwt() ->> 'role' = 'service_role');
+  with check (auth.uid() = user_id);
 
-drop policy if exists "leaderboard_service_update" on public.public_leaderboard_entries;
-create policy "leaderboard_service_update"
+drop policy if exists "leaderboard_entries_update_own" on public.public_leaderboard_entries;
+create policy "leaderboard_entries_update_own"
   on public.public_leaderboard_entries
   for update
-  using (auth.jwt() ->> 'role' = 'service_role')
-  with check (auth.jwt() ->> 'role' = 'service_role');
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
 
-drop policy if exists "leaderboard_service_delete" on public.public_leaderboard_entries;
-create policy "leaderboard_service_delete"
+drop policy if exists "leaderboard_entries_delete_own" on public.public_leaderboard_entries;
+create policy "leaderboard_entries_delete_own"
   on public.public_leaderboard_entries
   for delete
-  using (auth.jwt() ->> 'role' = 'service_role');
+  using (auth.uid() = user_id);
 
 -- Expose read access on the view to both anon/authenticated clients.
 grant select on public.leaderboards to anon, authenticated;

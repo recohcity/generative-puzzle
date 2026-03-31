@@ -38,6 +38,7 @@ import {
   calculateLiveScore,
 } from "@/utils/score/ScoreCalculator";
 import { calculateDifficultyLevel } from "@/utils/difficulty/DifficultyUtils";
+import { CloudGameRepository } from "@/utils/cloud/CloudGameRepository";
 // 导入音效函数（确保路径正确）
 import { playFinishSound } from "@/utils/rendering/soundEffects";
 // 获取设备类型的工具函数
@@ -977,6 +978,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
   });
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const backgroundCanvasRef = useRef<HTMLCanvasElement>(null);
+  const lastUploadedGameKeyRef = useRef<string | null>(null);
 
   const rotatePiece = useCallback(
     (clockwise: boolean) => {
@@ -1017,6 +1019,36 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
     state.isGameActive,
     state.isGameComplete,
   ]);
+
+  // When a game is completed, upload the session to cloud (if user is logged in).
+  // This keeps local gameplay responsive while enabling multi-device consistency.
+  useEffect(() => {
+    if (!state.isGameComplete || !state.gameStats) return;
+    if (!state.gameStats.difficulty?.difficultyLevel) return;
+
+    const gameEndTimeMs = state.gameStats.gameEndTime ?? Date.now();
+    const diffLevel = state.gameStats.difficulty.difficultyLevel;
+    const key = `${state.gameStats.gameStartTime}-${gameEndTimeMs}-${diffLevel}-${state.currentScore}`;
+    if (lastUploadedGameKeyRef.current === key) return;
+    lastUploadedGameKeyRef.current = key;
+
+    (async () => {
+      try {
+        await CloudGameRepository.uploadGameSession({
+          gameStats: state.gameStats as GameStats,
+          finalScore: state.currentScore,
+          scoreBreakdown: state.scoreBreakdown ?? {},
+        });
+      } catch (e) {
+        console.warn("[GameContext] Cloud upload failed (non-fatal):", e);
+      }
+    })();
+  }, [state.isGameComplete, state.gameStats, state.currentScore, state.scoreBreakdown]);
+
+  // Reset upload marker when a new game session starts.
+  useEffect(() => {
+    if (state.isGameActive) lastUploadedGameKeyRef.current = null;
+  }, [state.isGameActive]);
 
   const generateShape = useCallback(
     (shapeType?: ShapeType) => {

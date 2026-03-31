@@ -2,10 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { GameDataManager } from '@/utils/data/GameDataManager';
+import SupabaseAuthWidget from '@/components/auth/SupabaseAuthWidget';
+import { CloudGameRepository } from '@/utils/cloud/CloudGameRepository';
 
 export default function ScoreManagementPage() {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [history, setHistory] = useState<any[]>([]);
+  const [publicLeaderboard, setPublicLeaderboard] = useState<any[]>([]);
+  const [publicLoading, setPublicLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
@@ -23,6 +27,25 @@ export default function ScoreManagementPage() {
   useEffect(() => {
     setIsClient(true);
     refreshData();
+  }, []);
+
+  // Load global public leaderboard (available for everyone).
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setPublicLoading(true);
+        const rows = await CloudGameRepository.fetchPublicLeaderboard({ limit: 50 });
+        if (!cancelled) setPublicLeaderboard(rows);
+      } catch (e) {
+        console.warn('[scores] fetch public leaderboard failed', e);
+      } finally {
+        if (!cancelled) setPublicLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const clearAllData = () => {
@@ -107,9 +130,46 @@ export default function ScoreManagementPage() {
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
+      <SupabaseAuthWidget />
+
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">游戏成绩管理</h1>
         <p className="text-gray-600">查看和管理您的游戏历史记录与排行榜数据</p>
+      </div>
+
+      <div className="mb-8 rounded-lg border border-white/10 bg-white/5 p-4">
+        <div className="mb-2 text-[#FFD5AB] font-medium">全服公开榜（Top 5）</div>
+        {publicLoading ? (
+          <div className="text-sm text-white/70">加载中...</div>
+        ) : publicLeaderboard.length === 0 ? (
+          <div className="text-sm text-white/70">暂无公开榜数据</div>
+        ) : (
+          <div className="space-y-2">
+            {publicLeaderboard.slice(0, 5).map((record, idx) => {
+              const minutes = Math.floor(record.totalDuration / 60);
+              const seconds = record.totalDuration % 60;
+              return (
+                <div
+                  key={`public-lb-${record.timestamp}-${idx}`}
+                  className="flex items-center justify-between gap-4 rounded bg-black/20 border border-white/10 p-2"
+                >
+                  <div className="flex items-center gap-2 min-w-[120px]">
+                    <span className="text-sm text-white/90 font-medium w-7">{idx + 1}</span>
+                    <span className="text-sm text-white/80">
+                      {record.difficulty?.difficultyLevel ?? 'unknown'}
+                    </span>
+                  </div>
+                  <div className="text-sm text-white/90">
+                    {record.finalScore} 分
+                    <span className="text-white/60 ml-2">
+                      {minutes}:{String(seconds).padStart(2, '0')}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {message && (
