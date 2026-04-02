@@ -20,18 +20,12 @@ type PublicLeaderboardRow = {
 };
 
 const cutCountFromDifficultyLevel = (level: DifficultyLevel): number => {
-  // Reverse of calculateDifficultyLevel with representative values.
   switch (level) {
-    case "easy":
-      return 3; // <=3
-    case "medium":
-      return 6; // <=6
-    case "hard":
-      return 7; // <=7
-    case "extreme":
-      return 8; // >7
-    case "expert":
-      return 8; // compatibility bucket (we don't currently distinguish in UI)
+    case "easy": return 3;
+    case "medium": return 6;
+    case "hard": return 7;
+    case "extreme": return 8;
+    case "expert": return 8;
   }
 };
 
@@ -56,11 +50,7 @@ const mapPublicRowToGameRecord = (row: PublicLeaderboardRow): GameRecord => {
       actualPieces,
       shapeType: ShapeType.Polygon,
     },
-    deviceInfo: {
-      type: "desktop",
-      screenWidth: 0,
-      screenHeight: 0,
-    },
+    deviceInfo: { type: "desktop", screenWidth: 0, screenHeight: 0 },
     totalRotations: 0,
     hintUsageCount: 0,
     dragOperations: 0,
@@ -81,67 +71,42 @@ export const CloudGameRepository = {
   async getCurrentUserId(): Promise<string | null> {
     if (!isSupabaseConfigured || !supabase) return null;
     const { data, error } = await supabase.auth.getSession();
-    if (error) {
-      console.warn("[CloudGameRepository] getSession error:", error);
-      return null;
-    }
+    if (error) return null;
     return data.session?.user?.id ?? null;
   },
 
-  /**
-   * Internal method to get the offline queue from localStorage.
-   */
   getOfflineQueue(): OfflineSession[] {
     if (typeof window === "undefined") return [];
     try {
       const stored = localStorage.getItem(OFFLINE_QUEUE_KEY);
       return stored ? JSON.parse(stored) : [];
     } catch (e) {
-      console.warn("[CloudGameRepository] Failed to read offline queue:", e);
       return [];
     }
   },
 
-  /**
-   * Internal method to save the offline queue to localStorage.
-   */
   saveOfflineQueue(queue: OfflineSession[]) {
     if (typeof window === "undefined") return;
     try {
       localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
-    } catch (e) {
-      console.warn("[CloudGameRepository] Failed to save offline queue:", e);
-    }
+    } catch (e) {}
   },
 
-  /**
-   * Uploads a game session to Supabase.
-   * If it fails and skipQueue is false, it adds the session to the offline queue.
-   */
   async uploadGameSession(
-    params: {
-      gameStats: GameStats;
-      finalScore: number;
-      scoreBreakdown: any;
-    },
+    params: { gameStats: GameStats; finalScore: number; scoreBreakdown: any },
     skipQueue = false
   ): Promise<{ skipped: boolean; error?: any }> {
     if (!isSupabaseConfigured || !supabase) return { skipped: true };
     const userId = await this.getCurrentUserId();
 
-    // If user is not logged in, we still want to queue it for later sync after login.
     if (!userId) {
-      if (!skipQueue) {
-        this.addToOfflineQueue(params);
-      }
+      if (!skipQueue) this.addToOfflineQueue(params);
       return { skipped: true };
     }
 
     const gameEndTimeMs = params.gameStats.gameEndTime ?? Date.now();
     const difficultyLevel = params.gameStats.difficulty.difficultyLevel as DifficultyLevel;
     const durationMs = Math.max(0, Math.round(params.gameStats.totalDuration * 1000));
-
-    // Deterministic idempotency to avoid duplicates on retries.
     const idempotencyKey = `${userId}-${gameEndTimeMs}-${difficultyLevel}-${Math.round(params.finalScore)}`;
 
     const { error } = await supabase.from("game_sessions").insert({
@@ -164,43 +129,25 @@ export const CloudGameRepository = {
     });
 
     if (error) {
-      // If it's a conflict/duplicate, it's technically a "success" for our sync logic.
-      if (error.code === "23505") { // Unique violation
-        return { skipped: false };
-      }
-
-      console.warn("[CloudGameRepository] uploadGameSession insert error:", error);
-      if (!skipQueue) {
-        this.addToOfflineQueue(params);
-      }
+      if (error.code === "23505") return { skipped: false };
+      if (!skipQueue) this.addToOfflineQueue(params);
       return { skipped: false, error };
     }
 
     return { skipped: false };
   },
 
-  /**
-   * Adds a session to the offline queue.
-   */
-  addToOfflineQueue(params: OfflineSession) {
+  addToOfflineQueue(params: { gameStats: GameStats; finalScore: number; scoreBreakdown: any }) {
     const queue = this.getOfflineQueue();
-    // Simple check to avoid exact duplicates in queue
     const isDuplicate = queue.some(
-      (s) =>
-        s.gameStats.gameStartTime === params.gameStats.gameStartTime &&
-        s.finalScore === params.finalScore
+      (s) => s.gameStats.gameStartTime === params.gameStats.gameStartTime && s.finalScore === params.finalScore
     );
     if (isDuplicate) return;
 
     queue.push(params);
-    this.saveOfflineQueue(queue.slice(-50)); // Keep last 50 sessions
-    console.log("[CloudGameRepository] Session added to offline queue.");
+    this.saveOfflineQueue(queue.slice(-50));
   },
 
-  /**
-   * Syncs all queued offline sessions to the cloud.
-   * Usually called after login or when the app comes back online.
-   */
   async syncOfflineSessions(): Promise<{ successCount: number; failedCount: number }> {
     if (!isSupabaseConfigured || !supabase) return { successCount: 0, failedCount: 0 };
     const userId = await this.getCurrentUserId();
@@ -209,31 +156,24 @@ export const CloudGameRepository = {
     const queue = this.getOfflineQueue();
     if (queue.length === 0) return { successCount: 0, failedCount: 0 };
 
-    console.log(`[CloudGameRepository] Syncing ${queue.length} offline sessions...`);
     let successCount = 0;
     let failedCount = 0;
     const remainingQueue: OfflineSession[] = [];
 
-    // Process sessions one by one.
     for (const session of queue) {
-      const result = await this.uploadGameSession(session, true); // Don't re-queue if this fails
-      if (!result.error) {
-        successCount++;
-      } else {
-        // If it failed due to something else than duplicate, keep it in queue.
+      const result = await this.uploadGameSession(session, true);
+      if (!result.error) successCount++;
+      else {
         failedCount++;
         remainingQueue.push(session);
       }
     }
 
     this.saveOfflineQueue(remainingQueue);
-    console.log(`[CloudGameRepository] Sync complete. Success: ${successCount}, Failed: ${failedCount}`);
+    if (successCount > 0) console.log(`[CloudGameRepository] 离线同步完成: 成功 ${successCount}, 失败 ${failedCount}`);
     return { successCount, failedCount };
   },
 
-  /**
-   * Fetches the current user's game history from the cloud.
-   */
   async fetchUserGameHistory(): Promise<GameRecord[]> {
     if (!isSupabaseConfigured || !supabase) return [];
     const userId = await this.getCurrentUserId();
@@ -245,10 +185,7 @@ export const CloudGameRepository = {
       .eq("user_id", userId)
       .order("client_created_at", { ascending: false });
 
-    if (error) {
-      console.warn("[CloudGameRepository] fetchUserGameHistory error:", error);
-      return [];
-    }
+    if (error) return [];
 
     return (data ?? []).map((row: any) => {
       const difficultyLevel = row.difficulty as DifficultyLevel;
@@ -279,20 +216,15 @@ export const CloudGameRepository = {
     });
   },
 
-  /**
-   * Migrates local history records (from GameDataManager) to the cloud.
-   */
   async migrateLocalHistoryToCloud(records: GameRecord[]): Promise<{ successCount: number; failedCount: number }> {
     if (!isSupabaseConfigured || !supabase) return { successCount: 0, failedCount: 0 };
     const userId = await this.getCurrentUserId();
     if (!userId) return { successCount: 0, failedCount: 0 };
 
-    console.log(`[CloudGameRepository] Migrating ${records.length} local records to cloud...`);
     let successCount = 0;
     let failedCount = 0;
 
     for (const record of records) {
-      // Reconstruct necessary fields for uploadGameSession.
       const params = {
         gameStats: {
           gameStartTime: record.gameStartTime || record.timestamp - (record.totalDuration * 1000),
@@ -304,55 +236,47 @@ export const CloudGameRepository = {
           dragOperations: record.dragOperations,
           rotationEfficiency: record.rotationEfficiency,
           deviceType: record.deviceInfo?.type || "desktop",
-          canvasSize: {
-            width: record.deviceInfo?.screenWidth || 640,
-            height: record.deviceInfo?.screenHeight || 640,
-          },
+          canvasSize: { width: record.deviceInfo?.screenWidth || 640, height: record.deviceInfo?.screenHeight || 640 },
         } as any,
         finalScore: record.finalScore,
         scoreBreakdown: record.scoreBreakdown,
       };
 
-      const result = await this.uploadGameSession(params, true); // Use skipQueue=true to avoid redundant queuing
-      if (!result.error) {
-        successCount++;
-      } else {
-        failedCount++;
-      }
+      const result = await this.uploadGameSession(params, true);
+      if (!result.error) successCount++;
+      else failedCount++;
     }
 
-    console.log(`[CloudGameRepository] Migration complete. Success: ${successCount}, Failed: ${failedCount}`);
+    if (successCount > 0) console.log(`[CloudGameRepository] 历史记录迁移完成: 成功 ${successCount}`);
     return { successCount, failedCount };
   },
 
-  async fetchPublicLeaderboard(params?: {
-    limit?: number;
-    difficulty?: DifficultyLevel | "all";
-  }): Promise<GameRecord[]> {
-
+  async fetchPublicLeaderboard(params?: { limit?: number; difficulty?: DifficultyLevel | "all" }): Promise<GameRecord[]> {
     if (!isSupabaseConfigured || !supabase) return [];
     const limit = params?.limit ?? 50;
     const difficulty = params?.difficulty ?? "all";
 
-    let query = supabase
-      .from("leaderboards")
-      .select("*")
-      .order("best_score", { ascending: false })
-      .limit(limit);
-
-    if (difficulty !== "all") {
-      query = query.eq("difficulty", difficulty);
-    }
+    let query = supabase.from("leaderboards").select("*").order("best_score", { ascending: false }).limit(limit);
+    if (difficulty !== "all") query = query.eq("difficulty", difficulty);
 
     const { data, error } = await query;
-    if (error) {
-      console.warn("[CloudGameRepository] fetchPublicLeaderboard error:", error);
-      return [];
-    }
+    if (error) return [];
 
     const rows = (data ?? []) as PublicLeaderboardRow[];
     return rows.map(mapPublicRowToGameRecord);
   },
+
+  async deleteAllUserGameSessions(): Promise<{ success: boolean; error?: any }> {
+    if (!isSupabaseConfigured || !supabase) return { success: false };
+    const userId = await this.getCurrentUserId();
+    if (!userId) return { success: false };
+
+    // 1. 先清空云端表
+    const { error } = await supabase.from("game_sessions").delete().eq("user_id", userId);
+    
+    // 2. 本地也要立刻清空“离线同步队列”，防止刚才删完立刻又推上去
+    this.saveOfflineQueue([]);
+    
+    return { success: !error, error };
+  },
 };
-
-

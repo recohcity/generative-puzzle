@@ -16,13 +16,28 @@ export default function ScoreManagementPage() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
-  const refreshData = () => {
-    const lb = GameDataManager.getLeaderboard();
-    const hist = GameDataManager.getGameHistory();
-    setLeaderboard(lb);
-    setHistory(hist);
-    console.log('刷新数据 - 排行榜:', lb, '历史:', hist);
+  const refreshData = async () => {
+    try {
+      // 1. 如果用户已登录，尝试从云端同步最新数据
+      const userId = await CloudGameRepository.getCurrentUserId();
+      if (userId) {
+        console.log('[ScoresPage] 正在从云端拉取最新记录...');
+        const cloudRecords = await CloudGameRepository.fetchUserGameHistory();
+        if (cloudRecords.length > 0) {
+          GameDataManager.syncWithCloudRecords(cloudRecords);
+        }
+      }
+
+      // 2. 从本地存储加载（包含刚才同步合并后的数据）
+      const lb = GameDataManager.getLeaderboard();
+      const hist = GameDataManager.getGameHistory();
+      setLeaderboard(lb);
+      setHistory(hist);
+    } catch (error) {
+      console.error('[ScoresPage] 刷新数据失败:', error);
+    }
   };
+
 
   useEffect(() => {
     setIsClient(true);
@@ -48,44 +63,62 @@ export default function ScoreManagementPage() {
     };
   }, []);
 
-  const clearAllData = () => {
-    if (!confirm('确定要清除所有游戏数据吗？此操作不可恢复！')) {
+  const clearAllData = async () => {
+    const isCloudEnabled = !!(await CloudGameRepository.getCurrentUserId());
+    let deleteCloud = false;
+
+    if (isCloudEnabled) {
+      if (confirm('检测到您已登录。是否同时删除【云端】的所有同步数据？（确定则云端同步清空，取消则仅清空本地）')) {
+        deleteCloud = true;
+      }
+    } else if (!confirm('确定要清除本地所有游戏数据吗？')) {
       return;
     }
 
-    console.log('🗑️ 开始清除数据...');
+    console.log('🗑️ 开始清理数据...');
+    setMessage('⌛ 正在清理...');
 
     try {
-      // 直接清除localStorage
+      // 1. 如果需要，清理云端
+      if (deleteCloud) {
+        const result = await CloudGameRepository.deleteAllUserGameSessions();
+        if (!result.success) {
+          alert('云端数据清除失败，请检查网络后重试。');
+          return;
+        }
+      }
+
+      // 2. 清除localStorage
       localStorage.removeItem('puzzle-leaderboard');
       localStorage.removeItem('puzzle-history');
-
-      // 验证清除结果
-      const checkLeaderboard = localStorage.getItem('puzzle-leaderboard');
-      const checkHistory = localStorage.getItem('puzzle-history');
-
-      if (!checkLeaderboard && !checkHistory) {
-        console.log('✅ 数据清除成功');
-        setMessage('✅ 所有数据已清除');
-
-        // 立即更新状态
-        setLeaderboard([]);
-        setHistory([]);
-
-        // 再次刷新确保同步
-        setTimeout(() => {
-          refreshData();
-          setMessage('');
-        }, 1000);
-      } else {
-        console.error('❌ 数据清除不完整');
-        setMessage('❌ 数据清除失败');
+      
+      // 3. 彻底根除：删除同步标记和离线队列
+      const userId = await CloudGameRepository.getCurrentUserId();
+      if (userId) {
+        localStorage.removeItem(`supabase_migration_done_${userId}`);
       }
+      localStorage.removeItem('supabase-offline-game-sessions');
+      
+      GameDataManager.clearAllData(); // 同时也重置内存缓存
+
+      console.log('✅ 数据清理成功');
+
+      setMessage('✅ 所有数据已清除');
+
+      // 立即更新状态
+      setLeaderboard([]);
+      setHistory([]);
+
+      setTimeout(() => {
+        setMessage('');
+        refreshData();
+      }, 1500);
     } catch (error) {
-      console.error('❌ 清除数据时出错:', error);
-      setMessage('❌ 清除数据时出错: ' + error);
+      console.error('❌ 清理数据时出错:', error);
+      setMessage('❌ 操作异常');
     }
   };
+
 
   const getDifficultyTextFromRecord = (difficulty: any) => {
     const level = difficulty?.cutCount || 1;
