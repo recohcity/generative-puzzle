@@ -1,5 +1,5 @@
 import { CutLine, Bounds, CutType } from "./cutGeneratorTypes";
-import { Point } from "@/types/puzzleTypes";
+import { Point } from "@generative-puzzle/game-core";
 import {
   generateStraightCutLine,
   generateDiagonalCutLine,

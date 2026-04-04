@@ -98,4 +98,7 @@ Desktop.ini
 # API routes (仅在需要时取消注释以支持GitHub Pages静态构建)
 # app/api/
 
-
+# Supabase environment variables should be stored in .env.local
+# Example keys:
+# NEXT_PUBLIC_SUPABASE_URL=
+# NEXT_PUBLIC_SUPABASE_ANON_KEY=

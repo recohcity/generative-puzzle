@@ -1,6 +1,6 @@
 "use client"
 import { useGame } from "@/contexts/GameContext"
-import { CutType } from "@/types/puzzleTypes"
+import { CutType } from "@generative-puzzle/game-core"
 import { playButtonClickSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
 import { useDeviceDetection } from "@/hooks/useDeviceDetection"

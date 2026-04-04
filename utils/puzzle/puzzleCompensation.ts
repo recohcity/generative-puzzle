@@ -1,4 +1,4 @@
-import type { Point } from '@/types/puzzleTypes';
+import type { Point } from '@generative-puzzle/game-core';
 import { CutLine, CutType } from './cutGeneratorTypes';
 
 export type Cut = CutLine;

@@ -8,7 +8,7 @@ import { playButtonClickSound } from "@/utils/rendering/soundEffects";
 
 import GameRecordDetails from '@/components/GameRecordDetails';
 
-import { GameRecord, DifficultyLevel } from '@/types/puzzleTypes';
+import { GameRecord, DifficultyLevel } from '@generative-puzzle/game-core';
 
 interface LeaderboardPanelProps {
   leaderboard: GameRecord[];

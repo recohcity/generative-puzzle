@@ -1,4 +1,4 @@
-import { ShapeType, Point, CanvasSize } from "@/types/puzzleTypes"
+import { ShapeType, Point, CanvasSize } from "@generative-puzzle/game-core"
 
 /**
  * 优化的形状生成器

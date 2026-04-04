@@ -1,7 +1,7 @@
 import React from 'react';
-import { GameStats, ScoreBreakdown } from '@/types/puzzleTypes';
+import { GameStats, ScoreBreakdown } from '@generative-puzzle/game-core';
 import { useTranslation } from '@/contexts/I18nContext';
-import { getSpeedBonusDescription, getSpeedBonusDetails } from '@/utils/score/ScoreCalculator';
+import { getSpeedBonusDescription, getSpeedBonusDetails } from '@generative-puzzle/game-core';
 
 
 interface MobileScoreLayoutProps {

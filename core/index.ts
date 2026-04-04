@@ -10,4 +10,4 @@ export { CanvasManager } from './CanvasManager';
 export { EventManager } from './EventManager';
 
 // Re-export types for convenience
-export type { Point, PuzzlePiece } from '@/types/puzzleTypes';
+export type { Point, PuzzlePiece } from '@generative-puzzle/game-core';

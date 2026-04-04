@@ -22,7 +22,7 @@ import ScoreDisplay from '@/components/score/ScoreDisplay';
 import LeaderboardPanel from '@/components/leaderboard/LeaderboardPanel';
 import RecentGameDetails from '@/components/RecentGameDetails';
 import { GameDataManager } from '@/utils/data/GameDataManager';
-import { getSpeedBonusDescription, getSpeedBonusDetails } from '@/utils/score/ScoreCalculator';
+import { getSpeedBonusDescription, getSpeedBonusDetails } from '@generative-puzzle/game-core';
 
 interface DesktopLayoutProps {
   isMusicPlaying: boolean;

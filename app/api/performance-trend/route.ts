@@ -3,6 +3,10 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
+// Next.js 静态导出（output: 'export'）下要求 API route 显式声明静态/重验证策略。
+// 这里读取本地文件系统数据，构建时求值即可；静态导出构建必须可通过。
+export const dynamic = 'force-static';
+
 // 提取 md 文件头部的 JSON 数据
 function extractMetaFromMarkdown(content: string) {
   const match = content.match(/<!--\s*({[\s\S]*?})\s*-->/);

@@ -3,7 +3,7 @@
  * 基于成功实现的最小化版本
  */
 
-import type { Point, PuzzlePiece } from "@/types/puzzleTypes";
+import type { Point, PuzzlePiece } from "@generative-puzzle/game-core";
 import { generateCuts } from "./cutGenerators";
 import { splitPolygon } from "./puzzleUtils";
 

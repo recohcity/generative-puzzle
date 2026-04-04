@@ -2,67 +2,124 @@
 
 import { useEffect, useState } from 'react';
 import { GameDataManager } from '@/utils/data/GameDataManager';
+import SupabaseAuthWidget from '@/components/auth/SupabaseAuthWidget';
+import { CloudGameRepository } from '@/utils/cloud/CloudGameRepository';
+import { STORAGE_KEYS, getUserMigrationKey } from '@/utils/storageKeys';
 
 export default function ScoreManagementPage() {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [history, setHistory] = useState<any[]>([]);
+  const [publicLeaderboard, setPublicLeaderboard] = useState<any[]>([]);
+  const [publicLoading, setPublicLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
-  const refreshData = () => {
-    const lb = GameDataManager.getLeaderboard();
-    const hist = GameDataManager.getGameHistory();
-    setLeaderboard(lb);
-    setHistory(hist);
-    console.log('刷新数据 - 排行榜:', lb, '历史:', hist);
+  const refreshData = async () => {
+    try {
+      // 1. 如果用户已登录，尝试从云端同步最新数据
+      const userId = await CloudGameRepository.getCurrentUserId();
+      if (userId) {
+        console.log('[ScoresPage] 正在从云端拉取最新记录...');
+        const cloudRecords = await CloudGameRepository.fetchUserGameHistory();
+        if (cloudRecords.length > 0) {
+          GameDataManager.syncWithCloudRecords(cloudRecords);
+        }
+      }
+
+      // 2. 从本地存储加载（包含刚才同步合并后的数据）
+      const lb = GameDataManager.getLeaderboard();
+      const hist = GameDataManager.getGameHistory();
+      setLeaderboard(lb);
+      setHistory(hist);
+    } catch (error) {
+      console.error('[ScoresPage] 刷新数据失败:', error);
+    }
   };
+
 
   useEffect(() => {
     setIsClient(true);
     refreshData();
   }, []);
 
-  const clearAllData = () => {
-    if (!confirm('确定要清除所有游戏数据吗？此操作不可恢复！')) {
+  // Load global public leaderboard (available for everyone).
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setPublicLoading(true);
+        const rows = await CloudGameRepository.fetchPublicLeaderboard("all");
+        if (!cancelled) setPublicLeaderboard(rows);
+      } catch (e) {
+        console.warn('[scores] fetch public leaderboard failed', e);
+      } finally {
+        if (!cancelled) setPublicLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const clearAllData = async () => {
+    const isCloudEnabled = !!(await CloudGameRepository.getCurrentUserId());
+    let deleteCloud = false;
+
+    if (isCloudEnabled) {
+      if (confirm('检测到您已登录。是否同时删除【云端】的所有同步数据？（确定则云端同步清空，取消则仅清空本地）')) {
+        deleteCloud = true;
+      }
+    } else if (!confirm('确定要清除本地所有游戏数据吗？')) {
       return;
     }
 
-    console.log('🗑️ 开始清除数据...');
+    console.log('🗑️ 开始清理数据...');
+    setMessage('⌛ 正在清理...');
 
     try {
-      // 直接清除localStorage
-      localStorage.removeItem('puzzle-leaderboard');
-      localStorage.removeItem('puzzle-history');
-
-      // 验证清除结果
-      const checkLeaderboard = localStorage.getItem('puzzle-leaderboard');
-      const checkHistory = localStorage.getItem('puzzle-history');
-
-      if (!checkLeaderboard && !checkHistory) {
-        console.log('✅ 数据清除成功');
-        setMessage('✅ 所有数据已清除');
-
-        // 立即更新状态
-        setLeaderboard([]);
-        setHistory([]);
-
-        // 再次刷新确保同步
-        setTimeout(() => {
-          refreshData();
-          setMessage('');
-        }, 1000);
-      } else {
-        console.error('❌ 数据清除不完整');
-        setMessage('❌ 数据清除失败');
+      // 1. 如果需要，清理云端
+      if (deleteCloud) {
+        const result = await CloudGameRepository.clearGameRecordsRPC();
+        if (!result.success) {
+          alert('云端数据清除失败，请检查网络后重试。');
+          return;
+        }
       }
+
+      // 2. 清除localStorage
+      localStorage.removeItem(STORAGE_KEYS.LEADERBOARD);
+      localStorage.removeItem(STORAGE_KEYS.HISTORY);
+      
+      // 3. 彻底根除：删除同步标记和离线队列
+      const userId = await CloudGameRepository.getCurrentUserId();
+      if (userId) {
+        localStorage.removeItem(getUserMigrationKey(userId));
+      }
+      localStorage.removeItem(STORAGE_KEYS.OFFLINE_QUEUE);
+      
+      GameDataManager.clearAllData(); // 同时也重置内存缓存
+
+      console.log('✅ 数据清理成功');
+
+      setMessage('✅ 所有数据已清除');
+
+      // 立即更新状态
+      setLeaderboard([]);
+      setHistory([]);
+
+      setTimeout(() => {
+        setMessage('');
+        refreshData();
+      }, 1500);
     } catch (error) {
-      console.error('❌ 清除数据时出错:', error);
-      setMessage('❌ 清除数据时出错: ' + error);
+      console.error('❌ 清理数据时出错:', error);
+      setMessage('❌ 操作异常');
     }
   };
+
 
   const getDifficultyTextFromRecord = (difficulty: any) => {
     const level = difficulty?.cutCount || 1;
@@ -107,9 +164,46 @@ export default function ScoreManagementPage() {
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
+      <SupabaseAuthWidget />
+
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">游戏成绩管理</h1>
         <p className="text-gray-600">查看和管理您的游戏历史记录与排行榜数据</p>
+      </div>
+
+      <div className="mb-8 rounded-lg border border-white/10 bg-white/5 p-4">
+        <div className="mb-2 text-[#FFD5AB] font-medium">全服公开榜（Top 5）</div>
+        {publicLoading ? (
+          <div className="text-sm text-white/70">加载中...</div>
+        ) : publicLeaderboard.length === 0 ? (
+          <div className="text-sm text-white/70">暂无公开榜数据</div>
+        ) : (
+          <div className="space-y-2">
+            {publicLeaderboard.slice(0, 5).map((record, idx) => {
+              const minutes = Math.floor(record.totalDuration / 60);
+              const seconds = record.totalDuration % 60;
+              return (
+                <div
+                  key={`public-lb-${record.timestamp}-${idx}`}
+                  className="flex items-center justify-between gap-4 rounded bg-black/20 border border-white/10 p-2"
+                >
+                  <div className="flex items-center gap-2 min-w-[120px]">
+                    <span className="text-sm text-white/90 font-medium w-7">{idx + 1}</span>
+                    <span className="text-sm text-white/80">
+                      {record.difficulty?.difficultyLevel ?? 'unknown'}
+                    </span>
+                  </div>
+                  <div className="text-sm text-white/90">
+                    {record.finalScore} 分
+                    <span className="text-white/60 ml-2">
+                      {minutes}:{String(seconds).padStart(2, '0')}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {message && (

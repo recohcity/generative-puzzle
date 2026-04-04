@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from '@/contexts/GameContext';
-import { calculateRemainingRotations, formatRotationDisplay } from '@/utils/score/ScoreCalculator';
+import { calculateRemainingRotations, formatRotationDisplay } from '@generative-puzzle/game-core';
 
 /**
  * RotationCounter组件 - 实时旋转次数显示

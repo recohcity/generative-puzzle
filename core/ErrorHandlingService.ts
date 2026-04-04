@@ -466,7 +466,7 @@ export class ErrorHandlingService {
     // Try to reload configuration
     try {
       // Validate and reload config
-      const { validateConfig } = require('../src/config/index');
+      const { validateConfig } = await import('@/src/config/index');
       if (typeof validateConfig === 'function') {
         return validateConfig();
       }

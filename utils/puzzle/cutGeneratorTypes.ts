@@ -1,4 +1,4 @@
-import { Point } from "@/types/puzzleTypes";
+import { Point } from "@generative-puzzle/game-core";
 
 /**
  * 切割线生成器类型定义

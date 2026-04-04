@@ -1,4 +1,4 @@
-import { Point } from "@/types/puzzleTypes";
+import { Point } from "@generative-puzzle/game-core";
 import { Graph } from "./Graph";
 import { BezierCurve, createRadialCurve, Bounds } from "./BezierCurve";
 import { DIFFICULTY_SETTINGS } from "../cutGeneratorConfig";

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from '@/contexts/I18nContext';
-import { RotationEfficiencyCalculator, RotationEfficiencyResult } from '@/utils/score/RotationEfficiencyCalculator';
+import { RotationEfficiencyCalculator, RotationEfficiencyResult } from '@generative-puzzle/game-core';
 import { RotateCw, Trophy, AlertCircle } from 'lucide-react';
 import styles from './RotationScoreDisplay.module.css';
 
