@@ -1,4 +1,4 @@
-import { GameStats, DifficultyConfig, ScoreBreakdown, GameRecord, PuzzlePiece, ShapeType, CutType } from '@/types/puzzleTypes';
+import { GameStats, DifficultyConfig, ScoreBreakdown, GameRecord, PuzzlePiece, ShapeType, CutType } from '../../types/puzzleTypes';
 import { calculateNewRotationScore } from './RotationEfficiencyCalculator';
 
 /**

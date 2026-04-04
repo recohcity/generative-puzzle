@@ -3,7 +3,7 @@
  * 统一榜单数据，只显示前5名，并检测玩家新入榜成绩
  */
 
-import { GameRecord } from '@/types/puzzleTypes';
+import { GameRecord } from '@generative-puzzle/game-core';
 
 interface SimplifiedLeaderboardData {
   top5Records: GameRecord[];

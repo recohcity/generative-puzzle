@@ -1,4 +1,4 @@
-import { GameStats, GameRecord, DifficultyLevel, ScoreBreakdown } from "@/types/puzzleTypes";
+import { GameStats, GameRecord, DifficultyLevel, ScoreBreakdown } from "@generative-puzzle/game-core";
 
 export interface ICloudGameRepository {
   getCurrentUserId(): Promise<string | null>;

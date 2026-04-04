@@ -1,9 +1,9 @@
 import React from 'react';
 import { useTranslation } from '@/contexts/I18nContext';
-import { GameStats, ScoreBreakdown } from '@/types/puzzleTypes';
+import { GameStats, ScoreBreakdown } from '@generative-puzzle/game-core';
 import { Trophy, Clock, RotateCw, Lightbulb, Move, X, Star } from 'lucide-react';
-import { calculateRotationEfficiencyPercentage, getSpeedBonusDescription, getSpeedBonusDetails } from '@/utils/score/ScoreCalculator';
-import { RotationEfficiencyCalculator } from '@/utils/score/RotationEfficiencyCalculator';
+import { calculateRotationEfficiencyPercentage, getSpeedBonusDescription, getSpeedBonusDetails } from '@generative-puzzle/game-core';
+import { RotationEfficiencyCalculator } from '@generative-puzzle/game-core';
 
 import './animations.css';
 

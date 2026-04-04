@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { GameState, GameAction } from '@/types/puzzleTypes';
+import { GameState, GameAction } from '@generative-puzzle/game-core';
 import { GameDataManager } from '@/utils/data/GameDataManager';
 import { CloudGameRepository } from '@/utils/cloud/CloudGameRepository';
 

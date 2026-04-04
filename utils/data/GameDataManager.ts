@@ -3,7 +3,7 @@
  * 负责本地存储的读写操作、数据验证和错误处理
  */
 
-import { GameRecord, GameStats, DifficultyLevel, DifficultyConfig, CutType, ScoreBreakdown } from '@/types/puzzleTypes';
+import { GameRecord, GameStats, DifficultyLevel, DifficultyConfig, CutType, ScoreBreakdown } from '@generative-puzzle/game-core';
 import { STORAGE_KEYS } from '@/utils/storageKeys';
 
 export class GameDataManager {

@@ -2,7 +2,7 @@
 import { useGame } from "@/contexts/GameContext"
 import { Button } from "@/components/ui/button"
 import { Hexagon, Cloud, Zap } from "lucide-react"
-import { ShapeType } from "@/types/puzzleTypes"
+import { ShapeType } from "@generative-puzzle/game-core"
 import { playButtonClickSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
 import { useDeviceDetection } from "@/hooks/useDeviceDetection"

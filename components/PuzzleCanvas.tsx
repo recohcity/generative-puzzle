@@ -13,7 +13,7 @@ import {
   drawShape
 } from "@/utils/rendering/puzzleDrawing";
 
-import { PuzzlePiece } from "@/types/puzzleTypes";
+import { PuzzlePiece } from "@generative-puzzle/game-core";
 
 import { usePuzzleInteractions } from "@/hooks/usePuzzleInteractions";
 import { useDebugToggle } from '@/hooks/useDebugToggle';

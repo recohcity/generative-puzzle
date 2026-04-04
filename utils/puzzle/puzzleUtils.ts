@@ -1,4 +1,4 @@
-import { Point } from "@/types/puzzleTypes"
+import { Point } from "@generative-puzzle/game-core"
 import { CutLine } from "./cutGeneratorTypes"
 
 // 线段相交检测

@@ -1,4 +1,4 @@
-import { Point } from "@/types/puzzleTypes";
+import { Point } from "@generative-puzzle/game-core";
 
 export class BezierCurve {
     p0: Point;

@@ -1,4 +1,4 @@
-import { ShapeType } from "@/types/puzzleTypes"
+import { ShapeType } from "@generative-puzzle/game-core"
 
 type Point = {
   x: number

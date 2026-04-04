@@ -3,7 +3,7 @@
  * 处理切割次数变更时的角度显示模式更新逻辑
  */
 
-import { GameAction } from '@/types/puzzleTypes';
+import { GameAction } from '@generative-puzzle/game-core';
 
 export interface AngleDisplayModeUpdater {
   updateModeOnCutCountChange(cutCount: number): 'always' | 'conditional';

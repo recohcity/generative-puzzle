@@ -1,5 +1,5 @@
 import { GameDataManager } from '../data/GameDataManager';
-import { DifficultyLevel } from '@/types/puzzleTypes';
+import { DifficultyLevel } from '@generative-puzzle/game-core';
 import { ALL_DIFFICULTY_LEVELS, getPieceCountByDifficulty, getDifficultyMultiplier } from '@/utils/difficulty/DifficultyUtils';
 
 /**

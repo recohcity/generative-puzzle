@@ -1,4 +1,4 @@
-import { Point } from "@/types/puzzleTypes";
+import { Point } from "@generative-puzzle/game-core";
 import { CutLine, Bounds } from "./cutGeneratorTypes";
 import { CUT_GENERATOR_CONFIG } from "./cutGeneratorConfig";
 import { 

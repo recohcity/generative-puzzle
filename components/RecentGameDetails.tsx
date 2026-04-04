@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { playButtonClickSound } from "@/utils/rendering/soundEffects";
 import { useTranslation } from '@/contexts/I18nContext';
-import { getSpeedBonusDescription, getSpeedBonusDetails } from '@/utils/score/ScoreCalculator';
+import { getSpeedBonusDescription, getSpeedBonusDetails } from '@generative-puzzle/game-core';
 
 // 使用GameDataManager内部的数据结构
 interface StoredGameRecord {

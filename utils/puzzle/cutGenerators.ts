@@ -15,7 +15,7 @@
  * - 高测试覆盖率
  */
 
-import { Point } from "@/types/puzzleTypes";
+import { Point } from "@generative-puzzle/game-core";
 import { 
   CUT_GENERATOR_CONFIG, 
   DIFFICULTY_SETTINGS,

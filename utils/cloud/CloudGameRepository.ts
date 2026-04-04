@@ -7,7 +7,7 @@ import {
   ShapeType,
   type GameStats,
   ScoreBreakdown,
-} from "@/types/puzzleTypes";
+} from "@generative-puzzle/game-core";
 import { getPieceCountByDifficulty } from "@/utils/difficulty/DifficultyUtils";
 import { STORAGE_KEYS } from "@/utils/storageKeys";
 

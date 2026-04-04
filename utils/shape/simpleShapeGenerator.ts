@@ -3,7 +3,7 @@
  * 基于成功实现的最小化版本
  */
 
-import type { Point } from "@/types/puzzleTypes";
+import type { Point } from "@generative-puzzle/game-core";
 
 /**
  * 生成简单的多边形形状

@@ -13,7 +13,7 @@ import type { ReactNode } from "react";
 import { ScatterPuzzle } from "@/utils/puzzle/ScatterPuzzle";
 import { ShapeService } from "@/utils/shape/ShapeService";
 import { PuzzleGenerator } from "@/utils/puzzle/PuzzleGenerator";
-import { calculateCenter } from "@/utils/geometry/puzzleGeometry";
+import { calculateCenter } from "@generative-puzzle/game-core";
 import { adaptAllElements } from "@/utils/SimpleAdapter";
 import { GameDataManager } from "@/utils/data/GameDataManager";
 import {
@@ -30,13 +30,13 @@ import {
   GameStats,
   GameRecord,
   DifficultyConfig,
-} from "@/types/puzzleTypes";
+} from "@generative-puzzle/game-core";
 import {
   calculateFinalScore,
   calculateMinimumRotations,
   calculateLiveScore,
   getHintAllowanceByCutCount,
-} from "@/utils/score/ScoreCalculator";
+} from "@generative-puzzle/game-core";
 import { calculateDifficultyLevel } from "@/utils/difficulty/DifficultyUtils";
 import { CloudGameRepository } from "@/utils/cloud/CloudGameRepository";
 import { playFinishSound } from "@/utils/rendering/soundEffects";

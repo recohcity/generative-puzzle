@@ -1,10 +1,10 @@
 // Path: utils/rendering/puzzleDrawing.ts
 // Functions for drawing puzzle elements on a Canvas. 
 
-import { calculateCenter } from "@/utils/geometry/puzzleGeometry"; // Import geometry helpers
+import { calculateCenter } from "@generative-puzzle/game-core"; // Import geometry helpers
 import { appendAlpha } from "@/utils/rendering/colorUtils"; // Assuming appendAlpha is needed
 // 使用统一的Point类型定义
-import type { Point } from '@/types/puzzleTypes';
+import type { Point } from '@generative-puzzle/game-core';
 
 // 定义类型 (从 PuzzleCanvas.tsx 迁移)
 export interface PuzzlePiece { // Export the interface

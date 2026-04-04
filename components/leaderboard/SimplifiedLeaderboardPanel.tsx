@@ -10,7 +10,7 @@ import { LeaderboardSimplifier } from '@/utils/leaderboard/LeaderboardSimplifier
 import { LeaderboardItemStyles, LeaderboardItemContent } from './LeaderboardItemStyles';
 
 // 使用统一的GameRecord类型
-import { GameRecord } from '@/types/puzzleTypes';
+import { GameRecord } from '@generative-puzzle/game-core';
 
 interface SimplifiedLeaderboardPanelProps {
   onClose: () => void;

@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { playButtonClickSound } from "@/utils/rendering/soundEffects";
 import { useTranslation } from '@/contexts/I18nContext';
-import { GameRecord } from '@/types/puzzleTypes';
-import { getSpeedBonusDescription, getSpeedBonusDetails } from '@/utils/score/ScoreCalculator';
+import { GameRecord } from '@generative-puzzle/game-core';
+import { getSpeedBonusDescription, getSpeedBonusDetails } from '@generative-puzzle/game-core';
 
 
 interface GameRecordDetailsProps {

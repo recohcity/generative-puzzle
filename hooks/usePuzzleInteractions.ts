@@ -4,9 +4,9 @@
  */
 
 import { RefObject, useState, useRef, useEffect, useCallback } from "react";
-import { GameState, Point, PuzzlePiece } from "@/types/puzzleTypes";
+import { GameState, Point, PuzzlePiece } from "@generative-puzzle/game-core";
 import { useGame } from "@/contexts/GameContext";
-import { calculateCenter, isPointInPolygon, rotatePoint, calculateAngle } from "@/utils/geometry/puzzleGeometry";
+import { calculateCenter, isPointInPolygon, rotatePoint, calculateAngle } from "@generative-puzzle/game-core";
 import { playPieceSelectSound, playPieceSnapSound, playFinishSound, playRotateSound } from "@/utils/rendering/soundEffects";
 import { drawPuzzle } from "@/utils/rendering/puzzleDrawing";
 

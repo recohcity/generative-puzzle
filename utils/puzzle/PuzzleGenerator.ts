@@ -1,4 +1,4 @@
-import type { Point, PuzzlePiece } from "@/types/puzzleTypes"
+import type { Point, PuzzlePiece } from "@generative-puzzle/game-core"
 import { generateCuts } from "@/utils/puzzle/cutGenerators"
 import { splitPolygon } from "@/utils/puzzle/puzzleUtils"
 import { applyExtraCutsWithRetry } from "@/utils/puzzle/puzzleCompensation"

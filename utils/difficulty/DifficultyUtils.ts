@@ -3,7 +3,7 @@
  * 与cutGeneratorConfig.ts保持完全一致，支持动态拼图数量
  */
 
-import { DifficultyLevel } from '@/types/puzzleTypes';
+import { DifficultyLevel } from '@generative-puzzle/game-core';
 
 /**
  * 根据切割次数计算难度级别（与cutGeneratorConfig.ts保持一致）
