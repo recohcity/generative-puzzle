@@ -7,11 +7,10 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-15.5-black.svg)](https://nextjs.org/)
-[![Code Quality](https://img.shields.io/badge/Quality-A%2B-brightgreen)](./docs/reports/Generative%20Puzzle%20项目代码质量全面体检报告.md)
 
-**基于 Next.js 15 和 React 19 构建的企业级生成式拼图游戏**
+**基于 Next.js 15 和 React 19 构建的企业级生成式云端拼图游戏**
 
-*无限生成 • 曲线切割 • 智能评分 • 3端完美适配*
+*无限生成 • 曲线切割 • 云端存档 • 3端完美适配*
 
 </div>
 

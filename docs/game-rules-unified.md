@@ -5,11 +5,13 @@
 **版本**: v3.4 (基于实际测试优化的速度奖励版)  
 **最后更新**: 2025/12/28  
 **状态**: ✅ 与代码实现完全一致  
-**基准代码**: `utils/score/ScoreCalculator.ts` + `utils/puzzle/cutGeneratorConfig.ts` + `utils/puzzle/graph/NetworkCutter.ts`
+**基准代码**: `packages/game-core/src/score/ScoreCalculator.ts` + `packages/game-core/src/puzzle/cutGeneratorConfig.ts` + `packages/game-core/src/puzzle/graph/NetworkCutter.ts`
 
 > **权威性声明**：本文档为游戏唯一权威规则说明，与代码实现完全一致。所有游戏逻辑、分数计算、难度设计均以此文档和对应代码为准。
 >
 > **文档合并说明**：本文档已合并了原 `docs/difficulty-design.md` 和 `docs/score-system.md` 的所有内容，原文档已被删除以避免信息不一致。
+>
+> **v1.3.77 更新说明 (Monorepo)**: 计算内核已整体无损迁移至 `@generative-puzzle/game-core` 独立包，断绝与 `React/DOM` 状态的牵连。
 >
 > **v3.3 更新说明**：引入动态速度奖励系统，基于难度级别和拼图数量计算合理的时间阈值和奖励分数，让每个难度都有机会获得速度加成奖励。
 >
