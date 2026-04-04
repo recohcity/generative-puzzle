@@ -82,7 +82,7 @@ export default function ScoreManagementPage() {
     try {
       // 1. 如果需要，清理云端
       if (deleteCloud) {
-        const result = await CloudGameRepository.deleteAllUserGameSessions();
+        const result = await CloudGameRepository.clearGameRecordsRPC();
         if (!result.success) {
           alert('云端数据清除失败，请检查网络后重试。');
           return;

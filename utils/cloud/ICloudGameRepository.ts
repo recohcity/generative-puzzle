@@ -12,5 +12,5 @@ export interface ICloudGameRepository {
   fetchUserGameHistory(): Promise<GameRecord[]>;
   fetchPublicLeaderboard(difficulty: DifficultyLevel): Promise<GameRecord[]>;
   migrateLocalHistoryToCloud(localHistory: GameRecord[]): Promise<{ successCount: number; failedCount: number }>;
-  deleteAllUserGameSessions(): Promise<{ success: boolean; error?: any }>;
+  clearGameRecordsRPC(): Promise<{ success: boolean; error?: any }>;
 }

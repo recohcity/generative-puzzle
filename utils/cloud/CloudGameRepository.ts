@@ -269,12 +269,13 @@ class CloudGameRepositoryClass implements ICloudGameRepository {
     return rows.map(mapPublicRowToGameRecord);
   }
 
-  async deleteAllUserGameSessions(): Promise<{ success: boolean; error?: any }> {
+  async clearGameRecordsRPC(): Promise<{ success: boolean; error?: any }> {
     if (!isSupabaseConfigured || !supabase) return { success: false };
     const userId = await this.getCurrentUserId();
     if (!userId) return { success: false };
 
-    const { error } = await supabase.from("game_sessions").delete().eq("user_id", userId);
+    // 调用部署在服务端的 Security Definer RPC 进行合规级清理
+    const { error } = await supabase.rpc('clear_user_game_sessions');
     this.saveOfflineQueue([]);
     return { success: !error, error };
   }
