@@ -5,29 +5,43 @@
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/recohcity/generative-puzzle) 
 [![Live Demo](https://img.shields.io/badge/🚀-Live_Demo-brightgreen)](https://www.citylivepark.com) 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Core Web Vitals](https://img.shields.io/badge/LCP-4.5s-orange.svg)](https://vercel.com/speed-insights)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-15.5-black.svg)](https://nextjs.org/)
 
-**基于 Next.js 15 和 React 19 构建的企业级生成式云端拼图游戏**
+**基于 Next.js 15 和 React 19 构建的企业级生成式拼图游戏**
 
-*无限生成 • 曲线切割 • 云端存档 • 3端完美适配*
+*无限生成 • 曲线切割 • 云端全同步 • LCP 4.5s 极速体验*
 
 </div>
 
 ---
 
+## 🏗️ 双产品形态策略 (Branch Flavors)
+
+本项目在同一 Git 仓库中通过不同分支提供截然不同的产品体验，确保核心算法共用的同时，满足不同场景下的数据隐私需求：
+
+- **`main` (云端增强版 / Cloud-Enhanced)**:
+  - **核心**: 完整接入 Supabase 认证与同步队列、Vercel 性能监控。
+  - **场景**: 正式线上运营、排行榜竞技、跨端数据一致。
+- **`game-only` (纯净单机版 / Standalone)**:
+  - **核心**: 物理剥离云端 SDK，仅保留 LocalStorage。
+  - **场景**: 静态站点发布 (GitHub Pages)、极致隐私环境、极速本地离线。
+
+---
+
 ## 🌊 最新特性 
 
-### ☁️ 云端联机同步 (Cloud Sync & Supabase)
-本项目目前已运行在正式的 `game-cloud` 架构下，提供全方位无感云端体验：
+### ☁️ 云端联机同步 (Cloud Sync)
+本项目主线已运行在高度解耦的 **useCloudSync** 架构下，提供全方位无感云端体验：
 - **无缝联机存档**：多设备共享游戏进程，支持强力的离线队列保护（断网游玩不丢成绩，联机后自动增量补齐）。
 - **全服公开榜单**：1-8 难度级均设立动态刷新的全服排行榜。
-- **隐私级安全合规**：废弃客户端直连删除权限，采用 `SECURITY DEFINER` 的 Postgres RPC，让游戏历史记录注销绝对安全。
+- **隐私级安全合规**：废弃客户端直连删除权限，采用 `SECURITY DEFINER` 的 Postgres RPC。
 
 ### 📦 防腐层引擎架构 (Monorepo)
 引入 Monorepo 体系将纯计算骨架提取到 `@generative-puzzle/game-core` 独立包：
 - 完美隔离计分矩阵、物理几何碰壁引擎与切割算子。
-- 彻底斩断了与视图层（React DOM）的交叉依赖，大大提升代码复用与渲染纯度。
+- 彻底斩断了与视图层（React DOM）的交叉依赖，确保算法在多分支间的通用性。
 
 ### ✨ 曲线切割模式 (Curve Mode)
 基于**贝塞尔曲线**和**图论网络**的算法，支持生成如行云流水般的互锁拼图线条：
@@ -41,10 +55,10 @@
 - **多变形状**：支持纯多边形、手绘云朵、锯齿闪电等多种基础外观边框。
 - **动态难度系统**：直线、斜线、**曲线**三种切割模式交叉，1-8 级动态生成组合，您永远不会两次玩到完全一样的同一张拼图。
 
-### 🏆 企业级卓越性能
-- 核心算法执行时长 <100ms，JS 环境内存占用极低。
-- 全流程 55+FPS，无惧大型画布与多层级浮雕渲染。
-- Webpack 编译产物体积极致压缩。
+### 🏆 极致性能标准
+- **4.5s LCP (Largest Contentful Paint)**：针对移动端低功耗设备进行的专项调优（已适配 Font Swap / Bundle Shrink）。
+- 核心算法执行时长 <100ms，全流程 55+FPS，无惧大型画布。
+- **SWC 优化构建**：利用 Next.js 15 编译器实现极致资源压缩。
 
 ### 🎮 极致游戏交互
 - **跨设备深度适配**：PC 端精准吸附，移动端响应式触控，针对 iPad 和异形屏做了深度优化的 PWA 沉浸式支持。
@@ -78,9 +92,10 @@
 
 想要深入理解项目的系统运作原理？请翻阅如下核心技术基建指南：
 
-- **[🏛️ 2026 核心架构设计思想](./docs/2026-game-cloud-monorepo-architecture.md)**：为什么采用 Monorepo 以及同步权威控制方案是如何处理掉包逻辑的。
+- **[🏛️ 2026 技术架构与数据流向](./docs/ARCHITECTURE_OVERVIEW.md)**：为什么采用 Monorepo，以及我们的“本地优先、云端最终一致”同步方案。
 - **[📝 Generative Puzzle PRD](./docs/PRD_生成式拼图游戏.md)**：包含本款产品的初心愿景、商业化推测和业务全貌记录。
 - **[⚖️ 分数与难度机制深度解析](./docs/game-rules-unified.md)**：想了解如何挑战 99 分极速榜？欢迎了解我们内部的算分公式。
+- **[🚑 架构健康评审报告 (2026.04)](./docs/2026-game-cloud-architecture-review.md)**：记录了所有已解决的 P0/P1 问题及项目优化轨迹。
 
 ---
 

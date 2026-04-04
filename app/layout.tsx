@@ -7,7 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext"
 import EnvModeClient from "@/components/EnvModeClient"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
-const inter = Inter({ 
+const inter = Inter({
   subsets: ["latin"],
   display: 'swap',
   adjustFontFallback: true,
@@ -90,8 +90,8 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
             {children}
-            <SpeedInsights />
           </AuthProvider>
+          <SpeedInsights />
         </ThemeProvider>
       </body>
     </html>

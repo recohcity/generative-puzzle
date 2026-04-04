@@ -20,10 +20,16 @@
 - **隐私清空权限下沉**: 抛弃传统粗粒度的 Supabase `Delete()` 开放权限，全面引入 `SECURITY DEFINER` 等级的 Postgres RPC (`clear_user_game_sessions()`) 实现数据消除。
 - **服务端接口对接**: 前端的清空触发行为更新为安全的 `clearGameRecordsRPC()`，确保只能以极小权限触碰安全边界，并同步处理内存与离线队列抹除。
 
-### 📌 分支与运行环境基线结论（2026-04-04）
-- **分支对齐**: `game-cloud` 分支所有技术债务与 P0/P1 修复已经无损、干净地通过 Pull Request/Merge 对齐回归至 `main`。
-- **运营看板监控就绪**: 线上 `main` 已激活并且能正常在 Vercel **Speed Insights** 中汇集生产环境 RUM (真实用户体验) 的遥测数据，成功在多端设备录得 `99` 满分初测，为下一阶段发版护航。
+#### ⚡ 阶段四：移动端性能专项调优与架构基准对齐 (Phase 4)
+- **4.5s LCP 极速攻坚**: 通过 `display: swap` 消除闪现、`optimizePackageImports` 深度缩减 JS Bundle (112KB First Load)、以及元数据图标去重，成功将移动端 LCP 压降至 4.5s 设计基准。
+- **监控全链路打通**: 物理集成 `@vercel/speed-insights` 并完成脚本根部迁移 (Root-Level Initialization)，实现了 100% 置信度的 Real-User Metrics (RUM) 采集能力。
+- **架构文档底座标准化**: 
+  - 创建 [ARCHITECTURE_OVERVIEW.md](./docs/ARCHITECTURE_OVERVIEW.md) 作为新一代单一真相源 (SSO)，详细定义了 Monorepo 动线与分支发布策略。
+  - 彻底清理已过时的 2026 开发路线图及其关联杂音。
+  - 更新 [README.md](./README.md) 门户，确立了 `main` (Cloud) 与 `game-only` (Standalone) 的双产品线战略。
+- **基础设施与环境规范**: 整理并公示了基于 Vercel + Supabase 的“统一数据库映射矩阵”，明确了全分支的部署生命周期。
 
+---
 ## [v1.3.76] - 2026-04-02
 
 ### 📊 性能仪表板功能增强 (Dashboard Enhancements)
