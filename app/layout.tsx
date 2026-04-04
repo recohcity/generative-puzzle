@@ -1,13 +1,17 @@
 import type React from "react"
 import "@/app/globals.css"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/contexts/AuthContext"
 import EnvModeClient from "@/components/EnvModeClient"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({ 
+  subsets: ["latin"],
+  display: 'swap',
+  adjustFontFallback: true,
+})
 
 export const metadata: Metadata = {
   title: "生成式拼图游戏",
@@ -56,6 +60,14 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
 }
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+}
+
 declare global {
   interface Window {
     __ENV_MODE__?: string;
@@ -70,21 +82,8 @@ export default function RootLayout({
   return (
     <html lang="zh-CN" suppressHydrationWarning>
       <head>
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
-        />
-        {/* 小尺寸 PNG - 浏览器标签页（优先使用，文件更小） */}
-        <link rel="icon" href="/icon-16.png" type="image/png" sizes="16x16" />
-        <link rel="icon" href="/icon-32.png" type="image/png" sizes="32x32" />
-        {/* Favicon - ICO 格式作为后备，确保传统浏览器兼容性 */}
-        <link rel="icon" href="/icon.ico" sizes="any" />
-        <link rel="shortcut icon" href="/icon.ico" type="image/x-icon" />
-        {/* 大尺寸 PNG - 高分辨率显示 */}
-        <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192" />
-        <link rel="icon" href="/icon-512.png" type="image/png" sizes="512x512" />
-        {/* Apple Touch Icon - 使用精确尺寸 PNG */}
-        <link rel="apple-touch-icon" href="/icon-180.png" sizes="180x180" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className={inter.className} suppressHydrationWarning>
         <EnvModeClient />
