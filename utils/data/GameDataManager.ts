@@ -3,13 +3,14 @@
  * 负责本地存储的读写操作、数据验证和错误处理
  */
 
-import { GameRecord, GameStats, DifficultyLevel, DifficultyConfig, CutType } from '@/types/puzzleTypes';
+import { GameRecord, GameStats, DifficultyLevel, DifficultyConfig, CutType, ScoreBreakdown } from '@/types/puzzleTypes';
+import { STORAGE_KEYS } from '@/utils/storageKeys';
 
 export class GameDataManager {
-  private static readonly LEADERBOARD_KEY = 'puzzle-leaderboard';
-  private static readonly GAME_HISTORY_KEY = 'puzzle-history';
-  private static readonly VISITOR_COUNT_KEY = 'puzzle-visitor-count';
-  private static readonly GAME_START_COUNT_KEY = 'puzzle-game-start-count';
+  private static readonly LEADERBOARD_KEY = STORAGE_KEYS.LEADERBOARD;
+  private static readonly GAME_HISTORY_KEY = STORAGE_KEYS.HISTORY;
+  private static readonly VISITOR_COUNT_KEY = STORAGE_KEYS.VISITOR_COUNT;
+  private static readonly GAME_START_COUNT_KEY = STORAGE_KEYS.GAME_START_COUNT;
   private static readonly MAX_LEADERBOARD_RECORDS = 5;
   private static readonly MAX_HISTORY_RECORDS = 50;
 
@@ -42,7 +43,7 @@ export class GameDataManager {
     };
   }
 
-  static saveGameRecord(gameStats: GameStats, finalScore: number, scoreBreakdown: any): boolean {
+  static saveGameRecord(gameStats: GameStats, finalScore: number, scoreBreakdown: ScoreBreakdown | null): boolean {
     try {
       const record: GameRecord = {
         timestamp: Date.now(),
@@ -224,7 +225,10 @@ export class GameDataManager {
       const mergedHistory = [...localHistory];
       let newCount = 0;
       for (const cloud of cloudRecords) {
-        const exists = mergedHistory.some(local => Math.abs(local.timestamp - cloud.timestamp) <= 1 && local.finalScore === cloud.finalScore);
+        const exists = mergedHistory.some(local => 
+          (cloud.id && local.id === cloud.id) || 
+          (Math.abs(local.timestamp - cloud.timestamp) <= 1 && local.finalScore === cloud.finalScore)
+        );
         if (!exists) { mergedHistory.push(cloud); newCount++; }
       }
       mergedHistory.sort((a, b) => b.timestamp - a.timestamp);
@@ -235,7 +239,10 @@ export class GameDataManager {
       let localL = this.getLeaderboard();
       const mergedL = [...localL];
       for (const cr of cloudRecords) {
-        const exists = mergedL.some(local => Math.abs(local.timestamp - cr.timestamp) <= 1 && local.finalScore === cr.finalScore);
+        const exists = mergedL.some(local => 
+          (cr.id && local.id === cr.id) || 
+          (Math.abs(local.timestamp - cr.timestamp) <= 1 && local.finalScore === cr.finalScore)
+        );
         if (!exists) mergedL.push(cr);
       }
       mergedL.sort((a, b) => b.finalScore - a.finalScore);

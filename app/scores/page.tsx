@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { GameDataManager } from '@/utils/data/GameDataManager';
 import SupabaseAuthWidget from '@/components/auth/SupabaseAuthWidget';
 import { CloudGameRepository } from '@/utils/cloud/CloudGameRepository';
+import { STORAGE_KEYS, getUserMigrationKey } from '@/utils/storageKeys';
 
 export default function ScoreManagementPage() {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
@@ -50,7 +51,7 @@ export default function ScoreManagementPage() {
     (async () => {
       try {
         setPublicLoading(true);
-        const rows = await CloudGameRepository.fetchPublicLeaderboard({ limit: 50 });
+        const rows = await CloudGameRepository.fetchPublicLeaderboard("all");
         if (!cancelled) setPublicLeaderboard(rows);
       } catch (e) {
         console.warn('[scores] fetch public leaderboard failed', e);
@@ -89,15 +90,15 @@ export default function ScoreManagementPage() {
       }
 
       // 2. 清除localStorage
-      localStorage.removeItem('puzzle-leaderboard');
-      localStorage.removeItem('puzzle-history');
+      localStorage.removeItem(STORAGE_KEYS.LEADERBOARD);
+      localStorage.removeItem(STORAGE_KEYS.HISTORY);
       
       // 3. 彻底根除：删除同步标记和离线队列
       const userId = await CloudGameRepository.getCurrentUserId();
       if (userId) {
-        localStorage.removeItem(`supabase_migration_done_${userId}`);
+        localStorage.removeItem(getUserMigrationKey(userId));
       }
-      localStorage.removeItem('supabase-offline-game-sessions');
+      localStorage.removeItem(STORAGE_KEYS.OFFLINE_QUEUE);
       
       GameDataManager.clearAllData(); // 同时也重置内存缓存
 

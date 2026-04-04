@@ -3,12 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase/browserClient";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function SupabaseAuthWidget() {
+  const { user, signOut: contextSignOut, isLoading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
-  const [userId, setUserId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const userId = user?.id ?? null;
 
   const displayUserId = useMemo(() => {
     if (!userId) return null;
@@ -18,26 +21,7 @@ export default function SupabaseAuthWidget() {
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) {
       setError("Supabase 未配置：请在 Vercel / 环境变量中设置 NEXT_PUBLIC_SUPABASE_URL 和 NEXT_PUBLIC_SUPABASE_ANON_KEY。");
-      return;
     }
-
-    let subscription: { unsubscribe: () => void } | null = null;
-
-    supabase.auth
-      .getSession()
-      .then(({ data }) => setUserId(data.session?.user?.id ?? null))
-      .catch((e) => {
-        console.warn("[SupabaseAuthWidget] getSession error", e);
-      });
-
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUserId(session?.user?.id ?? null);
-    });
-    subscription = data?.subscription ?? null;
-
-    return () => {
-      subscription?.unsubscribe?.();
-    };
   }, []);
 
   const signInWithMagicLink = async () => {
@@ -77,9 +61,9 @@ export default function SupabaseAuthWidget() {
         return;
       }
 
-      const { error } = await supabase.auth.signOut();
-      if (error) setError(error.message);
-      setUserId(null);
+      await contextSignOut();
+    } catch (e: any) {
+      setError(e.message || "登出失败");
     } finally {
       setBusy(false);
     }

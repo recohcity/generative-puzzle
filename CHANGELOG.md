@@ -1,4 +1,19 @@
 # 生成式拼图游戏 Changelog
+
+## [Unreleased]
+
+## [v1.3.77] - 2026-04-04
+
+### ☁️ 云端基础演进第一阶段 (game-cloud Phase 1)
+- **核心组件解耦**: 将混杂在 `GameContext` 中的云同步逻辑与认证订阅逻辑提取为独立的 `useCloudSync` 和 `AuthContext` Hooks，大幅降低了上下文组件的耦合度。
+- **配置与常数收敛**: 新增 `utils/storageKeys.ts`，统一管理散落的 `localStorage` 键名。
+- **性能与调试优化**: 提取了独立的 `useDebugState` hook 用来管理全局调试变量，且做到了生产环境隔离。
+- **数据同步增强**: 在 `GameDataManager` 中完善了基于 `cloud.id` 的去重算法，有效解决了多端同时刷新带来的重复记录问题。
+- **数据层接口化**: 提供了 `ICloudGameRepository` 接口，使底层基础设施逻辑面向接口编程，为未来的依赖注入和单测打下基础。
+
+### 📌 架构决策（game-cloud）
+- 书面确认 `docs/2026-game-cloud-monorepo-architecture.md` **v1.1**：**同步权威顺序**按 §3 执行；**删除本应用游戏数据**采用 **Postgres RPC**；**账号注销 / Edge** 暂缓，待有明确需求后再补（见文档 §0、§4.5）。
+
 ## [v1.3.76] - 2026-04-02
 
 ### 📊 性能仪表板功能增强 (Dashboard Enhancements)

@@ -6,8 +6,10 @@ import {
   GameRecord,
   ShapeType,
   type GameStats,
+  ScoreBreakdown,
 } from "@/types/puzzleTypes";
 import { getPieceCountByDifficulty } from "@/utils/difficulty/DifficultyUtils";
+import { STORAGE_KEYS } from "@/utils/storageKeys";
 
 type PublicLeaderboardRow = {
   user_id: string;
@@ -55,25 +57,27 @@ const mapPublicRowToGameRecord = (row: PublicLeaderboardRow): GameRecord => {
     hintUsageCount: 0,
     dragOperations: 0,
     rotationEfficiency: 1.0,
-    scoreBreakdown: {},
+    scoreBreakdown: null,
   };
 };
 
-const OFFLINE_QUEUE_KEY = "supabase-offline-game-sessions";
+const OFFLINE_QUEUE_KEY = STORAGE_KEYS.OFFLINE_QUEUE;
 
 type OfflineSession = {
   gameStats: GameStats;
   finalScore: number;
-  scoreBreakdown: any;
+  scoreBreakdown: ScoreBreakdown | null;
 };
 
-export const CloudGameRepository = {
+import { ICloudGameRepository } from "./ICloudGameRepository";
+
+class CloudGameRepositoryClass implements ICloudGameRepository {
   async getCurrentUserId(): Promise<string | null> {
     if (!isSupabaseConfigured || !supabase) return null;
     const { data, error } = await supabase.auth.getSession();
     if (error) return null;
     return data.session?.user?.id ?? null;
-  },
+  }
 
   getOfflineQueue(): OfflineSession[] {
     if (typeof window === "undefined") return [];
@@ -83,17 +87,17 @@ export const CloudGameRepository = {
     } catch (e) {
       return [];
     }
-  },
+  }
 
   saveOfflineQueue(queue: OfflineSession[]) {
     if (typeof window === "undefined") return;
     try {
       localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
     } catch (e) {}
-  },
+  }
 
   async uploadGameSession(
-    params: { gameStats: GameStats; finalScore: number; scoreBreakdown: any },
+    params: { gameStats: GameStats; finalScore: number; scoreBreakdown: ScoreBreakdown | null },
     skipQueue = false
   ): Promise<{ skipped: boolean; error?: any }> {
     if (!isSupabaseConfigured || !supabase) return { skipped: true };
@@ -135,18 +139,18 @@ export const CloudGameRepository = {
     }
 
     return { skipped: false };
-  },
+  }
 
-  addToOfflineQueue(params: { gameStats: GameStats; finalScore: number; scoreBreakdown: any }) {
+  addToOfflineQueue(session: { gameStats: GameStats; finalScore: number; scoreBreakdown: ScoreBreakdown | null }) {
     const queue = this.getOfflineQueue();
     const isDuplicate = queue.some(
-      (s) => s.gameStats.gameStartTime === params.gameStats.gameStartTime && s.finalScore === params.finalScore
+      (s) => s.gameStats.gameStartTime === session.gameStats.gameStartTime && s.finalScore === session.finalScore
     );
     if (isDuplicate) return;
 
-    queue.push(params);
+    queue.push(session);
     this.saveOfflineQueue(queue.slice(-50));
-  },
+  }
 
   async syncOfflineSessions(): Promise<{ successCount: number; failedCount: number }> {
     if (!isSupabaseConfigured || !supabase) return { successCount: 0, failedCount: 0 };
@@ -172,7 +176,7 @@ export const CloudGameRepository = {
     this.saveOfflineQueue(remainingQueue);
     if (successCount > 0) console.log(`[CloudGameRepository] 离线同步完成: 成功 ${successCount}, 失败 ${failedCount}`);
     return { successCount, failedCount };
-  },
+  }
 
   async fetchUserGameHistory(): Promise<GameRecord[]> {
     if (!isSupabaseConfigured || !supabase) return [];
@@ -209,12 +213,12 @@ export const CloudGameRepository = {
         hintUsageCount: row.metadata?.hintUsageCount || 0,
         dragOperations: row.metadata?.dragOperations || 0,
         rotationEfficiency: row.metadata?.rotationEfficiency || 1.0,
-        scoreBreakdown: row.metadata?.scoreBreakdown || {},
+        scoreBreakdown: row.metadata?.scoreBreakdown || null,
         gameStartTime: row.metadata?.gameStartTime || (new Date(row.client_created_at).getTime() - row.duration_ms),
         id: row.id,
       };
     });
-  },
+  }
 
   async migrateLocalHistoryToCloud(records: GameRecord[]): Promise<{ successCount: number; failedCount: number }> {
     if (!isSupabaseConfigured || !supabase) return { successCount: 0, failedCount: 0 };
@@ -249,12 +253,11 @@ export const CloudGameRepository = {
 
     if (successCount > 0) console.log(`[CloudGameRepository] 历史记录迁移完成: 成功 ${successCount}`);
     return { successCount, failedCount };
-  },
+  }
 
-  async fetchPublicLeaderboard(params?: { limit?: number; difficulty?: DifficultyLevel | "all" }): Promise<GameRecord[]> {
+  async fetchPublicLeaderboard(difficulty: DifficultyLevel | "all" = "all"): Promise<GameRecord[]> {
     if (!isSupabaseConfigured || !supabase) return [];
-    const limit = params?.limit ?? 50;
-    const difficulty = params?.difficulty ?? "all";
+    const limit = 50;
 
     let query = supabase.from("leaderboards").select("*").order("best_score", { ascending: false }).limit(limit);
     if (difficulty !== "all") query = query.eq("difficulty", difficulty);
@@ -264,19 +267,17 @@ export const CloudGameRepository = {
 
     const rows = (data ?? []) as PublicLeaderboardRow[];
     return rows.map(mapPublicRowToGameRecord);
-  },
+  }
 
   async deleteAllUserGameSessions(): Promise<{ success: boolean; error?: any }> {
     if (!isSupabaseConfigured || !supabase) return { success: false };
     const userId = await this.getCurrentUserId();
     if (!userId) return { success: false };
 
-    // 1. 先清空云端表
     const { error } = await supabase.from("game_sessions").delete().eq("user_id", userId);
-    
-    // 2. 本地也要立刻清空“离线同步队列”，防止刚才删完立刻又推上去
     this.saveOfflineQueue([]);
-    
     return { success: !error, error };
-  },
-};
+  }
+}
+
+export const CloudGameRepository = new CloudGameRepositoryClass();

@@ -446,29 +446,25 @@ export default function PuzzleCanvas() {
           <div>Score: {state.currentScore}</div>
           <button 
             onClick={() => {
-              // 先确保游戏处于活跃状态
-              if (!state.isGameActive && state.puzzle) {
-                dispatch({ type: 'SCATTER_PUZZLE' });
+              if (state.puzzle) {
+                // 如果游戏未开始，先触发开始（这现在会正确初始化统计和分数）
+                if (!state.isGameActive) {
+                  dispatch({ 
+                    type: 'SCATTER_PUZZLE', 
+                    payload: { leaderboard: [] } 
+                  });
+                }
+                
+                // 延迟一秒设置所有拼图为完成状态，触发 GameContext 的 useEffect 完成检测
                 setTimeout(() => {
-                  // 设置所有拼图为完成状态
                   const allPieceIndices = Array.from({ length: state.puzzle!.length }, (_, i) => i);
                   dispatch({ type: 'SET_COMPLETED_PIECES', payload: allPieceIndices });
                 }, 100);
-              } else if (state.puzzle) {
-                // 直接设置所有拼图为完成状态
-                const allPieceIndices = Array.from({ length: state.puzzle.length }, (_, i) => i);
-                dispatch({ type: 'SET_COMPLETED_PIECES', payload: allPieceIndices });
               }
             }}
-            className="mt-2 px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
+            className="mt-2 px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 w-full"
           >
             Auto Complete
-          </button>
-          <button 
-            onClick={() => dispatch({ type: 'GAME_COMPLETED' })}
-            className="mt-1 px-2 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600"
-          >
-            Force Complete
           </button>
         </div>
       )}

@@ -19,6 +19,7 @@
 | **[适配监督指令](./SUPREME_ADAPTATION_DIRECTIVE.md)** | **最高级别**的跨设备适配规范 | **必须遵守**的开发准则 |
 | **[当前适配系统](./CURRENT_ADAPTATION_SYSTEM.md)** | 适配技术方案与架构解析 | 理解适配实现原理 |
 | **[部署指南](./GITHUB_PAGES_DEPLOYMENT.md)** | GitHub Pages 发布与工作流说明 | 上线发布 / CI配置 |
+| **[game-cloud 单仓多包架构](./2026-game-cloud-monorepo-architecture.md)** | 单仓多包、同步权威顺序、删除/合规（RPC vs Edge） | `game-cloud` 重构与云端演进 |
 
 ### 📊 实时监控报告 (Auto-Generated Reports)
 > 📍 所有报告均位于 `docs/reports/` 目录，由 CI/CD 或脚本自动生成，**反映真实代码状态**。

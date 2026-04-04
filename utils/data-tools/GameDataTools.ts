@@ -42,8 +42,14 @@ export class GameDataTools {
       const scoreBreakdown = {
         baseScore: Math.floor(baseScore),
         timeBonus: Math.floor(Math.random() * 300),
+        timeBonusRank: Math.floor(Math.random() * 5) + 1,
+        isTimeRecord: Math.random() > 0.8,
         rotationScore: -rotations * 10,
+        rotationEfficiency: Math.random() * 0.5 + 0.5,
+        minRotations: Math.max(1, rotations - 2),
         hintScore: -hints * 50,
+        hintAllowance: 3,
+        difficultyMultiplier: getDifficultyMultiplier(difficulty as any),
         finalScore: Math.floor(baseScore + Math.random() * 300 - rotations * 10 - hints * 50)
       };
       

@@ -140,7 +140,7 @@ export type GameAction =
   | { type: "SET_SHAPE_OFFSET"; payload: { offsetX: number; offsetY: number } }
   | { type: "GENERATE_SHAPE" }
   | { type: "GENERATE_PUZZLE" }
-  | { type: "SCATTER_PUZZLE" }
+  | { type: "SCATTER_PUZZLE"; payload?: { leaderboard: GameRecord[] } }
   | { type: "ROTATE_PIECE"; payload: { clockwise: boolean } }
   | { type: "UPDATE_PIECE_POSITION"; payload: { index: number; x: number; y: number; dx: number; dy: number } }
   | { type: "RESET_PIECE_TO_ORIGINAL"; payload: number }
@@ -150,9 +150,16 @@ export type GameAction =
   | { type: "SET_SHAPE_TYPE"; payload: ShapeType }
   | { type: "SET_PENDING_SHAPE_TYPE"; payload: ShapeType | null }
   | { type: "SET_CUT_TYPE"; payload: CutType }
-  | { type: "GAME_COMPLETED" }
+  | { type: "GAME_COMPLETED"; payload: { 
+      gameStats: GameStats; 
+      finalScore: number; 
+      scoreBreakdown: ScoreBreakdown; 
+      isNewRecord: boolean; 
+      currentRank: number; 
+      leaderboard: GameRecord[] 
+    } }
   | { type: "RESTART_GAME" }
-  | { type: "RETRY_CURRENT_GAME" }
+  | { type: "RETRY_CURRENT_GAME"; payload: { scatteredPuzzle: PuzzlePiece[]; leaderboard: GameRecord[] } }
   | { type: "SHOW_LEADERBOARD" }
   | { type: "HIDE_LEADERBOARD" }
   | { type: "UPDATE_LIVE_SCORE"; payload: number }
@@ -170,11 +177,7 @@ export type GameAction =
   | { type: 'TRACK_ROTATION' }
   | { type: 'TRACK_HINT_USAGE' }
   | { type: 'TRACK_DRAG_OPERATION' }
-  | { type: 'COMPLETE_GAME'; payload: { playerName?: string } }
-  | { type: 'RESTART_GAME' }
-  | { type: 'SHOW_LEADERBOARD' }
-  | { type: 'HIDE_LEADERBOARD' }
-  | { type: 'LOAD_LEADERBOARD' }
+  | { type: 'LOAD_LEADERBOARD'; payload: GameRecord[] }
   | { type: 'RESET_STATS' }
   // 角度显示增强功能相关的Action
   | { type: 'UPDATE_ANGLE_DISPLAY_MODE'; payload: { cutCount: number } }
@@ -258,7 +261,7 @@ export interface GameRecord {
   hintUsageCount: number;
   dragOperations: number;
   rotationEfficiency: number;
-  scoreBreakdown: any;
+  scoreBreakdown: ScoreBreakdown | null;
   gameStartTime?: number;
   id?: string;
 }
@@ -297,19 +300,6 @@ export interface StorageData {
   };
 }
 
-// 统计相关的Action类型
-export type StatsAction = 
-  | { type: 'START_GAME_TRACKING'; payload: { difficulty: DifficultyConfig } }
-  | { type: 'TRACK_ROTATION' }
-  | { type: 'TRACK_HINT_USAGE' }
-  | { type: 'TRACK_DRAG_OPERATION' }
-  | { type: 'COMPLETE_GAME'; payload: { playerName?: string } }
-  | { type: 'RESTART_GAME' }
-  | { type: 'SHOW_LEADERBOARD' }
-  | { type: 'HIDE_LEADERBOARD' }
-  | { type: 'LOAD_LEADERBOARD' }
-  | { type: 'RESET_STATS' };
-
 // 类型验证函数
 export const validateGameStats = (stats: any): stats is GameStats => {
   return (
@@ -334,7 +324,6 @@ export const validateGameStats = (stats: any): stats is GameStats => {
     typeof stats.isTimeRecord === 'boolean' &&
     typeof stats.rotationScore === 'number' &&
     typeof stats.hintScore === 'number' &&
-    typeof stats.dragPenalty === 'number' &&
     typeof stats.difficultyMultiplier === 'number' &&
     typeof stats.finalScore === 'number' &&
     typeof stats.deviceType === 'string' &&
@@ -342,15 +331,25 @@ export const validateGameStats = (stats: any): stats is GameStats => {
   );
 };
 
+/**
+ * 验证游戏记录对象是否符合 GameRecord 接口
+ */
 export const validateGameRecord = (record: any): record is GameRecord => {
   return (
     typeof record === 'object' &&
     record !== null &&
-    typeof record.id === 'string' &&
-    typeof record.playerName === 'string' &&
-    validateGameStats(record.stats) &&
-    record.completedAt instanceof Date &&
-    typeof record.isPersonalBest === 'boolean'
+    typeof record.timestamp === 'number' &&
+    typeof record.finalScore === 'number' &&
+    typeof record.totalDuration === 'number' &&
+    typeof record.difficulty === 'object' &&
+    record.difficulty !== null &&
+    typeof record.deviceInfo === 'object' &&
+    record.deviceInfo !== null &&
+    typeof record.totalRotations === 'number' &&
+    typeof record.hintUsageCount === 'number' &&
+    typeof record.dragOperations === 'number' &&
+    typeof record.rotationEfficiency === 'number' &&
+    (record.scoreBreakdown === null || typeof record.scoreBreakdown === 'object')
   );
 };
 
@@ -367,7 +366,6 @@ export const validateScoreBreakdown = (breakdown: any): breakdown is ScoreBreakd
     typeof breakdown.minRotations === 'number' &&
     typeof breakdown.hintScore === 'number' &&
     typeof breakdown.hintAllowance === 'number' &&
-    typeof breakdown.dragPenalty === 'number' &&
     typeof breakdown.difficultyMultiplier === 'number' &&
     typeof breakdown.finalScore === 'number'
   );
