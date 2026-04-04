@@ -3,15 +3,26 @@
 
 ## [v1.3.77] - 2026-04-04
 
-### ☁️ 云端基础演进第一阶段 (game-cloud Phase 1)
+### 🚀 game-cloud 分支全面重构与正式回归基线
+本版本标志着 `game-cloud` 架构升级的全面竣工，并成功合并入 `main` 生产分支，实现架构对齐与 Vercel 生产环境分析打通。
+
+#### ☁️ 阶段一与前序准备 (Phase 1)
 - **核心组件解耦**: 将混杂在 `GameContext` 中的云同步逻辑与认证订阅逻辑提取为独立的 `useCloudSync` 和 `AuthContext` Hooks，大幅降低了上下文组件的耦合度。
 - **配置与常数收敛**: 新增 `utils/storageKeys.ts`，统一管理散落的 `localStorage` 键名。
-- **性能与调试优化**: 提取了独立的 `useDebugState` hook 用来管理全局调试变量，且做到了生产环境隔离。
-- **数据同步增强**: 在 `GameDataManager` 中完善了基于 `cloud.id` 的去重算法，有效解决了多端同时刷新带来的重复记录问题。
-- **数据层接口化**: 提供了 `ICloudGameRepository` 接口，使底层基础设施逻辑面向接口编程，为未来的依赖注入和单测打下基础。
+- **性能与调试优化**: 提取了独立的 `useDebugState` hook 用来管理全局调试变量，并在生产环境安全隔离。
+- **数据层接口化**: 提供了 `ICloudGameRepository` 接口，并完善了本地/云端数据的基于 UUID+时间戳 的去重算法。
 
-### 📌 架构决策（game-cloud）
-- 书面确认 `docs/2026-game-cloud-monorepo-architecture.md` **v1.1**：**同步权威顺序**按 §3 执行；**删除本应用游戏数据**采用 **Postgres RPC**；**账号注销 / Edge** 暂缓，待有明确需求后再补（见文档 §0、§4.5）。
+#### 📦 阶段二：单仓多包(Monorepo)骨架建立与游戏状态纯化 (Phase 2)
+- **Monorepo 引入**: 成功建立 `packages/game-core`，将基础模型类型、碰撞几何与分数算法全面抽离。应用端通过 `@generative-puzzle/game-core` 导入代码，阻断应用层到基础设施层的循环依赖风险。
+- **物理与渲染抽离**: 从 `GameContext` 及冗长的 Reducer 中剥离出了专属的 `usePhysicsBounds` 钩子处理边缘回弹逻辑，以及 `CanvasAdapter` 纯函数处理画布与设备响应式尺寸逻辑。使上帝组件得到前所未有的瘦身（裁撤数千行代码）。
+
+#### 🔒 阶段三：云端合规性与服务端安全控制 (Phase 3)
+- **隐私清空权限下沉**: 抛弃传统粗粒度的 Supabase `Delete()` 开放权限，全面引入 `SECURITY DEFINER` 等级的 Postgres RPC (`clear_user_game_sessions()`) 实现数据消除。
+- **服务端接口对接**: 前端的清空触发行为更新为安全的 `clearGameRecordsRPC()`，确保只能以极小权限触碰安全边界，并同步处理内存与离线队列抹除。
+
+### 📌 分支与运行环境基线结论（2026-04-04）
+- **分支对齐**: `game-cloud` 分支所有技术债务与 P0/P1 修复已经无损、干净地通过 Pull Request/Merge 对齐回归至 `main`。
+- **运营看板监控就绪**: 线上 `main` 已激活并且能正常在 Vercel **Speed Insights** 中汇集生产环境 RUM (真实用户体验) 的遥测数据，成功在多端设备录得 `99` 满分初测，为下一阶段发版护航。
 
 ## [v1.3.76] - 2026-04-02
 
