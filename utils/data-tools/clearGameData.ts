@@ -27,7 +27,7 @@ export function checkGameDataStatus() {
     const historyData = localStorage.getItem('puzzle-history');
     
     console.log('📊 排行榜数据状态:', leaderboardData ? `有数据 (${JSON.parse(leaderboardData).length}条)` : '无数据');
-    console.log('📚 历史数据状态:', historyData ? `有数据 (${JSON.parse(historyData).length}条)` : '无数据');
+    console.log('📚 历史成绩状态:', historyData ? `有数据 (${JSON.parse(historyData).length}条)` : '无数据');
     
     if (leaderboardData) {
       const leaderboard = JSON.parse(leaderboardData);

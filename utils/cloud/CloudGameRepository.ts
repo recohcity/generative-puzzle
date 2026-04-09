@@ -58,7 +58,11 @@ const mapPublicRowToGameRecord = (row: PublicLeaderboardRow): GameRecord => {
     dragOperations: 0,
     rotationEfficiency: 1.0,
     scoreBreakdown: null,
-  };
+    // Add display_name as an extra property for the leaderboard
+    nickname: row.display_name,
+    displayName: row.display_name,
+    sessionsCount: row.sessions_count ?? 0,
+  } as GameRecord & { displayName?: string | null; nickname?: string | null; sessionsCount?: number };
 };
 
 const OFFLINE_QUEUE_KEY = STORAGE_KEYS.OFFLINE_QUEUE;
@@ -138,6 +142,24 @@ class CloudGameRepositoryClass implements ICloudGameRepository {
       return { skipped: false, error };
     }
 
+    // 更新用户的最高分记录 (best_score)
+    try {
+      const { data: profile } = await supabase
+        .from("player_profiles")
+        .select("best_score")
+        .eq("id", userId)
+        .single();
+
+      if (profile && params.finalScore > profile.best_score) {
+        await supabase
+          .from("player_profiles")
+          .update({ best_score: params.finalScore })
+          .eq("id", userId);
+      }
+    } catch (profileUpdateErr) {
+      console.warn("Failed to update best_score:", profileUpdateErr);
+    }
+
     return { skipped: false };
   }
 
@@ -160,11 +182,23 @@ class CloudGameRepositoryClass implements ICloudGameRepository {
     const queue = this.getOfflineQueue();
     if (queue.length === 0) return { successCount: 0, failedCount: 0 };
 
+    // 获取云端已有的记录，避免 409
+    const existingKeys = await this.fetchExistingIdempotencyKeys();
+
     let successCount = 0;
     let failedCount = 0;
     const remainingQueue: OfflineSession[] = [];
 
     for (const session of queue) {
+      const gameEndTimeMs = session.gameStats.gameEndTime ?? Date.now();
+      const difficultyLevel = session.gameStats.difficulty.difficultyLevel;
+      const idempotencyKey = `${userId}-${gameEndTimeMs}-${difficultyLevel}-${Math.round(session.finalScore)}`;
+
+      if (existingKeys.has(idempotencyKey)) {
+        successCount++;
+        continue;
+      }
+
       const result = await this.uploadGameSession(session, true);
       if (!result.error) successCount++;
       else {
@@ -176,6 +210,27 @@ class CloudGameRepositoryClass implements ICloudGameRepository {
     this.saveOfflineQueue(remainingQueue);
     if (successCount > 0) console.log(`[CloudGameRepository] 离线同步完成: 成功 ${successCount}, 失败 ${failedCount}`);
     return { successCount, failedCount };
+  }
+
+  /**
+   * 获取当前用户在云端已有的所有幂等键，用于上传前过滤，避免 409 错误
+   */
+  private async fetchExistingIdempotencyKeys(): Promise<Set<string>> {
+    if (!isSupabaseConfigured || !supabase) return new Set();
+    const userId = await this.getCurrentUserId();
+    if (!userId) return new Set();
+
+    const { data, error } = await supabase
+      .from("game_sessions")
+      .select("idempotency_key")
+      .eq("user_id", userId);
+
+    if (error) {
+      console.warn("[CloudGameRepository] 获幂等键失败:", error);
+      return new Set();
+    }
+
+    return new Set((data || []).map((row: any) => row.idempotency_key));
   }
 
   async fetchUserGameHistory(): Promise<GameRecord[]> {
@@ -223,15 +278,39 @@ class CloudGameRepositoryClass implements ICloudGameRepository {
   async migrateLocalHistoryToCloud(records: GameRecord[]): Promise<{ successCount: number; failedCount: number }> {
     if (!isSupabaseConfigured || !supabase) return { successCount: 0, failedCount: 0 };
     const userId = await this.getCurrentUserId();
-    if (!userId) return { successCount: 0, failedCount: 0 };
+    if (!userId) {
+      console.warn("[CloudGameRepository] 迁移失败: 未找到当前用户ID");
+      return { successCount: 0, failedCount: 0 };
+    }
+
+    // 1. 获取云端已有的记录，用于静默过滤
+    const existingKeys = await this.fetchExistingIdempotencyKeys();
+    console.log(`[CloudGameRepository] 开始为用户 ${userId} 迁移 ${records.length} 条本地历史成绩 (已同步: ${existingKeys.size})...`);
 
     let successCount = 0;
     let failedCount = 0;
 
-    for (const record of records) {
+    // 按时间升序排序，确保最高分更新逻辑按顺序执行
+    const sortedRecords = [...records].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+    for (const record of sortedRecords) {
+      const gameEndTimeMs = record.timestamp;
+      const difficultyLevel = record.difficulty.difficultyLevel;
+      const finalScore = record.finalScore || 0;
+      
+      // 构造幂等键进行本地比对
+      const idempotencyKey = `${userId}-${gameEndTimeMs}-${difficultyLevel}-${Math.round(finalScore)}`;
+      if (existingKeys.has(idempotencyKey)) {
+        // 静默跳过，不再发送网络请求，避免控制台 409
+        successCount++;
+        continue;
+      }
+
+      const startTime = record.gameStartTime || (record.timestamp - (record.totalDuration * 1000));
+      
       const params = {
         gameStats: {
-          gameStartTime: record.gameStartTime || record.timestamp - (record.totalDuration * 1000),
+          gameStartTime: startTime,
           gameEndTime: record.timestamp,
           totalDuration: record.totalDuration,
           difficulty: record.difficulty,
@@ -242,16 +321,30 @@ class CloudGameRepositoryClass implements ICloudGameRepository {
           deviceType: record.deviceInfo?.type || "desktop",
           canvasSize: { width: record.deviceInfo?.screenWidth || 640, height: record.deviceInfo?.screenHeight || 640 },
         } as any,
-        finalScore: record.finalScore,
-        scoreBreakdown: record.scoreBreakdown,
+        finalScore: (record.finalScore || 0),
+        scoreBreakdown: record.scoreBreakdown || null,
       };
 
-      const result = await this.uploadGameSession(params, true);
-      if (!result.error) successCount++;
-      else failedCount++;
+      try {
+        const result = await this.uploadGameSession(params, true);
+        if (!result.error) {
+          successCount++;
+        } else if (result.error.code === "23505") {
+          // 已经存在，视为同步成功（幂等）
+          successCount++;
+        } else {
+          console.warn(`[CloudGameRepository] 记录迁移失败 (TS: ${record.timestamp}):`, result.error);
+          failedCount++;
+        }
+      } catch (err) {
+        console.error("[CloudGameRepository] 迁移异常:", err);
+        failedCount++;
+      }
     }
 
-    if (successCount > 0) console.log(`[CloudGameRepository] 历史记录迁移完成: 成功 ${successCount}`);
+    if (successCount > 0) {
+      console.log(`[CloudGameRepository] 历史记录迁移完成: 成功 ${successCount}, 失败 ${failedCount}`);
+    }
     return { successCount, failedCount };
   }
 
@@ -278,6 +371,61 @@ class CloudGameRepositoryClass implements ICloudGameRepository {
     const { error } = await supabase.rpc('clear_user_game_sessions');
     this.saveOfflineQueue([]);
     return { success: !error, error };
+  }
+
+  // === Administrative Methods (Internal Use) ===
+
+  /**
+   * 获取所有玩家简要信息 (管理端专用)
+   */
+  async adminFetchAllProfiles(): Promise<any[]> {
+    if (!isSupabaseConfigured || !supabase) return [];
+    const { data, error } = await supabase
+      .from("player_profiles")
+      .select("*")
+      .order("best_score", { ascending: false });
+    
+    if (error) {
+      console.error("[Admin] Fetch profiles failed:", error);
+      return [];
+    }
+    return data || [];
+  }
+
+  /**
+   * 删除特定用户的所有游戏记录
+   */
+  async adminDeleteUserScores(userId: string): Promise<boolean> {
+    if (!isSupabaseConfigured || !supabase) return false;
+    const { error } = await supabase
+      .from("game_sessions")
+      .delete()
+      .eq("user_id", userId);
+    
+    if (error) return false;
+
+    // 同时重置该用户的最高分
+    await supabase
+      .from("player_profiles")
+      .update({ best_score: 0 })
+      .eq("id", userId);
+
+    return true;
+  }
+
+  /**
+   * 彻底注销用户身份并清除所有关联数据
+   */
+  async adminDeleteUserCompletely(userId: string): Promise<boolean> {
+    if (!isSupabaseConfigured || !supabase) return false;
+    
+    // 1. 删除所有成绩记录
+    await supabase.from("game_sessions").delete().eq("user_id", userId);
+    
+    // 2. 删除用户档案
+    const { error } = await supabase.from("player_profiles").delete().eq("id", userId);
+    
+    return !error;
   }
 }
 

@@ -5,6 +5,7 @@ import { playButtonClickSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
 import { useDeviceDetection } from "@/hooks/useDeviceDetection"
 import { useTranslation } from '@/contexts/I18nContext'
+import { cn } from "@/lib/utils"
 
 interface PuzzleControlsCutTypeProps {
   goToNextTab?: () => void;
@@ -72,7 +73,7 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
       {/* 添加切割类型标签 - 仅在非手机设备上显示 */}
       {!isPhone && !isLandscape && (
-        <div style={{ fontSize: 'calc(var(--panel-scale, 1) * 12px)', color: '#FFD5AB', marginBottom: 'calc(var(--panel-scale, 1) * 4px)' }}>
+        <div className="text-premium-title mb-[10px]" style={{ fontSize: 'calc(0.9rem * var(--panel-scale, 1))' }}>
           {t('game.cutType.title')}
         </div>
       )}
@@ -94,21 +95,20 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
             onClick={() => handleCutTypeChange(item.type)}
             disabled={!canModifySettings}
             data-testid={`cut-type-${item.id}-button`}
-            className={`flex items-center justify-center transition-colors \
-              ${localCutType === item.type
-                ? "bg-[#F68E5F] text-white"
-                : "bg-[#1E1A2A] text-white"}
-              ${!canModifySettings ? disabledClass : "cursor-pointer"}
-            `}
+            className={cn(
+              "glass-btn-sheen",
+              localCutType === item.type ? "glass-btn-active" : "glass-btn-inactive",
+              !canModifySettings ? disabledClass : "cursor-pointer"
+            )}
             style={{
               height: buttonHeight,
               fontSize: 'calc(var(--panel-scale, 1) * 14px)',
               lineHeight: 'calc(var(--panel-scale, 1) * 20px)',
-              borderRadius: 'calc(var(--panel-scale, 1) * 12px)',
+              borderRadius: 'calc(var(--panel-scale, 1) * 14px)',
               width: '100%',
-              border: 'none',
               outline: 'none',
               padding: 0,
+              fontWeight: 700,
             }}
           >
             {item.label}

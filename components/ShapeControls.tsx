@@ -1,12 +1,12 @@
 "use client"
 import { useGame } from "@/contexts/GameContext"
-import { Button } from "@/components/ui/button"
 import { Hexagon, Cloud, Zap } from "lucide-react"
 import { ShapeType } from "@generative-puzzle/game-core"
 import { playButtonClickSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
 import { useDeviceDetection } from "@/hooks/useDeviceDetection"
 import { useTranslation } from '@/contexts/I18nContext'
+import { cn } from "@/lib/utils"
 
 interface ShapeControlsProps {
   goToNextTab?: () => void;
@@ -67,21 +67,18 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
   // 按钮高亮逻辑：用全局 state.shapeType 判断
   const getButtonClass = (shapeType: ShapeType) => {
     const isActive = state.shapeType === shapeType;
-    let base =
-      isActive
-        ? "!bg-[#F68E5F] !text-white" // 使用 !important 强制覆盖 hover 状态
-        : "bg-[#1E1A2A] text-white hover:bg-[#2A253A]"; // 仅在非激活态添加 hover
+    let base = isActive ? "glass-btn-active" : "glass-btn-inactive";
     if (isShapeButtonDisabled) {
-      base += " opacity-30 cursor-not-allowed text-white";
+      base += " opacity-30 cursor-not-allowed";
     }
-    return `flex flex-col items-center justify-center transition-colors duration-200 ${base}`;
+    return cn("flex flex-col items-center justify-center glass-btn-sheen", base);
   };
 
   // --- 响应式样式 ---
   const buttonStyle = {
     fontSize: fontSize + 'px',
     padding: '0',
-    borderRadius: '14px',
+    borderRadius: 'calc(var(--panel-scale, 1) * 14px)',
     gap: '6px',
     minHeight: buttonHeight,
     height: buttonHeight,
@@ -105,13 +102,14 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
     <div className="space-y-0 w-full" style={{}}>
       {/* 添加形状类型标签 - 仅在非手机设备上显示 */}
       {!isPhone && !isLandscape && (
-        <div className="text-[12px] text-[#FFD5AB] mb-[10px] leading-[22px] font-medium">{t('game.shapes.title')}</div>
+        <div className="text-premium-title mb-[10px]" style={{ fontSize: 'calc(0.9rem * var(--panel-scale, 1))' }}>
+          {t('game.shapes.title')}
+        </div>
       )}
       <div className="w-full">
         <div className="flex gap-[10px] w-full">
-          <Button
-            variant="ghost"
-            className={getButtonClass(ShapeType.Polygon) + " flex flex-col items-center justify-center"}
+          <button
+            className={getButtonClass(ShapeType.Polygon)}
             style={buttonStyle}
             data-testid="shape-polygon-button"
             onClick={() => {
@@ -121,14 +119,12 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
           >
             <Hexagon
               style={iconStyle}
-              className="text-white"
-              strokeWidth={2}
+              strokeWidth={2.5}
             />
-            <span style={labelStyle}>{t('game.shapes.polygon')}</span>
-          </Button>
-          <Button
-            variant="ghost"
-            className={getButtonClass(ShapeType.Cloud) + " flex flex-col items-center justify-center"}
+            <span style={labelStyle} className="font-bold">{t('game.shapes.polygon')}</span>
+          </button>
+          <button
+            className={getButtonClass(ShapeType.Cloud)}
             style={buttonStyle}
             data-testid="shape-curve-button"
             onClick={() => {
@@ -138,14 +134,12 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
           >
             <Cloud
               style={iconStyle}
-              className="text-white"
-              strokeWidth={2}
+              strokeWidth={2.5}
             />
-            <span style={labelStyle}>{t('game.shapes.curve')}</span>
-          </Button>
-          <Button
-            variant="ghost"
-            className={getButtonClass(ShapeType.Jagged) + " flex flex-col items-center justify-center"}
+            <span style={labelStyle} className="font-bold">{t('game.shapes.curve')}</span>
+          </button>
+          <button
+            className={getButtonClass(ShapeType.Jagged)}
             style={buttonStyle}
             data-testid="shape-irregular-button"
             onClick={() => {
@@ -155,11 +149,10 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
           >
             <Zap
               style={iconStyle}
-              className="text-white"
-              strokeWidth={2}
+              strokeWidth={2.5}
             />
-            <span style={labelStyle}>{t('game.shapes.irregular')}</span>
-          </Button>
+            <span style={labelStyle} className="font-bold">{t('game.shapes.irregular')}</span>
+          </button>
         </div>
       </div>
     </div>

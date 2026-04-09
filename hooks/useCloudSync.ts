@@ -82,40 +82,60 @@ export function useCloudSync(state: GameState, dispatch: React.Dispatch<GameActi
 
   // 3. 登录后同步与迁移 (Auth-driven Sync)
   useEffect(() => {
-    if (!user) return;
-
-    const userId = user.id;
-    console.log(`[useCloudSync] 用户已登录 (${userId})，执行数据对齐...`);
-
-    // A. 同步离线队列
-    CloudGameRepository.syncOfflineSessions();
-
-    // B. 一次性本地数据迁移
-    const migrationKey = getUserMigrationKey(userId);
-    if (typeof window !== "undefined" && !localStorage.getItem(migrationKey)) {
-      console.log("[useCloudSync] 触发一次性本地记录向云端迁移...");
-      const localHistory = GameDataManager.getGameHistory();
-      if (localHistory.length > 0) {
-        CloudGameRepository.migrateLocalHistoryToCloud(localHistory).then((res) => {
-          localStorage.setItem(migrationKey, "true");
-          console.log(`[useCloudSync] 本地数据迁移完成: 成功 ${res.successCount}, 失败 ${res.failedCount}`);
-        });
-      } else {
-        localStorage.setItem(migrationKey, "true");
-      }
+    if (!user) {
+      console.log("[useCloudSync] 用户未登录，跳过自动同步");
+      return;
     }
 
-    // C. 拉取云端最新数据进行多端合并
-    CloudGameRepository.fetchUserGameHistory().then((cloudRecords) => {
-      if (cloudRecords.length > 0) {
-        GameDataManager.syncWithCloudRecords(cloudRecords);
-        // 通知 UI 加载同步后的数据
-        dispatch({ 
-          type: "LOAD_LEADERBOARD", 
-          payload: GameDataManager.getLeaderboard() 
-        });
+    const userId = user.id;
+    const migrationKey = getUserMigrationKey(userId);
+    
+    (async () => {
+      console.log(`[useCloudSync] 🔄 用户已登录 (${userId})，启动全面数据对齐...`);
+
+      // A. 同步离线队列 (处理故障恢复)
+      try {
+        await CloudGameRepository.syncOfflineSessions();
+      } catch (e) {
+        console.warn("[useCloudSync] 离线队列同步失败:", e);
       }
-    });
+
+      // B. 本地历史迁移 (仅执行一次，除非显式重置)
+      if (typeof window !== "undefined" && !localStorage.getItem(migrationKey)) {
+        console.log("[useCloudSync] 🚀 触发首次登录本地记录迁移...");
+        const localHistory = GameDataManager.getGameHistory();
+        if (localHistory.length > 0) {
+          const res = await CloudGameRepository.migrateLocalHistoryToCloud(localHistory);
+          if (res.successCount > 0 || res.failedCount === 0) {
+             localStorage.setItem(migrationKey, "true");
+             console.log(`[useCloudSync] ✅ 迁移成功: ${res.successCount} 条`);
+          }
+        } else {
+          localStorage.setItem(migrationKey, "true");
+        }
+      }
+
+      // C. 拉取云端数据并合并
+      try {
+        const cloudRecords = await CloudGameRepository.fetchUserGameHistory();
+        console.log(`[useCloudSync] ☁️ 已拉取云端记录: ${cloudRecords.length} 条`);
+        
+        if (cloudRecords.length > 0) {
+          GameDataManager.syncWithCloudRecords(cloudRecords);
+          
+          // 重新从本地存储加载合并后的数据并更新 UI (排行榜等)
+          const mergedLeaderboard = GameDataManager.getLeaderboard();
+          dispatch({ 
+            type: "LOAD_LEADERBOARD", 
+            payload: mergedLeaderboard
+          });
+          
+          console.log("[useCloudSync] 🏁 数据合并完成，UI 已刷新");
+        }
+      } catch (fetchErr) {
+        console.error("[useCloudSync] 云端数据拉取失败:", fetchErr);
+      }
+    })();
   }, [user, dispatch]);
 
   return null;

@@ -1,11 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Trophy } from "lucide-react";
 import { playButtonClickSound } from "@/utils/rendering/soundEffects";
 import { useTranslation } from '@/contexts/I18nContext';
 import { GameRecord } from '@generative-puzzle/game-core';
-import { getSpeedBonusDescription, getSpeedBonusDetails } from '@generative-puzzle/game-core';
+import { getSpeedBonusDetails } from '@generative-puzzle/game-core';
+import { cn } from "@/lib/utils";
 
 
 interface GameRecordDetailsProps {
@@ -28,21 +29,6 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
-  // 获取速度奖励显示文本
-  const getSpeedRankText = (rank: number): string => {
-    if (rank <= 0 || rank > 5) return t('leaderboard.noRanking');
-    
-    const speedTexts: Record<number, string> = {
-      1: '最快',
-      2: '第2快',
-      3: '第3快',
-      4: '第4快',
-      5: '第5快'
-    };
-    
-    return speedTexts[rank] || t('leaderboard.noRanking');
   };
 
   // 获取切割类型显示名称
@@ -89,190 +75,187 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({
   const getMultiplierBreakdown = (difficulty: any, multiplier: number): string => {
     const cutMult = getCutTypeMultiplier(difficulty?.cutType);
     const shapeMult = getShapeTypeMultiplier(difficulty?.shapeType);
-    // 反推基础系数
     const baseMult = multiplier / cutMult / shapeMult;
     
-    const cutTypeName = getCutTypeDisplayName(difficulty?.cutType) || t('cutType.straight');
-    const shapeName = getShapeDisplayName(difficulty?.shapeType) || t('game.shapes.names.polygon');
-    const baseLabel = t('score.breakdown.baseMultiplier');
+    const cutTypeName = getCutTypeDisplayName(difficulty?.cutType) || (locale === 'en' ? 'Straight' : '直线');
+    const shapeName = getShapeDisplayName(difficulty?.shapeType) || (locale === 'en' ? 'Polygon' : '多边形');
+    const baseLabel = t('score.breakdown.baseMultiplier') || (locale === 'en' ? 'Base' : '基础');
     
     return `${baseLabel}${baseMult.toFixed(2)} × ${cutTypeName}${cutMult.toFixed(2)} × ${shapeName}${shapeMult.toFixed(2)}`;
   };
 
+  const subtotal = (record.scoreBreakdown?.baseScore || 0) + 
+                  (record.scoreBreakdown?.timeBonus || 0) + 
+                  (record.scoreBreakdown?.rotationScore || 0) + 
+                  (record.scoreBreakdown?.hintScore || 0);
+
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-300">
       {/* 成绩详情标题 */}
-      <div className="mb-4">
-        <h3 className="font-medium text-[#FFD5AB] mb-2 text-sm flex items-center gap-1">
-          🏆 {t('stats.scoreHistory')}
+      <div className="mb-4 shrink-0">
+        <h3 className="font-bold text-[#FFB17A] text-sm flex items-center gap-2 uppercase tracking-widest">
+          <Trophy className="w-4 h-4 text-yellow-500" />
+          {t('leaderboard.scoreDetails') || '最近一次游戏成绩'}
         </h3>
       </div>
       
       {/* 滚动内容区域 */}
-      <div className="flex-1 overflow-y-auto space-y-3 mb-4 text-xs">
-        {/* 本局成绩 */}
-        <div className="bg-[#2A2A2A] rounded-lg p-3">
-          <h4 className="text-[#FFD5AB] font-medium mb-3 text-sm flex items-center gap-1">
-            🏆 游戏成绩
-          </h4>
-          
-          {/* 最终得分和游戏时长 - 统一格式 */}
-          <div className="text-center mb-4 p-3 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg border border-blue-400/30">
-            <div className="text-3xl font-bold text-blue-300 mb-1 tracking-wider">
-              {record.finalScore.toLocaleString()}
-            </div>
-            <div className="text-sm text-blue-200 opacity-90 font-medium">
-              {t('score.breakdown.gameDuration')}：{formatTime(record.totalDuration)}
-            </div>
+      <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 pb-4">
+        {/* 分数总览区域 - 深蓝色调 */}
+        <div className="bg-[#1e293b]/60 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-xl mb-4 text-center">
+          <div className="text-4xl font-black text-[#A5D8FF] mb-1 tracking-tight drop-shadow-lg">
+            {record.finalScore.toLocaleString()}
           </div>
-          
-          {/* 分数构成 - 统一格式 */}
-          {record.scoreBreakdown && (
-            <div className="bg-white/5 rounded-lg p-3 border border-white/10">
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between items-center">
-                  <span className="text-[#FFD5AB] flex items-center gap-1">
-                    <span>{t('score.breakdown.base')}：</span>
-                    <span className="text-[10px] leading-tight">{(() => {
-                      const shapeName = getShapeDisplayName(record.difficulty?.shapeType);
-                      const cutTypeName = getCutTypeDisplayName(record.difficulty?.cutType);
-                      const levelText = t('difficulty.levelLabel', { level: record.difficulty.cutCount });
-                      const piecesPart = `${record.difficulty?.actualPieces || 0}${t('stats.piecesUnit')}`;
-                      const parts = [levelText];
-                      if (shapeName) parts.push(shapeName);
-                      if (cutTypeName) parts.push(cutTypeName);
-                      parts.push(piecesPart);
-                      return parts.join(' · ');
-                    })()}</span>
-                  </span>
-                  <span className="text-[#FFD5AB]">{record.scoreBreakdown.baseScore}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#FFD5AB]">
-                    {t('score.breakdown.timeBonus')}：{(() => {
-                      const pieceCount = record.difficulty?.actualPieces || 0;
-                      const difficultyLevel = record.difficulty?.cutCount || 1;
-                      const speedDetails = getSpeedBonusDetails(record.totalDuration, pieceCount, difficultyLevel);
-                      
-                      // 格式化时间显示（用于阈值）
-                      const formatTimeStr = (seconds: number): string => {
-                        if (seconds < 60) {
-                          return locale === 'en' ? `${seconds}s` : `${seconds}秒`;
-                        }
-                        const mins = Math.floor(seconds / 60);
-                        const secs = seconds % 60;
-                        return locale === 'en' 
-                          ? `${mins}m${secs > 0 ? `${secs}s` : ''}` 
-                          : `${mins}分${secs > 0 ? `${secs}秒` : ''}`;
-                      };
-                      
-                      if (speedDetails.currentLevel) {
-                        const levelNameMap: Record<string, { zh: string; en: string }> = {
-                          '极速': { zh: '极速', en: 'Extreme' },
-                          '快速': { zh: '快速', en: 'Fast' },
-                          '良好': { zh: '良好', en: 'Good' },
-                          '标准': { zh: '标准', en: 'Normal' },
-                          '一般': { zh: '一般', en: 'Slow' },
-                          '慢': { zh: '慢', en: 'Too Slow' }
-                        };
-                        
-                        const levelName = levelNameMap[speedDetails.currentLevel.name]?.[locale === 'en' ? 'en' : 'zh'] || speedDetails.currentLevel.name;
-                        
-                        // 如果是慢等级（无奖励），显示"超出X秒"
-                        if (speedDetails.currentLevel.name === '慢') {
-                          const timeStr = formatTimeStr(speedDetails.currentLevel.maxTime);
-                          return locale === 'en' 
-                            ? `${levelName} (exceeded ${timeStr})`
-                            : `${levelName}（超出${timeStr}）`;
-                        }
-                        
-                        // 其他等级显示"少于X秒内"
-                        const timeStr = formatTimeStr(speedDetails.currentLevel.maxTime);
-                        return locale === 'en' 
-                          ? `${levelName} (less than ${timeStr})`
-                          : `${levelName}（少于${timeStr}内）`;
-                      }
-                      
-                      return t('score.noReward');
-                    })()}
-                  </span>
-                  <span className="text-green-400">+{record.scoreBreakdown.timeBonus}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#FFD5AB]">
-                    {t('score.breakdown.rotationScore')}：<span className="text-[10px]">{record.totalRotations}/{record.scoreBreakdown.minRotations}（{record.totalRotations === record.scoreBreakdown.minRotations ? t('rotation.perfect') : t('rotation.excess', { count: record.totalRotations - record.scoreBreakdown.minRotations })}）</span>
-                  </span>
-                  <span className={record.scoreBreakdown.rotationScore >= 0 ? "text-green-400" : "text-red-400"}>
-                    {record.scoreBreakdown.rotationScore >= 0 ? '+' : ''}{record.scoreBreakdown.rotationScore}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#FFD5AB]">
-                    {t('score.breakdown.hintScore')}：<span className="text-[10px]">{record.hintUsageCount}/{record.scoreBreakdown.hintAllowance || 0}{t('leaderboard.timesUnit')}</span>
-                  </span>
-                  <span className={record.scoreBreakdown.hintScore >= 0 ? "text-green-400" : "text-red-400"}>
-                    {record.scoreBreakdown.hintScore >= 0 ? '+' : ''}{record.scoreBreakdown.hintScore}
-                  </span>
-                </div>
-                <div className="border-t border-white/20 pt-2 mt-3">
-                  <div className="flex justify-between mb-1">
-                    <span className="text-[#FFD5AB]">{t('score.breakdown.subtotal')}：</span>
-                    <span className="text-[#FFD5AB]">{(record.scoreBreakdown.baseScore + record.scoreBreakdown.timeBonus + record.scoreBreakdown.rotationScore + record.scoreBreakdown.hintScore)}</span>
-                  </div>
-                  <div className="flex flex-col mb-2">
-                    <div className="flex justify-between">
-                      <span className="text-[#FFD5AB]">{t('score.breakdown.multiplier')}：</span>
-                      <span className="text-[#FFD5AB]">×{record.scoreBreakdown.difficultyMultiplier.toFixed(2)}</span>
-                    </div>
-                    <div className="text-[#FFD5AB]/70 text-[10px] text-right mt-0.5">
-                      ({getMultiplierBreakdown(record.difficulty, record.scoreBreakdown.difficultyMultiplier)})
-                    </div>
-                  </div>
-                  <div className="flex justify-between font-medium">
-                    <span className="text-[#FFD5AB]">{t('score.breakdown.final')}：</span>
-                    <span className="text-blue-300">{record.finalScore.toLocaleString()}</span>
-                  </div>
-                </div>
+          <div className="text-xs text-[#A5D8FF]/60 font-bold uppercase tracking-widest">
+            {t('score.breakdown.gameDuration') || '游戏时长'}：{formatTime(record.totalDuration)}
+          </div>
+        </div>
+
+        {/* 详细计分卡片 - 深色卡片 */}
+        <div className="bg-[#1A1A1A]/95 border border-white/5 rounded-2xl p-5 space-y-5 shadow-2xl">
+          {/* 难度得分 */}
+          <div className="flex justify-between items-start">
+            <div className="flex-1 min-w-0">
+              <div className="text-white/90 font-bold text-sm mb-1">{t('score.breakdown.base') || '难度'}：</div>
+              <div className="text-[11px] text-white/30 leading-tight">
+                {(() => {
+                  const shapeName = getShapeDisplayName(record.difficulty?.shapeType);
+                  const cutTypeName = getCutTypeDisplayName(record.difficulty?.cutType);
+                  const levelText = t('difficulty.levelLabel', { level: record.difficulty.cutCount }) || `难度${record.difficulty.cutCount}`;
+                  const piecesPart = `${record.difficulty?.actualPieces || 0}${t('stats.piecesUnit') || '片'}`;
+                  const parts = [levelText];
+                  if (shapeName) parts.push(shapeName);
+                  if (cutTypeName) parts.push(cutTypeName);
+                  parts.push(piecesPart);
+                  return parts.join(' · ');
+                })()}
               </div>
             </div>
-          )}
-          
-          {/* 游戏时间 */}
-          <div className="mt-3 text-center">
-            <div className="text-sm text-[#FFD5AB] opacity-80">
-              {t('score.breakdown.gameTime')}：{new Date(record.gameStartTime || record.timestamp).toLocaleString(locale === 'zh-CN' ? 'zh-CN' : 'en-US', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-              })}
+            <div className="text-white/90 font-black text-base tabular-nums">
+              {record.scoreBreakdown?.baseScore || 0}
             </div>
+          </div>
+
+          {/* 速度加成 */}
+          <div className="flex justify-between items-start">
+            <div className="flex-1 min-w-0">
+              <div className="text-white/90 font-bold text-sm mb-1">{t('score.breakdown.timeBonus') || '速度'}：</div>
+              <div className="text-[11px] text-white/30 leading-tight">
+                {(() => {
+                  const pieceCount = record.difficulty?.actualPieces || 0;
+                  const difficultyLevel = record.difficulty?.cutCount || 1;
+                  const speedDetails = getSpeedBonusDetails(record.totalDuration, pieceCount, difficultyLevel);
+                  
+                  const formatTimeStr = (seconds: number): string => {
+                    if (seconds < 60) return locale === 'en' ? `${seconds}s` : `${seconds}秒`;
+                    const mins = Math.floor(seconds / 60);
+                    const secs = seconds % 60;
+                    return locale === 'en' ? `${mins}m${secs > 0 ? `${secs}s` : ''}` : `${mins}分${secs > 0 ? `${secs}秒` : ''}`;
+                  };
+                  
+                  if (speedDetails.currentLevel) {
+                    const levelNameMap: Record<string, { zh: string; en: string }> = {
+                      '极速': { zh: '极速', en: 'Extreme' },
+                      '快速': { zh: '快速', en: 'Fast' },
+                      '良好': { zh: '良好', en: 'Good' },
+                      '标准': { zh: '标准', en: 'Normal' },
+                      '一般': { zh: '一般', en: 'Slow' },
+                      '慢': { zh: '慢', en: 'Too Slow' }
+                    };
+                    const levelName = levelNameMap[speedDetails.currentLevel.name]?.[locale === 'en' ? 'en' : 'zh'] || speedDetails.currentLevel.name;
+                    const timeStr = formatTimeStr(speedDetails.currentLevel.maxTime);
+                    return locale === 'en' ? `${levelName} (under ${timeStr})` : `${levelName}（少于${timeStr}内）`;
+                  }
+                  return t('score.noReward') || '无奖励';
+                })()}
+              </div>
+            </div>
+            <div className="text-green-400 font-black text-base tabular-nums">
+              +{record.scoreBreakdown?.timeBonus || 0}
+            </div>
+          </div>
+
+          {/* 旋转扣分/加成 */}
+          <div className="flex justify-between items-start">
+            <div className="flex-1 min-w-0">
+              <div className="text-white/90 font-bold text-sm mb-1">{t('score.breakdown.rotationScore') || '旋转'}：</div>
+              <div className="text-[11px] text-white/30 leading-tight">
+                {record.totalRotations}/{record.scoreBreakdown?.minRotations || 0}（{record.totalRotations === record.scoreBreakdown?.minRotations ? (t('rotation.perfect') || '完美') : (t('rotation.excess', { count: record.totalRotations - (record.scoreBreakdown?.minRotations || 0) }) || `超出${record.totalRotations - (record.scoreBreakdown?.minRotations || 0)}次`)}）
+              </div>
+            </div>
+            <div className={cn("font-black text-base tabular-nums", (record.scoreBreakdown?.rotationScore || 0) >= 0 ? "text-green-400" : "text-red-400")}>
+              {(record.scoreBreakdown?.rotationScore || 0) >= 0 ? '+' : ''}{record.scoreBreakdown?.rotationScore || 0}
+            </div>
+          </div>
+
+          {/* 提示扣分/加成 */}
+          <div className="flex justify-between items-start">
+            <div className="flex-1 min-w-0">
+              <div className="text-white/90 font-bold text-sm mb-1">{t('score.breakdown.hintScore') || '提示'}：</div>
+              <div className="text-[11px] text-white/30 leading-tight">
+                {record.hintUsageCount}/{record.scoreBreakdown?.hintAllowance || 0}{t('leaderboard.timesUnit') || '次'}
+              </div>
+            </div>
+            <div className={cn("font-black text-base tabular-nums", (record.scoreBreakdown?.hintScore || 0) >= 0 ? "text-green-400" : "text-red-400")}>
+              {(record.scoreBreakdown?.hintScore || 0) >= 0 ? '+' : ''}{record.scoreBreakdown?.hintScore || 0}
+            </div>
+          </div>
+
+          <div className="h-[1px] bg-white/5 my-2" />
+
+          {/* 小计 */}
+          <div className="flex justify-between items-center pt-1">
+            <div className="text-white font-bold text-base">{t('score.breakdown.subtotal') || '小计'}：</div>
+            <div className="text-white font-black text-xl tabular-nums">
+              {subtotal.toLocaleString()}
+            </div>
+          </div>
+
+          {/* 难度系数 */}
+          <div className="space-y-1">
+            <div className="flex justify-between items-center">
+              <div className="text-white font-bold text-base">{t('score.breakdown.multiplier') || '难度系数'}：</div>
+              <div className="text-[#FFD5AB] font-black text-xl tabular-nums">
+                ×{record.scoreBreakdown?.difficultyMultiplier.toFixed(2)}
+              </div>
+            </div>
+            <div className="text-white/20 text-[10px] text-right italic leading-none">
+              ({getMultiplierBreakdown(record.difficulty, record.scoreBreakdown?.difficultyMultiplier || 1)})
+            </div>
+          </div>
+
+          {/* 最终得分 - 大字突出 */}
+          <div className="pt-3 border-t border-white/5 flex justify-between items-center">
+            <div className="text-white font-black text-lg uppercase tracking-tighter">{t('score.breakdown.final') || '最终得分'}：</div>
+            <div className="text-2xl font-black text-[#A5D8FF] tracking-tight tabular-nums">
+              {record.finalScore.toLocaleString()}
+            </div>
+          </div>
+        </div>
+
+        {/* 底部时间脚注 */}
+        <div className="mt-8 text-center pb-2">
+          <div className="text-[12px] text-white/30 font-medium tracking-widest leading-loose">
+            {t('score.breakdown.gameTime') || '游戏时间'}：{new Date(record.gameStartTime || record.timestamp).toLocaleString(locale === 'zh-CN' ? 'zh-CN' : 'en-US', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit'
+            })}
           </div>
         </div>
       </div>
       
-      {/* 返回按钮 - 使用与切割形状按钮一致的样式 */}
+      {/* 返回按钮 */}
       <Button
         onClick={handleBack}
-        className="w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md"
-        style={{
-          fontSize: '14px',
-          borderRadius: '14px',
-          minHeight: 36,
-          height: 36,
-          padding: '0 16px',
-          lineHeight: '18px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '8px',
-        }}
+        className="w-full bg-[#fa8231] hover:bg-[#eb4d4b] text-white shadow-xl mt-2 shrink-0 h-11 rounded-xl font-bold transition-all text-sm uppercase tracking-widest"
         variant="ghost"
       >
-        <ArrowLeft style={{ width: '20px', height: '20px', marginRight: '8px', flexShrink: 0 }} strokeWidth={2} />
-        {t('leaderboard.backToLeaderboard')}
+        <ArrowLeft className="w-5 h-5 mr-1" strokeWidth={3} />
+        {t('leaderboard.backToLeaderboard') || '返回排行榜'}
       </Button>
     </div>
   );

@@ -6,6 +6,7 @@ import { playButtonClickSound, playScatterSound } from "@/utils/rendering/soundE
 import { useState, useEffect } from "react"
 import { useDeviceDetection } from "@/hooks/useDeviceDetection"
 import { useTranslation } from '@/contexts/I18nContext'
+import { cn } from "@/lib/utils"
 
 interface PuzzleControlsScatterProps {
   goToNextTab?: () => void;
@@ -51,7 +52,10 @@ export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 34 }
       <Button
         onClick={handleScatterPuzzle}
         disabled={!isPuzzleGenerated || state.isScattered}
-        className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white ${(!isPuzzleGenerated || state.isScattered) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+        className={cn(
+          "glass-btn-active glass-btn-sheen w-full border-none",
+          (!isPuzzleGenerated || state.isScattered) && "opacity-30 pointer-events-none"
+        )}
         data-testid="scatter-puzzle-button"
         style={{
           fontSize: '14px',
@@ -60,28 +64,18 @@ export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 34 }
           height: buttonHeight,
           padding: '0 16px',
           lineHeight: '18px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '8px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em'
         }}
-        variant="ghost"
       >
-        <ScatterChart style={{ width: '16px', height: '16px', marginRight: '6px', flexShrink: 0 }} strokeWidth={2} />
-        {state.isScattered ? t('game.scatter.completed') : t('game.scatter.button')}
+        <ScatterChart style={{ width: '18px', height: '18px', marginRight: '8px', flexShrink: 0 }} strokeWidth={2.5} />
+        <span style={{ fontSize: '14px' }}>
+          {state.isScattered ? t('game.scatter.completed') : t('game.scatter.button')}
+        </span>
       </Button>
 
-      <div style={{
-        textAlign: 'center',
-        marginTop: '8px',
-        fontSize: '12px',
-        color: '#FFD5AB',
-        lineHeight: '16px',
-      }}>
-        {state.isScattered
-          ? t('game.hints.gameInProgress')
-          : " "
-        }
+      <div className="text-premium-label mt-2 text-center opacity-80 min-h-[16px] text-xs">
+        {state.isScattered ? t('game.hints.gameInProgress') : " "}
       </div>
     </div>
   )

@@ -1,12 +1,12 @@
 "use client"
 import { useGame } from "@/contexts/GameContext"
-import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { PuzzleIcon } from "lucide-react"
 import { playButtonClickSound, playCutSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
 import { useDeviceDetection } from "@/hooks/useDeviceDetection"
 import { useTranslation } from '@/contexts/I18nContext'
+import { cn } from "@/lib/utils"
 
 interface PuzzleControlsCutCountProps {
   goToNextTab?: () => void;
@@ -71,20 +71,20 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
 
   // 难度选择按钮的样式
   const getDifficultyButtonStyle = (num: number) => {
-    return `
-      flex-1 flex items-center justify-center transition-all duration-200 min-w-0
-      ${localCutCount === num
-        ? "bg-[#F68E5F] text-white hover:bg-[#F47B42] active:bg-[#E15A0F]"
-        : "bg-[#1E1A2A] text-white hover:bg-[#141022] active:bg-[#2A283E]"}
-      ${!canModifySettings ? disabledClass : ""}
-    `;
+    return cn(
+        "glass-btn-sheen",
+        localCutCount === num ? "glass-btn-active" : "glass-btn-inactive",
+        "flex-1 font-black transition-all duration-500",
+        localCutCount === num && "scale-110 z-10",
+        !canModifySettings && "opacity-30 pointer-events-none"
+    );
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0', width: '100%', overflow: 'visible' }}>
       {/* 添加难度标签 - 仅在非手机设备上显示 */}
       {!isPhone && !isLandscape && (
-        <div style={{ fontSize: '12px', color: '#FFD5AB', marginBottom: '4px', lineHeight: '16px' }}>
+        <div className="text-premium-title mb-[10px]" style={{ fontSize: 'calc(0.9rem * var(--panel-scale, 1))' }}>
           {t('game.cutCount.title')}
         </div>
       )}
@@ -126,23 +126,31 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
       </div>
 
       {/* 切割按钮 */}
-      <Button
+      <button
         onClick={handleGeneratePuzzle}
         disabled={!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType}
-        className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white ${(!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+        className={cn(
+          "glass-btn-active glass-btn-sheen w-full",
+          (!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType) && "opacity-30 pointer-events-none"
+        )}
         data-testid="generate-puzzle-button"
         style={{
           fontSize: '14px',
-          borderRadius: '14px',
+          borderRadius: 'calc(var(--panel-scale, 1) * 14px)',
           minHeight: actionButtonHeight,
           height: actionButtonHeight,
           padding: '0 16px',
-          lineHeight: '18px'
+          lineHeight: '18px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}
       >
-        <PuzzleIcon style={{ width: '20px', height: '20px', marginRight: '8px', flexShrink: 0 }} strokeWidth={2} />
+        <PuzzleIcon style={{ width: '20px', height: '20px', marginRight: '8px', flexShrink: 0 }} strokeWidth={2.5} />
         <span style={{ fontSize: '14px' }}>{t('game.cutCount.button')}</span>
-      </Button>
+      </button>
       {/* 添加提示信息，当按钮不可点击时显示原因 */}
       {isShapeGenerated && !state.isScattered && (!hasCutType || !hasSelectedCount) && (
         <div style={{ fontSize: '12px', color: '#FFD5AB', textAlign: 'center', marginTop: '4px', lineHeight: '16px' }}>

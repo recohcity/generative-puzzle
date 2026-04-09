@@ -7,6 +7,74 @@
         "confirm": "Confirm",
         "close": "Close"
     },
+    "auth": {
+        "guest": "Guest",
+        "login": "Login Now",
+        "logout": "Logout",
+        "logoutConfirm": "Are you sure you want to log out?",
+        "synced": "Data encrypted & synced",
+        "offline": "Offline mode, click to sync",
+        "loading": "Loading...",
+        "syncing": "Syncing...",
+        "title": "Account Login",
+        "emailPlaceholder": "your@email.com",
+        "signIn": "Send Magic Link",
+        "signOut": "Sign Out",
+        "sending": "Sending...",
+        "signedIn": "Signed in: {email}",
+        "description": "After signing in with a Magic Link, your game records will be automatically synced to the cloud.",
+        "modes": {
+            "register": {
+                "title": "Set Your Profile",
+                "description": "",
+                "hint": "Please remember your nickname and 4-digit PIN to recover your records.",
+                "button": "Register/Login",
+                "loading": "Setting up..."
+            },
+            "recover": {
+                "title": "Recover Data",
+                "description": "Welcome back! Enter your previous nickname and PIN to recover your records.",
+                "button": "Login/Sync Scores",
+                "hint": "Changed device/browser? Recover your data instantly.",
+                "loading": "Searching...",
+                "link": "New device? Recover historical data →",
+                "back": "Register/Login"
+            }
+        },
+        "inputs": {
+            "nickname": "Nickname",
+            "nicknamePlaceholder": "Tom (2-8 chars)",
+            "pin": "Enter any 4-digit PIN",
+            "pinPlaceholder": "••••"
+        },
+        "collision": {
+            "title": "Account Claim",
+            "description": "Multiple records found for this nickname and PIN.",
+            "hint": "Please select your version. If unsure, try the one with the highest best score.",
+            "bestScore": "Best Score",
+            "challenges": "Challenges",
+            "back": "Go Back"
+        },
+        "status": {
+            "escorted": "Device Escorted",
+            "sessionId": "SESSION ID",
+            "sync": "Sync Data",
+            "exit": "Exit Device",
+            "processing": "Processing..."
+        },
+        "error": {
+            "noEmail": "Please enter an email address",
+            "notConfigured": "Supabase not configured",
+            "fail": "Action failed",
+            "nicknameLength": "Nickname must be 2-8 characters",
+            "pinFormat": "PIN must be exactly 4 digits",
+            "lookupFail": "Error checking duplicate nickname: {error}",
+            "exists": "An account with nickname [{nickname}] and this PIN already exists. Please use 'Recover Data' instead.",
+            "recoverFail": "Failed to query account: {error}",
+            "notFound": "No matching record found. Please check your nickname or PIN.",
+            "loginError": "Login encountered an error."
+        }
+    },
     "game": {
         "title": "Generative Puzzle",
         "description": "A generative puzzle game project based on Next.js and React",
@@ -107,7 +175,17 @@
             "title": "Personal Best",
             "show": "Show Personal Best",
             "close": "Close",
-            "all": "All"
+            "all": "All",
+            "tabs": {
+                "personal": "Personal Best",
+                "global": "Global Ranking"
+            },
+            "loadingGlobal": "Fetching global ranking...",
+            "globalRank": "Global Rank",
+            "anonymous": "Anonymous Player",
+            "empty": "No ranking data",
+            "refresh": "Refresh",
+            "sessionsUnit": " games"
         },
         "difficulty": {
             "easy": "Easy",

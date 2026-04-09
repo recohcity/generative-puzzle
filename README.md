@@ -69,9 +69,9 @@
 
 ## 🎯 快速开始
 
-本项目极度依赖 `.env` 来激活云端引擎。请移步阅读专属的 5 分钟跑通指南：
+本项目依赖环境变量来激活云端引擎。请移步阅读项目 Wiki 了解详情：
 
-👉 **[🚀 快速起步与环境配置指南](./docs/GETTING_STARTED.md)**
+👉 **[🚀 项目 Wiki 与文档总览](./docs/README.md)**
 
 ---
 
@@ -79,23 +79,21 @@
 
 | 类别 | 技术 | 说明 |
 |------|------|------|
-| **骨干框架** | Next.js 15, React 19 | 全栈基石与高并发并发渲染挂载 |
-| **语言规范** | TypeScript 5.0 | P0 级系统类型安全防火墙 |
-| **云端底座** | Supabase, Vercel | 提供 PostgreSQL 实时数据与 Edge 全球加速、状态透传 |
-| **工程模式** | Monorepo (npm workspaces) | 前后端逻辑高度隔离的工业规范 |
-| **UI与动画** | Tailwind CSS, Framer Motion | 快速堆叠与 GPU 硬件加速的微动效 |
-| **画布引擎** | HTML5 Canvas API | 主引擎不依赖三方引擎，实现最轻量绘图底座 |
+| **骨干框架** | Next.js 15, React 19 | 全栈基石与高性能渲染 |
+| **语言规范** | TypeScript 5.0 | 全量类型安全保障 |
+| **云端底座** | Supabase, Vercel | 提供 PostgreSQL 实时数据与 Edge 全球加速 |
+| **工程模式** | Monorepo | 业务逻辑与基础设施物理隔离 |
+| **UI与动画** | Tailwind CSS, Framer Motion | 极致的视觉体验与微动效 |
+| **画布引擎** | HTML5 Canvas API | 轻量化、高性能的自定义绘图底座 |
 
 ---
 
 ## 📚 项目知识库 (Wiki)
 
-想要深入理解项目的系统运作原理？请翻阅如下核心技术基建指南：
+想要深入理解项目的系统架构、技术演进及最近更新？请访问我们的 Wiki：
 
-- **[🏛️ 2026 技术架构与数据流向](./docs/ARCHITECTURE_OVERVIEW.md)**：为什么采用 Monorepo，以及我们的“本地优先、云端最终一致”同步方案。
-- **[📝 Generative Puzzle PRD](./docs/PRD_生成式拼图游戏.md)**：包含本款产品的初心愿景、商业化推测和业务全貌记录。
-- **[⚖️ 分数与难度机制深度解析](./docs/game-rules-unified.md)**：想了解如何挑战 99 分极速榜？欢迎了解我们内部的算分公式。
-- **[🚑 架构健康评审报告 (2026.04)](./docs/2026-game-cloud-architecture-review.md)**：记录了所有已解决的 P0/P1 问题及项目优化轨迹。
+- **[📖 最新项目 Wiki (WIKI.md)](./docs/WIKI.md)**：包含系统架构、核心模块说明、开发规范及 2026 年 4 月最新技术进展报告。
+- **[📂 文档归档 (Archive)](./docs/archive/)**：查阅历史 PRD、早期架构评审及设计草案。
 
 ---
 

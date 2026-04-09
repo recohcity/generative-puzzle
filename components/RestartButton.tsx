@@ -1,7 +1,7 @@
-import { Button } from "@/components/ui/button";
 import { RefreshCw, RotateCcw } from "lucide-react";
 import React from "react";
 import { useTranslation } from '@/contexts/I18nContext';
+import { cn } from "@/lib/utils";
 
 interface RestartButtonProps {
   onClick: () => void;
@@ -37,10 +37,14 @@ const RestartButton: React.FC<RestartButtonProps> = ({
   const IconComponent = icon === 'retry' ? RotateCcw : RefreshCw;
 
   return (
-    <Button
+    <button
       onClick={onClick}
       disabled={disabled}
-      className={`w-full bg-[#1E1A2A] text-white rounded-3xl hover:bg-[#141022] hover:text-white hover:border-[#706B89] active:bg-[#2A283E] active:text-white active:border-[#463E50] min-h-0 p-0 leading-none ${className}`}
+      className={cn(
+        "glass-btn-inactive glass-btn-sheen w-full",
+        disabled && "opacity-30 pointer-events-none",
+        className
+      )}
       data-testid="restart-button"
       style={{
         height,
@@ -49,6 +53,10 @@ const RestartButton: React.FC<RestartButtonProps> = ({
         paddingTop: 0,
         paddingBottom: 0,
         lineHeight: 1,
+        borderRadius: 'calc(var(--panel-scale, 1) * 14px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         ...style,
       }}
     >
@@ -63,8 +71,8 @@ const RestartButton: React.FC<RestartButtonProps> = ({
         }}
       />
       <span style={{ lineHeight: 1 }}>{defaultText}</span>
-    </Button>
+    </button>
   );
 };
 
-export default RestartButton; 
+export default RestartButton;

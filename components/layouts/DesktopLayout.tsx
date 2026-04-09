@@ -10,6 +10,7 @@ import PuzzleControlsScatter from "@/components/PuzzleControlsScatter";
 import ActionButtons from "@/components/ActionButtons";
 import RestartButton from "@/components/RestartButton";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { RefreshCw } from "lucide-react";
 import { useGame } from "@/contexts/GameContext";
 import { playButtonClickSound } from "@/utils/rendering/soundEffects";
@@ -23,6 +24,7 @@ import LeaderboardPanel from '@/components/leaderboard/LeaderboardPanel';
 import RecentGameDetails from '@/components/RecentGameDetails';
 import { GameDataManager } from '@/utils/data/GameDataManager';
 import { getSpeedBonusDescription, getSpeedBonusDetails } from '@generative-puzzle/game-core';
+import IdentityChip from '@/components/auth/IdentityChip';
 
 interface DesktopLayoutProps {
   isMusicPlaying: boolean;
@@ -422,7 +424,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                       const data = GameDataManager.getLeaderboard();
                       const history = GameDataManager.getGameHistory();
                       console.log('[DesktopLayout] 个人最佳成绩数据:', data);
-                      console.log('[DesktopLayout] 历史数据:', history);
+                      console.log('[DesktopLayout] 历史成绩:', history);
                       setLeaderboardData(data);
                       setHistoryData(history);
                       setShowLeaderboard(true);
@@ -432,6 +434,22 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                 />
               </div>
 
+              <div className="mt-2 group">
+                <IdentityChip 
+                  panelScale={panelScale} 
+                  isPanelOpen={showLeaderboard}
+                  onClose={() => setShowLeaderboard(false)}
+                  onClick={() => {
+                    if (!showLeaderboard) {
+                      const data = GameDataManager.getLeaderboard();
+                      const history = GameDataManager.getGameHistory();
+                      setLeaderboardData(data);
+                      setHistoryData(history);
+                      setShowLeaderboard(true);
+                    }
+                  }}
+                />
+              </div>
             </div>
             <div className="space-y-4 flex-1 pr-1 -mr-1">
               {/* 根据状态显示不同的面板内容 */}
@@ -468,7 +486,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                       const data = GameDataManager.getLeaderboard();
                       const history = GameDataManager.getGameHistory();
                       console.log('[DesktopLayout] 个人最佳成绩数据:', data);
-                      console.log('[DesktopLayout] 历史数据:', history);
+                      console.log('[DesktopLayout] 历史成绩:', history);
                       setLeaderboardData(data);
                       setHistoryData(history);
                       setShowLeaderboard(true);
@@ -486,7 +504,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                 <div className="flex flex-col h-full">
                   {/* 成绩详情直接在游戏名称下展示 */}
                   <div className="mb-4">
-                    <h3 className="font-medium text-[#FFD5AB] mb-2" style={{ fontSize: panelScale <= 0.5 ? 16 : 'calc(0.9rem * var(--panel-scale))' }}>
+                    <h3 className="text-premium-title mb-2" style={{ fontSize: panelScale <= 0.5 ? 16 : 'calc(0.9rem * var(--panel-scale))' }}>
                       🏆 {t('stats.gameComplete')}
                     </h3>
                   </div>
@@ -494,95 +512,102 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                   {/* 滚动内容区域 */}
                   <div className="flex-1 overflow-y-auto space-y-3 mb-4" style={{ fontSize: panelScale <= 0.5 ? 12 : 'calc(0.75rem * var(--panel-scale))' }}>
                     {/* 本局成绩 */}
-                    <div className="bg-[#2A2A2A] rounded-lg p-3">
-                      <h4 className="text-[#FFD5AB] font-medium mb-3 text-sm flex items-center gap-1">
+                    <div className="glass-card mb-4">
+                      <h4 className="text-premium-label flex items-center gap-1 mb-4">
                         🏆 {t('stats.currentGameScore')}
                       </h4>
 
                       {/* 最终得分和游戏时长 - 统一格式 */}
-                      <div className="text-center mb-4 p-3 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg border border-blue-400/30">
-                        <div className="text-3xl font-bold text-blue-300 mb-1 tracking-wider">
-                          {(state.scoreBreakdown?.finalScore || state.currentScore).toLocaleString()}
-                        </div>
-                        <div className="text-sm text-blue-200 opacity-90 font-medium">
-                          {t('score.breakdown.gameDuration')}：{Math.floor(state.gameStats.totalDuration / 60).toString().padStart(2, '0')}:
-                          {(state.gameStats.totalDuration % 60).toString().padStart(2, '0')}
-                        </div>
-                        {state.isNewRecord && (
-                          <div className="mt-2">
-                            <div className="inline-flex items-center gap-1 bg-yellow-500/30 text-yellow-300 px-3 py-1 rounded-full text-xs font-medium animate-pulse">
-                              🌟 {t('stats.newRecord')}
-                            </div>
+                      <div className="text-center mb-6 p-4 rounded-xl relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#FFD5AB]/20 to-[#F68E5F]/20 opacity-50" />
+                        <div className="relative z-10">
+                          <div className="text-premium-value text-4xl mb-1 tracking-tight">
+                            {(state.scoreBreakdown?.finalScore || state.currentScore).toLocaleString()}
                           </div>
-                        )}
+                          <div className="text-premium-label opacity-80">
+                            {t('score.breakdown.gameDuration')}：{Math.floor(state.gameStats.totalDuration / 60).toString().padStart(2, '0')}:
+                            {(state.gameStats.totalDuration % 60).toString().padStart(2, '0')}
+                          </div>
+                          {state.isNewRecord && (
+                            <div className="mt-3">
+                              <div className="inline-flex items-center gap-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-[#232035] px-4 py-1.5 rounded-full text-xs font-black shadow-lg animate-pulse-slow">
+                                🌟 {t('stats.newRecord')}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
 
                       {/* 分数构成 - 统一格式 */}
                       {state.scoreBreakdown && (
-                        <div className="bg-white/5 rounded-lg p-3 border border-white/10">
-                          <div className="space-y-2 text-sm">
+                        <div className="space-y-2.5 mb-6">
+                          <div className="flex justify-between items-center bg-white/5 p-2 px-3 rounded-lg border border-white/5">
+                            <span className="text-premium-label flex items-center gap-1">
+                              <span>{t('score.breakdown.base')}</span>
+                              <span className="text-[10px] opacity-60 ml-1">{getDifficultyWithShape(state.gameStats.difficulty)}</span>
+                            </span>
+                            <span className="text-premium-value text-sm">{state.scoreBreakdown.baseScore}</span>
+                          </div>
+                          
+                          <div className="flex justify-between items-center bg-white/5 p-2 px-3 rounded-lg border border-white/5">
+                            <span className="text-premium-label">
+                              {t('score.breakdown.timeBonus')}
+                              <span className="text-[10px] opacity-60 ml-2">{getSpeedBonusText(state.gameStats.totalDuration)}</span>
+                            </span>
+                            <span className="text-green-400 font-bold text-sm">+{state.scoreBreakdown.timeBonus}</span>
+                          </div>
+
+                          <div className="flex justify-between items-center bg-white/5 p-2 px-3 rounded-lg border border-white/5">
+                            <span className="text-premium-label">
+                              {t('score.breakdown.rotationScore')}
+                              <span className="text-[10px] opacity-60 ml-2">{state.gameStats.totalRotations}/{state.gameStats.minRotations}</span>
+                            </span>
+                            <span className={cn("font-bold text-sm", state.scoreBreakdown.rotationScore >= 0 ? "text-green-400" : "text-red-400")}>
+                              {state.scoreBreakdown.rotationScore >= 0 ? '+' : ''}{state.scoreBreakdown.rotationScore}
+                            </span>
+                          </div>
+
+                          <div className="flex justify-between items-center bg-white/5 p-2 px-3 rounded-lg border border-white/5">
+                            <span className="text-premium-label">
+                              {t('score.breakdown.hintScore')}
+                              <span className="text-[10px] opacity-60 ml-2">{state.gameStats.hintUsageCount}/{state.scoreBreakdown.hintAllowance || 0}</span>
+                            </span>
+                            <span className={cn("font-bold text-sm", state.scoreBreakdown.hintScore >= 0 ? "text-green-400" : "text-red-400")}>
+                              {state.scoreBreakdown.hintScore >= 0 ? '+' : ''}{state.scoreBreakdown.hintScore}
+                            </span>
+                          </div>
+
+                          <div className="pt-4 mt-2 border-t border-white/10 space-y-2">
                             <div className="flex justify-between items-center">
-                              <span className="text-[#FFD5AB] flex items-center gap-1">
-                                <span>{t('score.breakdown.base')}：</span>
-                                <span className="text-[10px] leading-tight">{getDifficultyWithShape(state.gameStats.difficulty)}</span>
-                              </span>
-                              <span className="text-[#FFD5AB]">{state.scoreBreakdown.baseScore}</span>
+                              <span className="text-premium-label opacity-60">{t('score.breakdown.subtotal')}</span>
+                              <span className="text-premium-value text-sm">{(state.scoreBreakdown.baseScore + state.scoreBreakdown.timeBonus + state.scoreBreakdown.rotationScore + state.scoreBreakdown.hintScore)}</span>
                             </div>
-                            <div className="flex justify-between">
-                              <span className="text-[#FFD5AB]">
-                                {t('score.breakdown.timeBonus')}：<span className="text-[10px]">{getSpeedBonusText(state.gameStats.totalDuration)}</span>
-                              </span>
-                              <span className="text-green-400">+{state.scoreBreakdown.timeBonus}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-[#FFD5AB]">
-                                {t('score.breakdown.rotationScore')}：<span className="text-[10px]">{state.gameStats.totalRotations}/{state.gameStats.minRotations}（{state.gameStats.totalRotations === state.gameStats.minRotations ? t('rotation.perfect') : t('rotation.excess', { count: state.gameStats.totalRotations - state.gameStats.minRotations })}）</span>
-                              </span>
-                              <span className={state.scoreBreakdown.rotationScore >= 0 ? "text-green-400" : "text-red-400"}>
-                                {state.scoreBreakdown.rotationScore >= 0 ? '+' : ''}{state.scoreBreakdown.rotationScore}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-[#FFD5AB]">
-                                {t('score.breakdown.hintScore')}：<span className="text-[10px]">{state.gameStats.hintUsageCount}/{state.scoreBreakdown.hintAllowance || 0}{t('leaderboard.timesUnit')}</span>
-                              </span>
-                              <span className={state.scoreBreakdown.hintScore >= 0 ? "text-green-400" : "text-red-400"}>
-                                {state.scoreBreakdown.hintScore >= 0 ? '+' : ''}{state.scoreBreakdown.hintScore}
-                              </span>
-                            </div>
-                            <div className="border-t border-white/20 pt-2 mt-3">
-                              <div className="flex justify-between mb-1">
-                                <span className="text-[#FFD5AB]">{t('score.breakdown.subtotal')}：</span>
-                                <span className="text-[#FFD5AB]">{(state.scoreBreakdown.baseScore + state.scoreBreakdown.timeBonus + state.scoreBreakdown.rotationScore + state.scoreBreakdown.hintScore)}</span>
+                            <div className="flex justify-between items-center">
+                              <div className="flex flex-col">
+                                <span className="text-premium-label opacity-60">{t('score.breakdown.multiplier')}</span>
+                                <span className="text-[10px] text-[#FFB17A] opacity-40">
+                                  {getMultiplierBreakdown(state.gameStats.difficulty, state.scoreBreakdown.difficultyMultiplier)}
+                                </span>
                               </div>
-                              <div className="flex flex-col mb-2">
-                                <div className="flex justify-between">
-                                  <span className="text-[#FFD5AB]">{t('score.breakdown.multiplier')}：</span>
-                                  <span className="text-[#FFD5AB]">×{state.scoreBreakdown.difficultyMultiplier.toFixed(2)}</span>
-                                </div>
-                                <div className="text-[#FFD5AB]/70 text-[10px] text-right mt-0.5">
-                                  ({getMultiplierBreakdown(state.gameStats.difficulty, state.scoreBreakdown.difficultyMultiplier)})
-                                </div>
-                              </div>
-                              <div className="flex justify-between font-medium">
-                                <span className="text-[#FFD5AB]">{t('score.breakdown.final')}：</span>
-                                <span className="text-blue-300">{state.currentScore.toLocaleString()}</span>
-                              </div>
+                              <span className="text-[#F68E5F] font-black">×{state.scoreBreakdown.difficultyMultiplier.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between items-center pt-2 border-t border-white/5">
+                              <span className="text-premium-label font-bold text-lg">{t('score.breakdown.final')}</span>
+                              <span className="text-premium-value text-xl font-black">{(state.scoreBreakdown?.finalScore || state.currentScore).toLocaleString()}</span>
                             </div>
                           </div>
                         </div>
                       )}
 
                       {/* 游戏时间 */}
-                      <div className="mt-3 text-center">
-                        <div className="text-sm text-[#FFD5AB] opacity-80">
+                      <div className="mt-2 text-center">
+                        <div className="text-[10px] text-premium-label opacity-40 uppercase tracking-tighter">
                           {t('score.breakdown.gameTime')}：{new Date(state.gameStats.gameStartTime).toLocaleString(locale === 'zh-CN' ? 'zh-CN' : 'en-US', {
                             year: 'numeric',
                             month: '2-digit',
                             day: '2-digit',
                             hour: '2-digit',
-                            minute: '2-digit',
-                            second: '2-digit'
+                            minute: '2-digit'
                           })}
                         </div>
                       </div>
@@ -619,7 +644,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                   <PuzzleControlsScatter goToNextTab={goToNextTab} />
 
                   {/* 控制按钮部分 */}
-                  <h3 className="font-medium mt-4 mb-3 text-[#FFD5AB]" style={{ fontSize: panelScale <= 0.5 ? 16 : 'calc(0.9rem * var(--panel-scale))' }}>{t('game.controls.title')}</h3>
+                  <h3 className="text-premium-title mt-4 mb-3" style={{ fontSize: panelScale <= 0.5 ? 16 : 'calc(0.9rem * var(--panel-scale))' }}>{t('game.controls.title')}</h3>
                   <ActionButtons layout="desktop" buttonHeight={DESKTOP_CONTROL_BUTTON_HEIGHT} />
                   {/* 正常游戏状态下显示重玩本局和重开游戏按钮 */}
                   <div className="flex flex-row gap-2 mt-4">

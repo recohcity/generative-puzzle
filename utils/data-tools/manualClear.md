@@ -20,7 +20,7 @@ localStorage.removeItem('puzzle-history');
 
 // 验证清理结果
 console.log('排行榜数据:', localStorage.getItem('puzzle-leaderboard'));
-console.log('历史数据:', localStorage.getItem('puzzle-history'));
+console.log('历史成绩:', localStorage.getItem('puzzle-history'));
 ```
 
 ### 方法3：完全清空localStorage（谨慎使用）

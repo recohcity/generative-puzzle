@@ -6,6 +6,7 @@ import { Globe, ChevronDown } from "lucide-react";
 import { useTranslation } from '@/contexts/I18nContext';
 import { SUPPORTED_LOCALES, SupportedLocale } from '@/src/i18n/config';
 import { playButtonClickSound } from '@/utils/rendering/soundEffects';
+import { cn } from "@/lib/utils";
 
 interface LanguageSwitcherProps {
   variant?: 'icon' | 'text' | 'full' | 'iconOnly';
@@ -54,43 +55,44 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: '#1E1A2A',
     boxShadow: 'none',
     border: 'none',
-    color: '#F68E5F',
     opacity: isLoading ? 0.5 : 1,
     position: 'relative' as const,
+    transition: 'all 0.3s ease',
   };
 
   const dropdownStyle = {
     position: 'absolute' as const,
-    top: '100%',
+    top: '120%',
     right: 0,
-    marginTop: '4px',
-    background: '#1E1A2A',
-    border: '1px solid #463E50',
-    borderRadius: '8px',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+    background: 'rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(16px)',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    borderRadius: '12px',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
     zIndex: 1000,
     minWidth: variant === 'iconOnly' ? '80px' : '120px',
+    overflow: 'hidden',
   };
 
   const optionStyle = {
-    padding: variant === 'iconOnly' ? '8px' : '8px 12px',
-    fontSize: '14px',
+    padding: variant === 'iconOnly' ? '8px' : '8px 16px',
+    fontSize: '13px',
     color: '#FFD5AB',
     cursor: 'pointer',
-    borderBottom: '1px solid #463E50',
-    transition: 'background-color 0.2s',
+    transition: 'all 0.2s ease',
     display: 'flex',
     alignItems: 'center',
     justifyContent: variant === 'iconOnly' ? 'center' : 'flex-start',
+    fontWeight: 500,
   };
 
   const activeOptionStyle = {
     ...optionStyle,
-    background: '#F68E5F',
-    color: 'white',
+    background: 'linear-gradient(135deg, #FFD5AB 0%, #F68E5F 100%)',
+    color: '#232035',
+    fontWeight: 700,
   };
 
   // iconOnly 变体 - 直接切换模式（优化后）
@@ -145,39 +147,38 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
           disabled={isLoading}
           variant="ghost"
           size="icon"
-          className="rounded-full border-none shadow-none cursor-pointer language-button-fixed"
-          style={{
-            width: `${buttonWidth}px`,
-            height: `${buttonWidth}px`,
-            borderRadius: '50%',
-            minWidth: `${buttonWidth}px`,
-            minHeight: `${buttonWidth}px`,
-            padding: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: 'none',
-            border: 'none',
-            opacity: isLoading ? 0.5 : 1,
-            transition: 'none',
-            WebkitTapHighlightColor: 'transparent',
-            WebkitTouchCallout: 'none',
-            WebkitUserSelect: 'none',
-            userSelect: 'none',
-            // 强制覆盖所有状态的样式
-            backgroundColor: '#1E1A2A',
-            color: '#F68E5F',
-          }}
+          className={cn("rounded-full border-none shadow-none cursor-pointer language-button-fixed glass-btn-inactive")}
+            style={{
+              width: `${buttonWidth}px`,
+              height: `${buttonWidth}px`,
+              borderRadius: '50%',
+              minWidth: `${buttonWidth}px`,
+              minHeight: `${buttonWidth}px`,
+              padding: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: 'none',
+              border: 'none',
+              opacity: isLoading ? 0.5 : 1,
+              transition: 'all 0.3s ease',
+              WebkitTapHighlightColor: 'transparent',
+              WebkitTouchCallout: 'none',
+              WebkitUserSelect: 'none',
+              userSelect: 'none',
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              color: '#FFB17A',
+            }}
           data-testid="language-switcher-button"
           title={`当前: ${SUPPORTED_LOCALES[locale]} → 点击切换到: ${SUPPORTED_LOCALES[nextLocale]}`}
           suppressHydrationWarning
         >
           <span
             style={{
-              fontSize: '10px',
+              fontSize: '11px',
               fontWeight: 'bold',
-              fontFamily: 'monospace',
-              color: '#F68E5F',
+              fontFamily: 'system-ui, sans-serif',
+              color: 'inherit',
               pointerEvents: 'none',
             }}
             suppressHydrationWarning
@@ -196,12 +197,13 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
           onClick={() => setIsOpen(!isOpen)}
           disabled={isLoading}
           variant="ghost"
-          className="text-[#F68E5F] bg-[#1E1A2A] hover:bg-[#141022] active:bg-[#2A283E] transition-colors border-none shadow-none"
+          className="text-[#FFB17A] glass-btn-inactive transition-all border-none shadow-none"
           style={{
             fontSize,
-            padding: '4px 8px',
+            padding: '4px 12px',
             height: 'auto',
-            borderRadius: '8px',
+            borderRadius: '12px',
+            backgroundColor: 'rgba(255, 255, 255, 0.05)',
           }}
           data-testid="language-switcher-button"
         >
@@ -248,8 +250,12 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
         disabled={isLoading}
         variant="ghost"
         size="icon"
-        className={`rounded-full ${buttonSize} text-[#F68E5F] bg-[#1E1A2A] hover:bg-[#141022] active:bg-[#2A283E] transition-colors border-none shadow-none`}
-        style={buttonStyle}
+        className={cn(`rounded-full ${buttonSize} glass-btn-inactive transition-all border-none shadow-none`)}
+        style={{
+            ...buttonStyle,
+            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+            color: '#FFB17A',
+        }}
         data-testid="language-switcher-button"
         title={`当前语言: ${SUPPORTED_LOCALES[locale]}`}
       >

@@ -1,10 +1,11 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Trophy } from "lucide-react";
 import { playButtonClickSound } from "@/utils/rendering/soundEffects";
 import { useTranslation } from '@/contexts/I18nContext';
 import { getSpeedBonusDescription, getSpeedBonusDetails } from '@generative-puzzle/game-core';
+import { cn } from "@/lib/utils";
 
 // 使用GameDataManager内部的数据结构
 interface StoredGameRecord {
@@ -160,31 +161,32 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
   return (
     <div className="flex flex-col h-full">
       {/* 滚动内容区域 */}
-      <div className="flex-1 overflow-y-auto space-y-3 text-xs">
+      <div className="flex-1 overflow-y-auto space-y-4 text-xs pr-1 custom-scrollbar">
         {/* 本局成绩 - 与GameRecordDetails完全一致 */}
-        <div className="bg-[#2A2A2A] rounded-lg p-3">
-          <h4 className="text-[#FFD5AB] font-medium mb-3 text-sm flex items-center gap-1">
-            🏆 {t('stats.scoreHistory')}
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-500">
+          <h4 className="text-[#FFB17A] font-bold mb-4 text-sm flex items-center gap-2 uppercase tracking-wider">
+            <Trophy className="w-4 h-4 text-yellow-500" />
+            {t('stats.scoreHistory')}
           </h4>
 
           {/* 最终得分和游戏时长 - 统一格式 */}
-          <div className="text-center mb-4 p-3 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg border border-blue-400/30">
-            <div className="text-3xl font-bold text-blue-300 mb-1 tracking-wider">
+          <div className="text-center mb-6 p-4 bg-gradient-to-br from-[#FFD5AB]/10 to-[#F68E5F]/10 rounded-xl border border-[#FFD5AB]/20">
+            <div className="text-4xl font-black text-[#FFD5AB] mb-1 tracking-tighter drop-shadow-sm">
               {record.finalScore.toLocaleString()}
             </div>
-            <div className="text-sm text-blue-200 opacity-90 font-medium">
+            <div className="text-xs text-[#FFD5AB]/60 font-bold uppercase tracking-widest">
               {t('score.breakdown.gameDuration')}：{formatTime(record.totalDuration)}
             </div>
           </div>
 
           {/* 分数构成 - 统一格式 */}
           {record.scoreBreakdown && (
-            <div className="bg-white/5 rounded-lg p-3 border border-white/10">
-              <div className="space-y-2 text-sm">
+            <div className="bg-black/20 rounded-xl p-4 border border-white/5 space-y-3">
+              <div className="space-y-2.5 text-xs text-[#FFD5AB]/80">
                 <div className="flex justify-between items-center">
-                  <span className="text-[#FFD5AB] flex items-center gap-1">
-                    <span>{t('score.breakdown.base')}：</span>
-                    <span className="text-[10px] leading-tight">{(() => {
+                  <span className="flex flex-col">
+                    <span className="font-bold text-[#FFD5AB] opacity-60 uppercase text-[10px] tracking-widest mb-0.5">{t('score.breakdown.base')}</span>
+                    <span className="text-[10px] leading-tight text-[#FFD5AB]/40">{(() => {
                       const shapeName = getShapeDisplayName(record.difficulty?.shapeType);
                       const cutTypeName = getCutTypeDisplayName(record.difficulty?.cutType);
                       const levelText = t('difficulty.levelLabel', { level: record.difficulty.cutCount });
@@ -196,48 +198,48 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
                       return parts.join(' · ');
                     })()}</span>
                   </span>
-                  <span className="text-[#FFD5AB]">{record.scoreBreakdown.baseScore}</span>
+                  <span className="text-sm font-black text-[#FFD5AB]">{record.scoreBreakdown.baseScore}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-[#FFD5AB]">
-                    {t('score.breakdown.timeBonus')}：<span className="text-[10px]">{getSpeedBonusText(record.totalDuration)}</span>
+                
+                <div className="flex justify-between items-center py-1 border-t border-white/5">
+                  <span className="flex flex-col">
+                    <span className="font-bold text-[#FFD5AB] opacity-60 uppercase text-[10px] tracking-widest mb-0.5">{t('score.breakdown.timeBonus')}</span>
+                    <span className="text-[10px] text-[#FFD5AB]/40">{getSpeedBonusText(record.totalDuration)}</span>
                   </span>
-                  <span className="text-green-400">+{record.scoreBreakdown.timeBonus}</span>
+                  <span className="text-sm font-black text-green-400">+{record.scoreBreakdown.timeBonus}</span>
                 </div>
-                <div className="flex justify-between items-start">
-                  <span className="text-[#FFD5AB] flex-1 min-w-0">
-                    <span className="block">{t('score.breakdown.rotationScore')}：<span className="text-[10px]">{record.totalRotations}/{record.scoreBreakdown.minRotations}（{record.totalRotations === record.scoreBreakdown.minRotations ? t('rotation.perfect') : t('rotation.excess', { count: record.totalRotations - record.scoreBreakdown.minRotations })}）</span>
-                    </span>
+
+                <div className="flex justify-between items-center py-1 border-t border-white/5">
+                  <span className="flex flex-col">
+                    <span className="font-bold text-[#FFD5AB] opacity-60 uppercase text-[10px] tracking-widest mb-0.5">{t('score.breakdown.rotationScore')}</span>
+                    <span className="text-[10px] text-[#FFD5AB]/40">{record.totalRotations}/{record.scoreBreakdown.minRotations}（{record.totalRotations === record.scoreBreakdown.minRotations ? t('rotation.perfect') : t('rotation.excess', { count: record.totalRotations - record.scoreBreakdown.minRotations })}）</span>
                   </span>
-                  <span className={`${record.scoreBreakdown.rotationScore >= 0 ? "text-green-400" : "text-red-400"} ml-2 flex-shrink-0`}>
+                  <span className={cn("text-sm font-black", record.scoreBreakdown.rotationScore >= 0 ? "text-green-400" : "text-red-400")}>
                     {record.scoreBreakdown.rotationScore >= 0 ? '+' : ''}{record.scoreBreakdown.rotationScore}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-[#FFD5AB]">
-                    {t('score.breakdown.hintScore')}：<span className="text-[10px]">{record.hintUsageCount}/{record.scoreBreakdown.hintAllowance || 0}{t('leaderboard.timesUnit')}</span>
+
+                <div className="flex justify-between items-center py-1 border-t border-white/5">
+                  <span className="flex flex-col">
+                    <span className="font-bold text-[#FFD5AB] opacity-60 uppercase text-[10px] tracking-widest mb-0.5">{t('score.breakdown.hintScore')}</span>
+                    <span className="text-[10px] text-[#FFD5AB]/40">{record.hintUsageCount}/{record.scoreBreakdown.hintAllowance || 0}{t('leaderboard.timesUnit')}</span>
                   </span>
-                  <span className={record.scoreBreakdown.hintScore >= 0 ? "text-green-400" : "text-red-400"}>
+                  <span className={cn("text-sm font-black", record.scoreBreakdown.hintScore >= 0 ? "text-green-400" : "text-red-400")}>
                     {record.scoreBreakdown.hintScore >= 0 ? '+' : ''}{record.scoreBreakdown.hintScore}
                   </span>
                 </div>
-                <div className="border-t border-white/20 pt-2 mt-3">
-                  <div className="flex justify-between mb-1">
-                    <span className="text-[#FFD5AB]">{t('score.breakdown.subtotal')}：</span>
-                    <span className="text-[#FFD5AB]">{(record.scoreBreakdown.baseScore + record.scoreBreakdown.timeBonus + record.scoreBreakdown.rotationScore + record.scoreBreakdown.hintScore)}</span>
+
+                <div className="border-t-2 border-white/10 pt-3 mt-4 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-[#FFD5AB] opacity-60 uppercase text-[10px] tracking-widest">{t('score.breakdown.multiplier')}</span>
+                    <span className="text-sm font-black text-[#FFD5AB]">×{record.scoreBreakdown.difficultyMultiplier.toFixed(2)}</span>
                   </div>
-                  <div className="flex flex-col mb-2">
-                    <div className="flex justify-between">
-                      <span className="text-[#FFD5AB]">{t('score.breakdown.multiplier')}：</span>
-                      <span className="text-[#FFD5AB]">×{record.scoreBreakdown.difficultyMultiplier.toFixed(2)}</span>
-                    </div>
-                    <div className="text-[#FFD5AB]/70 text-[10px] text-right mt-0.5">
-                      ({getMultiplierBreakdown(record.difficulty, record.scoreBreakdown.difficultyMultiplier)})
-                    </div>
+                  <div className="text-[#FFD5AB]/40 text-[9px] text-right italic leading-none">
+                    ({getMultiplierBreakdown(record.difficulty, record.scoreBreakdown.difficultyMultiplier)})
                   </div>
-                  <div className="flex justify-between font-medium">
-                    <span className="text-[#FFD5AB]">{t('score.breakdown.final')}：</span>
-                    <span className="text-blue-300">{record.finalScore.toLocaleString()}</span>
+                  <div className="flex justify-between items-center pt-2 mt-2 border-t border-white/10">
+                    <span className="text-sm font-black text-[#FFB17A] uppercase tracking-tighter">{t('score.breakdown.final')}</span>
+                    <span className="text-xl font-black text-[#FFD5AB] tracking-tighter">{record.finalScore.toLocaleString()}</span>
                   </div>
                 </div>
               </div>

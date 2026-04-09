@@ -2,8 +2,8 @@ import type React from "react"
 import "@/app/globals.css"
 import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
-import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/contexts/AuthContext"
+import { I18nProvider } from "@/contexts/I18nContext"
 import EnvModeClient from "@/components/EnvModeClient"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
@@ -80,19 +80,19 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="zh-CN" suppressHydrationWarning>
+    <html lang="zh-CN" className="dark">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body className={inter.className} suppressHydrationWarning>
+      <body className={inter.className}>
         <EnvModeClient />
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <AuthProvider>
+        <AuthProvider>
+          <I18nProvider>
             {children}
-          </AuthProvider>
-          <SpeedInsights />
-        </ThemeProvider>
+          </I18nProvider>
+        </AuthProvider>
+        <SpeedInsights />
       </body>
     </html>
   )

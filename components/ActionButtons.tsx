@@ -1,12 +1,12 @@
 "use client"
 import { useGame } from "@/contexts/GameContext"
-import { Button } from "@/components/ui/button"
 import { Lightbulb, RotateCcw, RotateCw } from "lucide-react"
 import { playButtonClickSound, playRotateSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
 import { useDeviceDetection } from "@/hooks/useDeviceDetection"
 import { useTranslation } from '@/contexts/I18nContext'
 import { useAngleDisplay } from '@/utils/angleDisplay'
+import { cn } from "@/lib/utils"
 
 interface ActionButtonsProps {
   layout?: 'mobile' | 'desktop'; // Prop to differentiate layout styles if needed
@@ -83,18 +83,21 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
       {/* Action Buttons Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
-        <Button
+        <button
           onClick={handleShowHint}
           disabled={
             !state.isScattered ||
             state.selectedPiece === null ||
             state.completedPieces.includes(state.selectedPiece ?? -1)
           }
-          className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md ${!state.isScattered || state.selectedPiece === null || state.completedPieces.includes(state.selectedPiece ?? -1) ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+          className={cn(
+            "glass-btn-active glass-btn-sheen w-full border-none",
+            (!state.isScattered || state.selectedPiece === null || state.completedPieces.includes(state.selectedPiece ?? -1)) && "opacity-30 pointer-events-none"
+          )}
           data-testid="hint-button"
           style={{
             height: buttonHeight,
-            borderRadius: '14px',
+            borderRadius: 'calc(var(--panel-scale, 1) * 14px)',
             fontSize: '14px',
             padding: 0,
             lineHeight: '18px',
@@ -104,20 +107,22 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
             gap: '4px',
           }}
           title={t('game.controls.hint')}
-          variant="ghost"
         >
-          <Lightbulb style={{ width: '16px', height: '16px' }} className="text-white shrink-0" strokeWidth={2} />
-          {layout === 'mobile' && <span style={{ fontSize: '14px', marginLeft: '2px' }}>{t('game.controls.hint')}</span>}
-        </Button>
+          <Lightbulb style={{ width: '16px', height: '16px' }} className="text-[#232035] shrink-0" strokeWidth={2.5} />
+          {layout === 'mobile' && <span className="text-[14px] ml-0.5">{t('game.controls.hint')}</span>}
+        </button>
 
-        <Button
+        <button
           onClick={() => handleRotatePiece(false)}
           disabled={!state.isScattered || state.selectedPiece === null || state.isCompleted}
-          className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md ${!state.isScattered || state.selectedPiece === null || state.isCompleted ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+          className={cn(
+            "glass-btn-active glass-btn-sheen w-full border-none",
+            (!state.isScattered || state.selectedPiece === null || state.isCompleted) && "opacity-30 pointer-events-none"
+          )}
           data-testid="rotate-left-button"
           style={{
             height: buttonHeight,
-            borderRadius: '14px',
+            borderRadius: 'calc(var(--panel-scale, 1) * 14px)',
             fontSize: '14px',
             padding: 0,
             lineHeight: '18px',
@@ -127,20 +132,22 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
             gap: '4px',
           }}
           title={t('game.controls.rotateLeft')}
-          variant="ghost"
         >
-          <RotateCcw style={{ width: '16px', height: '16px' }} className="text-white shrink-0" strokeWidth={2} />
-          {layout === 'mobile' && <span style={{ fontSize: '14px', marginLeft: '2px' }}>{t('game.controls.rotateLeft')}</span>}
-        </Button>
+          <RotateCcw style={{ width: '16px', height: '16px' }} className="text-[#232035] shrink-0" strokeWidth={2.5} />
+          {layout === 'mobile' && <span className="text-[14px] ml-0.5">{t('game.controls.rotateLeft')}</span>}
+        </button>
 
-        <Button
+        <button
           onClick={() => handleRotatePiece(true)}
           disabled={!state.isScattered || state.selectedPiece === null || state.isCompleted}
-          className={`w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md ${!state.isScattered || state.selectedPiece === null || state.isCompleted ? disabledClass : ""} disabled:hover:bg-[#F68E5F]`}
+          className={cn(
+            "glass-btn-active glass-btn-sheen w-full border-none",
+            (!state.isScattered || state.selectedPiece === null || state.isCompleted) && "opacity-30 pointer-events-none"
+          )}
           data-testid="rotate-right-button"
           style={{
             height: buttonHeight,
-            borderRadius: '14px',
+            borderRadius: 'calc(var(--panel-scale, 1) * 14px)',
             fontSize: '14px',
             padding: 0,
             lineHeight: '18px',
@@ -150,25 +157,24 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
             gap: '4px',
           }}
           title={t('game.controls.rotateRight')}
-          variant="ghost"
         >
-          <RotateCw style={{ width: '16px', height: '16px' }} className="text-white shrink-0" strokeWidth={2} />
-          {layout === 'mobile' && <span style={{ fontSize: '14px', marginLeft: '2px' }}>{t('game.controls.rotateRight')}</span>}
-        </Button>
+          <RotateCw style={{ width: '16px', height: '16px' }} className="text-[#232035] shrink-0" strokeWidth={2.5} />
+          {layout === 'mobile' && <span className="text-[14px] ml-0.5">{t('game.controls.rotateRight')}</span>}
+        </button>
       </div>
 
       {/* 角度显示 - 增强版多语言支持 */}
       {state.selectedPiece !== null && state.puzzle && (
-        <div style={{ textAlign: 'center', fontSize: '14px', marginTop: '6px', color: '#FFD5AB', fontWeight: 500 }}>
+        <div style={{ textAlign: 'center', marginTop: '8px' }}>
           {shouldShowAngle(state.selectedPiece) ? (
             <>
-              <div className={isTemporaryDisplay() ? 'animate-pulse' : ''}>
+              <div className={cn("text-premium-value text-sm font-bold", isTemporaryDisplay() ? 'animate-pulse-slow' : '')}>
                 {isTemporaryDisplay() 
                   ? t('game.controls.angleTemporary', { angle: Math.round(state.puzzle[state.selectedPiece].rotation) })
                   : t('game.controls.currentAngle', { angle: Math.round(state.puzzle[state.selectedPiece].rotation) })
                 }
               </div>
-              <div style={{ fontSize: '12px', marginTop: '2px', color: '#FFD5AB', fontWeight: 500 }}>
+              <div className="text-premium-label text-[11px] mt-1 opacity-70">
                 {isTemporaryDisplay() 
                   ? t('game.controls.hintRevealedAngle')
                   : (layout === 'mobile' ? t('game.controls.rotateInstruction') : t('game.controls.rotateInstructionDesktop'))
@@ -176,7 +182,7 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
               </div>
             </>
           ) : (
-            <div style={{ fontSize: '12px', marginTop: '2px', color: '#FFD5AB', opacity: 0.6, fontWeight: 500 }}>
+            <div className="text-premium-label text-[11px] mt-1 opacity-60">
               {needsHintEnhancement() ? t('game.controls.useHintToReveal') : 
                 (layout === 'mobile' ? t('game.controls.rotateInstruction') : t('game.controls.rotateInstructionDesktop'))}
             </div>

@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
-import { Trophy, Clock } from "lucide-react";
+import { Trophy, Clock, ShieldCheck } from "lucide-react";
 import { useTranslation } from '@/contexts/I18nContext';
 import { playButtonClickSound } from "@/utils/rendering/soundEffects";
+import { useAuth } from "@/contexts/AuthContext";
+import VirtualAuthWidget from "@/components/auth/VirtualAuthWidget";
 import { GameDataManager } from '@/utils/data/GameDataManager';
 import { LeaderboardSimplifier } from '@/utils/leaderboard/LeaderboardSimplifier';
 import { LeaderboardItemStyles, LeaderboardItemContent } from './LeaderboardItemStyles';
@@ -24,6 +26,7 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
   isMobile = false 
 }) => {
   const { t, locale, isLoading } = useTranslation();
+  const { user, isLoading: authLoading } = useAuth();
   
   const [leaderboardData, setLeaderboardData] = useState<GameRecord[]>([]);
   const [lastGameRecord, setLastGameRecord] = useState<GameRecord | null>(null);
@@ -89,9 +92,9 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
 
     if (diffInHours < 1) {
-      return '刚刚';
+      return t('stats.justNow');
     } else if (diffInHours < 24) {
-      return `${diffInHours}小时前`;
+      return t('stats.hoursAgo', { hours: diffInHours });
     } else {
       return date.toLocaleDateString();
     }
@@ -123,10 +126,19 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
   return (
     <div
       key={`simplified-leaderboard-${locale}`}
-      className="p-1.5 bg-[#463E50] rounded-2xl shadow-[0_4px_10px_rgba(0,0,0,0.2)] space-y-1 h-full flex flex-col"
+      className="p-1.5 bg-[#463E50] rounded-2xl shadow-[0_4px_10px_rgba(0,0,0,0.2)] space-y-1 h-full flex flex-col relative"
     >
+      {/* 侧边栏引导遮罩 */}
+      {!user && !authLoading && (
+        <div className="absolute inset-0 z-20 bg-black/40 backdrop-blur-md flex flex-col items-center justify-center p-4">
+          <div className="w-full max-w-sm">
+            <VirtualAuthWidget onAuthSuccess={() => console.log('Auth success in simplified panel')} />
+          </div>
+        </div>
+      )}
+
       {/* 滚动内容区域 */}
-      <div className="flex-1 overflow-y-auto space-y-1">
+      <div className={`flex-1 overflow-y-auto space-y-1 ${!user && !authLoading ? 'grayscale' : ''}`}>
         {/* 简化的Top5个人最佳成绩 */}
         <div className="bg-[#2A2A2A] rounded-lg p-2 relative">
           {/* 关闭按钮 */}
@@ -136,12 +148,12 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
             size="sm"
             className="absolute top-2 right-2 text-[#FFD5AB] hover:text-white text-xs px-2 py-1 h-auto"
           >
-            关闭
+            {t('common.close')}
           </Button>
           
           <h4 className="text-[#FFD5AB] font-medium mb-2 text-sm flex items-center gap-1 pr-12">
             <Trophy className="w-4 h-4" />
-            前5名
+            Top 5
           </h4>
 
           {simplifiedData.top5Records.length > 0 ? (
@@ -176,7 +188,7 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
                             {/* 第二行：时间和难度（字号较小） */}
                             <div className="text-[#FFD5AB] opacity-70 truncate">
                               <span className="text-xs">{LeaderboardSimplifier.formatTime(record.totalDuration)} · </span>
-                              <span className="text-[10px]">{getDifficultyWithDetails(record.difficulty)} · {record.difficulty.actualPieces}片</span>
+                              <span className="text-[10px]">{getDifficultyWithDetails(record.difficulty)} · {record.difficulty.actualPieces}{t('stats.piecesUnit')}</span>
                             </div>
                           </div>
                         </div>
@@ -210,7 +222,7 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
             </div>
           ) : (
             <div className="text-[#FFD5AB] opacity-60 text-xs text-center py-4">
-              暂无个人最佳成绩数据
+              {t('leaderboard.empty')}
             </div>
           )}
         </div>
@@ -220,7 +232,7 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
           <div className="bg-[#2A2A2A] rounded-lg p-2">
             <h4 className="text-[#FFD5AB] font-medium mb-2 text-sm flex items-center gap-1">
               <Clock className="w-4 h-4" />
-              最近游戏
+              {t('stats.scoreHistory')}
             </h4>
             {isMobile ? (
               // 移动端极简格式
@@ -228,13 +240,13 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
                 <div className="flex items-center gap-2">
                   <span className="text-lg">🎮</span>
                   <div className="text-xs flex-1 min-w-0">
-                    <div className="truncate">{getDifficultyWithDetails(lastGameRecord.difficulty)} · {lastGameRecord.difficulty.actualPieces}片</div>
+                    <div className="truncate">{getDifficultyWithDetails(lastGameRecord.difficulty)} · {lastGameRecord.difficulty.actualPieces}{t('stats.piecesUnit')}</div>
                     <div className="opacity-60">{formatDate(lastGameRecord.timestamp)}</div>
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="text-base font-medium">
-                    {LeaderboardSimplifier.formatScore(lastGameRecord.finalScore)}分
+                    {LeaderboardSimplifier.formatScore(lastGameRecord.finalScore)}
                   </div>
                   <div className="text-xs opacity-60">
                     {LeaderboardSimplifier.formatTime(lastGameRecord.totalDuration)}

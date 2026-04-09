@@ -1,7 +1,6 @@
 "use client"
 // import { GameProvider, useGame } from "@/contexts/GameContext" // useGame is called in child components now
 import { GameProvider } from "@/contexts/GameContext"
-import { I18nProvider } from "@/contexts/I18nContext"
 import DynamicTitle from "@/components/DynamicTitle"
 // Removed custom ThemeProvider/useTheme import
 // import { ThemeProvider, useTheme } from "@/contexts/ThemeContext"
@@ -592,39 +591,36 @@ export default function CurveTestOptimized() {
   }
 
   return (
-    <I18nProvider>
-      <GameProvider>
-        <div
-          ref={gameContainerRef}
-          className="min-h-screen w-full relative overflow-hidden"
-          style={{
-            // 移除默认的padding和flex居中，让子布局完全控制
-            padding: 0,
-            display: 'block', // 改为block，不使用flex
-          }}
-        >
+    <GameProvider>
+      <div
+        ref={gameContainerRef}
+        className="min-h-screen w-full relative overflow-hidden"
+        style={{
+          // 移除默认的padding和flex居中，让子布局完全控制
+          padding: 0,
+          display: 'block', // 改为block，不使用flex
+        }}
+      >
 
-          {/* 🎯 性能优化：iPad设备使用静态背景，避免动态背景导致的卡顿 */}
-          {(deviceType === 'desktop' && !device.isIPad) ? (
-            <BubbleBackground interactive className="absolute inset-0 w-full h-full" />
-          ) : (
-            <ResponsiveBackground />
-          )}
-          <DynamicTitle />
-          {layoutToRender}
+        {/* 🎯 性能优化：iPad设备使用静态背景，避免动态背景导致的卡顿 */}
+        {(deviceType === 'desktop' && !device.isIPad) ? (
+          <BubbleBackground interactive className="absolute inset-0 w-full h-full" />
+        ) : (
+          <ResponsiveBackground />
+        )}
+        <DynamicTitle />
+        {layoutToRender}
 
-          {/* 版权信息 - 仅桌面端显示，移动端在控制面板中显示 */}
-          {/* 版权信息 - 仅桌面端显示，全屏模式下隐藏以避免布局问题 */}
-          {(shouldUseDesktopLayout && !isFullscreen) && (
-            <div className="absolute bottom-2 left-0 right-0 flex justify-center z-10 transition-opacity duration-300">
-              <div className="text-white text-xs text-center leading-relaxed">
-                <div>recoh AI project 2025 | generative-puzzle V{process.env.APP_VERSION || '1.3.51'}</div>
-              </div>
+        {/* 版权信息 - 仅桌面端显示，移动端在控制面板中显示 */}
+        {/* 版权信息 - 仅桌面端显示，全屏模式下隐藏以避免布局问题 */}
+        {(shouldUseDesktopLayout && !isFullscreen) && (
+          <div className="absolute bottom-2 left-0 right-0 flex justify-center z-10 transition-opacity duration-300">
+            <div className="text-white text-xs text-center leading-relaxed">
+              <div>recoh AI project 2026 | generative-puzzle V{process.env.APP_VERSION || '1.3.51'}</div>
             </div>
-          )}
-        </div>
-      </GameProvider>
-    </I18nProvider>
+          </div>
+        )}
+      </div>
+    </GameProvider>
   )
 }
-

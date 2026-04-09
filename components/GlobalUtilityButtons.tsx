@@ -1,8 +1,8 @@
 "use client";
 
 import React from 'react';
-import { Button } from "@/components/ui/button";
 import { Volume2, VolumeX, Maximize, Minimize, Trophy } from "lucide-react";
+import { cn } from "@/lib/utils";
 import LanguageSwitcher from './LanguageSwitcher';
 import { useTranslation } from '@/contexts/I18nContext';
 import { playButtonClickSound } from "@/utils/rendering/soundEffects";
@@ -39,12 +39,9 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1E1A2A',
     boxShadow: 'none',
     border: 'none',
-    color: '#F68E5F',
-    opacity: 1,
-    transition: 'none',
+    transition: 'all 0.3s ease',
     WebkitTapHighlightColor: 'transparent',
     WebkitTouchCallout: 'none',
     WebkitUserSelect: 'none',
@@ -58,35 +55,35 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
         size={buttonSize === 'small' ? 'small' : 'default'}
       />
       {onToggleLeaderboard && (
-        <Button
+        <button
           onClick={() => {
             playButtonClickSound();
             onToggleLeaderboard();
           }}
-          variant="ghost"
-          size="icon"
-          className={buttonClass}
+          className={cn(buttonClass, isLeaderboardOpen ? "glass-btn-active" : "glass-btn-inactive")}
           style={{
             ...buttonStyle,
-            backgroundColor: isLeaderboardOpen ? '#F68E5F' : '#1E1A2A',
-            color: isLeaderboardOpen ? 'white' : '#F68E5F',
+            backgroundColor: isLeaderboardOpen ? undefined : 'rgba(255, 255, 255, 0.05)',
+            color: isLeaderboardOpen ? '#232035' : '#FFB17A',
           }}
           data-testid="toggle-leaderboard-button"
           aria-label={isLeaderboardOpen ? t('game.leaderboard.close') : t('game.leaderboard.show')}
           title={isLeaderboardOpen ? t('game.leaderboard.close') : t('game.leaderboard.show')}
         >
           <Trophy width={iconSize} height={iconSize} strokeWidth={2} style={{ pointerEvents: 'none' }} />
-        </Button>
+        </button>
       )}
-      <Button
+      <button
         onClick={() => {
           playButtonClickSound();
           onToggleMusic();
         }}
-        variant="ghost"
-        size="icon"
-        className={buttonClass}
-        style={buttonStyle}
+        className={cn(buttonClass, "glass-btn-inactive")}
+        style={{
+          ...buttonStyle,
+          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+          color: '#FFB17A',
+        }}
         data-testid="toggle-music-button"
         aria-label={isMusicPlaying ? t('game.audio.toggleOff') : t('game.audio.toggleOn')}
         title={isMusicPlaying ? t('game.audio.toggleOff') : t('game.audio.toggleOn')}
@@ -96,16 +93,18 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
         ) : (
           <VolumeX width={iconSize} height={iconSize} strokeWidth={2} style={{ pointerEvents: 'none' }} />
         )}
-      </Button>
-      <Button
+      </button>
+      <button
         onClick={() => {
           playButtonClickSound();
           onToggleFullscreen();
         }}
-        variant="ghost"
-        size="icon"
-        className={buttonClass}
-        style={buttonStyle}
+        className={cn(buttonClass, "glass-btn-inactive")}
+        style={{
+          ...buttonStyle,
+          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+          color: '#FFB17A',
+        }}
         data-testid="toggle-fullscreen-button"
         aria-label={isFullscreen ? t('game.fullscreen.exit') : t('game.fullscreen.enter')}
         title={isFullscreen ? t('game.fullscreen.exit') : t('game.fullscreen.enter')}
@@ -115,7 +114,7 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
         ) : (
           <Maximize width={iconSize} height={iconSize} strokeWidth={2} style={{ pointerEvents: 'none' }} />
         )}
-      </Button>
+      </button>
     </div>
   );
 };

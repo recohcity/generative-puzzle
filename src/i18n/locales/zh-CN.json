@@ -7,6 +7,74 @@
         "confirm": "确认",
         "close": "关闭"
     },
+    "auth": {
+        "guest": "游客",
+        "login": "立即登录",
+        "logout": "退出",
+        "logoutConfirm": "确定要退出当前账号吗？",
+        "synced": "数据已加密同步",
+        "offline": "离线模式，点击持久化",
+        "loading": "加载中...",
+        "syncing": "同步中...",
+        "title": "账户登录",
+        "emailPlaceholder": "your@email.com",
+        "signIn": "发送魔法链接",
+        "signOut": "登出账户",
+        "sending": "发送中...",
+        "signedIn": "已登录：{email}",
+        "description": "使用 Magic Link 登录后，游戏记录会自动写入云端并用于多端一致。",
+        "modes": {
+            "register": {
+                "title": "设定您的个人信息",
+                "description": "",
+                "hint": "请记住你的昵称和4位数字，方便找回历史成绩。",
+                "button": "注册/登录",
+                "loading": "正在设定..."
+            },
+            "recover": {
+                "title": "找回历史成绩",
+                "description": "欢迎回来！请输入之前使用的昵称与 PIN 码恢复您的记录。",
+                "button": "登录/同步成绩",
+                "hint": "换了设备/浏览器？无需注册，请马上找回",
+                "loading": "正在检索...",
+                "link": "换了设备？点击找回历史成绩 →",
+                "back": "注册/登录"
+            }
+        },
+        "inputs": {
+            "nickname": "游戏昵称",
+            "nicknamePlaceholder": "Tom (2-8字符)",
+            "pin": "输入任意4位数字",
+            "pinPlaceholder": "••••"
+        },
+        "collision": {
+            "title": "多账号认领",
+            "description": "发现多个绑定同一昵称和PIN的记录",
+            "hint": "请选择属于您的存档版本。如果您不确定，可以尝试选择最高分最多的那个。",
+            "bestScore": "最高分",
+            "challenges": "挑战",
+            "back": "返回重试"
+        },
+        "status": {
+            "escorted": "设备已护航",
+            "sessionId": "SESSION ID",
+            "sync": "同步数据",
+            "exit": "退出",
+            "processing": "处理中..."
+        },
+        "error": {
+            "noEmail": "请输入邮箱地址",
+            "notConfigured": "Supabase 未配置",
+            "fail": "操作失败",
+            "nicknameLength": "昵称需在 2 到 8 个字符之间",
+            "pinFormat": "PIN 码必须是 4 位纯数字",
+            "lookupFail": "检查重名时出错: {error}",
+            "exists": "已经存在使用昵称 [{nickname}] 和此 PIN 的账号，请直接使用“找回账号”功能。",
+            "recoverFail": "查询账户失败: {error}",
+            "notFound": "未找到匹配的账号记录，请检查昵称或 PIN 码。",
+            "loginError": "登录遇到异常。"
+        }
+    },
     "game": {
         "title": "生成式拼图游戏",
         "description": "一个基于Next.js和React的生成式拼图游戏项目",
@@ -108,7 +176,17 @@
             "title": "个人最佳成绩",
             "show": "显示个人最佳成绩",
             "close": "关闭",
-            "all": "全部"
+            "all": "全部",
+            "tabs": {
+                "personal": "个人最佳",
+                "global": "全服排名"
+            },
+            "loadingGlobal": "正在获取全球排名...",
+            "globalRank": "全球排名",
+            "anonymous": "匿名玩家",
+            "empty": "暂无全服排名数据",
+            "refresh": "刷新",
+            "sessionsUnit": "局"
         },
         "difficulty": {
             "easy": "简单",
@@ -192,14 +270,6 @@
             "gameInProgress": "游戏进行中",
             "gameWaiting": "等待开始",
             "lastUpdate": "最后更新"
-        },
-        "gameComplete": "游戏完成",
-        "complete": "完成",
-        "perfectHints": "完美",
-        "perfectGame": "完美游戏",
-        "zeroHintsBonus": "零提示奖励",
-        "efficiency": {
-            "short": "效率"
         },
         "gameComplete": "游戏完成",
         "complete": "完成",

@@ -204,7 +204,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
             size="sm"
             className="absolute top-2 right-2 text-[#FFD5AB] hover:text-white text-xs px-2 py-1 h-auto"
           >
-            关闭
+            {t('game.leaderboard.close')}
           </Button>
           
           <h4 className="text-[#FFD5AB] font-medium mb-3 text-sm flex items-center gap-1 pr-12">
@@ -229,11 +229,11 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
                   }`}
                 style={{ fontSize: '11px' }}
               >
-                {difficulty === 'all' ? '全部' :
-                  difficulty === 'easy' ? '简单' :
-                    difficulty === 'medium' ? '中等' :
-                      difficulty === 'hard' ? '困难' :
-                        difficulty === 'extreme' ? '极难' : difficulty}
+                {difficulty === 'all' ? t('game.leaderboard.all') :
+                  difficulty === 'easy' ? t('difficulty.easy') :
+                    difficulty === 'medium' ? t('difficulty.medium') :
+                      difficulty === 'hard' ? t('difficulty.hard') :
+                        difficulty === 'extreme' ? t('difficulty.extreme') : difficulty}
               </Button>
             ))}
           </div>
@@ -269,7 +269,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
             </div>
           ) : (
             <div className="text-[#FFD5AB] opacity-60 text-xs text-center py-4">
-              暂无个人最佳成绩数据
+              {t('leaderboard.empty')}
             </div>
           )}
         </div>
@@ -344,9 +344,9 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
                     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
 
                     if (diffInHours < 1) {
-                      return '刚刚';
+                      return t('stats.justNow');
                     } else if (diffInHours < 24) {
-                      return `${diffInHours}小时前`;
+                      return t('stats.hoursAgo', { hours: diffInHours });
                     } else {
                       return date.toLocaleDateString();
                     }
@@ -361,10 +361,10 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
             <div className="text-center py-8">
               <div className="text-4xl mb-2 opacity-50">🎮</div>
               <div className="text-[#FFD5AB] opacity-60 text-sm">
-                {t('leaderboard.empty') || '暂无游戏记录'}
+                {t('leaderboard.empty')}
               </div>
               <div className="text-[#FFD5AB] opacity-40 text-xs mt-1">
-                完成一局游戏后将显示记录
+                {t('leaderboard.emptyHint')}
               </div>
             </div>
           )}
