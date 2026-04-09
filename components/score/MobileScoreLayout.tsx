@@ -171,106 +171,87 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
   };
 
   return (
-    <div className="w-full">
-      {/* 极限紧凑标题区域 */}
-      <div className="flex items-center gap-1.5 mb-2 px-1">
-        <span className="text-[#F68E5F] text-sm">🏆</span>
-        <h2 className="text-premium-title text-sm">{t('stats.currentGameScore')}</h2>
+    <div className="w-full flex-col animate-in fade-in zoom-in-95 duration-500">
+      {/* 成绩详情标题 */}
+      <div className="flex items-center gap-2 mb-3 px-1">
+        <div className="p-1.5 rounded-lg bg-[#FFD5AB]/20 border border-[#FFD5AB]/20">
+          <Trophy className="w-4 h-4 text-[#FFD5AB]" />
+        </div>
+        <h2 className="text-premium-title text-sm font-black uppercase tracking-widest">{t('stats.currentGameScore')}</h2>
       </div>
 
-      {/* 极限紧凑分数详情卡片 - 减少内边距 */}
-      <div className="glass-card p-3 relative overflow-hidden">
+      {/* 分数核心卡片 */}
+      <div className="glass-panel p-4 relative overflow-hidden group">
         <div className="absolute inset-0 bg-gradient-to-br from-[#FFD5AB]/5 to-[#F68E5F]/5 pointer-events-none" />
+        
         {scoreBreakdown ? (
-          <div className="space-y-1.5">
-            {/* 难度基础 */}
-            <div className="flex justify-between items-center bg-white/5 p-1.5 px-2 rounded-lg border border-white/5">
-              <span className="text-premium-label text-xs flex items-center gap-1 flex-1 min-w-0">
-                <span className="opacity-60">{t('score.breakdown.base')}</span>
-                <span className="text-[10px] truncate ml-1 opacity-40">{getDifficultyWithShape(gameStats.difficulty)}</span>
-              </span>
-              <span className="text-premium-value text-xs font-bold flex-shrink-0 ml-1">{formatScore(scoreBreakdown.baseScore)}</span>
-            </div>
-
-            {/* 速度奖励 */}
-            {scoreBreakdown.timeBonus > 0 && (
-              <div className="flex justify-between items-center bg-white/5 p-1.5 px-2 rounded-lg border border-white/5">
-                <span className="text-premium-label text-xs">
-                  <span className="opacity-60">{t('score.breakdown.timeBonus')}</span>
-                  <span className="text-[10px] ml-2 opacity-40">{getSpeedRankText(gameStats.totalDuration)}</span>
-                </span>
-                <span className="text-green-400 text-xs font-black">+{formatScore(scoreBreakdown.timeBonus)}</span>
+          <div className="space-y-3">
+            {/* 分数主显示 */}
+            <div className="text-center py-4 bg-white/5 rounded-2xl border border-white/5 mb-4 relative overflow-hidden">
+              <div className="text-4xl font-black text-premium-value tracking-tighter drop-shadow-xl">
+                {formatScore(currentScore)}
               </div>
-            )}
-
-            {/* 旋转技巧 */}
-            <div className="flex justify-between items-center bg-white/5 p-1.5 px-2 rounded-lg border border-white/5">
-              <span className="text-premium-label text-xs">
-                <span className="opacity-60">{t('score.breakdown.rotationScore')}</span>
-                <span className="text-[10px] ml-2 opacity-40">{gameStats.totalRotations}/{gameStats.minRotations}</span>
-              </span>
-              <span className={cn("text-xs font-black", scoreBreakdown.rotationScore >= 0 ? "text-green-400" : "text-red-400")}>
-                {scoreBreakdown.rotationScore >= 0 ? '+' : ''}{formatScore(scoreBreakdown.rotationScore)}
-              </span>
+              <div className="text-[10px] text-premium-label opacity-40 uppercase tracking-widest mt-1">
+                {t('score.breakdown.final')}
+              </div>
             </div>
 
-            {/* 提示使用 */}
-            <div className="flex justify-between items-center bg-white/5 p-1.5 px-2 rounded-lg border border-white/5">
-              <span className="text-premium-label text-xs">
-                <span className="opacity-60">{t('score.breakdown.hintScore')}</span>
-                <span className="text-[10px] ml-2 opacity-40">{gameStats.hintUsageCount}/{scoreBreakdown.hintAllowance}</span>
-              </span>
-              <span className={cn("text-xs font-black", scoreBreakdown.hintScore >= 0 ? "text-green-400" : "text-red-400")}>
-                {scoreBreakdown.hintScore >= 0 ? '+' : ''}{formatScore(scoreBreakdown.hintScore)}
-              </span>
+            {/* 详细计分项 - 更加紧凑且高级 */}
+            <div className="space-y-2">
+              {[
+                { label: t('score.breakdown.base'), value: scoreBreakdown.baseScore, theme: "text-[#FFD5AB]", desc: getDifficultyWithShape(gameStats.difficulty) },
+                { label: t('score.breakdown.timeBonus'), value: scoreBreakdown.timeBonus, theme: "text-green-400", desc: getSpeedRankText(gameStats.totalDuration), prefix: "+" },
+                { label: t('score.breakdown.rotationScore'), value: scoreBreakdown.rotationScore, theme: scoreBreakdown.rotationScore >= 0 ? "text-green-400" : "text-red-400", desc: `${gameStats.totalRotations}回旋转`, prefix: scoreBreakdown.rotationScore > 0 ? "+" : "" },
+                { label: t('score.breakdown.hintScore'), value: scoreBreakdown.hintScore, theme: scoreBreakdown.hintScore >= 0 ? "text-green-400" : "text-red-400", desc: `${gameStats.hintUsageCount}/${scoreBreakdown.hintAllowance}次`, prefix: scoreBreakdown.hintScore > 0 ? "+" : "" }
+              ].map((item, id) => (item.value !== 0 || id === 0) && (
+                <div key={id} className="flex justify-between items-center bg-white/5 p-2 px-3 rounded-xl border border-white/5">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold text-premium-label opacity-60 uppercase">{item.label}</span>
+                    <span className="text-[9px] text-[#FFD5AB]/20 italic truncate max-w-[120px]">{item.desc}</span>
+                  </div>
+                  <span className={cn("text-sm font-black tabular-nums", item.theme)}>{item.prefix}{formatScore(item.value)}</span>
+                </div>
+              ))}
             </div>
 
-            {/* 小计 */}
-            <div className="flex justify-between items-center">
-              <span className="text-premium-label text-xs opacity-60">{t('score.breakdown.subtotal')}：</span>
-              <span className="text-premium-value text-xs font-bold">
-                {formatScore(scoreBreakdown.baseScore + scoreBreakdown.timeBonus + scoreBreakdown.rotationScore + scoreBreakdown.hintScore)}
-              </span>
-            </div>
-
-            {/* 难度系数 - 单行紧凑显示，防止英文换行 */}
-            <div className="flex justify-between items-center">
-              <span className="text-premium-label text-[10px] flex items-center gap-0.5 flex-1 min-w-0 whitespace-nowrap overflow-hidden">
-                <span className="flex-shrink-0 opacity-60">{t('score.breakdown.multiplier')}：</span>
-                <span className="truncate opacity-30">{getMultiplierBreakdown(gameStats.difficulty, scoreBreakdown.difficultyMultiplier)}</span>
-              </span>
-              <span className="text-[#F68E5F] text-xs font-black flex-shrink-0 ml-1">×{formatMultiplier(scoreBreakdown.difficultyMultiplier)}</span>
-            </div>
-
-            {/* 最终得分 */}
-            <div className="flex justify-between items-center pt-2 mt-1 border-t border-white/10">
-              <span className="text-premium-label font-bold text-sm">{t('score.breakdown.final')}：</span>
-              <span className="text-premium-value text-lg font-black">{formatScore(currentScore)}</span>
+            {/* 统计横栏 */}
+            <div className="grid grid-cols-2 gap-2 pt-2">
+              <div className="flex flex-col items-center p-2 rounded-xl bg-white/5 border border-white/5">
+                 <span className="text-[8px] text-white/20 uppercase font-black mb-0.5">{t('score.breakdown.multiplier')}</span>
+                 <span className="text-sm font-black text-[#FFD5AB]">×{formatMultiplier(scoreBreakdown.difficultyMultiplier)}</span>
+              </div>
+              <div className="flex flex-col items-center p-2 rounded-xl bg-white/5 border border-white/5">
+                 <span className="text-[8px] text-white/20 uppercase font-black mb-0.5">{t('stats.duration')}</span>
+                 <span className="text-sm font-black text-[#FFD5AB] tabular-nums">
+                    {Math.floor(gameStats.totalDuration / 60).toString().padStart(2, '0')}:
+                    {(gameStats.totalDuration % 60).toString().padStart(2, '0')}
+                 </span>
+              </div>
             </div>
             
             {isNewRecord && (
-              <div className="flex justify-center mt-2">
-                <div className="inline-flex items-center gap-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-[#232035] px-3 py-1 rounded-full text-[10px] font-black shadow-lg animate-pulse-slow uppercase tracking-wide">
-                  🌟 {t('stats.newRecord')}
+              <div className="flex justify-center mt-3 scale-110">
+                <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-yellow-400 to-orange-500 text-[#232035] px-4 py-1 rounded-full text-[10px] font-black shadow-lg animate-pulse-slow uppercase tracking-wider">
+                  <Star className="w-2.5 h-2.5 fill-[#232035]" />
+                  {t('stats.newRecord')}
                 </div>
               </div>
             )}
           </div>
         ) : (
-          /* 简化显示（无分数分解数据时） */
-          <div className="text-center">
-            <div className="text-premium-value text-2xl font-black mb-1">{formatScore(currentScore)}</div>
-            <div className="text-premium-label text-xs opacity-60">{t('score.breakdown.final')}</div>
+          /* 简化版展示 */
+          <div className="text-center py-6">
+            <div className="text-4xl font-black text-premium-value mb-2 tracking-tighter">{formatScore(currentScore)}</div>
+            <div className="text-[10px] text-premium-label opacity-40 uppercase tracking-[0.2em]">{t('score.breakdown.final')}</div>
             {isNewRecord && (
-              <div className="flex justify-center mt-2">
-                <div className="inline-flex items-center gap-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-[#232035] px-3 py-1 rounded-full text-[10px] font-black shadow-lg animate-pulse-slow uppercase tracking-wide">
-                  🌟 {t('leaderboard.rankFormat', { rank: currentRank || 1 })}
+              <div className="flex justify-center mt-4">
+                <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-yellow-400 to-orange-500 text-[#232035] px-4 py-1 rounded-full text-[10px] font-black shadow-xl animate-pulse-slow uppercase tracking-wider">
+                  🏆 {t('leaderboard.rankFormat', { rank: currentRank || 1 })}
                 </div>
               </div>
             )}
           </div>
         )}
-      </div>
     </div>
   );
 };

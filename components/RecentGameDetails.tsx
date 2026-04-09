@@ -159,131 +159,135 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-300">
       {/* 滚动内容区域 */}
-      <div className="flex-1 overflow-y-auto space-y-4 text-xs pr-1 custom-scrollbar">
-        {/* 本局成绩 - 与GameRecordDetails完全一致 */}
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-500">
-          <h4 className="text-[#FFB17A] font-bold mb-4 text-sm flex items-center gap-2 uppercase tracking-wider">
-            <Trophy className="w-4 h-4 text-yellow-500" />
+      <div className="flex-1 overflow-y-auto space-y-4 no-scrollbar pr-0.5 pb-4">
+        {/* 本局成绩卡片 */}
+        <div className="glass-panel p-5 relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#FFD5AB]/5 to-[#F68E5F]/5 pointer-events-none" />
+          
+          <h4 className="text-premium-title font-black mb-6 text-sm flex items-center gap-3 uppercase tracking-[0.2em]">
+            <Trophy className="w-5 h-5 text-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.4)]" />
             {t('stats.scoreHistory')}
           </h4>
 
-          {/* 最终得分和游戏时长 - 统一格式 */}
-          <div className="text-center mb-6 p-4 bg-gradient-to-br from-[#FFD5AB]/10 to-[#F68E5F]/10 rounded-xl border border-[#FFD5AB]/20">
-            <div className="text-4xl font-black text-[#FFD5AB] mb-1 tracking-tighter drop-shadow-sm">
+          {/* 核心分数区域 - 极简主义的高级感 */}
+          <div className="text-center mb-8 py-8 rounded-2xl bg-white/5 border border-white/5 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-2 opacity-10">
+              <Trophy className="w-24 h-24" />
+            </div>
+            <div className="text-5xl font-black text-premium-value tracking-tighter mb-2 drop-shadow-2xl">
               {record.finalScore.toLocaleString()}
             </div>
-            <div className="text-xs text-[#FFD5AB]/60 font-bold uppercase tracking-widest">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/5 text-[10px] text-premium-label opacity-60 font-bold uppercase tracking-widest">
+              <Clock className="w-3 h-3" />
               {t('score.breakdown.gameDuration')}：{formatTime(record.totalDuration)}
             </div>
           </div>
 
-          {/* 分数构成 - 统一格式 */}
+          {/* 分数详细分解 - 与游戏完结界面统一 */}
           {record.scoreBreakdown && (
-            <div className="bg-black/20 rounded-xl p-4 border border-white/5 space-y-3">
-              <div className="space-y-2.5 text-xs text-[#FFD5AB]/80">
-                <div className="flex justify-between items-center">
-                  <span className="flex flex-col">
-                    <span className="font-bold text-[#FFD5AB] opacity-60 uppercase text-[10px] tracking-widest mb-0.5">{t('score.breakdown.base')}</span>
-                    <span className="text-[10px] leading-tight text-[#FFD5AB]/40">{(() => {
+            <div className="space-y-4">
+              <h3 className="text-[10px] font-black text-premium-label opacity-40 uppercase tracking-[0.2em] flex items-center gap-2">
+                {t('score.breakdown.details') || 'BREAKDOWN'}
+                <span className="flex-1 h-[1px] bg-white/5"></span>
+              </h3>
+
+              <div className="space-y-3">
+                {[
+                  { 
+                    label: t('score.breakdown.base'), 
+                    value: record.scoreBreakdown.baseScore, 
+                    theme: "text-[#FFD5AB]", 
+                    desc: (() => {
                       const shapeName = getShapeDisplayName(record.difficulty?.shapeType);
                       const cutTypeName = getCutTypeDisplayName(record.difficulty?.cutType);
                       const levelText = t('difficulty.levelLabel', { level: record.difficulty.cutCount });
-                      const piecesPart = `${record.difficulty?.actualPieces || 0}${t('stats.piecesUnit')}`;
-                      const parts = [levelText];
-                      if (shapeName) parts.push(shapeName);
-                      if (cutTypeName) parts.push(cutTypeName);
-                      parts.push(piecesPart);
-                      return parts.join(' · ');
-                    })()}</span>
-                  </span>
-                  <span className="text-sm font-black text-[#FFD5AB]">{record.scoreBreakdown.baseScore}</span>
-                </div>
-                
-                <div className="flex justify-between items-center py-1 border-t border-white/5">
-                  <span className="flex flex-col">
-                    <span className="font-bold text-[#FFD5AB] opacity-60 uppercase text-[10px] tracking-widest mb-0.5">{t('score.breakdown.timeBonus')}</span>
-                    <span className="text-[10px] text-[#FFD5AB]/40">{getSpeedBonusText(record.totalDuration)}</span>
-                  </span>
-                  <span className="text-sm font-black text-green-400">+{record.scoreBreakdown.timeBonus}</span>
-                </div>
-
-                <div className="flex justify-between items-center py-1 border-t border-white/5">
-                  <span className="flex flex-col">
-                    <span className="font-bold text-[#FFD5AB] opacity-60 uppercase text-[10px] tracking-widest mb-0.5">{t('score.breakdown.rotationScore')}</span>
-                    <span className="text-[10px] text-[#FFD5AB]/40">{record.totalRotations}/{record.scoreBreakdown.minRotations}（{record.totalRotations === record.scoreBreakdown.minRotations ? t('rotation.perfect') : t('rotation.excess', { count: record.totalRotations - record.scoreBreakdown.minRotations })}）</span>
-                  </span>
-                  <span className={cn("text-sm font-black", record.scoreBreakdown.rotationScore >= 0 ? "text-green-400" : "text-red-400")}>
-                    {record.scoreBreakdown.rotationScore >= 0 ? '+' : ''}{record.scoreBreakdown.rotationScore}
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center py-1 border-t border-white/5">
-                  <span className="flex flex-col">
-                    <span className="font-bold text-[#FFD5AB] opacity-60 uppercase text-[10px] tracking-widest mb-0.5">{t('score.breakdown.hintScore')}</span>
-                    <span className="text-[10px] text-[#FFD5AB]/40">{record.hintUsageCount}/{record.scoreBreakdown.hintAllowance || 0}{t('leaderboard.timesUnit')}</span>
-                  </span>
-                  <span className={cn("text-sm font-black", record.scoreBreakdown.hintScore >= 0 ? "text-green-400" : "text-red-400")}>
-                    {record.scoreBreakdown.hintScore >= 0 ? '+' : ''}{record.scoreBreakdown.hintScore}
-                  </span>
-                </div>
-
-                <div className="border-t-2 border-white/10 pt-3 mt-4 space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-[#FFD5AB] opacity-60 uppercase text-[10px] tracking-widest">{t('score.breakdown.multiplier')}</span>
-                    <span className="text-sm font-black text-[#FFD5AB]">×{record.scoreBreakdown.difficultyMultiplier.toFixed(2)}</span>
+                      const piecesPart = `${record.difficulty?.actualPieces || 0}P`;
+                      return [levelText, shapeName, cutTypeName, piecesPart].filter(Boolean).join(' · ');
+                    })()
+                  },
+                  { 
+                    label: t('score.breakdown.timeBonus'), 
+                    value: record.scoreBreakdown.timeBonus, 
+                    theme: "text-green-400", 
+                    desc: getSpeedBonusText(record.totalDuration), 
+                    prefix: "+" 
+                  },
+                  { 
+                    label: t('score.breakdown.rotationScore'), 
+                    value: record.scoreBreakdown.rotationScore, 
+                    theme: record.scoreBreakdown.rotationScore >= 0 ? "text-green-400" : "text-red-400", 
+                    desc: `${record.totalRotations}旋转 (${record.totalRotations === record.scoreBreakdown.minRotations ? t('rotation.perfect') : t('rotation.excess', { count: record.totalRotations - record.scoreBreakdown.minRotations })})`, 
+                    prefix: record.scoreBreakdown.rotationScore > 0 ? "+" : "" 
+                  },
+                  { 
+                    label: t('score.breakdown.hintScore'), 
+                    value: record.scoreBreakdown.hintScore, 
+                    theme: record.scoreBreakdown.hintScore >= 0 ? "text-green-400" : "text-red-400", 
+                    desc: `${record.hintUsageCount}/${record.scoreBreakdown.hintAllowance || 0}次提示`, 
+                    prefix: record.scoreBreakdown.hintScore > 0 ? "+" : "" 
+                  }
+                ].map((item, id) => (
+                  <div key={id} className="flex justify-between items-start group">
+                    <div className="space-y-1">
+                      <div className="text-[11px] font-bold text-premium-label group-hover:text-[#FFD5AB] transition-colors">{item.label}</div>
+                      <div className="text-[10px] text-white/20 italic leading-none">{item.desc}</div>
+                    </div>
+                    <div className={cn("text-base font-black tabular-nums tracking-tighter", item.theme)}>
+                      {item.prefix}{item.value.toLocaleString()}
+                    </div>
                   </div>
-                  <div className="text-[#FFD5AB]/40 text-[9px] text-right italic leading-none">
-                    ({getMultiplierBreakdown(record.difficulty, record.scoreBreakdown.difficultyMultiplier)})
+                ))}
+
+                <div className="pt-4 mt-4 border-t border-white/5 space-y-4">
+                  <div className="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/5 group hover:bg-white/10 transition-all">
+                    <div className="space-y-0.5">
+                      <div className="text-[10px] font-bold text-premium-label">{t('score.breakdown.multiplier')}</div>
+                      <div className="text-[9px] text-white/30 italic leading-none opacity-60">({getMultiplierBreakdown(record.difficulty, record.scoreBreakdown.difficultyMultiplier)})</div>
+                    </div>
+                    <div className="text-2xl font-black text-[#FFD5AB] group-hover:scale-105 transition-transform">
+                      ×{record.scoreBreakdown.difficultyMultiplier.toFixed(2)}
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center pt-2 mt-2 border-t border-white/10">
-                    <span className="text-sm font-black text-[#FFB17A] uppercase tracking-tighter">{t('score.breakdown.final')}</span>
-                    <span className="text-xl font-black text-[#FFD5AB] tracking-tighter">{record.finalScore.toLocaleString()}</span>
+
+                  <div className="flex justify-between items-end pt-2">
+                    <div className="text-xl font-black text-premium-title uppercase tracking-tighter">
+                      {t('score.breakdown.final')}
+                    </div>
+                    <div className="text-3xl font-black text-[#F68E5F] tracking-tighter drop-shadow-[0_0_15px_rgba(246,142,95,0.3)]">
+                      {record.finalScore.toLocaleString()}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* 游戏时间 */}
-          <div className="mt-3 text-center">
-            <div className="text-sm text-[#FFD5AB] opacity-80">
-              {t('score.breakdown.gameTime')}：{new Date(record.gameStartTime || record.timestamp).toLocaleString(locale === 'zh-CN' ? 'zh-CN' : 'en-US', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
+          {/* 游戏时间脚注 */}
+          <div className="mt-8 text-center pt-4 border-t border-white/5">
+            <div className="text-[10px] text-white/20 font-bold uppercase tracking-[0.2em] mb-1">
+              {t('score.breakdown.gameTime')}
+            </div>
+            <div className="text-xs text-premium-label opacity-60">
+              {new Date(record.gameStartTime || record.timestamp).toLocaleString(locale === 'zh-CN' ? 'zh-CN' : 'en-US', {
+                year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
               })}
             </div>
           </div>
         </div>
       </div>
 
-      {/* 返回按钮 - 与切割形状按钮样式完全一致 */}
-      <Button
+      {/* 返回按钮 */}
+      <button
         onClick={handleBack}
-        className="w-full bg-[#F68E5F] hover:bg-[#F47B42] text-white shadow-md"
-        style={{
-          fontSize: '14px',
-          borderRadius: '14px',
-          minHeight: 36,
-          height: 36,
-          padding: '0 16px',
-          lineHeight: '18px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '8px',
-        }}
-        variant="ghost"
+        className="w-full h-12 rounded-2xl bg-[#F68E5F] hover:bg-[#F47B42] text-[#232035] font-black flex items-center justify-center gap-3 transition-all active:scale-95 shadow-lg shadow-[#F68E5F]/20 mt-4 shrink-0 uppercase tracking-widest text-sm"
       >
-        <ArrowLeft style={{ width: '20px', height: '20px', marginRight: '8px', flexShrink: 0 }} strokeWidth={2} />
-        <span style={{ fontSize: '14px' }}>{t('leaderboard.backToLeaderboard')}</span>
-      </Button>
+        <ArrowLeft className="w-5 h-5" strokeWidth={3} />
+        {t('leaderboard.backToLeaderboard')}
+      </button>
     </div>
+  );
   );
 };
 
