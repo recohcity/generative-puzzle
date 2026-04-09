@@ -217,10 +217,17 @@ export function usePuzzleInteractions({
     }
   }, [state, canvasRef, dispatch]);
 
+  const lastMoveRef = useRef<number>(0);
+
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    const now = performance.now();
+    if (now - lastMoveRef.current < 16) return; // 节流至~60FPS，减轻React Context重渲染压力
+
     if (!state.draggingPiece || !state.puzzle) {
       return
     }
+
+    lastMoveRef.current = now;
 
     const canvas = canvasRef.current
     if (!canvas) return
@@ -537,8 +544,16 @@ export function usePuzzleInteractions({
 
   // 触摸移动事件处理
   const handleTouchMove = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
+    const now = performance.now();
+    if (now - lastMoveRef.current < 16) {
+      // 在React合成事件中，preventDefault通常是安全的
+      e.preventDefault();
+      return; 
+    }
+    
     // 在React合成事件中，preventDefault通常是安全的
     e.preventDefault();
+    lastMoveRef.current = now;
 
     const canvas = canvasRef.current
     if (!canvas) return

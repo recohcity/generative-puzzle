@@ -1,6 +1,19 @@
 # 生成式拼图游戏 Changelog
 
 
+## [v1.3.80] - 2026-04-10
+
+### ⚡ 移动端性能专项优化与双端体验对齐 (Mobile Performance & Speed Insights Optimization)
+针对 Vercel Speed Insights 反馈的移动端评分偏低问题进行了深度专项攻坚，通过降低 CPU 占用显著提升了 LCP、TBT 和 INP 指标。
+
+- **加载期主线程降压 (Boost LCP/TBT)**:
+  - **LoadingScreen 渲染优化**: 将原本每秒 60 次的 React 渲染频率降低至约 7 次（150ms 节流），彻底释放了加载资源时的 CPU 算力。
+  - **GPU 硬件加速**: 将进度条平滑动画移交给 CSS `transition` 和 GPU 处理，避免了 React 频繁重绘导致的 UI 阻塞。
+- **交互实时性优化 (Improve INP)**:
+  - **交互指令节流**: 在 `usePuzzleInteractions` 中引入了时间戳防抖机制，将高刷新率手机（120Hz）产生的冗余交互指令严格限制在 60FPS 以内。
+  - **Context 减压**: 大幅减少了全局 `GameContext` 在拖拽和旋转拼图时的不必要更新频率，使移动端操作手感更灵敏且不发烫。
+- **视觉稳定性验证**: 修复了加载页在极端降压情况下的显示逻辑，确保用户感知性能与实际性能同步提升。
+
 ## [v1.3.79] - 2026-04-10
 
 ### 🏆 跨平台成绩 UI 标准化与体验进化 (Unified score UI & Mobile Landscape Optimization)

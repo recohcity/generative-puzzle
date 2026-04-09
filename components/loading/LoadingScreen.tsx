@@ -16,19 +16,21 @@ export default function LoadingScreen({ onLoadComplete }: LoadingScreenProps) {
   const [done, setDone] = useState(false);
 
   // 匀速动画进度递增到99%，资源加载完成后补到100%
+  // 优化：将原本16ms的密集React渲染降频至150ms，利用CSS transition实现视觉平滑
+  // 极大降低移动端主线程CPU占用，改善加载期间的TBT与INP
   useEffect(() => {
     let timer: NodeJS.Timeout;
     timer = setInterval(() => {
       setDisplayProgress(prev => {
-        if (!resourceLoaded && prev < 99) {
-          return Math.min(prev + 1, 99); // 匀速递增
+        if (!resourceLoaded && prev < 98) {
+          return Math.min(prev + Math.random() * 8, 98); // 低频大步进，配合长CSS动画
         }
         if (resourceLoaded && prev < 100) {
           return 100; // 资源加载完成后直接补到100%
         }
         return prev;
       });
-    }, 16); // 约60fps
+    }, 150); // 从16ms提升至150ms，大幅减少React重渲染
     return () => clearInterval(timer);
   }, [resourceLoaded]);
 
@@ -82,8 +84,13 @@ export default function LoadingScreen({ onLoadComplete }: LoadingScreenProps) {
         </h1>
         <div className="w-80 h-3 bg-white/30 rounded-full overflow-hidden border-2 border-white">
           <div
-            className="h-full bg-white transition-[width] duration-300 ease-out"
-            style={{ width: `${done ? 100 : displayProgress}%`, willChange: 'width', transform: 'translateZ(0)' }}
+            className="h-full bg-white transition-[width] ease-out"
+            style={{ 
+              width: `${done ? 100 : displayProgress}%`, 
+              willChange: 'width', 
+              transitionDuration: done ? '300ms' : '150ms', // 匹配刷新频率
+              transform: 'translateZ(0)' 
+            }}
           />
         </div>
         <p className="mt-3 text-white font-medium">
