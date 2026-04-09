@@ -175,7 +175,7 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
       {/* 极限紧凑标题区域 */}
       <div className="flex items-center gap-1.5 mb-2 px-1">
         <span className="text-[#F68E5F] text-sm">🏆</span>
-        <h3 className="text-premium-title text-sm">{t('stats.currentGameScore')}</h3>
+        <h2 className="text-premium-title text-sm">{t('stats.currentGameScore')}</h2>
       </div>
 
       {/* 极限紧凑分数详情卡片 - 减少内边距 */}

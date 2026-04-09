@@ -504,18 +504,18 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                 <div className="flex flex-col h-full">
                   {/* 成绩详情直接在游戏名称下展示 */}
                   <div className="mb-4">
-                    <h3 className="text-premium-title mb-2" style={{ fontSize: panelScale <= 0.5 ? 16 : 'calc(0.9rem * var(--panel-scale))' }}>
+                    <h2 id="section-game-result" className="text-premium-title mb-2" style={{ fontSize: panelScale <= 0.5 ? 16 : 'calc(0.9rem * var(--panel-scale))' }}>
                       🏆 {t('stats.gameComplete')}
-                    </h3>
+                    </h2>
                   </div>
 
                   {/* 滚动内容区域 */}
                   <div className="flex-1 overflow-y-auto space-y-3 mb-4" style={{ fontSize: panelScale <= 0.5 ? 12 : 'calc(0.75rem * var(--panel-scale))' }}>
                     {/* 本局成绩 */}
-                    <div className="glass-card mb-4">
-                      <h4 className="text-premium-label flex items-center gap-1 mb-4">
+                    <div className="glass-card">
+                      <h3 className="text-premium-label flex items-center gap-1 mb-4">
                         🏆 {t('stats.currentGameScore')}
-                      </h4>
+                      </h3>
 
                       {/* 最终得分和游戏时长 - 统一格式 */}
                       <div className="text-center mb-6 p-4 rounded-xl relative overflow-hidden group">
@@ -644,7 +644,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                   <PuzzleControlsScatter goToNextTab={goToNextTab} />
 
                   {/* 控制按钮部分 */}
-                  <h3 className="text-premium-title mt-4 mb-3" style={{ fontSize: panelScale <= 0.5 ? 16 : 'calc(0.9rem * var(--panel-scale))' }}>{t('game.controls.title')}</h3>
+                  <h2 id="section-game-controls" className="text-premium-title mt-4 mb-3" style={{ fontSize: panelScale <= 0.5 ? 16 : 'calc(0.9rem * var(--panel-scale))' }}>{t('game.controls.title')}</h2>
                   <ActionButtons layout="desktop" buttonHeight={DESKTOP_CONTROL_BUTTON_HEIGHT} />
                   {/* 正常游戏状态下显示重玩本局和重开游戏按钮 */}
                   <div className="flex flex-row gap-2 mt-4">

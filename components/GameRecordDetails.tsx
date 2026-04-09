@@ -93,10 +93,10 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({
     <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-300">
       {/* 成绩详情标题 */}
       <div className="mb-4 shrink-0">
-        <h3 className="font-bold text-[#FFB17A] text-sm flex items-center gap-2 uppercase tracking-widest">
+        <h2 className="font-bold text-[#FFB17A] text-sm flex items-center gap-2 uppercase tracking-widest">
           <Trophy className="w-4 h-4 text-yellow-500" />
           {t('leaderboard.scoreDetails') || '最近一次游戏成绩'}
-        </h3>
+        </h2>
       </div>
       
       {/* 滚动内容区域 */}

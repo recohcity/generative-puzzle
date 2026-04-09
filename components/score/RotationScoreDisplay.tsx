@@ -249,9 +249,9 @@ export const RotationScoreCard: React.FC<{
   return (
     <div className={`rounded-lg p-4 border ${cardColorClass} ${className}`}>
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-medium text-gray-700">
+        <h2 className="text-sm font-medium text-gray-700">
           {t('rotation.label')}
-        </h3>
+        </h2>
         {result.isPerfect ? (
           <Trophy className="w-4 h-4 text-yellow-600" />
         ) : (

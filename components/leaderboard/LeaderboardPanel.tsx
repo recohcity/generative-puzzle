@@ -259,10 +259,10 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                     >
                       {/* Top 5 个人最佳成绩 */}
                       <div className="rounded-2xl p-3 bg-white/[0.04]">
-                        <h4 className="text-premium-title mb-4 text-sm flex items-center gap-2 uppercase tracking-wider">
+                        <h2 className="text-premium-title mb-4 text-sm flex items-center gap-2 uppercase tracking-wider">
                           <Trophy className="w-4 h-4 text-yellow-500" />
                           {t('leaderboard.title')}
-                        </h4>
+                        </h2>
                         {filteredLeaderboard.length === 0 ? (
                           <div className="text-center text-[#FFD5AB] opacity-40 py-8">
                             <Trophy className="w-8 h-8 mx-auto mb-2 opacity-20" />
@@ -300,10 +300,10 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                       </div>
                       {/* 最近游戏历史 */}
                       <div className="rounded-2xl p-3 bg-white/[0.04]">
-                        <h4 className="text-premium-title mb-4 text-sm flex items-center gap-2 uppercase tracking-wider">
+                        <h2 className="text-premium-title mb-4 text-sm flex items-center gap-2 uppercase tracking-wider">
                           <History className="w-4 h-4 text-blue-400" />
                           {t('stats.scoreHistory')}
-                        </h4>
+                        </h2>
                         {sortedHistory.length === 0 ? (
                           <div className="text-center text-[#FFD5AB] opacity-40 py-6">
                             <div style={{ fontSize: baseFontSize }}>{t('stats.noData')}</div>
@@ -346,10 +346,10 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                       className="min-h-[300px] flex flex-col"
                     >
                       <div className="rounded-2xl p-3 bg-white/[0.04] flex-1 flex flex-col">
-                        <h4 className="text-[#FFB17A] font-bold mb-4 text-sm flex items-center gap-2 uppercase tracking-wider">
+                        <h2 className="text-[#FFB17A] font-bold mb-4 text-sm flex items-center gap-2 uppercase tracking-wider">
                           <Globe className="w-4 h-4 text-blue-400" />
                           {t('game.leaderboard.tabs.global')}
-                        </h4>
+                        </h2>
 
                         {isGlobalLoading ? (
                           <div className="flex-1 flex flex-col items-center justify-center py-20 gap-3">

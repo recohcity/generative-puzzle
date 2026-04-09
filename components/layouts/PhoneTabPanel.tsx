@@ -474,19 +474,19 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
               <div className={SECTION_CLASS}>
                 {activeTab === 'shape' && (
                   <div className="flex flex-col items-center">
-                    <h4 className={CARD_TITLE_CLASS}>{t('game.shapes.title')}</h4>
+                    <h2 className={CARD_TITLE_CLASS}>{t('game.shapes.title')}</h2>
                     <ShapeControls goToNextTab={goToNextTab} buttonHeight={SHAPE_BUTTON_HEIGHT} fontSize={MOBILE_SHAPE_BUTTON_FONT_SIZE} />
                   </div>
                 )}
                 {activeTab === 'puzzle' && (
                   <div className="flex flex-col items-center">
-                    <h4 className={CARD_TITLE_CLASS}>{t('game.cutType.title')}</h4>
+                    <h2 className={CARD_TITLE_CLASS}>{t('game.cutType.title')}</h2>
                     <PuzzleControlsCutType goToNextTab={goToNextTab} buttonHeight={CUT_TYPE_BUTTON_HEIGHT} />
                   </div>
                 )}
                 {activeTab === 'cut' && (
                   <div className="flex flex-col items-center px-3">
-                    <h4 className={CARD_TITLE_CLASS}>{t('game.cutCount.title')}</h4>
+                    <h2 className={CARD_TITLE_CLASS}>{t('game.cutCount.title')}</h2>
                     <div className="max-w-[290px] w-full mx-auto">
                       <PuzzleControlsCutCount goToNextTab={goToNextTab} buttonHeight={NUMBER_BUTTON_HEIGHT} actionButtonHeight={ACTION_BUTTON_HEIGHT} />
                     </div>
@@ -494,7 +494,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                 )}
                 {activeTab === 'scatter' && (
                   <div className="flex flex-col items-center">
-                    <h4 className={CARD_TITLE_CLASS}>{t('game.scatter.title')}</h4>
+                    <h2 className={CARD_TITLE_CLASS}>{t('game.scatter.title')}</h2>
                     <PuzzleControlsScatter goToNextTab={goToNextTab} buttonHeight={ACTION_BUTTON_HEIGHT} />
                   </div>
                 )}

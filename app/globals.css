@@ -16,6 +16,13 @@
   outline: none !important;
 }
 
+/* 预防移动端输入框点击自动放大 (Prevent auto-zoom on iOS focus) */
+@media screen and (max-width: 1024px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
 /* 彻底隐藏所有滚动条 */
 .no-scrollbar::-webkit-scrollbar {
   display: none;

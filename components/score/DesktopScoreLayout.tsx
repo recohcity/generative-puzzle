@@ -319,9 +319,9 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
         {/* 分数详情 - 按设计文档格式 */}
         {scoreBreakdown && (
           <div className="border rounded-lg p-4">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               📊 分数详情
-            </h3>
+            </h2>
             
             <div className="space-y-2 text-sm">
               <div className="text-gray-700">游戏时长：{formatDuration(gameStats.totalDuration)}</div>

@@ -116,6 +116,11 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
     }
     
     if (onAuthSuccess) {
+      // 强制重置视口缩放，防止输入法弹出导致的残留缩放
+      const viewport = document.querySelector('meta[name="viewport"]');
+      if (viewport) {
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0');
+      }
       onAuthSuccess();
     }
   };
@@ -318,7 +323,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
             <input
               type="text"
               placeholder={t('auth.inputs.nicknamePlaceholder')}
-              className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-[#FFD5AB] text-xs placeholder-[#FFD5AB]/30 focus:outline-none focus:ring-1 focus:ring-[#FFB17A]/40 transition-all font-medium"
+              className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-[#FFD5AB] text-base placeholder-[#FFD5AB]/30 focus:outline-none focus:ring-1 focus:ring-[#FFB17A]/40 transition-all font-medium"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               disabled={loading}
@@ -398,7 +403,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
             <input
               type="text"
               placeholder={t('auth.inputs.nicknamePlaceholder')}
-              className="w-full bg-black/20 border border-white/10 rounded-xl p-2.5 text-[#FFD5AB] text-xs placeholder-[#FFD5AB]/30 focus:outline-none focus:ring-1 focus:ring-[#FFB17A]/40 focus:border-[#FFB17A]/60 transition-all outline-none"
+              className="w-full bg-black/20 border border-white/10 rounded-xl p-2.5 text-[#FFD5AB] text-base placeholder-[#FFD5AB]/30 focus:outline-none focus:ring-1 focus:ring-[#FFB17A]/40 focus:border-[#FFB17A]/60 transition-all outline-none"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               disabled={loading}
@@ -413,7 +418,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
               type="password"
               placeholder={t('auth.inputs.pinPlaceholder')}
               maxLength={4}
-              className="w-full bg-black/20 border border-white/10 rounded-xl p-2.5 text-[#FFD5AB] text-sm placeholder-[#FFD5AB]/30 focus:outline-none focus:ring-1 focus:ring-[#FFB17A]/40 focus:border-[#FFB17A]/60 transition-all outline-none text-center font-mono tracking-[0.5em]"
+              className="w-full bg-black/20 border border-white/10 rounded-xl p-2.5 text-[#FFD5AB] text-base placeholder-[#FFD5AB]/30 focus:outline-none focus:ring-1 focus:ring-[#FFB17A]/40 focus:border-[#FFB17A]/60 transition-all outline-none text-center font-mono tracking-[0.5em]"
               value={pin}
               onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
               disabled={loading}
