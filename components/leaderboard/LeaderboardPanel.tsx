@@ -198,7 +198,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
             exit={{ opacity: 0, scale: 0.98 }}
             className="flex-1 flex flex-col items-center justify-start pt-1 relative h-full overflow-hidden"
           >
-            <div className="w-full flex-1 relative flex flex-col overflow-hidden max-h-[85vh] p-1">
+            <div className="w-full flex-1 relative flex flex-col items-stretch overflow-hidden max-h-full p-0.5">
               <div className="flex items-center justify-between pb-3 gap-2 shrink-0">
                 <div className="flex gap-1.5">
                   <button
@@ -247,7 +247,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar -mx-1 px-1 min-h-0 max-h-[320px]">
+              <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar -mx-0.5 px-0.5 min-h-0">
                 <AnimatePresence mode="wait">
                   {activeTab === 'personal' ? (
                     <motion.div
@@ -345,7 +345,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                       exit={{ opacity: 0, x: -10 }}
                       className="min-h-[300px] flex flex-col"
                     >
-                      <div className="rounded-2xl p-3 bg-white/[0.04] flex-1 flex flex-col">
+                      <div className="rounded-2xl p-3 bg-white/[0.04] flex-1 flex flex-col no-scrollbar">
                         <h2 className="text-[#FFB17A] font-bold mb-4 text-sm flex items-center gap-2 uppercase tracking-wider">
                           <Globe className="w-4 h-4 text-blue-400" />
                           {t('game.leaderboard.tabs.global')}
@@ -387,25 +387,25 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                                   {/* Info Area — Single line optimized */}
                                   <div className="flex-1 min-w-0 flex items-center justify-between gap-1.5 overflow-hidden">
                                     <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                                      <span className="text-[#FFD5AB]/90 text-[13px] font-bold truncate shrink-0 max-w-[85px]">
+                                      <span className="text-[#FFD5AB]/90 text-[13px] font-bold truncate shrink-0 max-w-[100px]">
                                         {playerName}
                                       </span>
                                       {difficultyLabel && (
-                                        <span className="text-[10px] text-[#FFD5AB]/30 font-bold truncate opacity-80 hidden sm:inline">
+                                        <span className="text-[10px] text-[#FFD5AB]/30 font-bold truncate opacity-80 hidden md:inline">
                                           · {difficultyLabel}
                                         </span>
                                       )}
                                     </div>
                                     
-                                    <div className="flex items-center gap-2 shrink-0">
+                                    <div className="flex items-center gap-2.5 shrink-0">
                                       <div className={cn(
                                         "text-base font-black tabular-nums tracking-tighter",
                                         index < 3 ? "text-premium-value" : "text-[#FFD5AB]/80"
                                       )}>
                                         {formatScore(record.finalScore)}
                                       </div>
-                                      <div className="text-[#FFD5AB]/20 text-[10px] font-bold shrink-0 tabular-nums">
-                                        {sessions}{t('game.leaderboard.sessionsUnit')}
+                                      <div className="px-1.5 py-0.5 rounded-full bg-white/5 border border-white/5 text-[#FFD5AB]/20 text-[9px] font-bold shrink-0 tabular-nums">
+                                        {sessions} {t('game.leaderboard.sessionsUnit')}
                                       </div>
                                     </div>
                                   </div>
