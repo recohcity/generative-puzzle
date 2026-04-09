@@ -249,6 +249,7 @@
         "piecesUnit": "片",
         "device": "设备类型",
         "scoreHistory": "最近一次游戏成绩",
+        "gameTimeLabel": "完成时间",
         "justNow": "刚刚",
         "hoursAgo": "{hours}小时前",
         "efficiency": {
@@ -309,6 +310,7 @@
             "5": "第5快"
         },
         "backToLeaderboard": "返回榜单",
+        "recentGameScore": "最近一次游戏成绩",
         "timesUnit": "次"
     },
     "difficulty": {

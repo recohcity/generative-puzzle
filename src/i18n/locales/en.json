@@ -247,6 +247,7 @@
         "piecesUnit": "PCS",
         "device": "Device",
         "scoreHistory": "Latest Game Record",
+        "gameTimeLabel": "Finished At",
         "justNow": "Just now",
         "hoursAgo": "{hours} hours ago",
         "efficiency": {
@@ -308,6 +309,7 @@
             "5": "5th Fastest"
         },
         "backToLeaderboard": "Back to Personal Best",
+        "recentGameScore": "Recent Game Score",
         "timesUnit": ""
     },
     "difficulty": {

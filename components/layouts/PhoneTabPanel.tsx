@@ -471,7 +471,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
           /* 游戏结算界面 */
           <div className="flex flex-col h-full">
             <div className="flex-1 overflow-y-auto min-h-0">
-              <MobileScoreLayout gameStats={state.gameStats!} currentScore={state.currentScore} scoreBreakdown={state.scoreBreakdown || undefined} isNewRecord={state.isNewRecord} />
+              <MobileScoreLayout gameStats={state.gameStats!} currentScore={state.currentScore} scoreBreakdown={state.scoreBreakdown || undefined} isNewRecord={state.isNewRecord} isLandscape={isLandscape} />
             </div>
             <div className="flex-shrink-0 flex flex-row gap-2 mt-2">
               <RestartButton onClick={handleRetryCurrent} icon="retry" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }}>{t('game.controls.retryCurrent')}</RestartButton>
