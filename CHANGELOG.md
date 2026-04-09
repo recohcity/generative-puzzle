@@ -17,6 +17,7 @@
   - 修复了“最近一次游戏成绩”和“完成时间”等关键文本在 UI 中显示为原始 Key 的问题。
   - 补全了 `zh-CN.json` 与 `en.json` 中的缺失键值对。
 
+
 ## [v1.3.78] - 2026-04-09
 
 ### 🏗️ 文档库全面重构与 Wiki 标准化 (Wiki & Documentation Standardized)
