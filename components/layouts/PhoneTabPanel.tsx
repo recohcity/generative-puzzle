@@ -136,6 +136,17 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
       setActiveLeaderboardTab('personal');
     }
     setShowLeaderboard(!showLeaderboard);
+    
+    // 强制重置视口缩放 (Force viewport reset)
+    setTimeout(() => {
+      const viewport = document.querySelector('meta[name="viewport"]');
+      if (viewport) {
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+        setTimeout(() => {
+          viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes');
+        }, 300);
+      }
+    }, 100);
   };
 
 

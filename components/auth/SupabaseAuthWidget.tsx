@@ -108,7 +108,7 @@ export default function SupabaseAuthWidget() {
                 type="email"
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={t('auth.emailPlaceholder')}
-                className="w-full pl-10 pr-4 py-3 rounded-xl bg-black/20 border border-white/10 text-white placeholder:text-white/20 outline-none focus:border-[#FFD5AB]/30 focus:bg-black/40 transition-all"
+                className="w-full pl-10 pr-4 py-3 rounded-xl bg-black/20 border border-white/10 text-[#FFD5AB] text-base placeholder:text-white/20 outline-none focus:border-[#FFD5AB]/30 focus:bg-black/40 transition-all font-medium"
                 disabled={busy}
               />
             </div>

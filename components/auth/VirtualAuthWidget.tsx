@@ -119,7 +119,11 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
       // 强制重置视口缩放，防止输入法弹出导致的残留缩放
       const viewport = document.querySelector('meta[name="viewport"]');
       if (viewport) {
-        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0');
+        // 先临时禁用缩放并重置，然后再恢复允许缩放以平衡无障碍需求
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+        setTimeout(() => {
+          viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes');
+        }, 300);
       }
       onAuthSuccess();
     }
@@ -290,7 +294,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
 
   if (isLandscape) {
     return (
-      <div className="relative text-white w-full h-full flex flex-row gap-0 py-4 items-center">
+      <div className="relative text-white w-full h-full flex flex-row gap-0 py-2 items-center">
         {/* Left column: Branding & Title (Fixed Width) */}
         <div className="flex flex-col items-center justify-center text-center border-r border-white/5 px-8 whitespace-nowrap shrink-0 w-[200px]">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#FFD5AB] to-[#F68E5F] flex items-center justify-center shadow-xl shadow-[#F68E5F]/20 relative mb-4">
@@ -338,7 +342,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
               type="password"
               placeholder={t('auth.inputs.pinPlaceholder')}
               maxLength={4}
-              className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-[#FFD5AB] text-xs placeholder-[#FFD5AB]/30 focus:outline-none focus:ring-1 focus:ring-[#FFB17A]/40 transition-all text-center font-mono tracking-[0.3em]"
+              className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-[#FFD5AB] text-base placeholder-[#FFD5AB]/30 focus:outline-none focus:ring-1 focus:ring-[#FFB17A]/40 transition-all text-center font-mono tracking-[0.3em]"
               value={pin}
               onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
               disabled={loading}
