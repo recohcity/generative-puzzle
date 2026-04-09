@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { CloudGameRepository } from "@/utils/cloud/CloudGameRepository";
 import { ShieldCheck, User, Key, RotateCw, LogOut, ChevronRight, AlertCircle, Info } from "lucide-react";
 import { useTranslation } from "@/contexts/I18nContext";
+import { cn } from "@/lib/utils";
 
 type AuthMode = "register" | "recover" | "collision_select" | "authenticated";
 

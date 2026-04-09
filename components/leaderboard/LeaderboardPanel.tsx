@@ -247,7 +247,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                 </div>
               </div>
 
-              <div className="flex-1 overflow-auto custom-scrollbar -mx-1 px-1">
+              <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar -mx-1 px-1 min-h-0 max-h-[320px]">
                 <AnimatePresence mode="wait">
                   {activeTab === 'personal' ? (
                     <motion.div
@@ -313,7 +313,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                             {sortedHistory.map((record, index) => (
                               <div
                                 key={`recent-${record.timestamp}-${index}`}
-                                className="group flex items-center justify-between px-3.5 py-3 rounded-xl bg-white/[0.06] border border-white/10 hover:border-[#FFD5AB]/50 hover:bg-white/[0.10] cursor-pointer transition-all text-xs"
+                                className="group flex items-center justify-between px-3.5 py-2 rounded-xl bg-white/[0.06] border border-white/10 hover:border-[#FFD5AB]/50 hover:bg-white/[0.10] cursor-pointer transition-all text-xs"
                                 onClick={() => showRecentGameDetails(record)}
                               >
                                 <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -384,22 +384,31 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                                   )}>
                                     {index < 3 ? getRankIcon(index + 1) : index + 1}
                                   </div>
-                                  {/* Name — fixed, never shrinks */}
-                                  <span className="text-[#FFD5AB]/80 text-xs font-bold shrink-0 max-w-[72px] truncate">{playerName}</span>
-                                  {/* Difficulty badge + flex spacer */}
-                                  {difficultyLabel && (
-                                    <span className="text-[9px] bg-white/8 text-[#FFD5AB]/40 px-1.5 py-px rounded shrink-0">{difficultyLabel}</span>
-                                  )}
-                                  <div className="flex-1" />
-                                  {/* Score */}
-                                  <span className={cn(
-                                    "text-base font-black tabular-nums tracking-tight shrink-0 group-hover:scale-105 transition-transform",
-                                    index < 3 ? "text-premium-value" : "text-[#FFD5AB]/60"
-                                  )}>
-                                    {formatScore(record.finalScore)}
-                                  </span>
-                                  {/* Sessions */}
-                                  <span className="text-[#FFD5AB]/25 text-[10px] shrink-0">· {sessions}{t('game.leaderboard.sessionsUnit')}</span>
+                                  {/* Info Area — Single line optimized */}
+                                  <div className="flex-1 min-w-0 flex items-center justify-between gap-1.5 overflow-hidden">
+                                    <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                                      <span className="text-[#FFD5AB]/90 text-[13px] font-bold truncate shrink-0 max-w-[85px]">
+                                        {playerName}
+                                      </span>
+                                      {difficultyLabel && (
+                                        <span className="text-[10px] text-[#FFD5AB]/30 font-bold truncate opacity-80 hidden sm:inline">
+                                          · {difficultyLabel}
+                                        </span>
+                                      )}
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-2 shrink-0">
+                                      <div className={cn(
+                                        "text-base font-black tabular-nums tracking-tighter",
+                                        index < 3 ? "text-premium-value" : "text-[#FFD5AB]/80"
+                                      )}>
+                                        {formatScore(record.finalScore)}
+                                      </div>
+                                      <div className="text-[#FFD5AB]/20 text-[10px] font-bold shrink-0 tabular-nums">
+                                        {sessions}{t('game.leaderboard.sessionsUnit')}
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
                               );
                             })}

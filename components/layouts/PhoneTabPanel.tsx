@@ -138,12 +138,6 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
     setShowLeaderboard(!showLeaderboard);
   };
 
-  // 监听登录状态，登录成功后自动关闭弹窗
-  useEffect(() => {
-    if (user && showLeaderboard) {
-      setShowLeaderboard(false);
-    }
-  }, [user]);
 
   const getTabLabel = (tab: string) => {
     return t(`game.tabs.${tab}`);
@@ -240,8 +234,8 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                 onClick={(e) => e.stopPropagation()}
                 className={cn(
                   "bg-white/10 backdrop-blur-2xl border border-white/15 rounded-[2.5rem] p-4 shadow-2xl relative overflow-hidden flex flex-col outline-none cursor-default transition-all duration-300",
-                  isLandscape 
-                    ? "w-[540px] max-w-[90vw] h-[310px]" 
+                  isLandscape
+                    ? "w-[540px] max-w-[90vw] h-[310px]"
                     : "w-full max-w-[340px] h-[450px]"
                 )}
               >
@@ -269,11 +263,11 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
       )}
 
       {/* 核心面板：要么显示游戏控制/结算，要么显示个人最佳成绩 */}
-      <div style={{ paddingLeft: CONTENT_HORIZONTAL_PADDING, paddingRight: CONTENT_HORIZONTAL_PADDING, width: '100%', marginTop: (isGameCompleted || showLeaderboard) ? 2 : 0, flex: 1, overflowY: 'auto', scrollbarWidth: 'none' }} className="no-scrollbar">
+      <div style={{ paddingLeft: CONTENT_HORIZONTAL_PADDING, paddingRight: CONTENT_HORIZONTAL_PADDING, width: '100%', marginTop: (isGameCompleted || showLeaderboard) ? 2 : 0, flex: 1, overflow: 'hidden' }} className="no-scrollbar">
         {showLeaderboard && user ? (
           /* 已登录状态：在面板内显示成绩榜单 (精准复刻桌面版 parity 设计) */
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 h-full flex flex-col pt-0">
-            <div className="rounded-2xl p-3 flex flex-col flex-1 min-h-0 relative overflow-hidden">
+            <div className={cn("rounded-2xl flex flex-col flex-1 min-h-0 relative overflow-hidden", isLandscape ? "p-1.5" : "p-3")}>
               {/* 顶部标签切换器 + 关闭按钮 (紧凑布局) */}
               <div className="flex items-center justify-between mb-1 shrink-0 px-0.5">
                 <div className="flex gap-1.5">
@@ -330,7 +324,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto custom-scrollbar pr-0.5 overscroll-contain">
+              <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar pr-0.5 overscroll-contain">
                 <AnimatePresence mode="wait">
                   {activeLeaderboardTab === 'personal' ? (
                     <motion.div
@@ -355,7 +349,10 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                               ].filter(Boolean).join(' · ');
 
                               return (
-                                <div key={record.id || record.timestamp} className="flex items-center gap-3 py-1.5 px-3 bg-white/[0.06] rounded-xl border border-white/10 hover:border-[#FFD5AB]/40 hover:bg-white/[0.10] transition-all active:scale-[0.98]">
+                                <div key={record.id || record.timestamp} className={cn(
+                                  "flex items-center gap-3 px-3 bg-white/[0.06] rounded-xl border border-white/10 hover:border-[#FFD5AB]/40 hover:bg-white/[0.10] transition-all active:scale-[0.98]",
+                                  isLandscape ? "py-1" : "py-1.5"
+                                )}>
                                   <div className={cn(
                                     "flex items-center justify-center w-7 h-7 shrink-0 font-bold rounded-lg transition-all",
                                     isTop3 ? "text-2xl bg-transparent" : "bg-white/10 text-[#FFD5AB]/70 text-sm"
@@ -413,7 +410,10 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                             return (
                               <div
                                 key={`global-${record.id || index}`}
-                                className="flex items-center gap-3 py-1.5 px-3 bg-white/[0.06] rounded-xl border border-white/10 hover:border-[#FFD5AB]/40 hover:bg-white/[0.10] transition-all active:scale-[0.98]"
+                                className={cn(
+                                  "flex items-center gap-3 px-3 bg-white/[0.06] rounded-xl border border-white/10 hover:border-[#FFD5AB]/40 hover:bg-white/[0.10] transition-all active:scale-[0.98] overflow-hidden",
+                                  isLandscape ? "py-1" : "py-1.5"
+                                )}
                               >
                                 {/* Rank — same as personal tab */}
                                 <div className={cn(
@@ -422,16 +422,26 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                                 )}>
                                   {medal || index + 1}
                                 </div>
-                                {/* Content row */}
+                                {/* Content row — Single line optimized */}
                                 <div className="flex-1 min-w-0 flex items-center justify-between gap-1 overflow-hidden">
-                                  <div className="text-[10px] text-[#FFD5AB]/40 font-bold truncate">
-                                    {subtitle}
-                                  </div>
-                                  <div className="text-white text-[15px] font-bold tabular-nums tracking-tighter shrink-0">
-                                    {record.finalScore?.toLocaleString()}
-                                    <span className="text-[#FFD5AB]/30 text-[9px] font-normal ml-1">
-                                      · {sessions}{t('game.leaderboard.sessionsUnit')}
+                                  <div className="flex items-center gap-1 min-w-0 flex-1">
+                                    <span className="text-[#FFD5AB]/90 text-[12px] font-bold truncate shrink-0 max-w-[65px]">
+                                      {playerName}
                                     </span>
+                                    {difficultyLabel && (
+                                      <span className="text-[9px] text-[#FFD5AB]/30 font-bold truncate opacity-80">
+                                        · {difficultyLabel}
+                                      </span>
+                                    )}
+                                  </div>
+                                  
+                                  <div className="flex items-center gap-1.5 shrink-0">
+                                    <div className="text-white text-[15px] font-black tabular-nums tracking-tighter">
+                                      {record.finalScore?.toLocaleString()}
+                                    </div>
+                                    <div className="text-[#FFD5AB]/20 text-[9px] font-bold tabular-nums">
+                                      {sessions}{t('game.leaderboard.sessionsUnit')}
+                                    </div>
                                   </div>
                                 </div>
                               </div>
@@ -503,13 +513,13 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                       {shouldShowAngle(state.selectedPiece) ? (
                         <>
                           <div className={cn("text-premium-value text-sm font-bold", isTemporaryDisplay() ? 'animate-pulse' : '')}>
-                            {isTemporaryDisplay() 
+                            {isTemporaryDisplay()
                               ? t('game.controls.angleTemporary', { angle: Math.round(state.puzzle[state.selectedPiece].rotation) })
                               : t('game.controls.currentAngle', { angle: Math.round(state.puzzle[state.selectedPiece].rotation) })
                             }
                           </div>
                           <div className="text-premium-label text-[11px] mt-1 opacity-70 leading-relaxed">
-                            {isTemporaryDisplay() 
+                            {isTemporaryDisplay()
                               ? t('game.controls.hintRevealedAngle')
                               : t('game.controls.rotateInstruction')
                             }
