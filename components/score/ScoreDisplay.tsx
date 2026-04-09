@@ -3,7 +3,6 @@ import { useGame } from '@/contexts/GameContext';
 import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 import DesktopScoreLayout from './DesktopScoreLayout';
 import MobileScoreLayout from './MobileScoreLayout';
-import { cn } from "@/lib/utils";
 
 interface ScoreDisplayProps {
   className?: string;
@@ -61,23 +60,16 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
     );
   }
 
-  // 模态模式：使用高端覆盖样式与模糊背景
+  // 模态模式：使用简单覆盖样式
   return (
     <div 
-      className={cn(
-        "fixed inset-0 z-50 flex items-center justify-center p-4",
-        "bg-black/40 backdrop-blur-xl animate-in fade-in duration-300",
-        className
-      )}
+      className={`fixed inset-0 bg-black/50 flex items-center justify-center z-50 ${className}`}
       data-testid="score-display"
       role="dialog"
       aria-labelledby="score-display-title"
       aria-modal="true"
     >
-      <div className={cn(
-        "w-full animate-in zoom-in-95 slide-in-from-bottom-4 duration-500 delay-150",
-        deviceType === 'phone' ? "max-w-sm" : "max-w-2xl"
-      )}>
+      <div className="max-w-md w-full mx-4">
         {renderLayout()}
       </div>
     </div>
