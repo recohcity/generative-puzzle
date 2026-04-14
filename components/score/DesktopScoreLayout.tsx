@@ -122,28 +122,28 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
       label: t('score.breakdown.base') || '难度得分',
       sub: difficultyLine,
       value: formatScore(scoreBreakdown.baseScore),
-      color: 'text-[#FFD5AB]',
+      color: 'text-brand-peach',
       sign: '',
     },
     {
       label: t('score.breakdown.timeBonus') || '速度加成',
       sub: getSpeedBonusText(gameStats.totalDuration),
       value: formatScore(scoreBreakdown.timeBonus),
-      color: 'text-[#FFD5AB]',
+      color: 'text-brand-peach',
       sign: '+',
     },
     {
       label: t('score.breakdown.rotationScore') || '旋转',
       sub: `${gameStats.totalRotations} / ${gameStats.minRotations || 0} · ${getRotationRatingText(gameStats.totalRotations, gameStats.minRotations)}`,
       value: formatScore(scoreBreakdown.rotationScore),
-      color: scoreBreakdown.rotationScore >= 0 ? 'text-[#FFD5AB]' : 'text-[#FF8A80]',
+      color: scoreBreakdown.rotationScore >= 0 ? 'text-brand-peach' : 'text-red-400',
       sign: scoreBreakdown.rotationScore >= 0 ? '+' : '',
     },
     {
       label: t('score.breakdown.hintScore') || '提示',
       sub: `${gameStats.hintUsageCount} / ${gameStats.hintAllowance || 0}${t('leaderboard.timesUnit') || '次'}`,
       value: formatScore(scoreBreakdown.hintScore),
-      color: scoreBreakdown.hintScore >= 0 ? 'text-[#FFD5AB]' : 'text-[#FF8A80]',
+      color: scoreBreakdown.hintScore >= 0 ? 'text-brand-peach' : 'text-red-400',
       sign: scoreBreakdown.hintScore >= 0 ? '+' : '',
     },
   ] : [];
@@ -159,7 +159,7 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
             {t('stats.gameComplete')}
           </h2>
           {isNewRecord && (
-            <div className="ml-auto inline-flex items-center gap-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-[#232035] px-2.5 py-0.5 rounded-full text-[10px] font-black animate-pulse-slow uppercase tracking-wide">
+            <div className="ml-auto inline-flex items-center gap-1 bg-gradient-to-r from-yellow-400 to-brand-orange text-brand-dark px-2.5 py-0.5 rounded-full text-[10px] font-black animate-pulse-slow uppercase tracking-wide">
               <Star className="w-3 h-3" />
               {t('score.newRecord') || 'New Record'}
             </div>
@@ -171,10 +171,10 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
 
           {/* Hero score */}
           <div className="pt-5 pb-3 px-4 text-center">
-            <div className={cn('text-4xl font-black text-[#FFD5AB] tracking-tight tabular-nums', showAnimation && 'scoreCountUpAnimation')}>
+            <div className={cn('text-4xl font-black text-brand-peach tracking-tight tabular-nums', showAnimation && 'scoreCountUpAnimation')}>
               {formatScore(currentScore)}
             </div>
-            <div className="text-[#FFD5AB]/40 text-[10px] font-bold uppercase tracking-widest mt-1.5">
+            <div className="text-brand-peach/40 text-[10px] font-bold uppercase tracking-widest mt-1.5">
               {formatDuration(gameStats.totalDuration)} · {difficultyLine}
             </div>
           </div>
@@ -187,8 +187,8 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
               {rows.map((row, i) => (
                 <div key={i} className="flex items-baseline justify-between py-1.5">
                   <div className="flex-1 min-w-0 pr-2">
-                    <span className="text-[#FFD5AB]/60 text-xs font-medium">{row.label}</span>
-                    <span className="text-[#FFD5AB]/25 text-[10px] ml-1.5 truncate">{row.sub}</span>
+                    <span className="text-brand-peach/60 text-xs font-medium">{row.label}</span>
+                    <span className="text-brand-peach/25 text-[10px] ml-1.5 truncate">{row.sub}</span>
                   </div>
                   <span className={cn('text-xs font-black tabular-nums shrink-0', row.color)}>
                     {row.sign}{row.value}
@@ -198,40 +198,40 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
 
               <div className="h-px bg-white/8 mt-1 mb-2" />
               <div className="flex items-baseline justify-between py-1">
-                <span className="text-[#FFD5AB]/50 text-xs font-bold uppercase tracking-widest">
+                <span className="text-brand-peach/50 text-xs font-bold uppercase tracking-widest">
                   {t('score.breakdown.subtotal') || '小计'}
                 </span>
-                <span className="text-[#FFD5AB]/70 text-xs font-black tabular-nums">
+                <span className="text-brand-peach/70 text-xs font-black tabular-nums">
                   {formatScore(subtotal)}
                 </span>
               </div>
 
               <div className="flex items-start justify-between py-1">
                 <div className="flex-1 min-w-0 pr-2">
-                  <span className="text-[#FFD5AB]/50 text-xs font-bold uppercase tracking-widest">
+                  <span className="text-brand-peach/50 text-xs font-bold uppercase tracking-widest">
                     {t('score.breakdown.multiplier') || '难度系数'}
                   </span>
-                  <div className="text-[#FFD5AB]/20 text-[10px] leading-tight mt-0.5 truncate italic">
+                  <div className="text-brand-peach/20 text-[10px] leading-tight mt-0.5 truncate italic">
                     {getMultiplierBreakdown(gameStats.difficulty, scoreBreakdown.difficultyMultiplier)}
                   </div>
                 </div>
-                <span className="text-[#F68E5F] text-xs font-black tabular-nums shrink-0">
+                <span className="text-brand-orange text-xs font-black tabular-nums shrink-0">
                   ×{scoreBreakdown.difficultyMultiplier.toFixed(2)}
                 </span>
               </div>
 
               <div className="h-px bg-white/8 mt-1 mb-2" />
               <div className="flex items-baseline justify-between py-1.5">
-                <span className="text-[#FFD5AB] text-sm font-black uppercase tracking-widest">
+                <span className="text-brand-peach text-sm font-black uppercase tracking-widest">
                   {t('score.breakdown.final') || '最终得分'}
                 </span>
-                <span className="text-[#FFD5AB] text-xl font-black tabular-nums tracking-tight">
+                <span className="text-brand-peach text-xl font-black tabular-nums tracking-tight">
                   {formatScore(currentScore)}
                 </span>
               </div>
 
               <div className="pt-2 pb-0.5 text-center">
-                <span className="text-[#FFD5AB]/20 text-[10px] tracking-widest">{gameTimestamp}</span>
+                <span className="text-brand-peach/20 text-[10px] tracking-widest">{gameTimestamp}</span>
               </div>
             </div>
           )}
@@ -253,12 +253,12 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
         </div>
         <div className="flex items-center gap-2">
           {isNewRecord && (
-            <div className="inline-flex items-center gap-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-[#232035] px-2.5 py-0.5 rounded-full text-[10px] font-black animate-pulse-slow uppercase">
+            <div className="inline-flex items-center gap-1 bg-gradient-to-r from-yellow-400 to-brand-orange text-brand-dark px-2.5 py-0.5 rounded-full text-[10px] font-black animate-pulse-slow uppercase">
               <Star className="w-3 h-3" /> {t('score.newRecord')}
             </div>
           )}
           {onClose && (
-            <button onClick={onClose} className="w-7 h-7 rounded-lg flex items-center justify-center text-[#FFD5AB]/40 hover:text-[#FFD5AB] hover:bg-white/10 transition-all text-sm" aria-label={t('common.close') || 'Close'}>
+            <button onClick={onClose} className="w-7 h-7 rounded-lg flex items-center justify-center text-brand-peach/40 hover:text-brand-peach hover:bg-white/10 transition-all text-sm" aria-label={t('common.close') || 'Close'}>
               ✕
             </button>
           )}
@@ -267,10 +267,10 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
 
       {/* Hero */}
       <div className="pb-3 px-5 text-center">
-        <div className={cn('text-4xl font-black text-[#FFD5AB] tracking-tight tabular-nums', showAnimation && 'scoreCountUpAnimation')}>
+        <div className={cn('text-4xl font-black text-brand-peach tracking-tight tabular-nums', showAnimation && 'scoreCountUpAnimation')}>
           {formatScore(currentScore)}
         </div>
-        <div className="text-[#FFD5AB]/40 text-[10px] font-bold uppercase tracking-widest mt-1.5">
+        <div className="text-brand-peach/40 text-[10px] font-bold uppercase tracking-widest mt-1.5">
           {formatDuration(gameStats.totalDuration)} · {difficultyLine}
         </div>
       </div>
@@ -282,8 +282,8 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
           {rows.map((row, i) => (
             <div key={i} className="flex items-baseline justify-between py-1.5">
               <div className="flex-1 min-w-0 pr-2">
-                <span className="text-[#FFD5AB]/60 text-xs font-medium">{row.label}</span>
-                <span className="text-[#FFD5AB]/25 text-[10px] ml-1.5 truncate">{row.sub}</span>
+                <span className="text-brand-peach/60 text-xs font-medium">{row.label}</span>
+                <span className="text-brand-peach/25 text-[10px] ml-1.5 truncate">{row.sub}</span>
               </div>
               <span className={cn('text-xs font-black tabular-nums shrink-0', row.color)}>
                 {row.sign}{row.value}
@@ -292,25 +292,25 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
           ))}
           <div className="h-px bg-white/8 mt-1 mb-2" />
           <div className="flex items-baseline justify-between py-1">
-            <span className="text-[#FFD5AB]/50 text-xs font-bold uppercase tracking-widest">{t('score.breakdown.subtotal') || '小计'}</span>
-            <span className="text-[#FFD5AB]/70 text-xs font-black tabular-nums">{formatScore(subtotal)}</span>
+            <span className="text-brand-peach/50 text-xs font-bold uppercase tracking-widest">{t('score.breakdown.subtotal') || '小计'}</span>
+            <span className="text-brand-peach/70 text-xs font-black tabular-nums">{formatScore(subtotal)}</span>
           </div>
           <div className="flex items-start justify-between py-1">
             <div className="flex-1 min-w-0 pr-2">
-              <span className="text-[#FFD5AB]/50 text-xs font-bold uppercase tracking-widest">{t('score.breakdown.multiplier') || '难度系数'}</span>
-              <div className="text-[#FFD5AB]/20 text-[10px] leading-tight mt-0.5 truncate italic">
+              <span className="text-brand-peach/50 text-xs font-bold uppercase tracking-widest">{t('score.breakdown.multiplier') || '难度系数'}</span>
+              <div className="text-brand-peach/20 text-[10px] leading-tight mt-0.5 truncate italic">
                 {getMultiplierBreakdown(gameStats.difficulty, scoreBreakdown.difficultyMultiplier)}
               </div>
             </div>
-            <span className="text-[#F68E5F] text-xs font-black tabular-nums shrink-0">×{scoreBreakdown.difficultyMultiplier.toFixed(2)}</span>
+            <span className="text-brand-orange text-xs font-black tabular-nums shrink-0">×{scoreBreakdown.difficultyMultiplier.toFixed(2)}</span>
           </div>
           <div className="h-px bg-white/8 mt-1 mb-2" />
           <div className="flex items-baseline justify-between py-1.5">
-            <span className="text-[#FFD5AB] text-sm font-black uppercase tracking-widest">{t('score.breakdown.final') || '最终得分'}</span>
-            <span className="text-[#FFD5AB] text-xl font-black tabular-nums tracking-tight">{formatScore(currentScore)}</span>
+            <span className="text-brand-peach text-sm font-black uppercase tracking-widest">{t('score.breakdown.final') || '最终得分'}</span>
+            <span className="text-brand-peach text-xl font-black tabular-nums tracking-tight">{formatScore(currentScore)}</span>
           </div>
           <div className="pt-2 pb-0.5 text-center">
-            <span className="text-[#FFD5AB]/20 text-[10px] tracking-widest">{gameTimestamp}</span>
+            <span className="text-brand-peach/20 text-[10px] tracking-widest">{gameTimestamp}</span>
           </div>
         </div>
       )}

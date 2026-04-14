@@ -2,7 +2,7 @@
 :root {
   /* 覆盖元素基础样式 */
   --overlay-bg-color: rgba(0, 0, 0, 0.3);
-  --overlay-text-color: #ffffff;
+  --overlay-text-color: var(--brand-peach);
   --overlay-font-size: 12px;
   --overlay-font-weight: 500;
   --overlay-font-family: monospace;

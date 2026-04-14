@@ -153,12 +153,12 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
             "flex items-center gap-3",
             isLandscape ? "flex-1 min-w-0" : "w-full"
           )}>
-            <div className="w-10 h-10 rounded-full bg-[#F68E5F]/20 flex items-center justify-center shadow-lg shadow-[#F68E5F]/10 flex-shrink-0">
-              <User className="text-[#FFD5AB] w-5 h-5" />
+            <div className="w-10 h-10 rounded-full bg-brand-orange/20 flex items-center justify-center shadow-lg shadow-brand-orange/10 flex-shrink-0">
+              <User className="text-brand-peach w-5 h-5" />
             </div>
             <div className="min-w-0 flex-1 text-left">
               <div className="flex items-center gap-2 mb-0.5">
-                <h3 className="text-md font-bold text-[#FFB17A] truncate tracking-tight">{currentProfile?.nickname || t('auth.loading')}</h3>
+                <h3 className="text-md font-bold text-brand-amber truncate tracking-tight">{currentProfile?.nickname || t('auth.loading')}</h3>
                 <div className="w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_5px_rgba(74,222,128,0.5)]" />
               </div>
               <p className="text-[10px] text-white/30 font-mono truncate">
@@ -208,12 +208,12 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
            {/* Left side: Info */}
            <div className="w-[35%] flex flex-col justify-center border-r border-white/5 pr-6">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-lg bg-[#FFD5AB]/10 flex items-center justify-center border border-[#FFD5AB]/20">
-                  <Info className="text-[#FFD5AB] w-4 h-4" />
+                <div className="w-8 h-8 rounded-lg bg-brand-peach/10 flex items-center justify-center border border-brand-peach/20">
+                  <Info className="text-brand-peach w-4 h-4" />
                 </div>
-                <h2 className="text-sm font-bold text-[#FFB17A]">{t('auth.collision.title')}</h2>
+                <h2 className="text-sm font-bold text-brand-amber">{t('auth.collision.title')}</h2>
               </div>
-              <p className="text-[10px] opacity-70 leading-relaxed text-[#FFD5AB]/80">
+              <p className="text-[10px] opacity-70 leading-relaxed text-brand-peach/80">
                 {t('auth.collision.hint')}
               </p>
            </div>
@@ -225,11 +225,11 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
                   <button 
                     key={acc.id} 
                     onClick={() => executeLogin(acc.virtual_email)}
-                    className="w-full text-left bg-black/30 hover:bg-black/50 p-2.5 rounded-xl border border-black/20 hover:border-[#FFD5AB]/30 transition-all group"
+                    className="w-full text-left bg-black/30 hover:bg-black/50 p-2.5 rounded-xl border border-black/20 hover:border-brand-peach/30 transition-all group"
                   >
                     <div className="flex justify-between items-center">
                       <div className="min-w-0">
-                        <div className="font-bold text-xs group-hover:text-[#FFD5AB] transition-colors truncate">{acc.nickname}</div>
+                        <div className="font-bold text-xs group-hover:text-brand-peach transition-colors truncate">{acc.nickname}</div>
                         <div className="flex gap-2 text-[9px] opacity-40 mt-0.5">
                           <span>🏆 {acc.best_score}</span>
                           <span>🔥 {acc.challenge_count}</span>
@@ -240,7 +240,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
                   </button>
                 ))}
               </div>
-              <Button variant={"secondary"} onClick={() => setMode("recover")} disabled={loading} className="w-full h-9 text-xs bg-black/20 hover:bg-black/40 text-[#FFD5AB] border border-black/20 rounded-xl flex-shrink-0">
+              <Button variant={"secondary"} onClick={() => setMode("recover")} disabled={loading} className="w-full h-9 text-xs bg-black/20 hover:bg-black/40 text-brand-peach border border-black/20 rounded-xl flex-shrink-0">
                 {t('auth.collision.back')}
               </Button>
            </div>
@@ -251,16 +251,16 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
     return (
       <div className="w-full animate-in slide-in-from-bottom-4 duration-500 p-2">
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-lg bg-[#FFD5AB]/10 flex items-center justify-center border border-[#FFD5AB]/20">
-            <Info className="text-[#FFD5AB] w-4 h-4" />
+          <div className="w-8 h-8 rounded-lg bg-brand-peach/10 flex items-center justify-center border border-brand-peach/20">
+            <Info className="text-brand-peach w-4 h-4" />
           </div>
           <div className="min-w-0 flex-1">
-            <h2 className="text-md font-bold text-[#FFB17A] truncate">{t('auth.collision.title')}</h2>
-            <p className="text-[10px] opacity-40 text-[#FFD5AB] truncate">{t('auth.collision.description')}</p>
+            <h2 className="text-md font-bold text-brand-amber truncate">{t('auth.collision.title')}</h2>
+            <p className="text-[10px] opacity-40 text-brand-peach truncate">{t('auth.collision.description')}</p>
           </div>
         </div>
         
-        <p className="text-[11px] opacity-70 mb-4 leading-relaxed text-[#FFD5AB]/80">
+        <p className="text-[11px] opacity-70 mb-4 leading-relaxed text-brand-peach/80">
           {t('auth.collision.hint')}
         </p>
 
@@ -269,11 +269,11 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
             <button 
               key={acc.id} 
               onClick={() => executeLogin(acc.virtual_email)}
-              className="w-full text-left bg-black/30 hover:bg-black/50 p-3 rounded-xl border border-black/20 hover:border-[#FFD5AB]/30 transition-all group"
+              className="w-full text-left bg-black/30 hover:bg-black/50 p-3 rounded-xl border border-black/20 hover:border-brand-peach/30 transition-all group"
             >
               <div className="flex justify-between items-center">
                 <div className="min-w-0">
-                  <div className="font-bold text-sm group-hover:text-[#FFD5AB] transition-colors truncate">{acc.nickname}</div>
+                  <div className="font-bold text-sm group-hover:text-brand-peach transition-colors truncate">{acc.nickname}</div>
                   <div className="flex gap-2 text-[10px] opacity-40 mt-0.5">
                     <span>🏆 {acc.best_score}</span>
                     <span>🔥 {acc.challenge_count}</span>
@@ -285,7 +285,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
           ))}
         </div>
 
-        <Button variant={"secondary"} onClick={() => setMode("recover")} disabled={loading} className="w-full h-10 text-xs bg-black/20 hover:bg-black/40 text-[#FFD5AB] border border-black/20 rounded-xl">
+        <Button variant={"secondary"} onClick={() => setMode("recover")} disabled={loading} className="w-full h-10 text-xs bg-black/20 hover:bg-black/40 text-brand-peach border border-black/20 rounded-xl">
           {t('auth.collision.back')}
         </Button>
       </div>
@@ -297,14 +297,14 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
       <div className="relative text-white w-full h-full flex flex-row gap-0 py-2 items-center">
         {/* Left column: Branding & Title (Fixed Width) */}
         <div className="flex flex-col items-center justify-center text-center border-r border-white/5 px-8 whitespace-nowrap shrink-0 w-[200px]">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#FFD5AB] to-[#F68E5F] flex items-center justify-center shadow-xl shadow-[#F68E5F]/20 relative mb-4">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-peach to-brand-orange flex items-center justify-center shadow-xl shadow-brand-orange/20 relative mb-4">
               <div className="absolute inset-0 bg-white/20 rounded-2xl blur-sm animate-pulse-slow"></div>
-              {mode === 'register' ? <User className="w-8 h-8 text-[#2A2A2A] relative" /> : <RotateCw className="w-8 h-8 text-[#2A2A2A] relative" />}
+              {mode === 'register' ? <User className="w-8 h-8 text-brand-dark relative" /> : <RotateCw className="w-8 h-8 text-brand-dark relative" />}
           </div>
-          <h2 className="text-xl font-black mb-1.5 text-[#FFB17A] tracking-tight uppercase whitespace-nowrap">
+          <h2 className="text-xl font-black mb-1.5 text-brand-amber tracking-tight uppercase whitespace-nowrap">
             {mode === 'register' ? t('auth.modes.register.title') : t('auth.modes.recover.title')}
           </h2>
-          <p className="text-[10px] text-[#FFD5AB]/30 leading-tight font-medium whitespace-nowrap">
+          <p className="text-[10px] text-brand-peach/30 leading-tight font-medium whitespace-nowrap">
             {mode === 'register' 
               ? t('auth.modes.register.hint').split('，')[0]
               : t('auth.modes.recover.hint').split('？')[0]}
@@ -327,7 +327,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
             <input
               type="text"
               placeholder={t('auth.inputs.nicknamePlaceholder')}
-              className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-[#FFD5AB] text-base placeholder-[#FFD5AB]/30 focus:outline-none focus:ring-1 focus:ring-[#FFB17A]/40 transition-all font-medium"
+              className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-brand-peach text-base placeholder-brand-peach/30 focus:outline-none focus:ring-1 focus:ring-brand-amber/40 transition-all font-medium"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               disabled={loading}
@@ -342,7 +342,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
               type="password"
               placeholder={t('auth.inputs.pinPlaceholder')}
               maxLength={4}
-              className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-[#FFD5AB] text-base placeholder-[#FFD5AB]/30 focus:outline-none focus:ring-1 focus:ring-[#FFB17A]/40 transition-all text-center font-mono tracking-[0.3em]"
+              className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-brand-peach text-base placeholder-brand-peach/30 focus:outline-none focus:ring-1 focus:ring-brand-amber/40 transition-all text-center font-mono tracking-[0.3em]"
               value={pin}
               onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
               disabled={loading}
@@ -353,7 +353,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
             <button
                 onClick={mode === 'register' ? handleRegister : handleRecover}
                 disabled={loading}
-                className="w-full box-border font-bold bg-gradient-to-r from-[#FFD5AB] to-[#F68E5F] text-[#2A2A2A] rounded-xl h-10 text-xs shadow-lg shadow-[#F68E5F]/20 active:opacity-80 transition-all disabled:opacity-50"
+                className="w-full box-border font-bold bg-gradient-to-r from-brand-peach to-brand-orange text-brand-dark rounded-xl h-10 text-xs shadow-lg shadow-brand-orange/20 active:opacity-80 transition-all disabled:opacity-50"
             >
               {loading ? (
                 <div className="flex items-center justify-center gap-2">
@@ -367,7 +367,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
 
             <button 
                 onClick={() => { setError(null); setMode(mode === "register" ? "recover" : "register"); }}
-                className="w-full box-border bg-white/5 hover:bg-white/10 text-[#FFD5AB] border border-white/15 rounded-xl h-9 text-[10px] font-bold transition-all"
+                className="w-full box-border bg-white/5 hover:bg-white/10 text-brand-peach border border-white/15 rounded-xl h-9 text-[10px] font-bold transition-all"
             >
               {mode === "register" ? t('auth.modes.recover.button') : t('auth.modes.recover.back')}
             </button>
@@ -382,13 +382,13 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
       <div className="relative z-10 flex flex-col h-full">
         <div className="flex-1 flex flex-col justify-center">
         <div className="flex justify-center mb-2">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#FFD5AB] to-[#F68E5F] flex items-center justify-center shadow-xl shadow-[#F68E5F]/20 relative">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-peach to-brand-orange flex items-center justify-center shadow-xl shadow-brand-orange/20 relative">
                 <div className="absolute inset-0 bg-white/20 rounded-2xl blur-sm animate-pulse-slow"></div>
-                {mode === 'register' ? <User className="w-6 h-6 text-[#2A2A2A] relative" /> : <RotateCw className="w-6 h-6 text-[#2A2A2A] relative" />}
+                {mode === 'register' ? <User className="w-6 h-6 text-brand-dark relative" /> : <RotateCw className="w-6 h-6 text-brand-dark relative" />}
             </div>
         </div>
 
-        <h2 className="text-sm font-bold mb-2 text-center text-[#FFB17A] tracking-tight uppercase">
+        <h2 className="text-sm font-bold mb-2 text-center text-brand-amber tracking-tight uppercase">
           {mode === 'register' ? t('auth.modes.register.title') : t('auth.modes.recover.title')}
         </h2>
 
@@ -407,7 +407,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
             <input
               type="text"
               placeholder={t('auth.inputs.nicknamePlaceholder')}
-              className="w-full bg-black/20 border border-white/10 rounded-xl p-2.5 text-[#FFD5AB] text-base placeholder-[#FFD5AB]/30 focus:outline-none focus:ring-1 focus:ring-[#FFB17A]/40 focus:border-[#FFB17A]/60 transition-all outline-none"
+              className="w-full bg-black/20 border border-white/10 rounded-xl p-2.5 text-brand-peach text-base placeholder-brand-peach/30 focus:outline-none focus:ring-1 focus:ring-brand-amber/40 focus:border-brand-amber/60 transition-all outline-none"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               disabled={loading}
@@ -422,7 +422,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
               type="password"
               placeholder={t('auth.inputs.pinPlaceholder')}
               maxLength={4}
-              className="w-full bg-black/20 border border-white/10 rounded-xl p-2.5 text-[#FFD5AB] text-base placeholder-[#FFD5AB]/30 focus:outline-none focus:ring-1 focus:ring-[#FFB17A]/40 focus:border-[#FFB17A]/60 transition-all outline-none text-center font-mono tracking-[0.5em]"
+              className="w-full bg-black/20 border border-white/10 rounded-xl p-2.5 text-brand-peach text-base placeholder-brand-peach/30 focus:outline-none focus:ring-1 focus:ring-brand-amber/40 focus:border-brand-amber/60 transition-all outline-none text-center font-mono tracking-[0.5em]"
               value={pin}
               onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
               disabled={loading}
@@ -434,7 +434,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
                 onClick={mode === 'register' ? handleRegister : handleRecover}
                 disabled={loading}
                 style={{ WebkitTapHighlightColor: 'transparent' }}
-                className="w-full box-border font-bold bg-gradient-to-r from-[#FFD5AB] to-[#F68E5F] hover:from-[#FFE0C2] hover:to-[#FF9F7A] text-[#2A2A2A] rounded-2xl h-10 text-xs shadow-lg shadow-[#F68E5F]/20 active:opacity-80 transition-all disabled:opacity-50 cursor-pointer outline-none focus:outline-none select-none"
+                className="w-full box-border font-bold bg-gradient-to-r from-brand-peach to-brand-orange hover:from-[#FFE0C2] hover:to-[#FF9F7A] text-brand-dark rounded-2xl h-10 text-xs shadow-lg shadow-brand-orange/20 active:opacity-80 transition-all disabled:opacity-50 cursor-pointer outline-none focus:outline-none select-none"
             >
               {loading ? (
                 <div className="flex items-center justify-center gap-2">
@@ -446,7 +446,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
               )}
             </button>
 
-            <p className="text-[9px] text-[#FFD5AB]/30 text-center px-4 leading-tight font-medium">
+            <p className="text-[9px] text-brand-peach/30 text-center px-4 leading-tight font-medium">
               {mode === 'register' 
                 ? t('auth.modes.register.hint')
                 : t('auth.modes.recover.hint')}
@@ -461,7 +461,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
                <button
                 onClick={() => { setError(null); setMode("recover"); }}
                 style={{ WebkitTapHighlightColor: 'transparent' }}
-                className="w-full box-border bg-white/5 hover:bg-white/10 active:bg-white/[0.04] text-[#FFD5AB] hover:text-white border border-white/15 rounded-xl h-10 text-xs font-bold transition-all cursor-pointer outline-none focus:outline-none select-none"
+                className="w-full box-border bg-white/5 hover:bg-white/10 active:bg-white/[0.04] text-brand-peach hover:text-white border border-white/15 rounded-xl h-10 text-xs font-bold transition-all cursor-pointer outline-none focus:outline-none select-none"
               >
                 {t('auth.modes.recover.button')}
               </button>
@@ -471,7 +471,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
             <button 
                 onClick={() => { setError(null); setMode("register"); }}
                 style={{ WebkitTapHighlightColor: 'transparent' }}
-                className="w-full box-border bg-white/5 hover:bg-white/10 active:bg-white/[0.04] text-[#FFD5AB] hover:text-white border border-white/15 rounded-xl h-10 text-xs font-bold transition-all cursor-pointer outline-none focus:outline-none select-none"
+                className="w-full box-border bg-white/5 hover:bg-white/10 active:bg-white/[0.04] text-brand-peach hover:text-white border border-white/15 rounded-xl h-10 text-xs font-bold transition-all cursor-pointer outline-none focus:outline-none select-none"
             >
               {t('auth.modes.recover.back')}
             </button>

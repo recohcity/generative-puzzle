@@ -54,6 +54,13 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        brand: {
+          orange: "rgba(var(--brand-orange-rgb), <alpha-value>)",
+          peach: "rgba(var(--brand-peach-rgb), <alpha-value>)",
+          amber: "rgba(var(--brand-amber-rgb), <alpha-value>)",
+          deep: "rgba(var(--brand-deep-rgb), <alpha-value>)",
+          dark: "rgba(var(--brand-dark-rgb), <alpha-value>)",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

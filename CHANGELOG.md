@@ -1,6 +1,25 @@
 # 生成式拼图游戏 Changelog
 
 
+## [v1.3.81] - 2026-04-14
+
+### 🎨 UI 规范标准化与 Design Tokens 体系落地 (UI Standardization & Design Tokens Implementation)
+本版本标志着项目进入了“设计系统驱动”的新阶段，通过建立完整的 Design Tokens 体系，彻底解决了长期存在的 UI 硬编码与多端显示不一致问题。
+
+- **Design Tokens 基础设施落地**:
+  - **语义化色彩引擎**: 在 `tailwind.config.ts` 中引入了基于 `rgba(var(--xxx-rgb), <alpha-value>)` 的品牌色定义，原生支持 Tailwind 的透明度修饰符（如 `brand-orange/20`）。
+  - **CSS 变量解耦**: 在 `globals.css` 中定义了完整的 Hex 与 RGB 双模 Token，实现了 UI 色彩的“单一真相源”。
+- **核心组件规范化重构**:
+  - **认证组件 (VirtualAuthWidget)**: 移除了 30+ 处硬编码 Hex 值，全面接入品牌 Token，优化了移动端横屏下的视觉密度。
+  - **结算组件 (DesktopScoreLayout)**: 统一了计分面版与排行榜的色彩规范，确保信息层级清晰。
+- **全局交互与无障碍 (A11y) 修复**:
+  - **精准防护域**: 将 `user-select: none` 限制在 `.game-root` 容器内，恢复了全局 UI（如 Toast、Dialog）的正常交互。
+  - **焦点系统回归**: 修复了暴力禁用 `outline` 导致的无障碍盲点，实现了基于 `brand-amber` 的统一 `:focus-visible` 方案。
+  - **iOS 体验优化**: 在主入口部署了 `.no-scroll-container` 类，彻底杜绝了移动端 Safari 的动态橡皮筋回弹现象。
+- **跨平台排版系统一致化**:
+  - **字体栈权重对齐**: 整合了 `Inter` 与 CJK 系统字体栈，解决了多平台渲染下的高度抖动问题。
+  - **遗留补丁清理**: 移除了已过时的 Safari 固定定位补丁及废弃的 `-webkit-overflow-scrolling` 属性，显著提升了现代浏览器的渲染信噪比。
+
 ## [v1.3.80] - 2026-04-10
 
 ### ⚡ 移动端性能专项优化与双端体验对齐 (Mobile Performance & Speed Insights Optimization)

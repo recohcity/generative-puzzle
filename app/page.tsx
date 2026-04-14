@@ -18,7 +18,7 @@ export default function HomePage() {
   const handleLoadComplete = () => setIsLoading(false);
 
   return (
-    <main className="flex items-center justify-center min-h-screen">
+    <main className="flex items-center justify-center min-h-screen no-scroll-container game-root">
       {isLoading ? (
         <LoadingScreen onLoadComplete={handleLoadComplete} />
       ) : (

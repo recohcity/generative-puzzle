@@ -6,11 +6,13 @@ import { AuthProvider } from "@/contexts/AuthContext"
 import { I18nProvider } from "@/contexts/I18nContext"
 import EnvModeClient from "@/components/EnvModeClient"
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { cn } from "@/lib/utils"
 
 const inter = Inter({
   subsets: ["latin"],
   display: 'swap',
   adjustFontFallback: true,
+  variable: '--font-inter',
 })
 
 export const metadata: Metadata = {
@@ -78,12 +80,12 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="zh-CN" className="dark" suppressHydrationWarning>
+    <html lang="zh-CN" className={cn("dark", inter.variable)} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body className={inter.className}>
+      <body className={cn(inter.className, "antialiased")}>
         <EnvModeClient />
         <AuthProvider>
           <I18nProvider>
