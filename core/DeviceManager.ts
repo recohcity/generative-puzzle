@@ -5,12 +5,11 @@
 
 import {
   DEVICE_THRESHOLDS,
-  IPHONE16_MODELS,
   DETECTION_CONFIG,
   LARGE_SCREEN_THRESHOLDS,
   USER_AGENT_PATTERNS,
   type DeviceState,
-  type iPhone16Detection,
+  type iPhoneDetectionResult,
   type DeviceLayoutInfo
 } from '../src/config/deviceConfig';
 import { deviceLogger } from '../utils/logger';
@@ -60,115 +59,33 @@ export class DeviceManager {
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     const isMobileLikeScreen = (screenWidth <= DEVICE_THRESHOLDS.MOBILE_BREAKPOINT) || (isLongScreen && screenWidth < DETECTION_CONFIG.TOUCH_DEVICE_MAX_WIDTH);
 
-    // iPhone 16 series detection
-    const iPhone16Detection = this.detectiPhone16Series(screenWidth, screenHeight);
-
-    // Device type determination with unified logic
-    let deviceType: 'phone' | 'tablet' | 'desktop';
-    let layoutMode: 'portrait' | 'landscape' | 'desktop';
-    let isMobile: boolean;
-    let isTablet: boolean;
-    let isDesktop: boolean;
-
-    // 优先使用用户代理检测 - 修复横屏问题
-    if (isIOS || isAndroid) {
-      deviceType = 'phone';
-      layoutMode = isPortrait ? 'portrait' : 'landscape';
-      isMobile = true;
-      isTablet = false;
-      isDesktop = false;
-
-      deviceLogger.debug('用户代理检测为移动设备', {
-        isIOS,
-        isAndroid,
-        deviceType,
-        layoutMode,
-        screenSize: `${screenWidth}x${screenHeight}`
-      });
-    }
-    // Force mobile for iPhone 16 series
-    else if (iPhone16Detection.detected) {
-      deviceType = 'phone';
-      layoutMode = iPhone16Detection.orientation as 'portrait' | 'landscape';
-      isMobile = true;
-      isTablet = false;
-      isDesktop = false;
-
-      deviceLogger.debug('iPhone 16系列检测', {
-        model: iPhone16Detection.model,
-        orientation: iPhone16Detection.orientation,
-        exact: iPhone16Detection.exact,
-        screenSize: `${screenWidth}x${screenHeight}`
-      });
-    }
-    // Large desktop screen detection
-    else if (screenWidth >= LARGE_SCREEN_THRESHOLDS.STANDARD_LARGE.width && screenHeight >= LARGE_SCREEN_THRESHOLDS.STANDARD_LARGE.height ||
-      screenWidth >= LARGE_SCREEN_THRESHOLDS.ULTRAWIDE.width && screenHeight >= LARGE_SCREEN_THRESHOLDS.ULTRAWIDE.height ||
-      screenWidth >= LARGE_SCREEN_THRESHOLDS.SUPER_WIDE.width) {
-      deviceType = 'desktop';
-      layoutMode = 'desktop';
-      isMobile = false;
-      isTablet = false;
-      isDesktop = true;
-    }
-    // Mobile detection - 综合判断移动设备
-    else if (isMobileUserAgent ||
-      (isTouchDevice && isMobileLikeScreen) ||
-      (isLongScreen && screenWidth < DETECTION_CONFIG.TOUCH_DEVICE_MAX_WIDTH) ||
-      screenWidth < DEVICE_THRESHOLDS.MOBILE_BREAKPOINT) {
-      deviceType = 'phone';
-      layoutMode = isPortrait ? 'portrait' : 'landscape';
-      isMobile = true;
-      isTablet = false;
-      isDesktop = false;
-
-      deviceLogger.debug('综合检测为移动设备', {
-        isMobileUserAgent,
-        isTouchDevice,
-        isMobileLikeScreen,
-        isLongScreen,
-        screenWidth,
-        layoutMode,
-        screenSize: `${screenWidth}x${screenHeight}`
-      });
-    }
-    // Tablet detection
-    else if (screenWidth >= DEVICE_THRESHOLDS.TABLET_MIN_WIDTH && screenWidth < DEVICE_THRESHOLDS.DESKTOP_MIN_WIDTH) {
-      deviceType = 'tablet';
-      layoutMode = 'desktop'; // Tablets use desktop layout
-      isMobile = false;
-      isTablet = true;
-      isDesktop = false;
-    }
-    // Desktop detection
-    else {
-      deviceType = 'desktop';
-      layoutMode = 'desktop';
-      isMobile = false;
-      isTablet = false;
-      isDesktop = true;
-    }
+    // 🚀 使用 DeviceLayoutManager 进行最终布局判定
+    const { DeviceLayoutManager } = require('./DeviceLayoutManager');
+    const layoutManager = DeviceLayoutManager.getInstance();
+    const layoutInfo = layoutManager.getDeviceLayoutMode(screenWidth, screenHeight);
 
     return {
-      isMobile,
-      isTablet,
-      isDesktop,
+      isMobile: layoutInfo.deviceType === 'phone',
+      isTablet: layoutInfo.deviceType === 'tablet',
+      isDesktop: layoutInfo.deviceType === 'desktop',
       isPortrait,
       isAndroid,
       isIOS,
       screenWidth,
       screenHeight,
       userAgent: ua,
-      deviceType,
-      layoutMode
+      deviceType: layoutInfo.deviceType,
+      layoutMode: layoutInfo.layoutMode,
+      forceRotation: layoutInfo.forceRotation,
+      forceReason: layoutInfo.forceReason
     };
   }
 
-  private detectiPhone16Series(windowWidth: number, windowHeight: number): iPhone16Detection {
-    // 委托给DeviceLayoutManager处理iPhone 16检测
+  private detectiPhoneSeries(windowWidth: number, windowHeight: number): iPhoneDetectionResult {
+    // 委托给DeviceLayoutManager进行多代检测
     const { DeviceLayoutManager } = require('./DeviceLayoutManager');
     const layoutManager = DeviceLayoutManager.getInstance();
-    return layoutManager.getiPhone16Detection(windowWidth, windowHeight);
+    return layoutManager.getiPhoneDetection(windowWidth, windowHeight);
   }
 
   private getDefaultState(): DeviceState {

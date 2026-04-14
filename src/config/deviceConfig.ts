@@ -12,6 +12,22 @@ export const DEVICE_THRESHOLDS = {
   MOBILE_BREAKPOINT: 768,          // 移动端断点 (from DeviceManager.ts)
 } as const;
 
+// iPhone 17 series specifications (2026 Standard)
+export const IPHONE17_MODELS = {
+  'iPhone 17/Pro': {
+    portrait: { width: 402, height: 874 },
+    landscape: { width: 874, height: 402 }
+  },
+  'iPhone 17 Air': {
+    portrait: { width: 420, height: 912 },
+    landscape: { width: 912, height: 420 }
+  },
+  'iPhone 17 Pro Max': {
+    portrait: { width: 440, height: 956 },
+    landscape: { width: 956, height: 440 }
+  }
+} as const;
+
 // iPhone 16 series specifications
 export const IPHONE16_MODELS = {
   'iPhone 16e': {
@@ -38,7 +54,7 @@ export const IPHONE16_MODELS = {
 
 // Device detection tolerance
 export const DETECTION_CONFIG = {
-  IPHONE16_TOLERANCE: 10,          // iPhone 16检测容差范围 (±10px)
+  IPHONE_TOLERANCE: 10,            // iPhone 检测容差范围 (±10px)
   ASPECT_RATIO_THRESHOLD: 1.8,     // 长屏幕宽高比阈值
   LARGE_SCREEN_WIDTH: 2000,        // 大屏幕宽度阈值
   TOUCH_DEVICE_MAX_WIDTH: 1200,    // 触摸设备最大宽度
@@ -65,7 +81,7 @@ export const USER_AGENT_PATTERNS = {
 // Device type definitions
 export type DeviceType = 'desktop' | 'tablet' | 'phone';
 export type LayoutMode = 'desktop' | 'portrait' | 'landscape';
-export type iPhone16Model = keyof typeof IPHONE16_MODELS;
+export type iPhoneModel = keyof typeof IPHONE17_MODELS | keyof typeof IPHONE16_MODELS;
 
 // Device state interface
 export interface DeviceState {
@@ -80,14 +96,17 @@ export interface DeviceState {
   userAgent: string;
   deviceType: DeviceType;
   layoutMode: LayoutMode;
+  forceRotation?: boolean;
+  forceReason?: string;
 }
 
-// iPhone 16 detection result interface
-export interface iPhone16Detection {
+// iPhone detection result interface
+export interface iPhoneDetectionResult {
   detected: boolean;
   model: string | null;
   orientation: 'portrait' | 'landscape' | null;
   exact: boolean;
+  generation: 16 | 17 | null;
 }
 
 // Device layout information interface (migrated from canvasAdaptation.ts)
@@ -95,6 +114,8 @@ export interface DeviceLayoutInfo {
   deviceType: 'desktop' | 'tablet' | 'phone';
   layoutMode: 'desktop' | 'portrait' | 'landscape';
   forceReason?: string;
-  iPhone16Model?: string | null;
-  iPhone16Exact?: boolean;
+  iPhoneModel?: string | null;
+  iPhoneExact?: boolean;
+  generation?: 16 | 17 | null;
+  forceRotation?: boolean;
 }

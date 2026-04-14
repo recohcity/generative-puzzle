@@ -322,9 +322,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
 
   return (
     <div style={{
-      minWidth: '100vw',
-      minHeight: '100dvh', // 使用 dvh 适配移动端浏览器地址栏
-
+      width: '100%',
       boxSizing: 'border-box',
       display: 'flex',
       flexDirection: 'column',
@@ -355,12 +353,13 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
             position: 'relative',
             boxSizing: 'content-box',
             overflow: 'hidden',
-            flexShrink: 0
+            flexShrink: 0,
+            borderRadius: '1.5rem' // 关键修复：裁切内部画布置灰背景的溢出方形角落，与装饰层圆角一致
           }}
         >
           {/* 装饰层，视觉效果 */}
           <div
-            className="bg-white/30 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/30"
+            className="bg-white/30 backdrop-blur-xl rounded-3xl border-2 border-white/30"
             style={{
               width: '100%',
               height: '100%',
@@ -402,7 +401,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
             ...(panelScale <= 0.5 ? { '--panel-scale': 0.4 } : { '--panel-scale': panelScale })
           } as React.CSSProperties}
         >
-          <div className="bg-white/30 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/30 h-full flex flex-col overflow-auto"
+          <div className="bg-white/30 backdrop-blur-xl rounded-3xl border-2 border-white/30 h-full flex flex-col overflow-auto"
             style={{ padding: panelContentPadding, fontSize: panelScale <= 0.5 ? 16 : 'calc(16px * var(--panel-scale))', gap: panelContentGap }}
           >
             <div className="flex flex-col mb-1 flex-shrink-0">

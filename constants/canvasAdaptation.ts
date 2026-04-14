@@ -6,7 +6,7 @@
 // ==================== 桌面端适配参数 ====================
 export const DESKTOP_ADAPTATION = {
     // 边距设置（按方案要求）
-    TOP_BOTTOM_MARGIN: 40,           // 桌面端上下边距
+    TOP_BOTTOM_MARGIN: 50,           // 桌面端上下边距 (增加到60px以获得更佳的视觉效果与安全性)
     LEFT_RIGHT_MARGIN: 20,           // 桌面端左右最小边距
     CANVAS_PANEL_GAP: 10,            // 面板与画布间距
 
@@ -64,8 +64,6 @@ export const DEVICE_THRESHOLDS = {
  */
 export function calculateDesktopCanvasSize(windowWidth: number, windowHeight: number) {
     const { TOP_BOTTOM_MARGIN, LEFT_RIGHT_MARGIN, CANVAS_PANEL_GAP, PANEL_WIDTH, MIN_CANVAS_SIZE, MAX_CANVAS_SIZE } = DESKTOP_ADAPTATION;
-
-    // 定义最小安全边距（确保不贴边）
     const MIN_SAFE_MARGIN = 30; // 增加到30px，确保有足够的安全距离
 
     // 计算可用高度（减去上下安全边距）
@@ -154,22 +152,22 @@ export function calculateMobilePortraitCanvasSize(windowWidth: number, windowHei
     let canvasSize: number;
     let maxCanvasSize: number = MAX_CANVAS_SIZE;
 
-    // iPad竖屏特殊优化 - 充分利用屏幕宽度
+    // iPad竖屏特殊优化 - 增加边距上限，防止画布撑爆高度导致顶部缺失
     if (windowWidth >= 768 && windowWidth <= 1024 && windowHeight >= 1024) {
-        // iPad全系列竖屏优化：标准iPad (768×1024)、iPad Pro 11" (834×1194)、iPad Pro 12.9" (1024×1366)
+        // iPad全系列竖屏优化：不再盲目追求最大宽度，保持在 640px - 720px 之间最舒适
         canvasSize = Math.min(availableWidth, availableHeight);
-        maxCanvasSize = Math.min(canvasSize, windowWidth - CANVAS_MARGIN * 2 - 20); // 预留20px安全边距
 
-        // 针对不同iPad尺寸优化
+        // 针对不同iPad尺寸优化最大尺寸，严格执行“高度安全百分比”
+        // 确保 (画布 + 面板 + 安全边距) 永远小于视口高度的 85%
         if (windowWidth >= 1000) {
-            // iPad Pro 12.9" 竖屏 (1024×1366)
-            maxCanvasSize = Math.min(canvasSize, 980);
-        } else if (windowWidth >= 820) {
-            // iPad Pro 11" 竖屏 (834×1194)
-            maxCanvasSize = Math.min(canvasSize, 780);
+            // iPad Pro 12.9" 竖屏：上限取可用高度的 55%，确保垂直绝对安全
+            maxCanvasSize = Math.min(canvasSize, Math.floor(windowHeight * 0.52));
+        } else if (windowWidth >= 800) {
+            // iPad Pro 11" 竖屏
+            maxCanvasSize = Math.min(canvasSize, Math.floor(windowHeight * 0.5));
         } else {
-            // iPad 标准 竖屏 (768×1024)
-            maxCanvasSize = Math.min(canvasSize, 720);
+            // iPad 标准 竖屏
+            maxCanvasSize = Math.min(canvasSize, Math.floor(windowHeight * 0.5));
         }
     }
     // 🚀 iPhone 17系列特殊优化 (2025新标准)

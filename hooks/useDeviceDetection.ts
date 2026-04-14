@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
+import { DeviceManager } from '../core/DeviceManager';
+import { type DeviceState } from '../src/config/deviceConfig';
 
-interface DeviceDetectionState {
+export interface DeviceDetectionState extends DeviceState {
+  isMobileBrowser: boolean;
+  isTouchDevice: boolean;
+  isIPad: boolean;
+  isWeChat: boolean;
   isMobile: boolean;
   isTablet: boolean;
   isDesktop: boolean;
@@ -11,276 +17,96 @@ interface DeviceDetectionState {
   screenHeight: number;
   deviceType: 'phone' | 'tablet' | 'desktop';
   layoutMode: 'portrait' | 'landscape' | 'desktop';
-  // 新增设备检测
-  isIPad?: boolean;
-  isWeChat?: boolean;
-  isMobileBrowser?: boolean;
-  isTouchDevice?: boolean;
-}
-
-/**
- * 检测设备类型的增强函数
- * 专门处理微信浏览器等特殊环境
- */
-function detectDeviceType(userAgent: string, screenWidth: number, screenHeight: number) {
-  // 微信浏览器检测
-  const isWeChat = /MicroMessenger/i.test(userAgent);
-  const isWeChatWork = /wxwork/i.test(userAgent);
-  
-  // 移动端浏览器检测（更全面）
-  const isMobileBrowser = /Mobile|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
-  
-  // 操作系统检测
-  const isAndroid = /Android/i.test(userAgent);
-  const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
-  
-  // 触摸设备检测
-  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-  
-  // 屏幕尺寸检测
-  const isSmallScreen = screenWidth <= 768;
-  const isMediumScreen = screenWidth > 768 && screenWidth <= 1024;
-  const isLargeScreen = screenWidth > 1024;
-  
-  // 综合判断设备类型
-  let deviceType: 'phone' | 'tablet' | 'desktop' = 'desktop';
-  let isMobile = false;
-  let isTablet = false;
-  let isDesktop = false;
-  
-  // iPad检测（更精确，兼容现代iPad Safari）
-  const isIPad = /iPad/i.test(userAgent) || 
-    (isIOS && screenWidth >= 768) ||
-    // 现代iPad Safari可能显示为桌面版，通过屏幕尺寸和触摸检测
-    (isTouchDevice && screenWidth >= 768 && screenWidth <= 1366 && 
-     (screenHeight >= 1024 || (screenWidth >= 1024 && screenHeight >= 768)));
-  
-  // 优先级1: iPad设备统一处理（无论是否微信）
-  if (isIPad) {
-    const isPortrait = screenHeight > screenWidth;
-    if (!isPortrait && screenWidth >= 1024) {
-      // iPad横屏：使用桌面布局
-      deviceType = 'desktop';
-      isDesktop = true;
-    } else {
-      // iPad竖屏：使用平板布局（移动端布局）
-      deviceType = 'tablet';
-      isTablet = true;
-    }
-  }
-  // 优先级2: 微信浏览器（非iPad）
-  else if (isWeChat || isWeChatWork) {
-    if (isSmallScreen || screenWidth <= 900) {
-      // 手机微信浏览器
-      deviceType = 'phone';
-      isMobile = true;
-    } else {
-      // 其他大屏微信浏览器
-      deviceType = 'tablet';
-      isTablet = true;
-    }
-  }
-  // 优先级2: 移动端浏览器User-Agent
-  else if (isMobileBrowser || isAndroid || isIOS) {
-    if (isSmallScreen) {
-      deviceType = 'phone';
-      isMobile = true;
-    } else if (isMediumScreen) {
-      deviceType = 'tablet';
-      isTablet = true;
-    } else {
-      // 即使屏幕大，但如果是移动端浏览器，仍可能是手机横屏
-      deviceType = 'phone';
-      isMobile = true;
-    }
-  }
-  // 优先级3: 触摸设备检测
-  else if (isTouchDevice && (isSmallScreen || isMediumScreen)) {
-    if (isSmallScreen) {
-      deviceType = 'phone';
-      isMobile = true;
-    } else {
-      deviceType = 'tablet';
-      isTablet = true;
-    }
-  }
-  // 优先级4: 纯屏幕尺寸判断
-  else {
-    if (isSmallScreen) {
-      deviceType = 'phone';
-      isMobile = true;
-    } else if (isMediumScreen) {
-      deviceType = 'tablet';
-      isTablet = true;
-    } else {
-      deviceType = 'desktop';
-      isDesktop = true;
-    }
-  }
-  
-  return {
-    deviceType,
-    isMobile,
-    isTablet,
-    isDesktop,
-    isAndroid,
-    isIOS,
-    isIPad,
-    isWeChat,
-    isMobileBrowser,
-    isTouchDevice
-  };
+  forceRotation?: boolean;
+  forceReason?: string;
 }
 
 /**
  * useDeviceDetection - 设备检测Hook
  * 
- * 提供设备类型和屏幕信息检测，专门优化微信浏览器支持
+ * 现已重构为基于 DeviceManager 单例的订阅模式，实现逻辑统一。
  */
 export function useDeviceDetection(): DeviceDetectionState {
+  const deviceManager = DeviceManager.getInstance();
+
   const [deviceState, setDeviceState] = useState<DeviceDetectionState>(() => {
-    if (typeof window === 'undefined') {
-      return {
-        isMobile: false,
-        isTablet: false,
-        isDesktop: true,
-        isPortrait: false,
-        isAndroid: false,
-        isIOS: false,
-        screenWidth: 1024,
-        screenHeight: 768,
-        deviceType: 'desktop',
-        layoutMode: 'desktop',
-        isIPad: false,
-        isWeChat: false,
-        isMobileBrowser: false,
-        isTouchDevice: false
-      };
-    }
-
-    const userAgent = navigator.userAgent;
-    const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
-    const isPortrait = screenHeight > screenWidth;
+    const state = deviceManager.getState();
+    const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
     
-    // 使用增强的设备检测
-    const detection = detectDeviceType(userAgent, screenWidth, screenHeight);
-    
-    let layoutMode: 'portrait' | 'landscape' | 'desktop' = 'desktop';
-    if (detection.isMobile) {
-      layoutMode = isPortrait ? 'portrait' : 'landscape';
-    } else if (detection.isTablet) {
-      // 平板也使用移动端布局
-      layoutMode = isPortrait ? 'portrait' : 'landscape';
-    }
-
-    // 调试输出已移除
-
     return {
-      isMobile: detection.isMobile,
-      isTablet: detection.isTablet,
-      isDesktop: detection.isDesktop,
-      isPortrait,
-      isAndroid: detection.isAndroid,
-      isIOS: detection.isIOS,
-      screenWidth,
-      screenHeight,
-      deviceType: detection.deviceType,
-      layoutMode,
-      isIPad: detection.isIPad,
-      isWeChat: detection.isWeChat,
-      isMobileBrowser: detection.isMobileBrowser,
-      isTouchDevice: detection.isTouchDevice
+      ...state,
+      isMobileBrowser: /Mobile|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua),
+      isTouchDevice: typeof window !== 'undefined' ? ('ontouchstart' in window || navigator.maxTouchPoints > 0) : false,
+      isIPad: /iPad/i.test(ua) || (state.isIOS && state.screenWidth >= 768) || 
+              (typeof window !== 'undefined' && 'ontouchend' in document && /Macintosh/i.test(ua)),
+      isWeChat: /MicroMessenger/i.test(ua) || /wxwork/i.test(ua)
     };
   });
 
   useEffect(() => {
+    const updateInternalState = (newState: DeviceState) => {
+      const ua = navigator.userAgent;
+      const isPortrait = newState.screenHeight > newState.screenWidth;
+      
+      const enrichedState: DeviceDetectionState = {
+        ...newState,
+        isPortrait,
+        isMobileBrowser: /Mobile|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua),
+        isTouchDevice: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
+        isIPad: /iPad/i.test(ua) || (newState.isIOS && newState.screenWidth >= 768) || 
+                ('ontouchend' in document && /Macintosh/i.test(ua)),
+        isWeChat: /MicroMessenger/i.test(ua) || /wxwork/i.test(ua)
+      };
+
+      setDeviceState(enrichedState);
+
+      // 如果是屏幕旋转，触发自定义事件通知其他组件
+      const previousOrientation = deviceState.isPortrait ? 'portrait' : 'landscape';
+      const currentOrientation = isPortrait ? 'portrait' : 'landscape';
+      if (previousOrientation !== currentOrientation) {
+        const orientationChangeEvent = new CustomEvent('deviceOrientationChange', {
+          detail: {
+            from: previousOrientation,
+            to: currentOrientation,
+            deviceState: enrichedState
+          }
+        });
+        window.dispatchEvent(orientationChangeEvent);
+      }
+    };
+
+    // 订阅 DeviceManager 状态变化
+    const unsubscribe = deviceManager.subscribe(updateInternalState);
+
     const handleResize = () => {
-      // 使用 requestAnimationFrame 确保在浏览器完成布局更新后再获取尺寸
       requestAnimationFrame(() => {
-        const userAgent = navigator.userAgent;
-        const screenWidth = window.innerWidth;
-        const screenHeight = window.innerHeight;
-        const isPortrait = screenHeight > screenWidth;
-        
-        // 检查是否是屏幕旋转（方向变化）
-        const currentOrientation = isPortrait ? 'portrait' : 'landscape';
-        const previousOrientation = deviceState.isPortrait ? 'portrait' : 'landscape';
-        const isOrientationChange = currentOrientation !== previousOrientation;
-        
-        // 使用增强的设备检测
-        const detection = detectDeviceType(userAgent, screenWidth, screenHeight);
-        
-        let layoutMode: 'portrait' | 'landscape' | 'desktop' = 'desktop';
-        if (detection.isMobile) {
-          layoutMode = isPortrait ? 'portrait' : 'landscape';
-        } else if (detection.isTablet) {
-          // 平板也使用移动端布局
-          layoutMode = isPortrait ? 'portrait' : 'landscape';
-        }
-
-        // 调试输出已移除
-
-        const newState = {
-          isMobile: detection.isMobile,
-          isTablet: detection.isTablet,
-          isDesktop: detection.isDesktop,
-          isPortrait,
-          isAndroid: detection.isAndroid,
-          isIOS: detection.isIOS,
-          screenWidth,
-          screenHeight,
-          deviceType: detection.deviceType,
-          layoutMode,
-          isIPad: detection.isIPad,
-          isWeChat: detection.isWeChat,
-          isMobileBrowser: detection.isMobileBrowser,
-          isTouchDevice: detection.isTouchDevice
-        };
-
-        setDeviceState(newState);
-
-        // 如果是屏幕旋转，触发自定义事件通知其他组件
-        if (isOrientationChange && typeof window !== 'undefined') {
-          const orientationChangeEvent = new CustomEvent('deviceOrientationChange', {
-            detail: {
-              from: previousOrientation,
-              to: currentOrientation,
-              deviceState: newState
-            }
-          });
-          window.dispatchEvent(orientationChangeEvent);
-        }
+        deviceManager.updateState();
       });
     };
 
-    // 添加多个事件监听器以确保捕获所有屏幕变化
     const handleOrientationChange = () => {
       // 屏幕方向改变时，使用多重延迟确保浏览器完成所有布局调整
-      // 第一次快速更新（50ms）- 处理快速响应
       setTimeout(handleResize, 50);
-      // 第二次中等延迟（150ms）- 处理大部分浏览器
       setTimeout(handleResize, 150);
-      // 第三次较长延迟（300ms）- 确保所有浏览器都完成布局
       setTimeout(handleResize, 300);
     };
 
     window.addEventListener('resize', handleResize);
     window.addEventListener('orientationchange', handleOrientationChange);
     
-    // 添加 visualViewport 支持（现代浏览器）
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', handleResize);
     }
 
     return () => {
+      unsubscribe();
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleOrientationChange);
       if (window.visualViewport) {
         window.visualViewport.removeEventListener('resize', handleResize);
       }
     };
-  }, []);
+  }, [deviceState.isPortrait]);
 
   return deviceState;
-} 
+}

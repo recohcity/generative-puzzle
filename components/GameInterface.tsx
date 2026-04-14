@@ -38,6 +38,7 @@ import ResponsiveBackground from "@/components/ResponsiveBackground";
 import DesktopLayout from "./layouts/DesktopLayout";
 import PhonePortraitLayout from "./layouts/PhonePortraitLayout";
 import PhoneLandscapeLayout from "./layouts/PhoneLandscapeLayout";
+import { cn } from "@/lib/utils";
 // 使用统一的设备检测系统
 import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 
@@ -576,8 +577,8 @@ export default function CurveTestOptimized() {
   };
 
   let layoutToRender;
-  // 🎯 智能布局选择：所有桌面设备（包括iPad横屏）使用桌面布局
-  const shouldUseDesktopLayout = deviceType === 'desktop';
+  // 🎯 智能布局选择：所有桌面端和平板设备（如 iPad）均优先使用桌面端双列布局
+  const shouldUseDesktopLayout = deviceType === 'desktop' || deviceType === 'tablet';
 
   if (shouldUseDesktopLayout) {
     layoutToRender = <DesktopLayout {...commonLayoutProps} goToNextTab={goToNextTab} />;
@@ -594,7 +595,7 @@ export default function CurveTestOptimized() {
     <GameProvider>
       <div
         ref={gameContainerRef}
-        className="min-h-screen w-full relative overflow-hidden"
+        className="min-h-dvh w-full relative overflow-hidden"
         style={{
           // 移除默认的padding和flex居中，让子布局完全控制
           padding: 0,
@@ -602,12 +603,14 @@ export default function CurveTestOptimized() {
         }}
       >
 
-        {/* 🎯 性能优化：iPad设备使用静态背景，避免动态背景导致的卡顿 */}
-        {(deviceType === 'desktop' && !device.isIPad) ? (
-          <BubbleBackground interactive className="absolute inset-0 w-full h-full" />
-        ) : (
-          <ResponsiveBackground />
-        )}
+        {/* 🎯 极致锁定：使用 fixed 定位确保背景强制铺满视口，不受任何布局偏移影响 */}
+        <div className="fixed inset-0 w-full h-full -z-10 pointer-events-none">
+          {(deviceType === 'desktop' && !device.isIPad) ? (
+            <BubbleBackground interactive className="w-full h-full" />
+          ) : (
+            <ResponsiveBackground />
+          )}
+        </div>
         <DynamicTitle />
         {layoutToRender}
 

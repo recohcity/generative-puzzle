@@ -47,12 +47,16 @@ const PhonePortraitLayout: React.FC<PhonePortraitLayoutProps> = ({
 
   // 竖屏画布尺寸计算完成
 
+  // 🎯 优化：仅在 iPad 且处于竖屏模式时增加顶部间距，防止横屏溢出
+  const isTabletPortrait = (device.deviceType === 'tablet' || (device.screenWidth >= 768 && device.screenWidth <= 1024)) && device.isPortrait;
+
   return (
     <div
-      className="flex flex-col items-center min-h-screen w-full"
+      className="flex flex-col items-center justify-center min-h-dvh w-full"
       style={{
         background: 'none',
-        paddingTop: MOBILE_ADAPTATION.PORTRAIT.SAFE_AREA_TOP,
+        // 仅在竖屏状态下增加呼吸空间
+        paddingTop: isTabletPortrait ? 60 : 0, 
         paddingBottom: MOBILE_ADAPTATION.PORTRAIT.SAFE_AREA_BOTTOM,
       }}
     >

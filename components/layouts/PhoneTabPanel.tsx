@@ -20,6 +20,7 @@ import VirtualAuthWidget from '@/components/auth/VirtualAuthWidget';
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { CloudGameRepository } from "@/utils/cloud/CloudGameRepository";
+import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 
 interface PhoneTabPanelProps {
   activeTab: 'shape' | 'puzzle' | 'cut' | 'scatter' | 'controls';
@@ -53,20 +54,20 @@ const PANEL_PADDING_LANDSCAPE = "px-3 py-2";
 
 const CONTENT_HORIZONTAL_PADDING = 0;
 
-const TAB_BUTTON_HEIGHT = 32;
-const TAB_BUTTON_FONT_SIZE = 12;
-const TAB_BUTTON_FONT_SIZE_LANDSCAPE = 12;
-const TAB_BUTTON_HEIGHT_LANDSCAPE = 32;
-const SHAPE_BUTTON_HEIGHT = 60;
-const MOBILE_SHAPE_BUTTON_FONT_SIZE = 14;
-const CUT_TYPE_BUTTON_HEIGHT = 36;
-const NUMBER_BUTTON_HEIGHT = 28;
-const ACTION_BUTTON_HEIGHT = 36;
-const MOBILE_CONTROL_BUTTON_HEIGHT = 36;
-const MOBILE_CONTROL_BUTTON_FONT_SIZE = 14;
-const MOBILE_RESTART_BUTTON_HEIGHT = 36;
-const MOBILE_RESTART_BUTTON_FONT_SIZE = 14;
-const MOBILE_RESTART_ICON_SIZE = 18;
+const TAB_BUTTON_HEIGHT_BASE = 32;
+const TAB_BUTTON_FONT_SIZE_BASE = 12;
+const TAB_BUTTON_FONT_SIZE_LANDSCAPE_BASE = 12;
+const TAB_BUTTON_HEIGHT_LANDSCAPE_BASE = 32;
+const SHAPE_BUTTON_HEIGHT_BASE = 60;
+const MOBILE_SHAPE_BUTTON_FONT_SIZE_BASE = 14;
+const CUT_TYPE_BUTTON_HEIGHT_BASE = 36;
+const NUMBER_BUTTON_HEIGHT_BASE = 28;
+const ACTION_BUTTON_HEIGHT_BASE = 36;
+const MOBILE_CONTROL_BUTTON_HEIGHT_BASE = 36;
+const MOBILE_CONTROL_BUTTON_FONT_SIZE_BASE = 14;
+const MOBILE_RESTART_BUTTON_HEIGHT_BASE = 36;
+const MOBILE_RESTART_BUTTON_FONT_SIZE_BASE = 14;
+const MOBILE_RESTART_ICON_SIZE_BASE = 18;
 
 const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
   activeTab,
@@ -83,6 +84,24 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
   const { state, rotatePiece, showHintOutline, resetGame, retryCurrentGame, trackHintUsage, trackRotation } = useGame();
   const { t } = useTranslation();
   const { user, signOut } = useAuth();
+  const device = useDeviceDetection();
+
+  // 🎯 极限小屏适配逻辑 (Extreme small screen adaptation)
+  const isUltraSmall = device.screenWidth < 360;
+  
+  const TAB_BUTTON_HEIGHT = isUltraSmall ? 28 : TAB_BUTTON_HEIGHT_BASE;
+  const TAB_BUTTON_FONT_SIZE = isUltraSmall ? 10 : TAB_BUTTON_FONT_SIZE_BASE;
+  const TAB_BUTTON_FONT_SIZE_LANDSCAPE = isUltraSmall ? 10 : TAB_BUTTON_FONT_SIZE_LANDSCAPE_BASE;
+  const TAB_BUTTON_HEIGHT_LANDSCAPE = isUltraSmall ? 28 : TAB_BUTTON_HEIGHT_LANDSCAPE_BASE;
+  const SHAPE_BUTTON_HEIGHT = isUltraSmall ? 52 : SHAPE_BUTTON_HEIGHT_BASE;
+  const MOBILE_SHAPE_BUTTON_FONT_SIZE = isUltraSmall ? 12 : MOBILE_SHAPE_BUTTON_FONT_SIZE_BASE;
+  const CUT_TYPE_BUTTON_HEIGHT = isUltraSmall ? 32 : CUT_TYPE_BUTTON_HEIGHT_BASE;
+  const NUMBER_BUTTON_HEIGHT = isUltraSmall ? 24 : NUMBER_BUTTON_HEIGHT_BASE;
+  const ACTION_BUTTON_HEIGHT = isUltraSmall ? 32 : ACTION_BUTTON_HEIGHT_BASE;
+  const MOBILE_CONTROL_BUTTON_HEIGHT = isUltraSmall ? 32 : MOBILE_CONTROL_BUTTON_HEIGHT_BASE;
+  const MOBILE_CONTROL_BUTTON_FONT_SIZE = isUltraSmall ? 12 : MOBILE_CONTROL_BUTTON_FONT_SIZE_BASE;
+  const MOBILE_RESTART_BUTTON_HEIGHT = isUltraSmall ? 32 : MOBILE_RESTART_BUTTON_HEIGHT_BASE;
+  const MOBILE_RESTART_BUTTON_FONT_SIZE = isUltraSmall ? 12 : MOBILE_RESTART_BUTTON_FONT_SIZE_BASE;
 
   const {
     shouldShowAngle,
