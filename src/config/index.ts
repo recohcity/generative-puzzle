@@ -12,9 +12,9 @@ import {
   USER_AGENT_PATTERNS,
   type DeviceType,
   type LayoutMode,
-  type iPhone16Model,
+  type iPhoneModel,
   type DeviceState,
-  type iPhone16Detection,
+  type iPhoneDetectionResult,
   type DeviceLayoutInfo,
 } from './deviceConfig';
 
@@ -54,9 +54,9 @@ export {
   USER_AGENT_PATTERNS,
   type DeviceType,
   type LayoutMode,
-  type iPhone16Model,
+  type iPhoneModel,
   type DeviceState,
-  type iPhone16Detection,
+  type iPhoneDetectionResult,
   type DeviceLayoutInfo,
   
   // Adaptation configuration

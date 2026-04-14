@@ -461,18 +461,18 @@ export class DeviceManager {
    * 检查是否为特定的iPhone型号
    */
   public isiPhone16Series(): boolean {
-    const iPhone16Detection = this.detectiPhone16Series(
+    const iPhoneDetection = this.detectiPhoneSeries(
       this.currentState.screenWidth,
       this.currentState.screenHeight
     );
-    return iPhone16Detection.detected;
+    return iPhoneDetection.detected;
   }
 
   /**
-   * 获取详细的iPhone 16检测信息
+   * 获取详细的iPhone检测信息
    */
-  public getiPhone16Info(): iPhone16Detection {
-    return this.detectiPhone16Series(
+  public getiPhoneInfo(): iPhoneDetectionResult {
+    return this.detectiPhoneSeries(
       this.currentState.screenWidth,
       this.currentState.screenHeight
     );
