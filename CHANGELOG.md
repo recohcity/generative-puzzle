@@ -1,5 +1,17 @@
 # 生成式拼图游戏 Changelog
 
+## [v1.3.83] - 2026-04-15
+
+### 🏆 得分网关架构优化与 UI 评审 SOP 正式确立 (Score Gateway & Optimization SOP)
+本版本对结算网关层进行了深度复核，并正式确立了后续 11 份 UI 审计报告的优化标准。
+
+- **得分网关系统对齐 (Score Gateway Alignment)**:
+  - **Design Tokens 归一化**: 完成了 `MobileScoreLayout.tsx` 的全量迁移，移除了 20 余处硬编码 Hex 色值，确保移动端与桌面端在“扁平玻璃态”视觉基准线下高度统一。
+  - **架构卫标验证**: 确认了 `phone` / `tablet` 分流逻辑的准确性，移除了冗余的折叠屏误判建议，确保逻辑自洽。
+- **UI 优化作业程序 (SOP) 落地**:
+  - 创建了 `00_OPTIMIZATION_SOP.md`，确立了以 Design Tokens 为核心的“四步走”评审优化流程，确保后续 11 份报告的推进具备高度规范性。
+  - **Token 补全机制**: 在规范中明确了“深度评估、主动补齐”的动态演进策略。
+
 ## [v1.3.82] - 2026-04-15
 
 ### 📱 iPad 双模高阶适配与扁平玻璃态彻底统一 (iPad Dual-Mode & Flat Glassmorphism)

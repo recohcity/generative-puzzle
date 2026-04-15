@@ -73,10 +73,10 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
   const Row = ({ label, sub, value, pos, sign }: typeof rows[0]) => (
     <div className="flex items-baseline justify-between leading-tight">
       <div className="flex items-baseline gap-1 flex-1 min-w-0 pr-1">
-        <span className="text-[#FFD5AB]/60 text-[11px] font-medium shrink-0 leading-none">{label}</span>
-        <span className="text-[#FFD5AB]/25 text-[9px] truncate leading-none">{sub}</span>
+        <span className="text-brand-peach/60 text-[11px] font-medium shrink-0 leading-none">{label}</span>
+        <span className="text-brand-peach/25 text-[9px] truncate leading-none">{sub}</span>
       </div>
-      <span className={cn('text-[11px] font-black tabular-nums shrink-0 leading-none', pos ? 'text-[#FFD5AB]' : 'text-[#FF8A80]')}>
+      <span className={cn('text-[11px] font-black tabular-nums shrink-0 leading-none', pos ? 'text-brand-peach' : 'text-red-400')}>
         {sign}{value}
       </span>
     </div>
@@ -93,16 +93,16 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
         <div className="flex items-center justify-between shrink-0 leading-none mb-0.5">
           <div className="flex items-center gap-1">
             <span className="text-[9px]">🏆</span>
-            <span className="text-[#FFD5AB]/50 text-[9px] font-bold uppercase tracking-widest leading-none">
+            <span className="text-brand-peach/50 text-[9px] font-bold uppercase tracking-widest leading-none">
               {t('stats.currentGameScore')}
             </span>
             {isNewRecord && (
-              <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-[#232035] px-1 rounded text-[7px] font-black uppercase leading-none">
+              <span className="bg-gradient-to-r from-yellow-400 to-brand-orange text-brand-dark px-1 rounded text-[7px] font-black uppercase leading-none">
                 🌟
               </span>
             )}
           </div>
-          <span className="text-[16px] font-black text-[#FFD5AB] tabular-nums tracking-tight leading-none">
+          <span className="text-[16px] font-black text-brand-peach tabular-nums tracking-tight leading-none">
             {fmt(currentScore)}
           </span>
         </div>
@@ -119,20 +119,20 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
             <div className="flex flex-col gap-0">
               {/* Subtotal */}
               <div className="flex items-baseline justify-between leading-none py-[1px]">
-                <span className="text-[#FFD5AB]/50 text-[9px] font-bold uppercase tracking-wider leading-none">{t('score.breakdown.subtotal')}</span>
-                <span className="text-[#FFD5AB]/70 text-[9px] font-black tabular-nums leading-none">{fmt(subtotal)}</span>
+                <span className="text-brand-peach/50 text-[9px] font-bold uppercase tracking-wider leading-none">{t('score.breakdown.subtotal')}</span>
+                <span className="text-brand-peach/70 text-[9px] font-black tabular-nums leading-none">{fmt(subtotal)}</span>
               </div>
               {/* Multiplier */}
               <div className="flex items-baseline justify-between leading-none py-[1px]">
-                <span className="text-[#FFD5AB]/50 text-[9px] font-bold uppercase tracking-wider leading-none">{t('score.breakdown.multiplier')}</span>
-                <span className="text-[#F68E5F] text-[9px] font-black tabular-nums leading-none">
+                <span className="text-brand-peach/50 text-[9px] font-bold uppercase tracking-wider leading-none">{t('score.breakdown.multiplier')}</span>
+                <span className="text-brand-orange text-[9px] font-black tabular-nums leading-none">
                   ×{scoreBreakdown.difficultyMultiplier.toFixed(2)}
                 </span>
               </div>
               {/* Final - Highlighted */}
               <div className="flex items-baseline justify-between leading-none py-[1px] mt-0.5 border-t border-white/5">
-                <span className="text-[#FFD5AB] text-[10px] font-black uppercase tracking-widest leading-none">{t('score.breakdown.final')}</span>
-                <span className="text-[#FFD5AB] text-[14px] font-black tabular-nums leading-none">{fmt(currentScore)}</span>
+                <span className="text-brand-peach text-[10px] font-black uppercase tracking-widest leading-none">{t('score.breakdown.final')}</span>
+                <span className="text-brand-peach text-[14px] font-black tabular-nums leading-none">{fmt(currentScore)}</span>
               </div>
             </div>
           )}
@@ -153,16 +153,16 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
         <div className="flex items-center justify-between px-3 pt-2 pb-1">
           <div className="flex items-center gap-1 leading-none">
             <span className="text-[12px] leading-none">🏆</span>
-            <span className="text-[#FFD5AB]/55 text-[10px] font-bold uppercase tracking-widest leading-none">
+            <span className="text-brand-peach/55 text-[10px] font-bold uppercase tracking-widest leading-none">
               {t('stats.currentGameScore')}
             </span>
             {isNewRecord && (
-              <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-[#232035] px-1 rounded text-[8px] font-black uppercase ml-0.5">
+              <span className="bg-gradient-to-r from-yellow-400 to-brand-orange text-brand-dark px-1 rounded text-[8px] font-black uppercase ml-0.5">
                 🌟
               </span>
             )}
           </div>
-          <span className="text-[20px] font-black text-[#FFD5AB] tabular-nums tracking-tight leading-none">
+          <span className="text-[20px] font-black text-brand-peach tabular-nums tracking-tight leading-none">
             {fmt(currentScore)}
           </span>
         </div>
@@ -178,13 +178,13 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
             <div className="flex flex-col gap-[4px] pt-[4px]">
               {/* Subtotal */}
               <div className="flex items-baseline justify-between leading-none">
-                <span className="text-[#FFD5AB]/50 text-[10px] font-bold uppercase tracking-wider leading-none">{t('score.breakdown.subtotal')}</span>
-                <span className="text-[#FFD5AB]/70 text-[10px] font-black tabular-nums leading-none">{fmt(subtotal)}</span>
+                <span className="text-brand-peach/50 text-[10px] font-bold uppercase tracking-wider leading-none">{t('score.breakdown.subtotal')}</span>
+                <span className="text-brand-peach/70 text-[10px] font-black tabular-nums leading-none">{fmt(subtotal)}</span>
               </div>
               {/* Multiplier — value only, no formula */}
               <div className="flex items-baseline justify-between leading-none">
-                <span className="text-[#FFD5AB]/50 text-[10px] font-bold uppercase tracking-wider leading-none">{t('score.breakdown.multiplier')}</span>
-                <span className="text-[#F68E5F] text-[10px] font-black tabular-nums leading-none">
+                <span className="text-brand-peach/50 text-[10px] font-bold uppercase tracking-wider leading-none">{t('score.breakdown.multiplier')}</span>
+                <span className="text-brand-orange text-[10px] font-black tabular-nums leading-none">
                   ×{scoreBreakdown.difficultyMultiplier.toFixed(2)}
                 </span>
               </div>
@@ -192,8 +192,8 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
             <div className="mt-[4px]"><HR /></div>
             {/* Final */}
             <div className="flex items-baseline justify-between pt-[4px] leading-none">
-              <span className="text-[#FFD5AB] text-[12px] font-black uppercase tracking-widest leading-none">{t('score.breakdown.final')}</span>
-              <span className="text-[#FFD5AB] text-[16px] font-black tabular-nums tracking-tight leading-none">{fmt(currentScore)}</span>
+              <span className="text-brand-peach text-[12px] font-black uppercase tracking-widest leading-none">{t('score.breakdown.final')}</span>
+              <span className="text-brand-peach text-[16px] font-black tabular-nums tracking-tight leading-none">{fmt(currentScore)}</span>
             </div>
           </div>
         )}
