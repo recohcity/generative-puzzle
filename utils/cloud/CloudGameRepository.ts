@@ -61,6 +61,7 @@ const mapPublicRowToGameRecord = (row: PublicLeaderboardRow): GameRecord => {
     dragOperations: 0,
     rotationEfficiency: 1.0,
     scoreBreakdown: null,
+    id: row.user_id,
     // Add display_name as an extra property for the leaderboard
     nickname: row.display_name,
     displayName: row.display_name,
@@ -163,17 +164,20 @@ class CloudGameRepositoryClass implements ICloudGameRepository {
 
     try {
       const gameEndTimeMs = params.gameStats.gameEndTime ?? Date.now();
-      const difficultyLevel = params.gameStats.difficulty.difficultyLevel as DifficultyLevel;
+      const diff = params.gameStats.difficulty;
+      const difficultyLevel = diff.difficultyLevel as DifficultyLevel;
       const durationMs = Math.max(0, Math.round(params.gameStats.totalDuration * 1000));
-      const idempotencyKey = `${userId}-${gameEndTimeMs}-${difficultyLevel}-${Math.round(params.finalScore)}`;
+      
+      // 升级幂等键：包含所有精度维度，确保唯一性
+      const idempotencyKey = `${userId}-${gameEndTimeMs}-${difficultyLevel}-${diff.cutCount}-${diff.cutType}-${diff.shapeType}-${Math.round(params.finalScore)}`;
 
       const { error } = await supabase.from("game_sessions").insert({
         user_id: userId,
         idempotency_key: idempotencyKey,
         difficulty: difficultyLevel,
-        cut_count: params.gameStats.difficulty.cutCount,
-        cut_type: params.gameStats.difficulty.cutType,
-        shape_type: params.gameStats.difficulty.shapeType,
+        cut_count: diff.cutCount,
+        cut_type: diff.cutType,
+        shape_type: diff.shapeType,
         duration_ms: durationMs,
         score: Math.round(params.finalScore),
         moves: params.gameStats.totalRotations,
@@ -320,10 +324,10 @@ class CloudGameRepositoryClass implements ICloudGameRepository {
           totalDuration: Math.round(row.duration_ms / 1000),
           difficulty: {
             difficultyLevel,
-            cutCount: cutCountFromDifficultyLevel(difficultyLevel),
-            cutType: CutType.Straight,
-            actualPieces: getPieceCountByDifficulty(difficultyLevel),
-            shapeType: ShapeType.Polygon,
+            cutCount: row.cut_count || cutCountFromDifficultyLevel(difficultyLevel),
+            cutType: (row.cut_type as any) || CutType.Straight,
+            actualPieces: (row.cut_count ? row.cut_count + 1 : getPieceCountByDifficulty(difficultyLevel)),
+            shapeType: (row.shape_type as any) || ShapeType.Polygon,
           },
           deviceInfo: {
             type: row.metadata?.deviceType || "unknown",

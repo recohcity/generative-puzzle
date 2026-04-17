@@ -155,10 +155,13 @@ export class GameDataManager {
     try {
       let leaderboard = this.getLeaderboard();
       
-      // 查重：如果已经存在相同时间戳且相同分数的记录，则不重复添加
+      // 增强查重算法：如果分数、时长、步数和拼图数量一致，即便时间戳有微秒差也视为同一局
       const isDuplicate = leaderboard.some(r => 
         (record.id && r.id === record.id) || 
-        (r.timestamp === record.timestamp && r.finalScore === record.finalScore)
+        (r.finalScore === record.finalScore && 
+         r.totalDuration === record.totalDuration && 
+         r.totalRotations === record.totalRotations &&
+         r.difficulty?.cutCount === record.difficulty?.cutCount)
       );
       
       if (!isDuplicate) {

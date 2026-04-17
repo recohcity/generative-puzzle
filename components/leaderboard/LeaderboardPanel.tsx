@@ -118,6 +118,22 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
       .slice(0, 1);
   }, [history, leaderboard]);
 
+  // 处理全球榜单的去重，确保每个玩家只显示其最高的一项
+  const uniqueGlobalData = useMemo(() => {
+    if (!globalLeaderboard.length) return [];
+    
+    return Array.from(
+      globalLeaderboard.reduce((map, record) => {
+        const key = record.id || (record as any).nickname || (record as any).userId;
+        const existing = map.get(key);
+        if (!existing || record.finalScore > existing.finalScore) {
+          map.set(key, record);
+        }
+        return map;
+      }, new Map<string, GameRecord>()).values()
+    ).sort((a, b) => (b.finalScore || 0) - (a.finalScore || 0));
+  }, [globalLeaderboard]);
+
   const showRecentGameDetails = (record: GameRecord) => {
     if (onViewRecentGame) {
       onViewRecentGame(record);
@@ -366,7 +382,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                           </div>
                         ) : (
                           <div className="space-y-2.5">
-                            {globalLeaderboard.slice(0, 5).map((record, index) => {
+                            {uniqueGlobalData.slice(0, 5).map((record, index) => {
                               const r = record as any;
                               const difficultyKey = record.difficulty?.difficultyLevel;
                               const difficultyLabel = difficultyKey ? t(`difficulty.${difficultyKey}`) : '';
