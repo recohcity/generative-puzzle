@@ -154,11 +154,20 @@ export class GameDataManager {
   private static updateLeaderboard(record: GameRecord): void {
     try {
       let leaderboard = this.getLeaderboard();
-      leaderboard.push(record);
-      leaderboard.sort((a, b) => b.finalScore - a.finalScore);
-      leaderboard = leaderboard.slice(0, this.MAX_LEADERBOARD_RECORDS);
-      localStorage.setItem(this.LEADERBOARD_KEY, JSON.stringify(leaderboard));
-      this.memoryLeaderboard = leaderboard;
+      
+      // 查重：如果已经存在相同时间戳且相同分数的记录，则不重复添加
+      const isDuplicate = leaderboard.some(r => 
+        (record.id && r.id === record.id) || 
+        (r.timestamp === record.timestamp && r.finalScore === record.finalScore)
+      );
+      
+      if (!isDuplicate) {
+        leaderboard.push(record);
+        leaderboard.sort((a, b) => b.finalScore - a.finalScore);
+        leaderboard = leaderboard.slice(0, this.MAX_LEADERBOARD_RECORDS);
+        localStorage.setItem(this.LEADERBOARD_KEY, JSON.stringify(leaderboard));
+        this.memoryLeaderboard = leaderboard;
+      }
     } catch (error) {
       this.memoryLeaderboard.push(record);
       this.memoryLeaderboard.sort((a, b) => b.finalScore - a.finalScore);

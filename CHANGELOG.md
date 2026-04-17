@@ -1,5 +1,24 @@
 # 生成式拼图游戏 Changelog
 
+## [v1.3.86] - 2026-04-18
+
+### 🚀 榜单同步精度升级与去重加固 (Leaderboard Precision & Sync Accuracy)
+
+本版本彻底修复了导致全球排行榜与本地记录在同步时产生“重复分身”及“难度偏移”的架构性问题。
+
+#### 1. 高精度数据链路 (High-Precision Data Link)
+- **表结构扩展**: 为 `game_sessions` 与 `public_leaderboard_entries` 增加了 `cut_count`, `cut_type`, `shape_type` 等深度细节字段，实现了从原始记录到汇总榜单的精度对齐。
+- **映射逻辑修复**: 修正了 `CloudGameRepository.ts` 中的硬编码 fallback 逻辑（先前会将所有 easy 记录误判为难度 3），现在系统会优先使用数据库中的真实字段重建 `DifficultyConfig`。
+
+#### 2. 数据去重与并发保护 (Deduplication & Concurrency Guard)
+- **GameContext 状态锁**: 在游戏完成逻辑中引入了 `isGameComplete` 判定锁，确保高频交互下同一局游戏不会触发多次保存指令。
+- **DataManager 查重**: 在 `GameDataManager` 内存/本地持久化入口增加了基于 ID 和 `[Timestamp + Score]` 的双重指纹判别，从物理层拦截重复同步的幽灵数据。
+- **Sync 算法调优**: 本地与云端合并时，即便 ID 不一致，只要分数与毫秒级时间戳完全吻合，即判定为同一局记录，不再重复插入。
+
+#### 3. 服务端触发器健康修复 (Trigger Health Fix)
+- **表名映射纠偏**: 修复了 `refresh_leaderboard_for_user` 函数此前指向旧表 `profiles` 的错误，现已完全对齐至 `player_profiles`。
+- **名称同步补丁**: 确保全球榜单能实时拉取最新的 `nickname` 字段，而非默认的 "Anonymous"。
+
 ## [v1.3.85] - 2026-04-17
 
 ### 🎨 Design Tokens 全局统一与 SOP 制度化升级 (Global Token Unification)

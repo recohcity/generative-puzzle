@@ -118,7 +118,8 @@ const executeGameCompletion = (
   state: GameState,
   dispatch: React.Dispatch<GameAction>
 ) => {
-  if (!state.gameStats || !state.isGameActive) return;
+  // 1. 状态锁：如果已经标记为完成，则不再执行
+  if (!state.gameStats || !state.isGameActive || state.isGameComplete) return;
 
   console.log("✅ [GameContext] 执行游戏完成逻辑!");
 

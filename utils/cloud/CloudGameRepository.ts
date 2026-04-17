@@ -18,6 +18,9 @@ type PublicLeaderboardRow = {
   best_score: number | null;
   best_duration_ms: number | null;
   sessions_count: number | null;
+  cut_count: number | null;
+  cut_type: string | null;
+  shape_type: string | null;
   updated_at: string | null;
 };
 
@@ -33,8 +36,8 @@ const cutCountFromDifficultyLevel = (level: DifficultyLevel): number => {
 
 const mapPublicRowToGameRecord = (row: PublicLeaderboardRow): GameRecord => {
   const difficultyLevel = row.difficulty as DifficultyLevel;
-  const cutCount = cutCountFromDifficultyLevel(difficultyLevel);
-  const actualPieces = getPieceCountByDifficulty(difficultyLevel);
+  const cutCount = row.cut_count || cutCountFromDifficultyLevel(difficultyLevel);
+  const actualPieces = row.cut_count ? row.cut_count + 1 : getPieceCountByDifficulty(difficultyLevel);
 
   const updatedAtMs = row.updated_at ? new Date(row.updated_at).getTime() : Date.now();
   const bestDurationSeconds = row.best_duration_ms
@@ -48,9 +51,9 @@ const mapPublicRowToGameRecord = (row: PublicLeaderboardRow): GameRecord => {
     difficulty: {
       difficultyLevel,
       cutCount,
-      cutType: CutType.Straight,
+      cutType: (row.cut_type as any) || CutType.Straight,
       actualPieces,
-      shapeType: ShapeType.Polygon,
+      shapeType: (row.shape_type as any) || ShapeType.Polygon,
     },
     deviceInfo: { type: "desktop", screenWidth: 0, screenHeight: 0 },
     totalRotations: 0,
@@ -168,6 +171,9 @@ class CloudGameRepositoryClass implements ICloudGameRepository {
         user_id: userId,
         idempotency_key: idempotencyKey,
         difficulty: difficultyLevel,
+        cut_count: params.gameStats.difficulty.cutCount,
+        cut_type: params.gameStats.difficulty.cutType,
+        shape_type: params.gameStats.difficulty.shapeType,
         duration_ms: durationMs,
         score: Math.round(params.finalScore),
         moves: params.gameStats.totalRotations,
@@ -474,6 +480,12 @@ class CloudGameRepositoryClass implements ICloudGameRepository {
     
     if (error) return false;
 
+    // 清除该用户的汇总排行榜记录
+    await supabase
+      .from("public_leaderboard_entries")
+      .delete()
+      .eq("user_id", userId);
+
     // 同时重置该用户的最高分
     await supabase
       .from("player_profiles")
@@ -492,7 +504,10 @@ class CloudGameRepositoryClass implements ICloudGameRepository {
     // 1. 删除所有成绩记录
     await supabase.from("game_sessions").delete().eq("user_id", userId);
     
-    // 2. 删除用户档案
+    // 2. 清除汇总排行榜
+    await supabase.from("public_leaderboard_entries").delete().eq("user_id", userId);
+    
+    // 3. 删除用户档案
     const { error } = await supabase.from("player_profiles").delete().eq("id", userId);
     
     return !error;
