@@ -1,3 +1,8 @@
+> [!CAUTION]
+> **历史归档背景 (Historical Archive)**
+> 本文档记录了 2026-04-17 UI 专项优化期间的审计细节与执行过程。
+> **当前最新 UI/UX 标准请参考核心手册：[UI_SPECIFICATION.md](file:///Users/citylivepark/Documents/project/generative-puzzle/docs/UI/UI_SPECIFICATION.md)**
+
 # game-cloud 架构健康评审报告 (2026-04-04 修订版)
 
 > **分支**: `main` (已同步 `game-cloud` 成果)

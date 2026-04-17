@@ -308,7 +308,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                       setActiveLeaderboardTab('personal');
                     }}
                     className={cn(
-                      "flex items-center gap-1.5 px-2 py-0.5 rounded-xl text-[12.5px] font-black transition-all",
+                      "flex items-center gap-1.5 px-2 py-0.5 rounded-xl text-[12.5px] font-medium transition-all",
                       activeLeaderboardTab === 'personal' ? "glass-btn-active" : "glass-btn-inactive"
                     )}
                   >
@@ -321,7 +321,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                       setActiveLeaderboardTab('global');
                     }}
                     className={cn(
-                      "flex items-center gap-1.5 px-2 py-0.5 rounded-xl text-[12.5px] font-black transition-all",
+                      "flex items-center gap-1.5 px-2 py-0.5 rounded-xl text-[12.5px] font-medium transition-all",
                       activeLeaderboardTab === 'global' ? "glass-btn-active" : "glass-btn-inactive"
                     )}
                   >
@@ -367,7 +367,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                     >
                       {/* 个人最佳容器 */}
                       <div className="rounded-xl p-2 bg-white/[0.04]">
-                        <div className="space-y-0.5">
+                        <div className={cn(isLandscape ? "space-y-1" : "space-y-0.5")}>
                           {leaderboardData.length > 0 ? (
                             leaderboardData.slice(0, 5).map((record, index) => {
                               const isTop3 = index < 3;
@@ -382,20 +382,20 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                               return (
                                 <div key={record.id || record.timestamp} className={cn(
                                   "flex items-center gap-3 px-3 bg-white/[0.06] rounded-xl border border-white/10 hover:border-[#FFD5AB]/40 hover:bg-white/[0.10] transition-all active:scale-[0.98]",
-                                  isLandscape ? "py-0.5" : "py-1.5"
+                                  isLandscape ? "py-1" : "py-1.5"
                                 )}>
                                   <div className={cn(
-                                    "flex items-center justify-center shrink-0 font-bold rounded-lg transition-all",
+                                    "flex items-center justify-center shrink-0 font-medium rounded-lg transition-all",
                                     isLandscape ? "w-5 h-5 px-0" : "w-7 h-7",
                                     isTop3 ? (isLandscape ? "text-lg bg-transparent" : "text-2xl bg-transparent") : (isLandscape ? "bg-white/10 text-[#FFD5AB]/70 text-[9px]" : "bg-white/10 text-[#FFD5AB]/70 text-sm")
                                   )}>
                                     {medal || index + 1}
                                   </div>
                                   <div className="flex-1 min-w-0 flex items-center justify-between gap-1 overflow-hidden">
-                                    <div className="text-[10px] text-[#FFD5AB]/40 font-bold truncate">
+                                    <div className="text-[10px] text-[#FFD5AB]/40 font-medium truncate">
                                       {subtitle}
                                     </div>
-                                    <div className="text-white text-[15px] font-bold tabular-nums tracking-tighter shrink-0">
+                                    <div className="text-[15px] font-medium tabular-nums tracking-tighter shrink-0" style={{ color: '#FFD5AB' }}>
                                       {record.finalScore?.toString()}
                                     </div>
                                   </div>
@@ -430,7 +430,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                           <div className="text-white/30 text-[10px] uppercase font-bold">{t('game.leaderboard.empty')}</div>
                         </div>
                       ) : (
-                        <div className="space-y-0.5">
+                        <div className={cn(isLandscape ? "space-y-1" : "space-y-0.5")}>
                           {globalLeaderboard.slice(0, 5).map((record, index) => {
                             const r = record as any;
                             const difficultyKey = record.difficulty?.difficultyLevel;
@@ -438,18 +438,17 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                             const playerName = r.nickname || r.displayName || t('game.leaderboard.anonymous');
                             const sessions = r.sessionsCount ?? 0;
                             const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : null;
-                            const subtitle = [playerName, difficultyLabel].filter(Boolean).join(' · ');
                             return (
                               <div
                                 key={`global-${record.id || index}`}
                                 className={cn(
                                   "flex items-center gap-3 px-3 bg-white/[0.06] rounded-xl border border-white/10 hover:border-[#FFD5AB]/40 hover:bg-white/[0.10] transition-all active:scale-[0.98] overflow-hidden",
-                                  isLandscape ? "py-0.5" : "py-1.5"
+                                  isLandscape ? "py-1" : "py-1.5"
                                 )}
                               >
                                 {/* Rank — same as personal tab */}
                                 <div className={cn(
-                                  "flex items-center justify-center shrink-0 font-bold rounded-lg transition-all",
+                                  "flex items-center justify-center shrink-0 font-medium rounded-lg transition-all",
                                   isLandscape ? "w-5 h-5 px-0" : "w-7 h-7",
                                   index < 3 ? (isLandscape ? "text-lg bg-transparent" : "text-2xl bg-transparent") : (isLandscape ? "bg-white/10 text-[#FFD5AB]/70 text-[9px]" : "bg-white/10 text-[#FFD5AB]/70 text-sm")
                                 )}>
@@ -458,21 +457,21 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                                 {/* Content row — Single line optimized */}
                                 <div className="flex-1 min-w-0 flex items-center justify-between gap-1 overflow-hidden">
                                   <div className="flex items-center gap-1 min-w-0 flex-1">
-                                    <span className="text-[#FFD5AB]/90 text-[12px] font-bold truncate shrink-0 max-w-[65px]">
+                                    <span className="text-[#FFD5AB]/90 text-[12px] font-medium truncate shrink-0 max-w-[65px]">
                                       {playerName}
                                     </span>
                                     {difficultyLabel && (
-                                      <span className="text-[9px] text-[#FFD5AB]/30 font-bold truncate opacity-80">
+                                      <span className="text-[9px] text-[#FFD5AB]/30 font-medium truncate opacity-80">
                                         · {difficultyLabel}
                                       </span>
                                     )}
                                   </div>
                                   
                                   <div className="flex items-center gap-1.5 shrink-0">
-                                    <div className="text-white text-[15px] font-black tabular-nums tracking-tighter">
+                                    <div className="text-[15px] font-medium tabular-nums tracking-tighter" style={{ color: '#FFD5AB' }}>
                                       {record.finalScore?.toString()}
                                     </div>
-                                    <div className="text-[#FFD5AB]/20 text-[9px] font-bold tabular-nums">
+                                    <div className="text-[#FFD5AB]/20 text-[9px] font-medium tabular-nums">
                                       {sessions}{t('game.leaderboard.sessionsUnit')}
                                     </div>
                                   </div>
@@ -545,7 +544,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                     <div className="text-center mt-2 px-4 whitespace-normal">
                       {shouldShowAngle(state.selectedPiece) ? (
                         <>
-                          <div className={cn("text-premium-value text-sm font-bold", isTemporaryDisplay() ? 'animate-pulse' : '')}>
+                          <div className={cn("text-premium-value text-sm font-medium", isTemporaryDisplay() ? 'animate-pulse' : '')}>
                             {isTemporaryDisplay()
                               ? t('game.controls.angleTemporary', { angle: Math.round(state.puzzle[state.selectedPiece].rotation) })
                               : t('game.controls.currentAngle', { angle: Math.round(state.puzzle[state.selectedPiece].rotation) })

@@ -66,7 +66,7 @@ export const LeaderboardItemStyles: React.FC<LeaderboardItemStylesProps> = ({
           {/* 底部光晕效果 */}
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#FFD5AB] to-transparent opacity-50 rounded-b-lg animate-pulse" />
           {/* 新入榜标识 */}
-          <div className="absolute -top-1 -right-1 bg-[#FFD5AB] text-[#2A2A2A] text-xs px-2 py-0.5 rounded-full font-bold shadow-lg animate-bounce">
+          <div className="absolute -top-1 -right-1 bg-[#FFD5AB] text-[#2A2A2A] text-xs px-2 py-0.5 rounded-full font-medium shadow-lg animate-bounce">
             NEW
           </div>
         </>
@@ -125,7 +125,7 @@ export const LeaderboardItemContent: React.FC<LeaderboardItemContentProps> = ({
     <>
       <div className="flex items-center gap-3 flex-1">
         {/* 排名图标 - 按2行高度显示 */}
-        <div className={`w-8 h-12 rounded-full flex items-center justify-center text-lg font-bold ${
+        <div className={`w-8 h-12 rounded-full flex items-center justify-center text-lg font-medium ${
           rank === 1 ? 'bg-yellow-500 text-black' :
           rank === 2 ? 'bg-gray-400 text-black' :
           rank === 3 ? 'bg-orange-600 text-white' :
@@ -138,7 +138,7 @@ export const LeaderboardItemContent: React.FC<LeaderboardItemContentProps> = ({
         <div className="flex-1 min-w-0">
           {/* 第一行：分数（与名次字号一样大） */}
           <div className={`text-lg font-medium truncate ${
-            isPlayerNewEntry ? 'text-white font-bold' : 'text-[#FFD5AB]'
+            isPlayerNewEntry ? 'text-white/80' : 'text-[#FFD5AB]'
           }`}>
             {formatScore(score)}
           </div>

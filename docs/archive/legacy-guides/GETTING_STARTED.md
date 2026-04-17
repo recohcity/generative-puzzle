@@ -1,3 +1,8 @@
+> [!CAUTION]
+> **历史归档背景 (Historical Archive)**
+> 本文档记录了 2026-04-17 UI 专项优化期间的审计细节与执行过程。
+> **当前最新 UI/UX 标准请参考核心手册：[UI_SPECIFICATION.md](file:///Users/citylivepark/Documents/project/generative-puzzle/docs/UI/UI_SPECIFICATION.md)**
+
 # 🚀 快速开始指南
 
 欢迎使用 Generative Puzzle！本指南将帮助您在 5 分钟内上手由 Next.js 15 + React 19 构建的全栈生成式拼图项目。

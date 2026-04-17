@@ -1,3 +1,8 @@
+> [!CAUTION]
+> **历史归档背景 (Historical Archive)**
+> 本文档记录了 2026-04-17 UI 专项优化期间的审计细节与执行过程。
+> **当前最新 UI/UX 标准请参考核心手册：[UI_SPECIFICATION.md](file:///Users/citylivepark/Documents/project/generative-puzzle/docs/UI/UI_SPECIFICATION.md)**
+
 # 📚 项目文档中心 (Documentation Hub)
 
 欢迎来到 Generative Puzzle 文档中心。本文档作为项目的**文档索引**和**核心架构指南**。

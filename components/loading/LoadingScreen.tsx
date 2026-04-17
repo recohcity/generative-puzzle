@@ -79,22 +79,23 @@ export default function LoadingScreen({ onLoadComplete }: LoadingScreenProps) {
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-violet-900 to-blue-900">
       {/* ResponsiveBackground 已移除，直接用渐变背景 */}
       <div className="relative z-10 flex flex-col items-center">
-        <h1 className="text-6xl font-bold text-white mb-8 md:text-6xl text-4xl sm:text-center text-left w-full px-6">
+        <h1 className="text-6xl font-black mb-8 md:text-6xl text-4xl sm:text-center text-left w-full px-6" style={{ color: '#FFB17A' }}>
           Generative<br className="md:hidden" /> Puzzle
         </h1>
-        <div className="w-80 h-3 bg-white/30 rounded-full overflow-hidden border-2 border-white">
+        <div className="w-80 h-3 bg-white/10 rounded-full overflow-hidden border border-white/20">
           <div
-            className="h-full bg-white transition-[width] ease-out"
+            className="h-full transition-[width] ease-out"
             style={{ 
               width: `${done ? 100 : displayProgress}%`, 
+              backgroundColor: '#FFD5AB',
               willChange: 'width', 
               transitionDuration: done ? '300ms' : '150ms', // 匹配刷新频率
               transform: 'translateZ(0)' 
             }}
           />
         </div>
-        <p className="mt-3 text-white font-medium">
-          {done ? '100% 加载完成！' : `${Math.floor(displayProgress)}% ${displayProgress >= 100 ? '加载完成！' : '加载中...'}`}
+        <p className="mt-4 font-medium" style={{ color: '#FFD5AB' }}>
+          {done ? '100% Load Complete' : `${Math.floor(displayProgress)}% ${displayProgress >= 100 ? 'Load Complete' : 'Loading...'}`}
         </p>
       </div>
 

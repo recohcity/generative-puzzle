@@ -101,7 +101,7 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
            🏆 {t('leaderboard.recentGameScore') || '本局成绩'}
          </h2>
          <div 
-          className={cn("tabular-nums tracking-tighter leading-none font-black", isLandscape ? "text-base" : "text-xl")} 
+          className={cn("tabular-nums tracking-tighter leading-none font-medium", isLandscape ? "text-base" : "text-xl")} 
           style={{ color: SCORE_COLOR }}
         >
           {record.finalScore}

@@ -76,7 +76,7 @@ export default function IdentityChip({ onClick, onClose, isPanelOpen, className,
         
         <div className="flex items-center gap-2 min-w-0">
           <span 
-            className="text-premium-title truncate font-bold opacity-90"
+            className="text-premium-title truncate font-medium opacity-90"
             style={{ fontSize: mainFontSize }}
           >
             {user ? (profile?.nickname || t('auth.loading')) : t('auth.guest')}

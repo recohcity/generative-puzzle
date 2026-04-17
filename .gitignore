@@ -104,7 +104,8 @@ Desktop.ini
 # NEXT_PUBLIC_SUPABASE_ANON_KEY=
 .env*.local
 
-# UI 规范审计报告
-/docs/UI/reports
-/docs/UI/
+
+# UI 规范审计报告 - 现在归档至 Git 以保持文档-代码镜像同步
+# /docs/UI/reports
+# /docs/UI/
 

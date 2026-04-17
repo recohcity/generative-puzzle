@@ -333,6 +333,8 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
       paddingBottom: TOP_BOTTOM_MARGIN,
       paddingLeft: actualLeftRightMargin,
       paddingRight: actualLeftRightMargin,
+      minHeight: '100vh', // 🎯 极致锁定：桌面端垂直居中，确保视觉平衡
+      position: 'relative'
     }}>
       <div style={{
         display: 'flex',
@@ -539,6 +541,15 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
           </div>
         </div>
       </div>
+      
+      {/* 🎯 极致锁定：版权信息紧贴游戏面板，缩窄留空，提升视觉聚合感 */}
+      {!isFullscreen && (
+        <div className="mt-8 flex justify-center z-10 transition-opacity duration-300">
+          <div className="text-white/40 text-[10px] text-center leading-relaxed font-medium">
+            recoh AI project 2026 | generative puzzle V{process.env.APP_VERSION || '1.3.51'}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

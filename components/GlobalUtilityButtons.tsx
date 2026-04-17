@@ -14,7 +14,6 @@ interface GlobalUtilityButtonsProps {
   onToggleFullscreen: () => void;
   onToggleLeaderboard?: () => void;
   isLeaderboardOpen?: boolean;
-  buttonSize?: 'small' | 'default'; // For phone landscape variation
 }
 
 const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
@@ -24,17 +23,16 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
   onToggleFullscreen,
   onToggleLeaderboard,
   isLeaderboardOpen = false,
-  buttonSize = 'default',
 }) => {
   const { t } = useTranslation();
-  const buttonClass = `rounded-full ${buttonSize === 'small' ? 'w-6 h-6' : 'w-8 h-8'} border-none shadow-none cursor-pointer utility-button-fixed`;
+  const buttonClass = `rounded-full border-none shadow-none cursor-pointer utility-button-fixed`;
   const iconSize = 12;
   const buttonStyle = {
-    width: '26px',
-    height: '26px',
-    borderRadius: '16px',
-    minWidth: '26px',
-    minHeight: '26px',
+    width: 'calc(var(--panel-scale, 1) * 26px)',
+    height: 'calc(var(--panel-scale, 1) * 26px)',
+    borderRadius: 'calc(var(--panel-scale, 1) * 16px)',
+    minWidth: 'calc(var(--panel-scale, 1) * 26px)',
+    minHeight: 'calc(var(--panel-scale, 1) * 26px)',
     padding: 0,
     display: 'flex',
     alignItems: 'center',
@@ -52,7 +50,6 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
     <div className="flex items-center" style={{ gap: '8px' }}>
       <LanguageSwitcher
         variant="iconOnly"
-        size={buttonSize === 'small' ? 'small' : 'default'}
       />
       {onToggleLeaderboard && (
         <button

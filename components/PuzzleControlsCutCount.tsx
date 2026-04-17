@@ -74,7 +74,7 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
     return cn(
         "glass-btn-sheen",
         localCutCount === num ? "glass-btn-active" : "glass-btn-inactive",
-        "flex-1 font-black transition-all duration-500",
+        "flex-1 font-bold transition-all duration-500",
         localCutCount === num && "scale-110 z-10",
         !canModifySettings && "opacity-30 pointer-events-none"
     );

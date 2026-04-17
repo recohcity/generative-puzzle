@@ -45,12 +45,13 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   const iconSize = size === 'small' ? 12 : 16;
   const fontSize = size === 'small' ? '12px' : '14px';
 
+  const buttonDim = size === 'small' ? 26 : 32;
   const buttonStyle = {
-    width: size === 'small' ? '26px' : '32px',
-    height: size === 'small' ? '26px' : '32px',
-    borderRadius: '16px',
-    minWidth: size === 'small' ? '26px' : '32px',
-    minHeight: size === 'small' ? '26px' : '32px',
+    width: `calc(var(--panel-scale, 1) * ${buttonDim}px)`,
+    height: `calc(var(--panel-scale, 1) * ${buttonDim}px)`,
+    borderRadius: `calc(var(--panel-scale, 1) * 16px)`,
+    minWidth: `calc(var(--panel-scale, 1) * ${buttonDim}px)`,
+    minHeight: `calc(var(--panel-scale, 1) * ${buttonDim}px)`,
     padding: 0,
     display: 'flex',
     alignItems: 'center',
@@ -97,24 +98,21 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
 
   // iconOnly 变体 - 直接切换模式（优化后）
   if (variant === 'iconOnly') {
-    const buttonWidth = 26;
-
-    // 获取下一个语言
-    const getNextLocale = (currentLocale: SupportedLocale): SupportedLocale => {
+    const nextLocale = (() => {
       const locales = Object.keys(SUPPORTED_LOCALES) as SupportedLocale[];
-      const currentIndex = locales.indexOf(currentLocale);
+      const currentIndex = locales.indexOf(locale);
       const nextIndex = (currentIndex + 1) % locales.length;
       return locales[nextIndex];
-    };
+    })();
 
-    const nextLocale = getNextLocale(locale);
+    const buttonSizePx = `calc(var(--panel-scale, 1) * 26px)`;
 
     return (
       <div
         className={`relative ${className}`}
         style={{
-          width: `${buttonWidth}px`,
-          height: `${buttonWidth}px`,
+          width: buttonSizePx,
+          height: buttonSizePx,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -149,11 +147,11 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
           size="icon"
           className={cn("rounded-full border-none shadow-none cursor-pointer language-button-fixed glass-btn-inactive")}
             style={{
-              width: `${buttonWidth}px`,
-              height: `${buttonWidth}px`,
+              width: buttonSizePx,
+              height: buttonSizePx,
               borderRadius: '50%',
-              minWidth: `${buttonWidth}px`,
-              minHeight: `${buttonWidth}px`,
+              minWidth: buttonSizePx,
+              minHeight: buttonSizePx,
               padding: 0,
               display: 'flex',
               alignItems: 'center',

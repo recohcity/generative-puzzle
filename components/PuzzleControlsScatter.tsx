@@ -59,7 +59,7 @@ export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 34 }
         data-testid="scatter-puzzle-button"
         style={{
           fontSize: '14px',
-          borderRadius: '14px',
+          borderRadius: 'calc(var(--panel-scale, 1) * 14px)',
           minHeight: buttonHeight,
           height: buttonHeight,
           padding: '0 16px',

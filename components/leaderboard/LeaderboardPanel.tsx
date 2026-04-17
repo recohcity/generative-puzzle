@@ -207,7 +207,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                       setActiveTab('personal');
                     }}
                     className={cn(
-                      "flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold transition-all duration-300",
+                      "flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-medium transition-all duration-300",
                       activeTab === 'personal' ? "glass-btn-active" : "glass-btn-inactive"
                     )}
                   >
@@ -220,7 +220,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                       setActiveTab('global');
                     }}
                     className={cn(
-                      "flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold transition-all duration-300",
+                      "flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-medium transition-all duration-300",
                       activeTab === 'global' ? "glass-btn-active" : "glass-btn-inactive"
                     )}
                   >
@@ -247,7 +247,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar -mx-0.5 px-0.5 min-h-0">
+              <div className="flex-1 overflow-y-hidden overflow-x-hidden no-scrollbar -mx-0.5 px-0.5 min-h-0">
                 <AnimatePresence mode="wait">
                   {activeTab === 'personal' ? (
                     <motion.div
@@ -280,13 +280,13 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                                 onClick={() => showRecentGameDetails(record)}
                               >
                                 <div className={cn(
-                                  "shrink-0 font-black flex items-center justify-center",
+                                  "shrink-0 font-medium flex items-center justify-center",
                                   index < 3 ? "text-2xl w-8 h-8" : "w-7 h-7 rounded-full bg-white/10 text-[#FFD5AB]/70 text-base"
                                 )}>
                                   {getRankIcon(index + 1)}
                                 </div>
                                 {/* Time */}
-                                <span className="text-[#FFD5AB]/80 text-xs font-bold shrink-0 tabular-nums">{formatTime(record.totalDuration)}</span>
+                                <span className="text-[#FFD5AB]/80 text-xs font-medium shrink-0 tabular-nums">{formatTime(record.totalDuration)}</span>
                                 {/* Difficulty — flex-1, truncate */}
                                 <span className="text-[#FFD5AB]/50 text-[10px] flex-1 min-w-0 truncate">{getDifficultyWithShape(record.difficulty)}</span>
                                 {/* Score */}
@@ -366,7 +366,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                           </div>
                         ) : (
                           <div className="space-y-2.5">
-                            {globalLeaderboard.slice(0, 10).map((record, index) => {
+                            {globalLeaderboard.slice(0, 5).map((record, index) => {
                               const r = record as any;
                               const difficultyKey = record.difficulty?.difficultyLevel;
                               const difficultyLabel = difficultyKey ? t(`difficulty.${difficultyKey}`) : '';
@@ -379,7 +379,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                                 >
                                   {/* Rank — same size as personal best */}
                                   <div className={cn(
-                                    "shrink-0 font-black flex items-center justify-center",
+                                    "shrink-0 font-medium flex items-center justify-center",
                                     index < 3 ? "text-2xl w-8 h-8" : "w-7 h-7 rounded-full bg-white/10 text-[#FFD5AB]/70 text-base"
                                   )}>
                                     {index < 3 ? getRankIcon(index + 1) : index + 1}
@@ -387,11 +387,11 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                                   {/* Info Area — Single line optimized */}
                                   <div className="flex-1 min-w-0 flex items-center justify-between gap-1.5 overflow-hidden">
                                     <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                                      <span className="text-[#FFD5AB]/90 text-[13px] font-bold truncate shrink-0 max-w-[100px]">
+                                      <span className="text-[#FFD5AB]/90 text-[13px] font-medium truncate shrink-0 max-w-[100px]">
                                         {playerName}
                                       </span>
                                       {difficultyLabel && (
-                                        <span className="text-[10px] text-[#FFD5AB]/30 font-bold truncate opacity-80 hidden md:inline">
+                                        <span className="text-[10px] text-[#FFD5AB]/30 font-medium truncate opacity-80 hidden md:inline">
                                           · {difficultyLabel}
                                         </span>
                                       )}
@@ -404,7 +404,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                                       )} style={{ color: '#FFD5AB' }}>
                                         {formatScore(record.finalScore)}
                                       </div>
-                                      <div className="px-1.5 py-0.5 rounded-full bg-white/5 border border-white/5 text-[#FFD5AB]/20 text-[9px] font-bold shrink-0 tabular-nums">
+                                      <div className="px-1.5 py-0.5 rounded-full bg-white/5 border border-white/5 text-[#FFD5AB]/20 text-[9px] font-medium shrink-0 tabular-nums">
                                         {sessions} {t('game.leaderboard.sessionsUnit')}
                                       </div>
                                     </div>
