@@ -98,10 +98,11 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
   const CUT_TYPE_BUTTON_HEIGHT = isUltraSmall ? 32 : CUT_TYPE_BUTTON_HEIGHT_BASE;
   const NUMBER_BUTTON_HEIGHT = isUltraSmall ? 24 : NUMBER_BUTTON_HEIGHT_BASE;
   const ACTION_BUTTON_HEIGHT = isUltraSmall ? 32 : ACTION_BUTTON_HEIGHT_BASE;
-  const MOBILE_CONTROL_BUTTON_HEIGHT = isUltraSmall ? 32 : MOBILE_CONTROL_BUTTON_HEIGHT_BASE;
-  const MOBILE_CONTROL_BUTTON_FONT_SIZE = isUltraSmall ? 12 : MOBILE_CONTROL_BUTTON_FONT_SIZE_BASE;
-  const MOBILE_RESTART_BUTTON_HEIGHT = isUltraSmall ? 32 : MOBILE_RESTART_BUTTON_HEIGHT_BASE;
-  const MOBILE_RESTART_BUTTON_FONT_SIZE = isUltraSmall ? 12 : MOBILE_RESTART_BUTTON_FONT_SIZE_BASE;
+  const MOBILE_CONTROL_BUTTON_HEIGHT = isLandscape ? 30 : (isUltraSmall ? 32 : MOBILE_CONTROL_BUTTON_HEIGHT_BASE);
+  const MOBILE_CONTROL_BUTTON_FONT_SIZE = isLandscape ? 11 : (isUltraSmall ? 12 : MOBILE_CONTROL_BUTTON_FONT_SIZE_BASE);
+  const MOBILE_RESTART_BUTTON_HEIGHT = isLandscape ? 28 : (isUltraSmall ? 32 : MOBILE_RESTART_BUTTON_HEIGHT_BASE);
+  const MOBILE_RESTART_FONT_SIZE = isLandscape ? 11 : (isUltraSmall ? 12 : MOBILE_RESTART_BUTTON_FONT_SIZE_BASE);
+  const MOBILE_RESTART_ICON_SIZE = isLandscape ? 13 : (isUltraSmall ? 16 : MOBILE_RESTART_ICON_SIZE_BASE);
 
   const {
     shouldShowAngle,
@@ -381,11 +382,12 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                               return (
                                 <div key={record.id || record.timestamp} className={cn(
                                   "flex items-center gap-3 px-3 bg-white/[0.06] rounded-xl border border-white/10 hover:border-[#FFD5AB]/40 hover:bg-white/[0.10] transition-all active:scale-[0.98]",
-                                  isLandscape ? "py-1" : "py-1.5"
+                                  isLandscape ? "py-0.5" : "py-1.5"
                                 )}>
                                   <div className={cn(
-                                    "flex items-center justify-center w-7 h-7 shrink-0 font-bold rounded-lg transition-all",
-                                    isTop3 ? "text-2xl bg-transparent" : "bg-white/10 text-[#FFD5AB]/70 text-sm"
+                                    "flex items-center justify-center shrink-0 font-bold rounded-lg transition-all",
+                                    isLandscape ? "w-5 h-5 px-0" : "w-7 h-7",
+                                    isTop3 ? (isLandscape ? "text-lg bg-transparent" : "text-2xl bg-transparent") : (isLandscape ? "bg-white/10 text-[#FFD5AB]/70 text-[9px]" : "bg-white/10 text-[#FFD5AB]/70 text-sm")
                                   )}>
                                     {medal || index + 1}
                                   </div>
@@ -394,7 +396,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                                       {subtitle}
                                     </div>
                                     <div className="text-white text-[15px] font-bold tabular-nums tracking-tighter shrink-0">
-                                      {record.finalScore?.toLocaleString()}
+                                      {record.finalScore?.toString()}
                                     </div>
                                   </div>
                                 </div>
@@ -442,13 +444,14 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                                 key={`global-${record.id || index}`}
                                 className={cn(
                                   "flex items-center gap-3 px-3 bg-white/[0.06] rounded-xl border border-white/10 hover:border-[#FFD5AB]/40 hover:bg-white/[0.10] transition-all active:scale-[0.98] overflow-hidden",
-                                  isLandscape ? "py-1" : "py-1.5"
+                                  isLandscape ? "py-0.5" : "py-1.5"
                                 )}
                               >
                                 {/* Rank — same as personal tab */}
                                 <div className={cn(
-                                  "flex items-center justify-center w-7 h-7 shrink-0 font-bold rounded-lg transition-all",
-                                  index < 3 ? "text-2xl bg-transparent" : "bg-white/10 text-[#FFD5AB]/70 text-sm"
+                                  "flex items-center justify-center shrink-0 font-bold rounded-lg transition-all",
+                                  isLandscape ? "w-5 h-5 px-0" : "w-7 h-7",
+                                  index < 3 ? (isLandscape ? "text-lg bg-transparent" : "text-2xl bg-transparent") : (isLandscape ? "bg-white/10 text-[#FFD5AB]/70 text-[9px]" : "bg-white/10 text-[#FFD5AB]/70 text-sm")
                                 )}>
                                   {medal || index + 1}
                                 </div>
@@ -467,7 +470,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                                   
                                   <div className="flex items-center gap-1.5 shrink-0">
                                     <div className="text-white text-[15px] font-black tabular-nums tracking-tighter">
-                                      {record.finalScore?.toLocaleString()}
+                                      {record.finalScore?.toString()}
                                     </div>
                                     <div className="text-[#FFD5AB]/20 text-[9px] font-bold tabular-nums">
                                       {sessions}{t('game.leaderboard.sessionsUnit')}
@@ -489,12 +492,12 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
         ) : isGameCompleted ? (
           /* 游戏结算界面 */
           <div className="flex flex-col h-full">
-            <div className="flex-1 overflow-y-auto min-h-0">
+            <div className="flex-1 overflow-y-auto min-h-0 pt-1">
               <MobileScoreLayout gameStats={state.gameStats!} currentScore={state.currentScore} scoreBreakdown={state.scoreBreakdown || undefined} isNewRecord={state.isNewRecord} isLandscape={isLandscape} />
             </div>
-            <div className="flex-shrink-0 flex flex-row gap-2 mt-2">
-              <RestartButton onClick={handleRetryCurrent} icon="retry" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }}>{t('game.controls.retryCurrent')}</RestartButton>
-              <RestartButton onClick={handleRestart} icon="refresh" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }}>{t('game.controls.restartGame')}</RestartButton>
+            <div className={cn("flex-shrink-0 flex flex-row gap-2 mt-1", isLandscape ? "mb-0" : "mb-1")}>
+              <RestartButton onClick={handleRetryCurrent} icon="retry" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.retryCurrent')}</RestartButton>
+              <RestartButton onClick={handleRestart} icon="refresh" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.restartGame')}</RestartButton>
             </div>
           </div>
         ) : (

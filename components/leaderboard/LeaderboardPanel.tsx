@@ -150,7 +150,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
   };
 
   const formatScore = (score: number) => {
-    return score.toLocaleString();
+    return score.toString();
   };
 
   const baseFontSize = panelScale <= 0.5 ? 12 : Math.max(12, 14 * panelScale);
@@ -259,8 +259,8 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                     >
                       {/* Top 5 个人最佳成绩 */}
                       <div className="rounded-2xl p-3 bg-white/[0.04]">
-                        <h2 className="text-premium-title mb-4 text-sm flex items-center gap-2 uppercase tracking-wider">
-                          <Trophy className="w-4 h-4 text-yellow-500" />
+                        <h2 className="text-[#FFD5AB]/60 mb-4 text-sm flex items-center gap-2 uppercase tracking-wider font-medium">
+                          <Trophy className="w-4 h-4 opacity-40" />
                           {t('leaderboard.title')}
                         </h2>
                         {filteredLeaderboard.length === 0 ? (
@@ -290,7 +290,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                                 {/* Difficulty — flex-1, truncate */}
                                 <span className="text-[#FFD5AB]/50 text-[10px] flex-1 min-w-0 truncate">{getDifficultyWithShape(record.difficulty)}</span>
                                 {/* Score */}
-                                <div className="text-premium-value text-base font-black tracking-tight shrink-0 group-hover:scale-105 transition-transform tabular-nums">
+                                <div className="text-base font-medium tracking-tight shrink-0 group-hover:scale-105 transition-transform tabular-nums" style={{ color: '#FFD5AB' }}>
                                   {formatScore(record.finalScore)}
                                 </div>
                               </motion.div>
@@ -300,8 +300,8 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                       </div>
                       {/* 最近游戏历史 */}
                       <div className="rounded-2xl p-3 bg-white/[0.04]">
-                        <h2 className="text-premium-title mb-4 text-sm flex items-center gap-2 uppercase tracking-wider">
-                          <History className="w-4 h-4 text-blue-400" />
+                        <h2 className="text-[#FFD5AB]/60 mb-4 text-sm flex items-center gap-2 uppercase tracking-wider font-medium">
+                          <History className="w-4 h-4 opacity-40" />
                           {t('stats.scoreHistory')}
                         </h2>
                         {sortedHistory.length === 0 ? (
@@ -321,7 +321,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                                     <History className="w-3.5 h-3.5" />
                                   </div>
                                   <div className="flex items-center gap-2 overflow-hidden flex-1">
-                                    <div className="text-premium-value text-base font-black shrink-0 drop-shadow-md">{formatScore(record.finalScore)}</div>
+                                    <div className="text-base font-medium shrink-0 drop-shadow-md" style={{ color: '#FFD5AB' }}>{formatScore(record.finalScore)}</div>
                                     <div className="text-[#FFD5AB]/30 flex items-center gap-2 text-[10px] whitespace-nowrap">
                                       <span className="flex items-center gap-1 font-medium"><Trophy className="w-2.5 h-2.5" /> {formatTime(record.totalDuration)}</span>
                                       <span className="flex items-center gap-1 font-medium"><RotateCw className="w-2.5 h-2.5" /> {record.totalRotations}</span>
@@ -346,8 +346,8 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                       className="min-h-[300px] flex flex-col"
                     >
                       <div className="rounded-2xl p-3 bg-white/[0.04] flex-1 flex flex-col no-scrollbar">
-                        <h2 className="text-[#FFB17A] font-bold mb-4 text-sm flex items-center gap-2 uppercase tracking-wider">
-                          <Globe className="w-4 h-4 text-blue-400" />
+                        <h2 className="text-[#FFD5AB]/60 font-bold mb-4 text-sm flex items-center gap-2 uppercase tracking-wider font-medium">
+                          <Globe className="w-4 h-4 opacity-40" />
                           {t('game.leaderboard.tabs.global')}
                         </h2>
 
@@ -399,9 +399,9 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                                     
                                     <div className="flex items-center gap-2.5 shrink-0">
                                       <div className={cn(
-                                        "text-base font-black tabular-nums tracking-tighter",
-                                        index < 3 ? "text-premium-value" : "text-[#FFD5AB]/80"
-                                      )}>
+                                        "text-base font-medium tabular-nums tracking-tighter",
+                                        index < 3 ? "" : "opacity-80"
+                                      )} style={{ color: '#FFD5AB' }}>
                                         {formatScore(record.finalScore)}
                                       </div>
                                       <div className="px-1.5 py-0.5 rounded-full bg-white/5 border border-white/5 text-[#FFD5AB]/20 text-[9px] font-bold shrink-0 tabular-nums">

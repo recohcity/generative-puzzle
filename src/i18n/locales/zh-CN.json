@@ -273,6 +273,7 @@
             "lastUpdate": "最后更新"
         },
         "gameComplete": "游戏完成",
+        "currentGameResult": "本局成绩",
         "complete": "完成",
         "perfectHints": "完美提示",
         "perfectGame": "完美游戏",

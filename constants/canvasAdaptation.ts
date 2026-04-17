@@ -6,7 +6,7 @@
 // ==================== 桌面端适配参数 ====================
 export const DESKTOP_ADAPTATION = {
     // 边距设置（按方案要求）
-    TOP_BOTTOM_MARGIN: 50,           // 桌面端上下边距 (增加到60px以获得更佳的视觉效果与安全性)
+    TOP_BOTTOM_MARGIN: 50,           // 桌面端上下边距 (增加到50px以获得更佳的视觉效果与安全性)
     LEFT_RIGHT_MARGIN: 20,           // 桌面端左右最小边距
     CANVAS_PANEL_GAP: 10,            // 面板与画布间距
 

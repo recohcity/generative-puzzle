@@ -65,7 +65,7 @@ const RestartButton: React.FC<RestartButtonProps> = ({
         style={{
           width: iconSize,
           height: iconSize,
-          color: "#F68E5F",
+          color: "#FFD5AB",
           flexShrink: 0,
           lineHeight: 1,
         }}

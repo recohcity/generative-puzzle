@@ -5,8 +5,8 @@ import { playButtonClickSound } from "@/utils/rendering/soundEffects";
 import { useTranslation } from '@/contexts/I18nContext';
 import { getSpeedBonusDetails } from '@generative-puzzle/game-core';
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
-// 使用GameDataManager内部的数据结构
 interface StoredGameRecord {
   timestamp: number;
   finalScore: number;
@@ -18,8 +18,8 @@ interface StoredGameRecord {
   dragOperations: number;
   rotationEfficiency: number;
   scoreBreakdown: any;
-  gameStartTime?: number; // 兼容字段
-  id?: string; // 兼容字段
+  gameStartTime?: number;
+  id?: string;
 }
 
 interface RecentGameDetailsProps {
@@ -32,72 +32,37 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
   onBack
 }) => {
   const { t, locale } = useTranslation();
+  const [isLandscape, setIsLandscape] = useState(false);
+
+  // 分数统一使用与用户名一致的米金色
+  const SCORE_COLOR = '#FFD5AB';
+
+  useEffect(() => {
+    const checkOrientation = () => {
+      setIsLandscape(window.innerWidth > window.innerHeight && window.innerWidth < 1024);
+    };
+    checkOrientation();
+    window.addEventListener('resize', checkOrientation);
+    return () => window.removeEventListener('resize', checkOrientation);
+  }, []);
 
   const handleBack = () => {
     playButtonClickSound();
     onBack();
   };
 
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
-  // 获取切割类型显示名称
-  const getCutTypeDisplayName = (cutType?: string): string => {
-    if (!cutType) return '';
-    try {
-      return t(`cutType.${cutType}`);
-    } catch {
-      return cutType;
-    }
-  };
-
-  // 获取形状类型显示名称
-  const getShapeDisplayName = (shapeType?: string): string => {
-    if (!shapeType) return '';
-    try {
-      return t(`game.shapes.names.${shapeType}`);
-    } catch {
-      return shapeType;
-    }
-  };
-
   const getDifficultyText = (record: any): string => {
-    const shapeName = getShapeDisplayName(record.difficulty?.shapeType);
-    const cutTypeName = getCutTypeDisplayName(record.difficulty?.cutType);
     const levelText = t('difficulty.levelLabel', { level: record.difficulty.cutCount });
-    const piecesPart = `${record.difficulty?.actualPieces || 0}${t('stats.piecesUnit')}`;
-    const parts = [levelText];
-    if (shapeName) parts.push(shapeName);
-    if (cutTypeName) parts.push(cutTypeName);
-    parts.push(piecesPart);
-    return parts.join(' · ');
+    const pieceCount = record.difficulty?.actualPieces || 0;
+    return `${levelText} · ${pieceCount}${t('stats.piecesUnit')}`;
   };
 
-  // 获取速度奖励显示文本 - 使用动态速度奖励系统（v3.3）
   const getSpeedBonusText = (duration: number): string => {
     const { difficulty } = record;
     const pieceCount = difficulty?.actualPieces || 0;
     const difficultyLevel = difficulty?.cutCount || 1;
-    
-    // 获取速度奖励详细信息
     const speedDetails = getSpeedBonusDetails(duration, pieceCount, difficultyLevel);
     
-    // 格式化时间显示（用于阈值）
-    const formatTimeStr = (seconds: number): string => {
-      if (seconds < 60) {
-        return locale === 'en' ? `${seconds}s` : `${seconds}秒`;
-      }
-      const mins = Math.floor(seconds / 60);
-      const secs = seconds % 60;
-      return locale === 'en' 
-        ? `${mins}m${secs > 0 ? `${secs}s` : ''}` 
-        : `${mins}分${secs > 0 ? `${secs}秒` : ''}`;
-    };
-    
-    // 根据当前等级生成描述文本
     if (speedDetails.currentLevel) {
       const levelNameMap: Record<string, { zh: string; en: string }> = {
         '极速': { zh: '极速', en: 'Extreme' },
@@ -107,160 +72,100 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
         '一般': { zh: '一般', en: 'Slow' },
         '慢': { zh: '慢', en: 'Too Slow' }
       };
-      
-      const levelName = levelNameMap[speedDetails.currentLevel.name]?.[locale === 'en' ? 'en' : 'zh'] || speedDetails.currentLevel.name;
-      
-      // 如果是慢等级（无奖励），显示"超出X秒"
-      if (speedDetails.currentLevel.name === '慢') {
-        const timeStr = formatTimeStr(speedDetails.currentLevel.maxTime);
-        return locale === 'en' 
-          ? `${levelName} (exceeded ${timeStr})`
-          : `${levelName}（超出${timeStr}）`;
-      }
-      
-      // 其他等级显示"少于X秒内"
-      const timeStr = formatTimeStr(speedDetails.currentLevel.maxTime);
-      return locale === 'en' 
-        ? `${levelName} (less than ${timeStr})`
-        : `${levelName}（少于${timeStr}内）`;
+      return levelNameMap[speedDetails.currentLevel.name]?.[locale === 'en' ? 'en' : 'zh'] || speedDetails.currentLevel.name;
     }
-    
-    return t('score.noReward') || '无速度奖励';
+    return t('score.noReward') || '无';
   };
 
   const rows = [
-    { 
-      label: t('score.breakdown.base'), 
-      sub: getDifficultyText(record), 
-      value: (record.scoreBreakdown?.baseScore || 0).toLocaleString(), 
-      sign: '' 
-    },
-    { 
-      label: t('score.breakdown.timeBonus'), 
-      sub: getSpeedBonusText(record.totalDuration), 
-      value: (record.scoreBreakdown?.timeBonus || 0).toLocaleString(), 
-      sign: '+' 
-    },
-    { 
-      label: t('score.breakdown.rotationScore'), 
-      sub: `${record.totalRotations} / ${record.scoreBreakdown?.minRotations || 0}`, 
-      value: Math.abs(record.scoreBreakdown?.rotationScore || 0).toLocaleString(), 
-      sign: (record.scoreBreakdown?.rotationScore || 0) >= 0 ? '+' : '-' 
-    },
-    { 
-      label: t('score.breakdown.hintScore'), 
-      sub: `${record.hintUsageCount} / ${record.scoreBreakdown?.hintAllowance || 0}`, 
-      value: Math.abs(record.scoreBreakdown?.hintScore || 0).toLocaleString(), 
-      sign: (record.scoreBreakdown?.hintScore || 0) >= 0 ? '+' : '-' 
-    },
+    { label: t('score.breakdown.base'), sub: getDifficultyText(record), value: (record.scoreBreakdown?.baseScore || 0), sign: '' },
+    { label: t('score.breakdown.timeBonus'), sub: getSpeedBonusText(record.totalDuration), value: (record.scoreBreakdown?.timeBonus || 0), sign: '+' },
+    { label: t('score.breakdown.rotationScore'), sub: `${record.totalRotations}/${record.scoreBreakdown?.minRotations || 0}`, value: Math.abs(record.scoreBreakdown?.rotationScore || 0), sign: (record.scoreBreakdown?.rotationScore || 0) >= 0 ? '+' : '-' },
+    { label: t('score.breakdown.hintScore'), sub: `${record.hintUsageCount}/${record.scoreBreakdown?.hintAllowance || 0}`, value: Math.abs(record.scoreBreakdown?.hintScore || 0), sign: (record.scoreBreakdown?.hintScore || 0) >= 0 ? '+' : '-' },
   ];
 
-  const subtotal = (record.scoreBreakdown?.baseScore || 0) + 
-                   (record.scoreBreakdown?.timeBonus || 0) + 
-                   (record.scoreBreakdown?.rotationScore || 0) + 
-                   (record.scoreBreakdown?.hintScore || 0);
+  const subtotal = (record.scoreBreakdown?.baseScore || 0) + (record.scoreBreakdown?.timeBonus || 0) + (record.scoreBreakdown?.rotationScore || 0) + (record.scoreBreakdown?.hintScore || 0);
 
   return (
-    <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-300">
-
-      {/* ── Header ── */}
-      <div className="mb-2 shrink-0">
-        <h2 className="text-[#FFD5AB]/80 text-[11px] font-bold flex items-center gap-1.5 uppercase tracking-widest leading-none">
-          <span className="text-xs">🏆</span>
-          {t('leaderboard.recentGameScore') || t('leaderboard.scoreDetails')}
-        </h2>
+    <div className={cn(
+      "flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-300",
+      isLandscape ? "gap-0" : "gap-0.5"
+    )}>
+      
+      {/* 顶部单行设计：标题 + 分数 */}
+      <div className={cn("w-full flex items-center justify-between px-0.5", isLandscape ? "mb-0" : "mb-0.5")}>
+         <h2 className={cn(
+           "text-white/40 font-medium uppercase tracking-tight leading-none",
+           isLandscape ? "text-[7px]" : "text-[10px]"
+         )}>
+           🏆 {t('leaderboard.recentGameScore') || '本局成绩'}
+         </h2>
+         <div 
+          className={cn("tabular-nums tracking-tighter leading-none font-black", isLandscape ? "text-base" : "text-xl")} 
+          style={{ color: SCORE_COLOR }}
+        >
+          {record.finalScore}
+        </div>
       </div>
 
-      {/* ── Scrollable body ── */}
-      <div className="flex-1 overflow-y-auto no-scrollbar pb-1">
-
-        {/* Unified Card Design */}
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden">
-
-          {/* Hero score section */}
-          <div className="flex items-center justify-between px-3 pt-3 pb-2">
-             <div className="flex flex-col gap-0.5">
-                <span className="text-[#FFD5AB]/40 text-[10px] font-bold uppercase tracking-widest leading-none">
-                   {formatTime(record.totalDuration)} · {getDifficultyText(record)}
+      <div className={cn(
+        "border border-white/5 rounded-xl flex flex-col items-center bg-white/[0.01]",
+        isLandscape ? "p-1 px-2" : "p-2"
+      )}>
+        
+        {/* 数据面板内容 */}
+        <div className="w-full">
+          <div className="space-y-0">
+            {rows.map((row, i) => (
+              <div key={i} className={cn("flex items-baseline justify-between leading-tight", isLandscape ? "py-0" : "py-0.5")}>
+                <div className="flex items-baseline gap-1.5 flex-1 min-w-0 pr-2 overflow-hidden">
+                  <span className={cn("text-white/60 shrink-0", isLandscape ? "text-[8px]" : "text-[11px]")}>{row.label}</span>
+                  <span className={cn("text-white/20 truncate uppercase", isLandscape ? "text-[7px]" : "text-[9px]")}>{row.sub}</span>
+                </div>
+                <span className={cn("tabular-nums shrink-0 font-medium", isLandscape ? "text-[9px]" : "text-[12px]") } style={{ color: row.sign === '-' ? '#FF8A80' : SCORE_COLOR }}>
+                  {row.sign}{row.value}
                 </span>
-             </div>
-             <div className="text-3xl font-black text-[#FFD5AB] tabular-nums tracking-tight leading-none">
-               {record.finalScore.toLocaleString()}
-             </div>
+              </div>
+            ))}
           </div>
 
-          {/* Breakdown — flat list */}
-          <div className="px-3 pb-3">
-            <div className="h-px bg-white/10" />
+          <div className="h-px bg-white/10 w-full opacity-20 mt-0.5 mb-0.5" />
 
-            <div className="flex flex-col gap-1 py-1.5">
-              {rows.map((row, i) => (
-                <div key={i} className="flex items-baseline justify-between leading-none py-0.5">
-                  <div className="flex-1 min-w-0 pr-2 flex items-baseline gap-1.5">
-                    <span className="text-[#FFD5AB]/60 text-[11px] font-medium shrink-0">{row.label}</span>
-                    <span className="text-[#FFD5AB]/25 text-[9px] truncate">{row.sub}</span>
-                  </div>
-                  <span className={cn('text-[11px] font-black tabular-nums shrink-0', (row.sign === '-' ? 'text-[#FF8A80]' : 'text-[#FFD5AB]'))}>
-                    {row.sign}{row.value}
-                  </span>
-                </div>
-              ))}
-            </div>
+          <div className="space-y-0">
+             <div className="flex items-center justify-between leading-tight">
+                <span className={cn("text-white/20 uppercase tracking-tight", isLandscape ? "text-[7px]" : "text-[9px]")}>{t('score.breakdown.subtotal')}</span>
+                <span className={cn("text-white/30 tabular-nums font-medium", isLandscape ? "text-[8px]" : "text-[11px]")}>{subtotal}</span>
+             </div>
 
-            {/* Subtotal & Multiplier */}
-            <div className="h-px bg-white/10" />
-            <div className="flex flex-col gap-1 py-1.5">
-               <div className="flex items-baseline justify-between leading-none">
-                 <span className="text-[#FFD5AB]/50 text-[10px] font-bold uppercase tracking-wider">
-                   {t('score.breakdown.subtotal')}
-                 </span>
-                 <span className="text-[#FFD5AB]/70 text-[10px] font-black tabular-nums">
-                   {subtotal.toLocaleString()}
-                 </span>
-               </div>
+             <div className="flex items-center justify-between leading-tight">
+                <span className={cn("text-white/20 uppercase tracking-tight", isLandscape ? "text-[7px]" : "text-[9px]")}>{t('score.breakdown.multiplier')}</span>
+                <span className={cn("tabular-nums font-medium", isLandscape ? "text-[8px]" : "text-[11px]") } style={{ color: SCORE_COLOR, opacity: 0.8 }}>
+                  ×{(record.scoreBreakdown?.difficultyMultiplier || 1).toFixed(2)}
+                </span>
+             </div>
 
-               <div className="flex items-baseline justify-between leading-none">
-                 <span className="text-[#FFD5AB]/50 text-[10px] font-bold uppercase tracking-wider">
-                   {t('score.breakdown.multiplier')}
-                 </span>
-                 <span className="text-[#F68E5F] text-[10px] font-black tabular-nums">
-                   ×{(record.scoreBreakdown?.difficultyMultiplier || 1).toFixed(2)}
-                 </span>
-               </div>
-            </div>
-
-            {/* Final */}
-            <div className="h-px bg-white/10" />
-            <div className="flex items-baseline justify-between py-2 leading-none">
-              <span className="text-[#FFD5AB] text-[12px] font-black uppercase tracking-widest">
-                {t('score.breakdown.final')}
-              </span>
-              <span className="text-[#FFD5AB] text-[22px] font-black tabular-nums tracking-tight">
-                {record.finalScore.toLocaleString()}
-              </span>
-            </div>
-
-            {/* Timestamp */}
-            <div className="pt-1.5 text-center border-t border-white/5">
-              <span className="text-[#FFD5AB]/20 text-[9px] leading-none uppercase tracking-tighter">
-                {t('stats.gameTimeLabel') || (locale === 'zh-CN' ? '最近玩过：' : 'Played: ')} {new Date(record.gameStartTime || record.timestamp).toLocaleString(
-                  locale === 'zh-CN' ? 'zh-CN' : 'en-US',
-                  { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }
-                )}
-              </span>
-            </div>
+             <div className={cn("flex items-baseline justify-between pt-0.5 border-t border-white/5 mt-0.5")}>
+                <span className={cn("text-white/40 uppercase tracking-normal font-medium", isLandscape ? "text-[8px]" : "text-[11px]")}>{t('score.breakdown.final')}</span>
+                <span className={cn("tabular-nums tracking-tight leading-none font-medium", isLandscape ? "text-[10px]" : "text-[14px]")} style={{ color: SCORE_COLOR }}>
+                  {record.finalScore}
+                </span>
+             </div>
           </div>
         </div>
       </div>
 
-      {/* Back button */}
       <button
         onClick={handleBack}
-        className="glass-btn-active w-full mt-2 shrink-0 h-10 rounded-xl text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2"
+        className={cn(
+          "glass-btn-active w-full shrink-0 rounded-xl font-bold uppercase tracking-widest flex items-center justify-center gap-2 mt-0.5",
+          isLandscape ? "h-5 text-[7px]" : "h-8 text-[9px]"
+        )}
+        style={{ color: SCORE_COLOR }}
       >
-        <ArrowLeft className="w-4 h-4" strokeWidth={2.5} />
-        {t('leaderboard.backToLeaderboard') || '返回排行榜'}
+        <ArrowLeft className={isLandscape ? "w-2 h-2" : "w-3 h-3"} strokeWidth={2.5} />
+        {t('leaderboard.backToLeaderboard') || '返回'}
       </button>
+
     </div>
   );
 };

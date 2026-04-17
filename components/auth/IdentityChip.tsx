@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { VirtualAuthService, PlayerProfile } from '@/utils/cloud/VirtualAuthService';
-import { User, ShieldCheck, Cloud, AlertCircle, Loader2 } from 'lucide-react';
+import { User, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/contexts/I18nContext';
 
@@ -32,7 +32,6 @@ export default function IdentityChip({ onClick, onClose, isPanelOpen, className,
     }
   }, [user]);
 
-  // Use fixed font size matching "Select Shape Type" (text-md or text-sm)
   const mainFontSize = "14px"; 
   const iconSize = 18;
 
@@ -61,19 +60,17 @@ export default function IdentityChip({ onClick, onClose, isPanelOpen, className,
   return (
     <div className={cn("w-full flex items-center justify-between py-1 px-0.5", className)}>
       <div className="flex items-center gap-2 min-w-0 flex-1">
-        {/* Compact Avatar with Subtle Glow */}
+        {/* Removed background color block from the icon left of the username */}
         <div className={cn(
-          "flex-shrink-0 rounded-md flex items-center justify-center transition-all duration-300",
-          user 
-            ? "text-[#FFD5AB] bg-[#F68E5F]/20" 
-            : "text-white/20 bg-white/5"
+          "flex-shrink-0 flex items-center justify-center transition-all duration-300",
+          user ? "text-[#FFD5AB]" : "text-white/40"
         )}
-        style={{ width: iconSize * 1.3, height: iconSize * 1.3 }}
+        style={{ width: iconSize, height: iconSize }}
         >
           {loading ? (
             <Loader2 className="animate-spin" style={{ width: iconSize * 0.8, height: iconSize * 0.8 }} />
           ) : (
-            <User style={{ width: iconSize, height: iconSize }} strokeWidth={2.5} />
+            <User style={{ width: iconSize, height: iconSize }} strokeWidth={2} />
           )}
         </div>
         
@@ -93,12 +90,7 @@ export default function IdentityChip({ onClick, onClose, isPanelOpen, className,
 
       <button
         onClick={user ? handleLogout : handleLoginAction}
-        className={cn(
-          "px-3 py-1 rounded-full text-[11px] font-bold transition-all uppercase tracking-wider",
-          user
-            ? "glass-btn-active text-white shadow-lg"
-            : "glass-btn-active text-white shadow-lg"
-        )}
+        className="px-3 py-1 rounded-full text-[11px] font-bold transition-all uppercase tracking-wider glass-btn-active text-white shadow-lg"
       >
         {user 
           ? (t('auth.logout') || 'Logout') 

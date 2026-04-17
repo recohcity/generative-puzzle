@@ -224,8 +224,8 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
                 variant={selectedDifficulty === difficulty ? "default" : "ghost"}
                 size="sm"
                 className={`text-xs px-2 py-1 ${selectedDifficulty === difficulty
-                  ? 'bg-[#F68E5F] text-white'
-                  : 'text-[#FFD5AB] hover:text-white hover:bg-[#F68E5F]'
+                  ? 'bg-[#FFD5AB] text-[#232035]'
+                  : 'text-[#FFD5AB] hover:text-white hover:bg-[#FFD5AB]/20'
                   }`}
                 style={{ fontSize: '11px' }}
               >

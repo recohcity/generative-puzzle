@@ -1,5 +1,47 @@
 # 生成式拼图游戏 Changelog
 
+## [v1.3.85] - 2026-04-17
+
+### 🎨 Design Tokens 全局统一与 SOP 制度化升级 (Global Token Unification)
+
+本版本完成了跨全平台的 Design Tokens 深度统一，建立了强制性回归检查机制。
+
+#### 色彩系统统一
+- **分数色锁定**: 全局统一为 `brand-peach (#FFD5AB)` 作为唯一分数/数值色
+- **影响组件**: DesktopScoreLayout, MobileScoreLayout, GameRecordDetails, LeaderboardPanel, LeaderboardItemStyles, RestartButton, IdentityChip, DesktopLayout
+- **排行榜清洗**: LeaderboardPanel 中的 Tab 高亮色、分数色全部迁移至 #FFD5AB
+
+#### 卡片样式标准化
+- **背景去除**: 成绩卡片移除透明背景，仅保留 border 边框
+- **侧边栏重构**: DesktopLayout 硬编码结算界面替换为 ScoreDisplay 组件调用
+
+#### 排版规范化
+- **字重统一**: 分数/标题从 font-black 降级为 font-medium
+- **页眉去透明度**: 标题和图标移除 opacity-40
+- **图标对齐**: 移动端 Emoji 替换为 Lucide Trophy 图标
+- **横竖屏字号统一**: 横屏标题字号恢复至与竖屏一致的 text-[11px]
+- **用户名图标去色块**: IdentityChip 移除头像背景色块
+
+#### SOP 制度化升级
+- **新增核心原则 #5**: Design Tokens 同步更新与回归一致性检查
+- **新增执行流第五步**: Mandatory Regression Gate
+- **排期表校准**: 01-04 标记为已完成
+
+#### 文档同步
+- report_01: 新增使用场景列、审计表、字重规范表、回归审计日志
+- report_03: 追加 2026-04-17 回归确认
+- report_04: 全面修订至与当前代码一致
+
+## [v1.3.84] - 2026-04-15
+
+### 💎 高阶玻璃态规范升级 (Premium Glassmorphism Upgrade)
+本版本根据最新的 UI 审计 SOP，对结算系统的视觉深度进行了二次进化。
+
+- **DesktopScoreLayout 质感重塑**:
+  - **背景深度强化**: 将结算卡片从轻量透明 (`bg-white/[0.03]`) 升级为符合 SOP 规范的高阶玻璃态 (`bg-white/30 backdrop-blur-xl`)。
+  - **边缘反射增强**: 引入 `border-2 border-white/30`，利用物理厚度感替代投影，实现了更纯粹的高级扁平化视觉效果。
+  - **Design Tokens 归一化**: 彻底清理了报告 04 涉及的遗留 Hex 色值，全面转向 `brand-*` 与 `red-400`。
+
 ## [v1.3.83] - 2026-04-15
 
 ### 🏆 得分网关架构优化与 UI 评审 SOP 正式确立 (Score Gateway & Optimization SOP)

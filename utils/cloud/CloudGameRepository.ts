@@ -76,11 +76,57 @@ type OfflineSession = {
 import { ICloudGameRepository } from "./ICloudGameRepository";
 
 class CloudGameRepositoryClass implements ICloudGameRepository {
+  private consecutiveErrors = 0;
+  private lastErrorTime = 0;
+  private readonly MELT_COOLDOWN_MS = 30000; // 30秒熔断期
+  private readonly MAX_CONSECUTIVE_ERRORS = 3;
+
+  private isMelted(): boolean {
+    if (this.consecutiveErrors >= this.MAX_CONSECUTIVE_ERRORS) {
+      const now = Date.now();
+      if (now - this.lastErrorTime < this.MELT_COOLDOWN_MS) {
+        return true;
+      }
+      // 冷却期结束，重置一部分错误计数，尝试“半开”重连
+      this.consecutiveErrors = 1; 
+    }
+    return false;
+  }
+
+  private handleNetworkError(e: any, context: string) {
+    const isFetchError = e instanceof Error && (
+      e.message.includes('fetch') || 
+      e.message.includes('Network') ||
+      e.name === 'TypeError'
+    );
+
+    if (isFetchError) {
+      this.consecutiveErrors++;
+      this.lastErrorTime = Date.now();
+      if (this.consecutiveErrors >= this.MAX_CONSECUTIVE_ERRORS) {
+        console.warn(`[CloudGameRepository] 网络请求异常(熔断锁定): ${context}`, e.message);
+      } else {
+        console.error(`[CloudGameRepository] 网络请求失败: ${context}`, e.message);
+      }
+    } else {
+      console.error(`[CloudGameRepository] 业务处理异常: ${context}`, e);
+    }
+  }
+
   async getCurrentUserId(): Promise<string | null> {
-    if (!isSupabaseConfigured || !supabase) return null;
-    const { data, error } = await supabase.auth.getSession();
-    if (error) return null;
-    return data.session?.user?.id ?? null;
+    if (!isSupabaseConfigured || !supabase || this.isMelted()) return null;
+    try {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        // Auth 错误不一定是网络错误，不需要触发强熔断，但记录日志
+        return null;
+      }
+      this.consecutiveErrors = 0; // 成功一次，重置
+      return data.session?.user?.id ?? null;
+    } catch (e) {
+      this.handleNetworkError(e, "getCurrentUserId");
+      return null;
+    }
   }
 
   getOfflineQueue(): OfflineSession[] {
@@ -104,7 +150,7 @@ class CloudGameRepositoryClass implements ICloudGameRepository {
     params: { gameStats: GameStats; finalScore: number; scoreBreakdown: ScoreBreakdown | null },
     skipQueue = false
   ): Promise<{ skipped: boolean; error?: any }> {
-    if (!isSupabaseConfigured || !supabase) return { skipped: true };
+    if (!isSupabaseConfigured || !supabase || this.isMelted()) return { skipped: true };
     const userId = await this.getCurrentUserId();
 
     if (!userId) {
@@ -112,55 +158,62 @@ class CloudGameRepositoryClass implements ICloudGameRepository {
       return { skipped: true };
     }
 
-    const gameEndTimeMs = params.gameStats.gameEndTime ?? Date.now();
-    const difficultyLevel = params.gameStats.difficulty.difficultyLevel as DifficultyLevel;
-    const durationMs = Math.max(0, Math.round(params.gameStats.totalDuration * 1000));
-    const idempotencyKey = `${userId}-${gameEndTimeMs}-${difficultyLevel}-${Math.round(params.finalScore)}`;
-
-    const { error } = await supabase.from("game_sessions").insert({
-      user_id: userId,
-      idempotency_key: idempotencyKey,
-      difficulty: difficultyLevel,
-      duration_ms: durationMs,
-      score: Math.round(params.finalScore),
-      moves: params.gameStats.totalRotations,
-      client_created_at: new Date(gameEndTimeMs).toISOString(),
-      metadata: {
-        scoreBreakdown: params.scoreBreakdown,
-        deviceType: params.gameStats.deviceType,
-        canvasSize: params.gameStats.canvasSize,
-        hintUsageCount: params.gameStats.hintUsageCount,
-        dragOperations: params.gameStats.dragOperations,
-        rotationEfficiency: params.gameStats.rotationEfficiency,
-        gameStartTime: params.gameStats.gameStartTime,
-      },
-    });
-
-    if (error) {
-      if (error.code === "23505") return { skipped: false };
-      if (!skipQueue) this.addToOfflineQueue(params);
-      return { skipped: false, error };
-    }
-
-    // 更新用户的最高分记录 (best_score)
     try {
-      const { data: profile } = await supabase
-        .from("player_profiles")
-        .select("best_score")
-        .eq("id", userId)
-        .single();
+      const gameEndTimeMs = params.gameStats.gameEndTime ?? Date.now();
+      const difficultyLevel = params.gameStats.difficulty.difficultyLevel as DifficultyLevel;
+      const durationMs = Math.max(0, Math.round(params.gameStats.totalDuration * 1000));
+      const idempotencyKey = `${userId}-${gameEndTimeMs}-${difficultyLevel}-${Math.round(params.finalScore)}`;
 
-      if (profile && params.finalScore > profile.best_score) {
-        await supabase
-          .from("player_profiles")
-          .update({ best_score: params.finalScore })
-          .eq("id", userId);
+      const { error } = await supabase.from("game_sessions").insert({
+        user_id: userId,
+        idempotency_key: idempotencyKey,
+        difficulty: difficultyLevel,
+        duration_ms: durationMs,
+        score: Math.round(params.finalScore),
+        moves: params.gameStats.totalRotations,
+        client_created_at: new Date(gameEndTimeMs).toISOString(),
+        metadata: {
+          scoreBreakdown: params.scoreBreakdown,
+          deviceType: params.gameStats.deviceType,
+          canvasSize: params.gameStats.canvasSize,
+          hintUsageCount: params.gameStats.hintUsageCount,
+          dragOperations: params.gameStats.dragOperations,
+          rotationEfficiency: params.gameStats.rotationEfficiency,
+          gameStartTime: params.gameStats.gameStartTime,
+        },
+      });
+
+      if (error) {
+        if (error.code === "23505") return { skipped: false };
+        if (!skipQueue) this.addToOfflineQueue(params);
+        return { skipped: false, error };
       }
-    } catch (profileUpdateErr) {
-      console.warn("Failed to update best_score:", profileUpdateErr);
-    }
 
-    return { skipped: false };
+      // 更新用户的最高分记录 (best_score)
+      try {
+        const { data: profile } = await supabase
+          .from("player_profiles")
+          .select("best_score")
+          .eq("id", userId)
+          .single();
+
+        if (profile && params.finalScore > profile.best_score) {
+          await supabase
+            .from("player_profiles")
+            .update({ best_score: params.finalScore })
+            .eq("id", userId);
+        }
+      } catch (profileUpdateErr) {
+        // 内部静默失败
+      }
+
+      this.consecutiveErrors = 0;
+      return { skipped: false };
+    } catch (e) {
+      this.handleNetworkError(e, "uploadGameSession");
+      if (!skipQueue) this.addToOfflineQueue(params);
+      return { skipped: false, error: e };
+    }
   }
 
   addToOfflineQueue(session: { gameStats: GameStats; finalScore: number; scoreBreakdown: ScoreBreakdown | null }) {
@@ -216,63 +269,74 @@ class CloudGameRepositoryClass implements ICloudGameRepository {
    * 获取当前用户在云端已有的所有幂等键，用于上传前过滤，避免 409 错误
    */
   private async fetchExistingIdempotencyKeys(): Promise<Set<string>> {
-    if (!isSupabaseConfigured || !supabase) return new Set();
+    if (!isSupabaseConfigured || !supabase || this.isMelted()) return new Set();
     const userId = await this.getCurrentUserId();
     if (!userId) return new Set();
 
-    const { data, error } = await supabase
-      .from("game_sessions")
-      .select("idempotency_key")
-      .eq("user_id", userId);
+    try {
+      const { data, error } = await supabase
+        .from("game_sessions")
+        .select("idempotency_key")
+        .eq("user_id", userId);
 
-    if (error) {
-      console.warn("[CloudGameRepository] 获幂等键失败:", error);
+      if (error) {
+        return new Set();
+      }
+
+      this.consecutiveErrors = 0;
+      return new Set((data || []).map((row: any) => row.idempotency_key));
+    } catch (e) {
+      this.handleNetworkError(e, "fetchExistingIdempotencyKeys");
       return new Set();
     }
-
-    return new Set((data || []).map((row: any) => row.idempotency_key));
   }
 
   async fetchUserGameHistory(): Promise<GameRecord[]> {
-    if (!isSupabaseConfigured || !supabase) return [];
+    if (!isSupabaseConfigured || !supabase || this.isMelted()) return [];
     const userId = await this.getCurrentUserId();
     if (!userId) return [];
 
-    const { data, error } = await supabase
-      .from("game_sessions")
-      .select("*")
-      .eq("user_id", userId)
-      .order("client_created_at", { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from("game_sessions")
+        .select("*")
+        .eq("user_id", userId)
+        .order("client_created_at", { ascending: false });
 
-    if (error) return [];
+      if (error) return [];
 
-    return (data ?? []).map((row: any) => {
-      const difficultyLevel = row.difficulty as DifficultyLevel;
-      return {
-        timestamp: new Date(row.client_created_at).getTime(),
-        finalScore: row.score,
-        totalDuration: Math.round(row.duration_ms / 1000),
-        difficulty: {
-          difficultyLevel,
-          cutCount: cutCountFromDifficultyLevel(difficultyLevel),
-          cutType: CutType.Straight,
-          actualPieces: getPieceCountByDifficulty(difficultyLevel),
-          shapeType: ShapeType.Polygon,
-        },
-        deviceInfo: {
-          type: row.metadata?.deviceType || "unknown",
-          screenWidth: row.metadata?.canvasSize?.width || 0,
-          screenHeight: row.metadata?.canvasSize?.height || 0,
-        },
-        totalRotations: row.moves || 0,
-        hintUsageCount: row.metadata?.hintUsageCount || 0,
-        dragOperations: row.metadata?.dragOperations || 0,
-        rotationEfficiency: row.metadata?.rotationEfficiency || 1.0,
-        scoreBreakdown: row.metadata?.scoreBreakdown || null,
-        gameStartTime: row.metadata?.gameStartTime || (new Date(row.client_created_at).getTime() - row.duration_ms),
-        id: row.id,
-      };
-    });
+      this.consecutiveErrors = 0;
+      return (data ?? []).map((row: any) => {
+        const difficultyLevel = row.difficulty as DifficultyLevel;
+        return {
+          timestamp: new Date(row.client_created_at).getTime(),
+          finalScore: row.score,
+          totalDuration: Math.round(row.duration_ms / 1000),
+          difficulty: {
+            difficultyLevel,
+            cutCount: cutCountFromDifficultyLevel(difficultyLevel),
+            cutType: CutType.Straight,
+            actualPieces: getPieceCountByDifficulty(difficultyLevel),
+            shapeType: ShapeType.Polygon,
+          },
+          deviceInfo: {
+            type: row.metadata?.deviceType || "unknown",
+            screenWidth: row.metadata?.canvasSize?.width || 0,
+            screenHeight: row.metadata?.canvasSize?.height || 0,
+          },
+          totalRotations: row.moves || 0,
+          hintUsageCount: row.metadata?.hintUsageCount || 0,
+          dragOperations: row.metadata?.dragOperations || 0,
+          rotationEfficiency: row.metadata?.rotationEfficiency || 1.0,
+          scoreBreakdown: row.metadata?.scoreBreakdown || null,
+          gameStartTime: row.metadata?.gameStartTime || (new Date(row.client_created_at).getTime() - row.duration_ms),
+          id: row.id,
+        };
+      });
+    } catch (e) {
+      this.handleNetworkError(e, "fetchUserGameHistory");
+      return [];
+    }
   }
 
   async migrateLocalHistoryToCloud(records: GameRecord[]): Promise<{ successCount: number; failedCount: number }> {
@@ -349,17 +413,23 @@ class CloudGameRepositoryClass implements ICloudGameRepository {
   }
 
   async fetchPublicLeaderboard(difficulty: DifficultyLevel | "all" = "all"): Promise<GameRecord[]> {
-    if (!isSupabaseConfigured || !supabase) return [];
-    const limit = 50;
+    if (!isSupabaseConfigured || !supabase || this.isMelted()) return [];
+    try {
+      const limit = 50;
 
-    let query = supabase.from("leaderboards").select("*").order("best_score", { ascending: false }).limit(limit);
-    if (difficulty !== "all") query = query.eq("difficulty", difficulty);
+      let query = supabase.from("leaderboards").select("*").order("best_score", { ascending: false }).limit(limit);
+      if (difficulty !== "all") query = query.eq("difficulty", difficulty);
 
-    const { data, error } = await query;
-    if (error) return [];
+      const { data, error } = await query;
+      if (error) return [];
 
-    const rows = (data ?? []) as PublicLeaderboardRow[];
-    return rows.map(mapPublicRowToGameRecord);
+      this.consecutiveErrors = 0;
+      const rows = (data ?? []) as PublicLeaderboardRow[];
+      return rows.map(mapPublicRowToGameRecord);
+    } catch (e) {
+      this.handleNetworkError(e, "fetchPublicLeaderboard");
+      return [];
+    }
   }
 
   async clearGameRecordsRPC(): Promise<{ success: boolean; error?: any }> {

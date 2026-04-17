@@ -52,15 +52,15 @@ const PhonePortraitLayout: React.FC<PhonePortraitLayoutProps> = ({
 
   return (
     <div
-      className="flex flex-col items-center justify-center min-h-dvh w-full"
+      className="flex flex-col items-center min-h-[100dvh] w-full overflow-y-auto overflow-x-hidden no-scrollbar"
       style={{
         background: 'none',
-        // 仅在竖屏状态下增加呼吸空间
-        paddingTop: isTabletPortrait ? 60 : 0, 
-        paddingBottom: MOBILE_ADAPTATION.PORTRAIT.SAFE_AREA_BOTTOM,
+        // 确保顶部绝对安全，不再被截断
+        paddingTop: isTabletPortrait ? 60 : Math.max(MOBILE_ADAPTATION.PORTRAIT.SAFE_AREA_TOP || 24, 24), 
+        paddingBottom: Math.max(MOBILE_ADAPTATION.PORTRAIT.SAFE_AREA_BOTTOM, 16),
       }}
     >
-      {}
+      <div className="flex flex-col items-center w-full my-auto shrink-0 space-y-2">
       <div
         ref={containerRef}
         className="order-1 bg-white/20 backdrop-blur-sm rounded-3xl shadow-[0_10px_25px_rgba(0,0,0,0.2)] border-2 border-white/30 overflow-hidden"
@@ -105,6 +105,7 @@ const PhonePortraitLayout: React.FC<PhonePortraitLayoutProps> = ({
           onToggleFullscreen={onToggleFullscreen}
           style={{ width: '100%' }}
         />
+      </div>
       </div>
     </div>
   );

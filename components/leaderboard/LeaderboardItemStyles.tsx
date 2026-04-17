@@ -30,9 +30,9 @@ export const LeaderboardItemStyles: React.FC<LeaderboardItemStylesProps> = ({
   
   // 玩家新入榜成绩高亮样式
   const playerNewEntryStyles = `
-    bg-gradient-to-r from-[#F68E5F]/30 via-[#FFD5AB]/20 to-[#F68E5F]/30
-    border-2 border-[#F68E5F]/60
-    shadow-lg shadow-[#F68E5F]/20
+    bg-gradient-to-r from-[#FFD5AB]/30 via-[#FFD5AB]/20 to-[#FFD5AB]/30
+    border-2 border-[#FFD5AB]/60
+    shadow-lg shadow-[#FFD5AB]/20
     animate-pulse-glow
   `;
   
@@ -64,9 +64,9 @@ export const LeaderboardItemStyles: React.FC<LeaderboardItemStylesProps> = ({
       {isPlayerNewEntry && (
         <>
           {/* 底部光晕效果 */}
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#F68E5F] to-transparent opacity-50 rounded-b-lg animate-pulse" />
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#FFD5AB] to-transparent opacity-50 rounded-b-lg animate-pulse" />
           {/* 新入榜标识 */}
-          <div className="absolute -top-1 -right-1 bg-[#F68E5F] text-white text-xs px-2 py-0.5 rounded-full font-bold shadow-lg animate-bounce">
+          <div className="absolute -top-1 -right-1 bg-[#FFD5AB] text-[#2A2A2A] text-xs px-2 py-0.5 rounded-full font-bold shadow-lg animate-bounce">
             NEW
           </div>
         </>
@@ -161,7 +161,7 @@ export const LeaderboardItemContent: React.FC<LeaderboardItemContentProps> = ({
         {onViewDetails && (
           <button
             onClick={onViewDetails}
-            className="text-xs text-[#F68E5F] hover:text-white mt-1 transition-colors"
+            className="text-xs text-[#FFD5AB] hover:text-white mt-1 transition-colors"
           >
             详情
           </button>

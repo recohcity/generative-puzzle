@@ -463,9 +463,8 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                   }}
                 />
               ) : showLeaderboard ? (
-                // 个人最佳成绩显示 - 隐藏所有游戏设置，只显示个人最佳成绩
                 <LeaderboardPanel
-                  key={`desktop-leaderboard-${t('game.leaderboard.title')}`}
+                  key={`desktop-leaderboard-${t("game.leaderboard.title")}`}
                   leaderboard={leaderboardData}
                   history={historyData}
                   onClose={() => setShowLeaderboard(false)}
@@ -474,138 +473,34 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                   isFullscreen={isFullscreen}
                   onToggleMusic={onToggleMusic}
                   onToggleFullscreen={onToggleFullscreen}
-                  onShowLeaderboard={() => {
-                    if (showLeaderboard) {
-                      // 关闭
-                      console.log('[DesktopLayout] 关闭');
-                      setShowLeaderboard(false);
-                    } else {
-                      // 打开个人最佳成绩，加载最新数据
-                      console.log('[DesktopLayout] 打开个人最佳成绩，加载数据...');
-                      const data = GameDataManager.getLeaderboard();
-                      const history = GameDataManager.getGameHistory();
-                      console.log('[DesktopLayout] 个人最佳成绩数据:', data);
-                      console.log('[DesktopLayout] 历史成绩:', history);
-                      setLeaderboardData(data);
-                      setHistoryData(history);
-                      setShowLeaderboard(true);
-                    }
-                  }}
+                  onShowLeaderboard={() => setShowLeaderboard(!showLeaderboard)}
                   onViewRecentGame={(record) => {
-                    console.log('[DesktopLayout] 显示最近游戏详情:', record);
                     setSelectedGameRecord(record);
                     setShowLeaderboard(false);
                     setShowRecentGameDetails(true);
                   }}
                 />
               ) : state.isCompleted && state.gameStats ? (
-                // 游戏完成时 - 隐藏所有游戏控制按钮，显示完整成绩详情
+                // 游戏完成时 - 使用统一组件 (SOP Refined)
                 <div className="flex flex-col h-full">
-                  {/* 成绩详情直接在游戏名称下展示 */}
-                  <div className="mb-4">
-                    <h2 id="section-game-result" className="text-premium-title mb-2" style={{ fontSize: panelScale <= 0.5 ? 16 : 'calc(0.9rem * var(--panel-scale))' }}>
-                      🏆 {t('stats.gameComplete')}
-                    </h2>
+                  <div className="flex-1 overflow-y-auto no-scrollbar min-h-0">
+                    <ScoreDisplay embedded={true} />
                   </div>
-
-                  {/* 滚动内容区域 */}
-                  <div className="flex-1 overflow-y-auto space-y-3 mb-4" style={{ fontSize: panelScale <= 0.5 ? 12 : 'calc(0.75rem * var(--panel-scale))' }}>
-                    {/* 本局成绩卡片 — 无 backdrop-blur，无白色遮罩 */}
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden">
-
-                      {/* Hero score section */}
-                      <div className="flex items-center justify-between px-3 pt-3 pb-2">
-                         <div className="flex flex-col gap-0.5">
-                            <span className="text-[#FFD5AB]/40 text-[10px] font-bold uppercase tracking-widest leading-none">
-                              {t('score.breakdown.gameDuration')}：{Math.floor(state.gameStats.totalDuration / 60).toString().padStart(2, '0')}:{(state.gameStats.totalDuration % 60).toString().padStart(2, '0')}
-                            </span>
-                            <span className="text-[#FFD5AB]/25 text-[9px] leading-none">{getDifficultyWithShape(state.gameStats.difficulty)}</span>
-                         </div>
-                         <div className="text-3xl font-black text-[#FFD5AB] tabular-nums tracking-tight leading-none">
-                           {(state.scoreBreakdown?.finalScore || state.currentScore).toLocaleString()}
-                         </div>
-                      </div>
-
-                      {/* Flat breakdown */}
-                      {state.scoreBreakdown && (
-                        <div className="px-3 pb-3">
-                          <div className="h-px bg-white/8" />
-
-                          <div className="flex flex-col gap-1 py-1.5">
-                            {[
-                              { label: t('score.breakdown.base'), sub: getDifficultyWithShape(state.gameStats.difficulty), value: state.scoreBreakdown.baseScore.toLocaleString(), sign: '' },
-                              { label: t('score.breakdown.timeBonus'), sub: getSpeedBonusText(state.gameStats.totalDuration), value: state.scoreBreakdown.timeBonus.toLocaleString(), sign: '+' },
-                              { label: t('score.breakdown.rotationScore'), sub: `${state.gameStats.totalRotations}/${state.gameStats.minRotations}`, value: Math.abs(state.scoreBreakdown.rotationScore).toLocaleString(), sign: state.scoreBreakdown.rotationScore >= 0 ? '+' : '-' },
-                              { label: t('score.breakdown.hintScore'), sub: `${state.gameStats.hintUsageCount}/${state.scoreBreakdown.hintAllowance || 0}`, value: Math.abs(state.scoreBreakdown.hintScore).toLocaleString(), sign: state.scoreBreakdown.hintScore >= 0 ? '+' : '-' }
-                            ].map((row, i) => (
-                              <div key={i} className="flex items-baseline justify-between leading-none py-0.5">
-                                <div className="flex-1 min-w-0 pr-2 flex items-baseline gap-1.5">
-                                  <span className="text-[#FFD5AB]/60 text-[11px] font-medium shrink-0">{row.label}</span>
-                                  <span className="text-[#FFD5AB]/25 text-[9px] truncate">{row.sub}</span>
-                                </div>
-                                <span className={cn('text-[11px] font-black tabular-nums shrink-0', (row.sign === '-' ? 'text-[#FF8A80]' : 'text-[#FFD5AB]'))}>
-                                  {row.sign}{row.value}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-
-                          <div className="h-px bg-white/8" />
-
-                          {/* Subtotal & Multiplier */}
-                          <div className="flex flex-col gap-1 py-1.5">
-                            <div className="flex items-baseline justify-between leading-none">
-                              <span className="text-[#FFD5AB]/50 text-[10px] font-bold uppercase tracking-wider">{t('score.breakdown.subtotal')}</span>
-                              <span className="text-[#FFD5AB]/70 text-[10px] font-black tabular-nums">
-                                {(state.scoreBreakdown.baseScore + state.scoreBreakdown.timeBonus + state.scoreBreakdown.rotationScore + state.scoreBreakdown.hintScore).toLocaleString()}
-                              </span>
-                            </div>
-
-                            <div className="flex items-baseline justify-between leading-none">
-                              <span className="text-[#FFD5AB]/50 text-[10px] font-bold uppercase tracking-wider">{t('score.breakdown.multiplier')}</span>
-                              <span className="text-[#F68E5F] text-[10px] font-black tabular-nums">×{state.scoreBreakdown.difficultyMultiplier.toFixed(2)}</span>
-                            </div>
-                          </div>
-
-                          <div className="h-px bg-white/8" />
-
-                          {/* Final */}
-                          <div className="flex items-baseline justify-between py-2 leading-none">
-                            <span className="text-[#FFD5AB] text-[12px] font-black uppercase tracking-widest">{t('score.breakdown.final')}</span>
-                            <span className="text-[#FFD5AB] text-[20px] font-black tabular-nums tracking-tight">
-                              {(state.scoreBreakdown?.finalScore || state.currentScore).toLocaleString()}
-                            </span>
-                          </div>
-
-                          {state.isNewRecord && (
-                            <div className="text-center mt-1 pb-1">
-                               <div className="inline-flex items-center gap-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-[#232035] px-4 py-0.5 rounded-full text-[10px] font-black tracking-widest uppercase shadow-lg">
-                                 🌟 {t('stats.newRecord')}
-                               </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-
-                  </div>
-
-                  {/* 重玩本局和重开游戏按钮 */}
-                  <div className="flex flex-col gap-2 mt-4">
+                  {/* 底部操作按钮 */}
+                  <div className="flex flex-col gap-2 pt-3 mt-1 border-t border-white/5 shrink-0">
                     <RestartButton
                       onClick={handleRetryCurrentGame}
                       icon="retry"
-                      style={{ height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 14 : 'calc(0.95rem * var(--panel-scale))' }}
+                      style={{ height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 14 : "calc(0.95rem * var(--panel-scale))" }}
                     >
-                      {t('game.controls.retryCurrent')}
+                      {t("game.controls.retryCurrent")}
                     </RestartButton>
                     <RestartButton
                       onClick={handleDesktopResetGame}
                       icon="refresh"
-                      style={{ height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 14 : 'calc(0.95rem * var(--panel-scale))' }}
+                      style={{ height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 14 : "calc(0.95rem * var(--panel-scale))" }}
                     >
-                      {t('game.controls.restartGame')}
+                      {t("game.controls.restartGame")}
                     </RestartButton>
                   </div>
                 </div>

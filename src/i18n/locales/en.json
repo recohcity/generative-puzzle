@@ -272,7 +272,7 @@
             "lastUpdate": "Last Update"
         },
         "gameComplete": "Game Complete",
-        "complete": "Complete",
+        "currentGameResult": "Current Results",
         "perfectHints": "Perfect Hints",
         "perfectGame": "Perfect Game",
         "zeroHintsBonus": "Zero Hints Bonus",
