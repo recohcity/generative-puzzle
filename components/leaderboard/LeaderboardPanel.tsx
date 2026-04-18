@@ -281,7 +281,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-hidden overflow-x-hidden no-scrollbar -mx-0.5 px-0.5 min-h-0">
+              <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar -mx-0.5 px-0.5 min-h-0 touch-pan-y">
                 <AnimatePresence mode="wait">
                   {activeTab === 'personal' ? (
                     <motion.div
@@ -292,9 +292,9 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                       className="space-y-3"
                     >
                       {/* Top 5 个人最佳成绩 */}
-                      <div className="rounded-2xl p-3">
-                        <h2 className="text-[#FFD5AB]/60 mb-4 text-sm flex items-center gap-2 uppercase tracking-wider font-medium">
-                          <Trophy className="w-4 h-4 opacity-40" />
+                      <div className="rounded-2xl p-2.5">
+                        <h2 className="text-[#FFD5AB]/60 mb-2.5 text-xs flex items-center gap-2 uppercase tracking-wider font-medium">
+                          <Trophy className="w-3.5 h-3.5 opacity-40" />
                           {t('leaderboard.title')}
                         </h2>
                         {filteredLeaderboard.length === 0 ? (
@@ -310,7 +310,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.05 }}
-                                className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-white/[0.06] border border-white/10 hover:border-[#FFD5AB]/50 hover:bg-white/[0.10] transition-all cursor-pointer group"
+                                className="flex items-center gap-2 px-2.5 py-2 rounded-xl bg-white/[0.06] border border-white/10 hover:border-[#FFD5AB]/50 hover:bg-white/[0.10] transition-all cursor-pointer group"
                                 onClick={() => showRecentGameDetails(record)}
                               >
                                 <div className={cn(
@@ -333,9 +333,9 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                         )}
                       </div>
                       {/* 最近游戏历史 */}
-                      <div className="rounded-2xl p-3">
-                        <h2 className="text-[#FFD5AB]/60 mb-4 text-sm flex items-center gap-2 uppercase tracking-wider font-medium">
-                          <History className="w-4 h-4 opacity-40" />
+                      <div className="rounded-2xl p-2.5">
+                        <h2 className="text-[#FFD5AB]/60 mb-2.5 text-xs flex items-center gap-2 uppercase tracking-wider font-medium">
+                          <History className="w-3.5 h-3.5 opacity-40" />
                           {t('stats.scoreHistory')}
                         </h2>
                         {sortedHistory.length === 0 ? (
@@ -347,7 +347,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                             {sortedHistory.map((record, index) => (
                               <div
                                 key={`recent-${record.timestamp}-${index}`}
-                                className="group flex items-center justify-between px-3.5 py-2 rounded-xl bg-white/[0.06] border border-white/10 hover:border-[#FFD5AB]/50 hover:bg-white/[0.10] cursor-pointer transition-all text-xs"
+                                className="group flex items-center justify-between px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 hover:border-[#FFD5AB]/50 hover:bg-white/[0.10] cursor-pointer transition-all text-[11px]"
                                 onClick={() => showRecentGameDetails(record)}
                               >
                                 <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -379,9 +379,9 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                       exit={{ opacity: 0, x: -10 }}
                       className="min-h-[300px] flex flex-col"
                     >
-                      <div className="rounded-2xl p-3 flex-1 flex flex-col no-scrollbar">
-                        <h2 className="text-[#FFD5AB]/60 font-bold mb-4 text-sm flex items-center gap-2 uppercase tracking-wider font-medium">
-                          <Globe className="w-4 h-4 opacity-40" />
+                      <div className="rounded-2xl p-2.5 flex-1 flex flex-col no-scrollbar">
+                        <h2 className="text-[#FFD5AB]/60 font-medium mb-2.5 text-xs flex items-center gap-2 uppercase tracking-wider">
+                          <Globe className="w-3.5 h-3.5 opacity-40" />
                           {t('game.leaderboard.tabs.global')}
                         </h2>
 
@@ -409,7 +409,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                               return (
                                 <div
                                   key={`global-${record.id || index}`}
-                                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-white/[0.06] border border-white/10 hover:border-[#FFD5AB]/50 hover:bg-white/[0.10] transition-all cursor-pointer group"
+                                  className="flex items-center gap-2 px-2.5 py-2 rounded-xl bg-white/[0.06] border border-white/10 hover:border-[#FFD5AB]/50 hover:bg-white/[0.10] transition-all cursor-pointer group"
                                 >
                                   {/* Rank — same size as personal best */}
                                   <div className={cn(
