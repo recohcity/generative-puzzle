@@ -48,21 +48,11 @@ export const GameTimer: React.FC<GameTimerProps> = ({ className = '', style = {}
 
   // 启动和停止计时器
   useEffect(() => {
-    // 调试信息
-    console.log('[GameTimer] State check:', {
-      hasGameStats: !!state.gameStats,
-      isGameActive: state.isGameActive,
-      isGameComplete: state.isGameComplete,
-      gameStartTime: state.gameStats?.gameStartTime
-    });
-
     if (state.gameStats && state.isGameActive && !state.isGameComplete) {
       // 游戏进行中，启动计时器
-      console.log('[GameTimer] Starting timer');
       animationFrameRef.current = requestAnimationFrame(updateTimer);
     } else {
       // 游戏未开始或已完成，停止计时器
-      console.log('[GameTimer] Stopping timer');
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
         animationFrameRef.current = null;

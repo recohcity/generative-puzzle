@@ -19,7 +19,6 @@ export function useDebugToggle(): [boolean, (v: boolean) => void] {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('debug-mode-enabled', showDebugElements.toString());
-      console.log(`[F10调试] 状态已保存: ${showDebugElements}`);
     }
   }, [showDebugElements]);
 
@@ -29,7 +28,6 @@ export function useDebugToggle(): [boolean, (v: boolean) => void] {
         e.preventDefault();
         setShowDebugElements(prev => {
           const newValue = !prev;
-          console.log(`[F10调试] 状态切换: ${prev} -> ${newValue}`);
           return newValue;
         });
       }
