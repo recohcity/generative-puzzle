@@ -64,6 +64,7 @@
 | 评审维度 | 检查项 | 对应功能 | 核心源代码 (Source Files) |
 | :--- | :--- | :--- | :--- |
 | **状态机** | Active (Peach-Orange) / Inactive / Sheen | 动作按钮组 | `ActionButtons.tsx`, `PhoneTabPanel.tsx` |
+| **视觉防溢出** | 激活态按钮解除边框(`border-none`)且弃用内阴影，禁止渐变色从底边/透明边溢出错位 | 按钮渲染基类 | `app/globals.css` (.glass-btn-active) |
 | **动态缩放** | 基于 panel-scale 计算的半径与间距 | 切割/难度 | `PuzzleControlsCutCount.tsx` |
 | **一致性** | 提示文字统一使用 Peach (#FFD5AB) | 控件组合器 | `PuzzleControlsScatter.tsx` |
 | **比例适配** | 基于 panel-scale 的图标与容器尺寸 | 全局工具栏 | `GlobalUtilityButtons.tsx`, `RestartButton.tsx` |
@@ -86,5 +87,5 @@
 
 ---
 *上次修订：2026-04-18*  
-*全量结案更新：2026-04-18 (SOP v2.62 - 深度回归评审与空气感布局修正版)*  
+*全量结案更新：2026-04-18 (SOP v2.63 - 金钮渲染修正版)*  
 *文档状态：**Official Standard / Strictly Enforced***

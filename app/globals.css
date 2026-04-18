@@ -634,9 +634,9 @@ svg {
 
   /* Active / Selected / Primary Action State */
   .glass-btn-active {
-    @apply glass-btn-base border-transparent text-brand-dark font-bold;
+    @apply glass-btn-base border-none text-brand-dark font-bold;
     background: linear-gradient(135deg, var(--brand-peach) 0%, var(--brand-orange) 100%);
-    box-shadow: 0 4px 15px rgba(var(--brand-orange-rgb), 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 15px rgba(var(--brand-orange-rgb), 0.4);
   }
 
   /* Secondary Active (Soft Orange Glow) */
