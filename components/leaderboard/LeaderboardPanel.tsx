@@ -292,7 +292,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                       className="space-y-3"
                     >
                       {/* Top 5 个人最佳成绩 */}
-                      <div className="rounded-2xl p-3 bg-white/[0.04]">
+                      <div className="rounded-2xl p-3">
                         <h2 className="text-[#FFD5AB]/60 mb-4 text-sm flex items-center gap-2 uppercase tracking-wider font-medium">
                           <Trophy className="w-4 h-4 opacity-40" />
                           {t('leaderboard.title')}
@@ -333,7 +333,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                         )}
                       </div>
                       {/* 最近游戏历史 */}
-                      <div className="rounded-2xl p-3 bg-white/[0.04]">
+                      <div className="rounded-2xl p-3">
                         <h2 className="text-[#FFD5AB]/60 mb-4 text-sm flex items-center gap-2 uppercase tracking-wider font-medium">
                           <History className="w-4 h-4 opacity-40" />
                           {t('stats.scoreHistory')}
@@ -379,7 +379,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                       exit={{ opacity: 0, x: -10 }}
                       className="min-h-[300px] flex flex-col"
                     >
-                      <div className="rounded-2xl p-3 bg-white/[0.04] flex-1 flex flex-col no-scrollbar">
+                      <div className="rounded-2xl p-3 flex-1 flex flex-col no-scrollbar">
                         <h2 className="text-[#FFD5AB]/60 font-bold mb-4 text-sm flex items-center gap-2 uppercase tracking-wider font-medium">
                           <Globe className="w-4 h-4 opacity-40" />
                           {t('game.leaderboard.tabs.global')}
