@@ -262,17 +262,12 @@ export default function CurveTestOptimized() {
   const toggleFullscreen = () => {
     playButtonClickSound();
 
-    // 增加点击计数器
     const newClickCount = fullscreenClickCount + 1;
     setFullscreenClickCount(newClickCount);
 
-    // 使用统一设备检测系统
     const isIOS = device.isIOS;
     const isAndroid = device.isAndroid;
-    const isMobile = device.isMobile;
-    const isInWebView = typeof navigator !== 'undefined' && /(.*WebView|.*FBIOS|.*Twitter)/.test(navigator.userAgent);
 
-    // 检查是否真正处于全屏状态
     const checkFullscreenState = () => {
       return !!(document.fullscreenElement ||
         (document as any).webkitFullscreenElement ||
@@ -280,25 +275,18 @@ export default function CurveTestOptimized() {
         (document as any).msFullscreenElement);
     };
 
-    // 获取当前实际全屏状态
     const actualFullscreenState = checkFullscreenState();
 
-    // 如果状态不一致，强制同步
     if (isFullscreen !== actualFullscreenState) {
       setIsFullscreen(actualFullscreenState);
-      // 如果状态不一致，先同步状态，然后在下一次点击处理切换
       return;
     }
 
-    // 基于实际状态(actualFullscreenState)决定操作，而不是基于React状态
     if (!actualFullscreenState) {
-      // 进入全屏
       const gameContainer = gameContainerRef.current;
       if (!gameContainer) return;
 
-      // 对于iOS设备，使用一种特殊处理方式，因为iOS不完全支持标准fullscreen API
       if (isIOS) {
-        // 1. 存储原始样式
         const originalStyles = {
           position: gameContainer.style.position,
           top: gameContainer.style.top,
@@ -308,7 +296,6 @@ export default function CurveTestOptimized() {
           zIndex: gameContainer.style.zIndex
         };
 
-        // 2. 将元素样式设置为全屏
         (gameContainer as any)._originalStyles = originalStyles;
         gameContainer.style.position = 'fixed';
         gameContainer.style.top = '0';
@@ -316,46 +303,28 @@ export default function CurveTestOptimized() {
         gameContainer.style.width = '100vw';
         gameContainer.style.height = '100vh';
         gameContainer.style.zIndex = '9999';
-
-        // 3. 修改滚动行为
         document.body.style.overflow = 'hidden';
         window.scrollTo(0, 0);
-
-        // 4. 应用带有安全区域的填充
         gameContainer.style.paddingTop = 'env(safe-area-inset-top)';
         gameContainer.style.paddingBottom = 'env(safe-area-inset-bottom)';
-
-        // 5. 强制设置状态
         setIsFullscreen(true);
 
-        // 6. 尝试锁定屏幕方向（这在iOS上可能不起作用，但在某些情况下可能有用）
-        try {
-          if (device.screenWidth > device.screenHeight) {
-            // 请求横屏锁定
-            if (window.screen.orientation && 'lock' in window.screen.orientation) {
-              (window.screen.orientation as any).lock('landscape').catch((err: any) => {
-                });
-              }
-            }
-          }
-        } catch (error) {
-        }
-      }
-      // 对于Android设备
-      else if (isAndroid) {
-        // 先尝试锁定方向，然后请求全屏
         try {
           if (device.screenWidth > device.screenHeight) {
             if (window.screen.orientation && 'lock' in window.screen.orientation) {
-              (window.screen.orientation as any).lock('landscape').catch((err: any) => {
-                });
-              }
+              (window.screen.orientation as any).lock('landscape').catch(() => {});
             }
           }
-        } catch (err) {
-        }
+        } catch (error) {}
+      } else if (isAndroid) {
+        try {
+          if (device.screenWidth > device.screenHeight) {
+            if (window.screen.orientation && 'lock' in window.screen.orientation) {
+              (window.screen.orientation as any).lock('landscape').catch(() => {});
+            }
+          }
+        } catch (err) {}
 
-        // 尝试使用标准全屏API
         try {
           if (gameContainer.requestFullscreen) {
             gameContainer.requestFullscreen();
@@ -367,8 +336,6 @@ export default function CurveTestOptimized() {
             (gameContainer as any).msRequestFullscreen();
           }
         } catch (error) {
-          // console.log("全屏请求失败:", error);
-          // 如果标准方法失败，尝试iOS类似的备用方法
           const originalStyles = {
             position: gameContainer.style.position,
             top: gameContainer.style.top,
@@ -377,7 +344,6 @@ export default function CurveTestOptimized() {
             height: gameContainer.style.height,
             zIndex: gameContainer.style.zIndex
           };
-
           (gameContainer as any)._originalStyles = originalStyles;
           gameContainer.style.position = 'fixed';
           gameContainer.style.top = '0';
@@ -388,11 +354,8 @@ export default function CurveTestOptimized() {
           document.body.style.overflow = 'hidden';
           setIsFullscreen(true);
         }
-      }
-      // 对于桌面设备，使用标准全屏API
-      else {
+      } else {
         try {
-          // console.log("桌面设备进入全屏");
           if (gameContainer.requestFullscreen) {
             gameContainer.requestFullscreen();
           } else if ((gameContainer as any).webkitRequestFullscreen) {
@@ -402,22 +365,15 @@ export default function CurveTestOptimized() {
           } else if ((gameContainer as any).msRequestFullscreen) {
             (gameContainer as any).msRequestFullscreen();
           }
-          // 切换按钮状态 - 如果直接调用没有触发fullscreenchange事件，手动更新状态
-          // 使用更长的延迟，确保全屏状态稳定后再更新
           setTimeout(() => {
             try {
               const isFullscreenNow = checkFullscreenState();
               if (isFullscreenNow !== isFullscreen) {
-                // console.log(`全屏状态不一致，从 ${isFullscreen} 更新为 ${isFullscreenNow}`);
                 setIsFullscreen(isFullscreenNow);
               }
-            } catch (error) {
-              console.error("检查全屏状态时出错:", error);
-            }
+            } catch (error) {}
           }, 500);
-        } catch (error) {
-          // console.log("请求进入全屏出错:", error);
-        }
+        } catch (error) {}
       }
     } else {
       // 退出全屏
