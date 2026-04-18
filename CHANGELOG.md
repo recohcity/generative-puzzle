@@ -1,5 +1,23 @@
 # 生成式拼图游戏 Changelog
 
+## [v1.4.1] - 2026-04-18
+
+### ✨ UI 空气感升级与组件级 Bug 阻击 (Acoustic UI & Component Fixes)
+
+#### 1. 极致悬浮感重塑 (Visual Glassmorphism Polish)
+- **空气感留白**: 从桌面端 (`LeaderboardPanel`) 到移动端 (`PhoneTabPanel`)，全面移除了排行榜的深色磨砂底框 (`bg-white/[0.04]`)，让组件与全局面板底色融为一体，彻底实现“无界悬浮”的美学要求。
+- **按钮边缘泄漏修复**: 彻底解决了 `.glass-btn-active` 按钮因透明边框与内阴影发生渲染重叠而产生的“泄色/重叠双线”视觉缺陷。
+- **退化闪黑完美过渡**: 通过重构使用 `border-color: rgba(255,255,255,0)` 叠加 `background-clip: padding-box`，彻底根治了交互按钮切回闲置态时浏览器使用黑色插值产生的惊悚“闪黑边框”事件。
+
+#### 2. 全局榜单去噪与治理 (Leaderboard UX & Deduplication)
+- **数据精简免扰**: 移除了全服排行榜前端面向普通玩家的「多局数统计 (X局)」显示，减少了阅读压迫感（只在排位分上决胜负）。
+- **聚合统计归位**: 将玩家总游玩局数平滑重定向至私有的管理员后台面板 (`/scores`) 中的 **[Total Games]** 专属统计列，方便查热度而不干扰玩家。
+- **消灭 React 爆红**: 为移动端 `PhoneTabPanel` 的全服全量渲染强制注入了缺失的 `useMemo` 数据清洗与指纹去重链，秒杀了一直在后台偷偷抛出的 `Encountered two children with the same key` 渲染树重复警告。
+
+#### 3. 法典加固 (SOP Documentation)
+- **UI 规范升版**: 同步颁布了 `V3.8` 规范及 `V2.64` 验证 SOP，将防止切态闪黑及边界防溢出的金边法则强打入库，确保视觉遗产不被磨损。
+
+
 ## [v1.4.0] - 2026-04-18
 
 ### 🔧 修复全服排名同步失败的根因 (Critical: Fix Global Leaderboard Sync)
