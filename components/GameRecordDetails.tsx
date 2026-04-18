@@ -60,11 +60,11 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({ record, onBack })
   return (
     <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-300">
 
-      {/* 1. Header & Score in ONE line - font-medium, transparency removed */}
-      <div className="flex items-center justify-between w-full px-0.5 mb-2.5 mt-1 shrink-0">
+      {/* 1. Header & Score in ONE line - 11px matches standard layout */}
+      <div className="flex items-center justify-between w-full px-0.5 mb-1 mt-1 shrink-0">
         <div className="flex items-center gap-1.5">
           <Trophy className="w-4 h-4 shrink-0" style={{ color: BRAND_GOLD }} />
-          <h2 className="text-white/90 font-medium uppercase tracking-widest leading-none text-[12px]">
+          <h2 className="text-white/90 font-medium uppercase tracking-[0.1em] leading-none text-[11px]">
             {t('leaderboard.recentGameScore') || '本局成绩'}
           </h2>
         </div>
@@ -78,14 +78,14 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({ record, onBack })
         <div className="rounded-2xl border border-white/10 bg-transparent p-4">
           <div className="space-y-4">
             {/* Detail rows */}
-            <div className="space-y-1.5">
+            <div className="space-y-0.5">
               {rows.map((row, i) => (
                 <div key={i} className="flex items-baseline justify-between leading-none py-0.5">
                   <div className="flex items-baseline gap-1.5 flex-1 min-w-0 pr-4 overflow-hidden">
-                    <span className="text-white/60 text-[13px] font-medium shrink-0">{row.label}</span>
-                    <span className="text-white/20 text-[11px] truncate uppercase font-medium">{row.sub}</span>
+                    <span className="text-white/70 text-[12px] font-medium shrink-0">{row.label}</span>
+                    <span className="text-white/20 text-[10px] truncate uppercase font-medium">{row.sub}</span>
                   </div>
-                  <span className="text-[14px] font-medium tabular-nums shrink-0" style={{ color: (row as any).sign === '-' ? '#FF8A80' : BRAND_GOLD }}>
+                  <span className="text-[13px] font-medium tabular-nums shrink-0" style={{ color: (row as any).sign === '-' ? '#FF8A80' : BRAND_GOLD }}>
                     {(row as any).sign || ''}{row.value}
                   </span>
                 </div>
@@ -95,31 +95,31 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({ record, onBack })
             <div className="h-px bg-white/10 w-full opacity-15 mt-1 mb-1" />
 
             {/* Subtotal */}
-            <div className="space-y-1.5">
-              <div className="flex items-baseline justify-between leading-none">
-                <span className="text-white/30 text-[11px] font-medium uppercase tracking-wider">
+            <div className="space-y-1">
+              <div className="flex items-center justify-between leading-tight">
+                <span className="text-white/25 text-[10px] font-medium uppercase tracking-tight">
                   {t('score.breakdown.subtotal')}
                 </span>
-                <span className="text-white/40 text-[13px] font-medium tabular-nums">
+                <span className="text-white/30 text-[11px] font-medium tabular-nums">
                   {subtotal}
                 </span>
               </div>
 
-              <div className="flex items-baseline justify-between leading-none">
-                <span className="text-white/30 text-[11px] font-medium uppercase tracking-wider">
+              <div className="flex items-center justify-between leading-tight">
+                <span className="text-white/25 text-[10px] font-medium uppercase tracking-tight">
                   {t('score.breakdown.multiplier')}
                 </span>
-                <span className="text-[13px] font-medium tabular-nums" style={{ color: BRAND_GOLD, opacity: 0.8 }}>
+                <span className="text-[11px] font-medium tabular-nums" style={{ color: BRAND_GOLD, opacity: 0.7 }}>
                   ×{(record.scoreBreakdown?.difficultyMultiplier || 1).toFixed(2)}
                 </span>
               </div>
 
               {/* Final Score */}
-              <div className="border-t border-white/5 flex items-baseline justify-between pt-3 mt-1.5">
-                <span className="text-white/60 text-[14px] font-medium uppercase tracking-widest">
+              <div className="border-t border-white/5 flex items-baseline justify-between pt-1.5 mt-1">
+                <span className="text-white/50 text-[12px] font-medium uppercase tracking-tight">
                   {t('score.breakdown.final')}
                 </span>
-                <span className="text-lg font-medium tabular-nums tracking-tight leading-none" style={{ color: BRAND_GOLD }}>
+                <span className="text-[16px] font-medium tabular-nums tracking-tight leading-none" style={{ color: BRAND_GOLD }}>
                   {record.finalScore}
                 </span>
               </div>
@@ -128,10 +128,10 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({ record, onBack })
         </div>
       </div>
 
-      {/* Back button */}
+      {/* Back button - aligned to standard control buttons size */}
       <button
         onClick={handleBack}
-        className="glass-btn-active w-full mt-3 shrink-0 h-10 rounded-xl text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2"
+        className="glass-btn-active w-full mt-3 shrink-0 h-9 rounded-xl text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2"
         style={{ color: BRAND_GOLD }}
       >
         <ArrowLeft className="w-4 h-4" strokeWidth={2} />

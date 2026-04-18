@@ -331,7 +331,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
         {showLeaderboard && user ? (
           /* 已登录状态：在面板内显示成绩榜单 (精准复刻桌面版 parity 设计) */
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 h-full flex flex-col pt-0">
-            <div className={cn("rounded-2xl flex flex-col flex-1 min-h-0 relative overflow-hidden", isLandscape ? "p-1.5" : "p-3")}>
+            <div className={cn("rounded-2xl flex flex-col flex-1 min-h-0 relative overflow-x-hidden", isLandscape ? "p-1.5" : "p-3")}>
               {/* 顶部标签切换器 + 关闭按钮 (紧凑布局) */}
               <div className="flex items-center justify-between mb-1 shrink-0 px-0.5">
                 <div className="flex gap-1.5">

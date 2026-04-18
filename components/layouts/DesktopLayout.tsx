@@ -489,7 +489,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                     <ScoreDisplay embedded={true} />
                   </div>
                   {/* 底部操作按钮 */}
-                  <div className="flex flex-col gap-2 pt-3 mt-1 border-t border-white/5 shrink-0">
+                  <div className="flex flex-col gap-2 pt-3 mt-1 shrink-0">
                     <RestartButton
                       onClick={handleRetryCurrentGame}
                       icon="retry"

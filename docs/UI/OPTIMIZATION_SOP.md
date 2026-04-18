@@ -57,6 +57,7 @@
 | **字重规范** | 数值、名次、计时锁定 font-medium (500) | 排行榜/详情 | `LeaderboardPanel.tsx`, `PhoneTabPanel.tsx` |
 | **排名限制** | **全端仅显示前 5 名 (Strict Top 5)** | 全局一致性 | `LeaderboardPanel.tsx`, `PhoneTabPanel.tsx` |
 | **极致空气感** | 移除个人最佳与全服排名容器底色框，实现无边悬浮 | 排行榜/详情 | `LeaderboardPanel.tsx`, `PhoneTabPanel.tsx` |
+| **UI 镜像化** | **确保结算页与历史记录详情页（RecentGameDetails）参数 100% 对齐** | 结算/往绩对齐 | `RecentGameDetails.tsx`, `DesktopScoreLayout.tsx` |
 | **排版对齐** | Tabular-nums 等宽对齐 / 移除背景色 | 纪录明细 | `RecentGameDetails.tsx` |
 | **响应式** | 横屏字号缩至 11px / 移除 HR 分割线 | 移动端结算 | `MobileScoreLayout.tsx` |
 
@@ -64,7 +65,9 @@
 | 评审维度 | 检查项 | 对应功能 | 核心源代码 (Source Files) |
 | :--- | :--- | :--- | :--- |
 | **状态机** | Active (Peach-Orange) / Inactive / Sheen | 动作按钮组 | `ActionButtons.tsx`, `PhoneTabPanel.tsx` |
+| **焦点色边防护** | **锁定 `outline: none !important` 覆盖全局 focus-visible 规则**，防止触摸点击出现 amber 色边 | 按钮全局响应 | `app/globals.css` (.glass-btn-base) |
 | **视觉防溢出与跳黑** | 激活态锁定 `border-color: rgba(255,255,255,0)` 结合 `background-clip: padding-box`，防止退化闪黑边与层叠边缘溢出 | 按钮渲染基类 | `app/globals.css` (.glass-btn-active) |
+| **阴影截断防护** | **使用 `overflow-x-hidden` 替代 `overflow-hidden`** 并配合 `pb-2` 内补，确保 11px 的物理阴影渲染空间 | 容器布局规则 | `LeaderboardPanel.tsx`, `PhoneTabPanel.tsx` |
 | **动态缩放** | 基于 panel-scale 计算的半径与间距 | 切割/难度 | `PuzzleControlsCutCount.tsx` |
 | **一致性** | 提示文字统一使用 Peach (#FFD5AB) | 控件组合器 | `PuzzleControlsScatter.tsx` |
 | **比例适配** | 基于 panel-scale 的图标与容器尺寸 | 全局工具栏 | `GlobalUtilityButtons.tsx`, `RestartButton.tsx` |

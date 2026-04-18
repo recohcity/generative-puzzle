@@ -1,11 +1,10 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Trophy } from "lucide-react";
 import { playButtonClickSound } from "@/utils/rendering/soundEffects";
 import { useTranslation } from '@/contexts/I18nContext';
 import { getSpeedBonusDetails } from '@generative-puzzle/game-core';
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
 
 interface StoredGameRecord {
   timestamp: number;
@@ -32,19 +31,9 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
   onBack
 }) => {
   const { t, locale } = useTranslation();
-  const [isLandscape, setIsLandscape] = useState(false);
 
-  // 分数统一使用与用户名一致的米金色
-  const SCORE_COLOR = '#FFD5AB';
-
-  useEffect(() => {
-    const checkOrientation = () => {
-      setIsLandscape(window.innerWidth > window.innerHeight && window.innerWidth < 1024);
-    };
-    checkOrientation();
-    window.addEventListener('resize', checkOrientation);
-    return () => window.removeEventListener('resize', checkOrientation);
-  }, []);
+  // 统一配色 (#FFD5AB)
+  const BRAND_GOLD = '#FFD5AB';
 
   const handleBack = () => {
     playButtonClickSound();
@@ -87,66 +76,62 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
   const subtotal = (record.scoreBreakdown?.baseScore || 0) + (record.scoreBreakdown?.timeBonus || 0) + (record.scoreBreakdown?.rotationScore || 0) + (record.scoreBreakdown?.hintScore || 0);
 
   return (
-    <div className={cn(
-      "flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-300",
-      isLandscape ? "gap-0" : "gap-0.5"
-    )}>
+    <div className="flex flex-col h-full animate-in fade-in duration-500 gap-1">
       
-      {/* 顶部单行设计：标题 + 分数 */}
-      <div className={cn("w-full flex items-center justify-between px-0.5", isLandscape ? "mb-0" : "mb-0.5")}>
-         <h2 className={cn(
-           "text-white/40 font-medium uppercase tracking-tight leading-none",
-           isLandscape ? "text-[7px]" : "text-[10px]"
-         )}>
-           🏆 {t('leaderboard.recentGameScore') || '本局成绩'}
-         </h2>
-         <div 
-          className={cn("tabular-nums tracking-tighter leading-none font-medium", isLandscape ? "text-base" : "text-xl")} 
-          style={{ color: SCORE_COLOR }}
+      {/* 顶部单行设计：标题 + 分数 - 字体字号对齐 DesktopScoreLayout */}
+      <div className="w-full flex items-center justify-between px-1 mb-1.5 shrink-0">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <Trophy className="shrink-0" size={16} style={{ color: BRAND_GOLD }} />
+          <h2 className="text-white/90 font-medium uppercase tracking-[0.1em] leading-none text-[12px] truncate">
+            {t('leaderboard.recentGameScore') || '本局成绩'}
+          </h2>
+        </div>
+        <div 
+          className="tabular-nums tracking-tighter leading-none font-medium text-xl ml-2 shrink-0" 
+          style={{ color: BRAND_GOLD }}
         >
           {record.finalScore}
         </div>
       </div>
 
-      <div className={cn(
-        "border border-white/5 rounded-xl flex flex-col items-center bg-white/[0.01]",
-        isLandscape ? "p-1 px-2" : "p-2"
-      )}>
+      <div className="w-full border border-white/10 rounded-2xl bg-transparent p-3.5 px-3 mb-1">
         
         {/* 数据面板内容 */}
-        <div className="w-full">
-          <div className="space-y-0">
+        <div className="space-y-3">
+          {/* 明细行 */}
+          <div className="space-y-1.5">
             {rows.map((row, i) => (
-              <div key={i} className={cn("flex items-baseline justify-between leading-tight", isLandscape ? "py-0" : "py-0.5")}>
-                <div className="flex items-baseline gap-1.5 flex-1 min-w-0 pr-2 overflow-hidden">
-                  <span className={cn("text-white/60 shrink-0", isLandscape ? "text-[8px]" : "text-[11px]")}>{row.label}</span>
-                  <span className={cn("text-white/20 truncate uppercase", isLandscape ? "text-[7px]" : "text-[9px]")}>{row.sub}</span>
+              <div key={i} className="flex items-baseline justify-between leading-none py-0.5 w-full overflow-hidden">
+                <div className="flex items-baseline gap-1.5 flex-1 min-w-0 pr-1.5 overflow-hidden">
+                  <span className="text-white/70 shrink-0 font-medium text-[12px]">{row.label}</span>
+                  <span className="text-white/15 truncate uppercase font-medium text-[10px] hidden sm:inline">{row.sub}</span>
                 </div>
-                <span className={cn("tabular-nums shrink-0 font-medium", isLandscape ? "text-[9px]" : "text-[12px]") } style={{ color: row.sign === '-' ? '#FF8A80' : SCORE_COLOR }}>
+                <span className="tabular-nums shrink-0 font-medium text-[13px] text-right" style={{ color: row.sign === '-' ? '#FF8A80' : BRAND_GOLD }}>
                   {row.sign}{row.value}
                 </span>
               </div>
             ))}
           </div>
 
-          <div className="h-px bg-white/10 w-full opacity-20 mt-0.5 mb-0.5" />
+          <div className="h-px bg-white/10 w-full opacity-15" />
 
-          <div className="space-y-0">
-             <div className="flex items-center justify-between leading-tight">
-                <span className={cn("text-white/20 uppercase tracking-tight", isLandscape ? "text-[7px]" : "text-[9px]")}>{t('score.breakdown.subtotal')}</span>
-                <span className={cn("text-white/30 tabular-nums font-medium", isLandscape ? "text-[8px]" : "text-[11px]")}>{subtotal}</span>
+          {/* 结算与系数 */}
+          <div className="space-y-1.5">
+             <div className="flex items-center justify-between">
+                <span className="text-white/30 uppercase tracking-tight font-medium text-[10px]">{t('score.breakdown.subtotal')}</span>
+                <span className="text-white/40 tabular-nums font-medium text-[12px]">{subtotal}</span>
              </div>
 
-             <div className="flex items-center justify-between leading-tight">
-                <span className={cn("text-white/20 uppercase tracking-tight", isLandscape ? "text-[7px]" : "text-[9px]")}>{t('score.breakdown.multiplier')}</span>
-                <span className={cn("tabular-nums font-medium", isLandscape ? "text-[8px]" : "text-[11px]") } style={{ color: SCORE_COLOR, opacity: 0.8 }}>
+             <div className="flex items-center justify-between">
+                <span className="text-white/30 uppercase tracking-tight font-medium text-[10px]">{t('score.breakdown.multiplier')}</span>
+                <span className="tabular-nums font-medium text-[12px]" style={{ color: BRAND_GOLD, opacity: 0.8 }}>
                   ×{(record.scoreBreakdown?.difficultyMultiplier || 1).toFixed(2)}
                 </span>
              </div>
 
-             <div className={cn("flex items-baseline justify-between pt-0.5 border-t border-white/5 mt-0.5")}>
-                <span className={cn("text-white/40 uppercase tracking-normal font-medium", isLandscape ? "text-[8px]" : "text-[11px]")}>{t('score.breakdown.final')}</span>
-                <span className={cn("tabular-nums tracking-tight leading-none font-medium", isLandscape ? "text-[10px]" : "text-[14px]")} style={{ color: SCORE_COLOR }}>
+             <div className="border-t border-white/5 flex items-baseline justify-between pt-2.5 mt-1">
+                <span className="text-white/60 uppercase tracking-widest font-medium text-[12px]">{t('score.breakdown.final')}</span>
+                <span className="tabular-nums tracking-tight leading-none font-medium text-lg" style={{ color: BRAND_GOLD }}>
                   {record.finalScore}
                 </span>
              </div>
@@ -154,15 +139,13 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
         </div>
       </div>
 
+      {/* 返回按钮 - 对齐结算页操作按钮风格 */}
       <button
         onClick={handleBack}
-        className={cn(
-          "glass-btn-active w-full shrink-0 rounded-xl font-bold uppercase tracking-widest flex items-center justify-center gap-2 mt-0.5",
-          isLandscape ? "h-5 text-[7px]" : "h-8 text-[9px]"
-        )}
-        style={{ color: SCORE_COLOR }}
+        className="glass-btn-inactive glass-btn-sheen w-full mt-3 shrink-0 h-10 rounded-xl text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2"
+        style={{ color: BRAND_GOLD }}
       >
-        <ArrowLeft className={isLandscape ? "w-2 h-2" : "w-3 h-3"} strokeWidth={2.5} />
+        <ArrowLeft className="w-4 h-4" strokeWidth={2} />
         {t('leaderboard.backToLeaderboard') || '返回'}
       </button>
 

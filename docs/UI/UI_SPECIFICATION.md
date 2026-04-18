@@ -69,12 +69,15 @@
 | 状态 | CSS 特性 | 交互行为 |
 | :--- | :--- | :--- |
 | **Active** | `.glass-btn-active` (Peach-Orange 渐变) | 反色文字 (#232035)；锁定 `border-color: rgba(255,255,255,0)` 阻断闪黑边现象，配以 `background-clip: padding-box` 防溢出。 |
+| **Focus Policy** | `outline: none !important` | **禁止在点击/触摸时触发焦点框**。仅保留视觉状态回馈，防止非键盘操作下的色边残留。 |
 | **Inactive** | `.glass-btn-inactive` (30% White 底色) | 白色/Peach 文字，扫光特效 (`.glass-btn-sheen`)。 |
 | **Disabled** | `opacity-30` | `pointer-events-none` 拦截。 |
+| **Shadow Safe** | `overflow-x-hidden` + `pb-2` | **容器必须允许纵向阴影渲染**。严禁在该类按钮的紧邻父级使用全局 `overflow-hidden`。 |
 
 ### 3.2 结算系统 (Scoring Layouts)
-*   **数据镜像原则**: `RecentGameDetails` 与 `GameRecordDetails` 必须使用完全同构的数值行组件。
+*   **镜像对称原则**: `RecentGameDetails` 与 `DesktopScoreLayout` (Desktop) 以及 `GameRecordDetails` 与 `MobileScoreLayout` (Mobile) 的子字号排版必须 100% 对齐。
 *   **视觉留白**: 2026-04-18 规范移除了排行榜/结算面板中顶级的磨砂背景色块 (`bg-white/[0.04]`)，统一实现无框悬浮效果，提升呼吸感与空气感。
+*   **细节间距与分隔**: 移除了结算面板操作按钮上方的 `border-t` 分隔线，按钮高度统一为 `36px` (Mobile) / `40px` (Desktop)。
 *   **横屏空间防溢**: 横屏下字号强制降至 `11px`，移除 `<hr />` 分离线，间距压缩至 `gap-1`。
 
 ### 3.3 画布与 HUD 图层 (Canvas & HUD)

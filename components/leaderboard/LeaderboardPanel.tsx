@@ -232,7 +232,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
             exit={{ opacity: 0, scale: 0.98 }}
             className="flex-1 flex flex-col items-center justify-start pt-1 relative h-full overflow-hidden"
           >
-            <div className="w-full flex-1 relative flex flex-col items-stretch overflow-hidden max-h-full p-0.5">
+            <div className="w-full flex-1 relative flex flex-col items-stretch max-h-full px-0.5 pt-0.5 pb-2 overflow-x-hidden">
               <div className="flex items-center justify-between pb-3 gap-2 shrink-0">
                 <div className="flex gap-1.5">
                   <button

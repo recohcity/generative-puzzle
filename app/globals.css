@@ -623,22 +623,46 @@ svg {
 
   /* --- Button System (Unified Interactivity) --- */
   .glass-btn-base {
-    @apply relative flex items-center justify-center border transition-all duration-300 active:scale-95 disabled:opacity-30 disabled:pointer-events-none cursor-pointer overflow-hidden;
+    @apply relative flex items-center justify-center transition-all duration-300 active:scale-95 disabled:opacity-30 disabled:pointer-events-none cursor-pointer;
+    border-width: 1px;
+    border-style: solid;
+    border-color: transparent; /* 防止 Tailwind 全局 border-border 造成蓝边 */
+    outline: none !important;  /* 覆盖全局 button:focus-visible 规则，触摸点击不应出现色边 */
     -webkit-tap-highlight-color: transparent;
+  }
+
+  /* 明确覆盖全局 focus-visible 规则（该规则用 !important，需更高优先级选择器覆盖） */
+  button.glass-btn-base:focus,
+  button.glass-btn-base:focus-visible,
+  .glass-btn-base:focus,
+  .glass-btn-base:focus-visible {
+    outline: none !important;
+    box-shadow: none !important; /* 同时防止浏览器默认 focus ring 通过 box-shadow 渲染 */
+  }
+
+  /* glass-btn-active 的 box-shadow 在正常（非 focus）状态下保留 */
+  .glass-btn-active:not(:focus):not(:focus-visible),
+  .glass-btn-active {
+    box-shadow: 0 3px 8px rgba(var(--brand-orange-rgb), 0.25);
   }
 
   /* Inactive / Default Toggle State */
   .glass-btn-inactive {
-    @apply glass-btn-base bg-white/5 border-white/10 text-brand-peach/70 hover:bg-white/15 hover:border-white/20 hover:text-brand-peach;
+    @apply glass-btn-base bg-white/5 text-brand-peach/70 hover:bg-white/15 hover:text-brand-peach;
+    border-color: rgba(255, 255, 255, 0.10);
+  }
+  .glass-btn-inactive:hover {
+    border-color: rgba(255, 255, 255, 0.20);
   }
 
   /* Active / Selected / Primary Action State */
   .glass-btn-active {
     @apply glass-btn-base text-brand-dark font-bold;
-    border-color: rgba(255, 255, 255, 0);
+    border-color: transparent;
     background: linear-gradient(135deg, var(--brand-peach) 0%, var(--brand-orange) 100%);
     background-clip: padding-box;
-    box-shadow: 0 4px 15px rgba(var(--brand-orange-rgb), 0.4);
+    /* 发光收紧：扩散从 15px→8px，透明度从 0.4→0.25，避免溢出和过曝 */
+    box-shadow: 0 3px 8px rgba(var(--brand-orange-rgb), 0.25);
   }
 
   /* Secondary Active (Soft Orange Glow) */
@@ -646,9 +670,10 @@ svg {
     @apply glass-btn-base bg-brand-orange/20 border-brand-orange/40 text-brand-peach shadow-lg shadow-brand-orange/10;
   }
 
-  /* Hover Overlay Effect (Subtle sheen) */
+  /* Hover Overlay Effect (Subtle sheen) — overflow-hidden 仅在此处，不在 base 上 */
   .glass-btn-sheen {
-    @apply relative overflow-hidden;
+    @apply relative;
+    overflow: hidden; /* 仅用于约束 ::after 光晕伪元素，不影响外部 box-shadow */
   }
   .glass-btn-sheen::after {
     content: '';
