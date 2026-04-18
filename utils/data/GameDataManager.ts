@@ -156,10 +156,10 @@ export class GameDataManager {
       // 1. 获取最新列表（优先使用内存中的，防止同步循环中读取到旧的 localStorage 值）
       let leaderboard = [...this.getLeaderboard()];
       
-      // 2. 生成核心业绩指纹（分数 + 时长 + 步数）
-      // 强制取整，消除 JS 浮点数与数据库整数之间的微小刻度差异
+      // 2. 生成核心业绩指纹（分数 + 时长 + 步数 + 块数）
+      // 强制取整，消除 JS 浮点数与数据库整数之间的微小刻度差异，严格比对 cutCount 避免不同难度相同分数被误判为重复
       const getFingerprint = (r: GameRecord) => 
-        `${Math.round(r.finalScore || 0)}-${Math.round(r.totalDuration || 0)}-${Math.round(r.totalRotations || 0)}`;
+        `${Math.round(r.finalScore || 0)}-${Math.round(r.totalDuration || 0)}-${Math.round(r.totalRotations || 0)}-${r.difficulty?.cutCount || 1}`;
       
       const newFingerprint = getFingerprint(record);
       
@@ -239,36 +239,60 @@ export class GameDataManager {
 
   static syncWithCloudRecords(cloudRecords: GameRecord[]): void {
     try {
-      let localHistory = this.getGameHistory();
-      const mergedHistory = [...localHistory];
-      let newCount = 0;
-      for (const cloud of cloudRecords) {
-        const exists = mergedHistory.some(local => 
-          (cloud.id && local.id === cloud.id) || 
-          (Math.abs(local.timestamp - cloud.timestamp) <= 1 && local.finalScore === cloud.finalScore)
-        );
-        if (!exists) { mergedHistory.push(cloud); newCount++; }
+      // 1. 绝对真理规则：如果云端明确返回空数据集，意味着后台管理员清空了数据，此时本地必须严格跟随抹除脏数据
+      if (!cloudRecords || cloudRecords.length === 0) {
+        console.warn("[GameDataManager] ⚠️ 云端数据为空，强制清空本地可能残留的脏数据");
+        this.memoryHistory = [];
+        this.memoryLeaderboard = [];
+        localStorage.removeItem(this.GAME_HISTORY_KEY);
+        localStorage.removeItem(this.LEADERBOARD_KEY);
+        return;
       }
-      mergedHistory.sort((a, b) => b.timestamp - a.timestamp);
-      const finalH = mergedHistory.slice(0, this.MAX_HISTORY_RECORDS);
+
+      // 2. 严格比对法：容忍 2 秒的时间差计算误差，精准核对同难度
+      const isSameMatch = (local: GameRecord, cloud: GameRecord) => {
+        if (local.id && cloud.id && local.id === cloud.id) return true;
+        const timeDiff = Math.abs(local.timestamp - cloud.timestamp);
+        return timeDiff <= 2000 && 
+               local.finalScore === cloud.finalScore && 
+               local.difficulty?.cutCount === cloud.difficulty?.cutCount;
+      };
+
+      // 3. 直接以云端数据为底本重构本列表，避免长期的幻影叠加
+      let unmergedLocalHistoryCount = 0;
+      let newMergedHistory = [...cloudRecords];
+      let localHistory = this.getGameHistory();
+      
+      // 补偿：只保留云端不存在的额外本地记录（可能是离线断网时生成的还没上云的）
+      for (const local of localHistory) {
+        if (!newMergedHistory.some(cr => isSameMatch(local, cr))) {
+          newMergedHistory.push(local);
+          unmergedLocalHistoryCount++;
+        }
+      }
+
+      newMergedHistory.sort((a, b) => b.timestamp - a.timestamp);
+      const finalH = newMergedHistory.slice(0, this.MAX_HISTORY_RECORDS);
       localStorage.setItem(this.GAME_HISTORY_KEY, JSON.stringify(finalH));
       this.memoryHistory = finalH;
 
+      // 同样的思想刷新排行榜
+      let newMergedL = [...cloudRecords];
       let localL = this.getLeaderboard();
-      const mergedL = [...localL];
-      for (const cr of cloudRecords) {
-        const exists = mergedL.some(local => 
-          (cr.id && local.id === cr.id) || 
-          (Math.abs(local.timestamp - cr.timestamp) <= 1 && local.finalScore === cr.finalScore)
-        );
-        if (!exists) mergedL.push(cr);
+      for (const local of localL) {
+        if (!newMergedL.some(cr => isSameMatch(local, cr))) {
+          newMergedL.push(local);
+        }
       }
-      mergedL.sort((a, b) => b.finalScore - a.finalScore);
-      const finalL = mergedL.slice(0, this.MAX_LEADERBOARD_RECORDS);
+
+      newMergedL.sort((a, b) => b.finalScore - a.finalScore);
+      const finalL = newMergedL.slice(0, this.MAX_LEADERBOARD_RECORDS);
       localStorage.setItem(this.LEADERBOARD_KEY, JSON.stringify(finalL));
       this.memoryLeaderboard = finalL;
 
-      if (newCount > 0) console.log(`[GameDataManager] 同步完成。新增同步记录: ${newCount}`);
-    } catch (error) {}
+      console.log(`[GameDataManager] 🔄 云端同步重组完毕。采用云端基准 ${cloudRecords.length}条，补偿本地 ${unmergedLocalHistoryCount}条`);
+    } catch (error) {
+      console.error("[GameDataManager] 云端数据同步异常:", error);
+    }
   }
 }

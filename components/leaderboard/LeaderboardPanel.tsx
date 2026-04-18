@@ -111,8 +111,8 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
     const uniqueMap = new Map<string, GameRecord>();
     
     leaderboard.forEach(record => {
-      // 生成强指纹：分数 + 时长 + 步数 + 块数
-      const fingerprint = `${record.finalScore}-${record.totalDuration}-${record.totalRotations}-${record.difficulty?.cutCount}`;
+      // 生成强指纹：分数 + 时长 + 步数 + 块数（与 GameDataManager 保持绝对一致，使用 Math.round 防止浮点误差）
+      const fingerprint = `${Math.round(record.finalScore || 0)}-${Math.round(record.totalDuration || 0)}-${Math.round(record.totalRotations || 0)}-${record.difficulty?.cutCount || 1}`;
       const existing = uniqueMap.get(fingerprint);
       
       // 只有当前记录比已存记录包含更多精度信息（比如非直线、非多边形）时才覆盖，或者已存为空
