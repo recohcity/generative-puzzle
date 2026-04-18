@@ -164,8 +164,19 @@ class CloudGameRepositoryClass implements ICloudGameRepository {
       const difficultyLevel = diff.difficultyLevel as DifficultyLevel;
       const durationMs = Math.max(0, Math.round(params.gameStats.totalDuration * 1000));
       
-      // 升级幂等键：包含所有精度维度，确保唯一性
-      const idempotencyKey = `${userId}-${gameEndTimeMs}-${difficultyLevel}-${diff.cutCount}-${diff.cutType}-${diff.shapeType}-${Math.round(params.finalScore)}`;
+      const idempotencyKey = `${userId}-${gameEndTimeMs}-${difficultyLevel}-${diff?.cutCount}-${diff?.cutType}-${diff?.shapeType}-${Math.round(params.finalScore)}`;
+
+      // 预检：如果幂等键已存在，静默跳过（避免 409 Conflict 出现在控制台）
+      const { data: existing } = await supabase
+        .from("game_sessions")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("idempotency_key", idempotencyKey)
+        .limit(1);
+      
+      if (existing && existing.length > 0) {
+        return { skipped: false }; // 已存在，静默成功
+      }
 
       const safeNum = (val: any) => (Number.isFinite(val) ? Math.round(val) : 0);
       const safeFloat = (val: any) => (Number.isFinite(val) ? val : 0);

@@ -16,6 +16,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.citylivepark.com'),
   title: "生成式拼图游戏",
   description: "一个基于Next.js和React的生成式拼图游戏项目",
   icons: {
