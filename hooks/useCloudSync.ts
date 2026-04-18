@@ -82,16 +82,13 @@ export function useCloudSync(state: GameState, dispatch: React.Dispatch<GameActi
 
   // 3. 登录后同步与迁移 (Auth-driven Sync)
   useEffect(() => {
-    if (!user) {
-      console.log("[useCloudSync] 用户未登录，跳过自动同步");
-      return;
-    }
+    if (!user) return;
 
     const userId = user.id;
     const migrationKey = getUserMigrationKey(userId);
     
     (async () => {
-      console.log(`[useCloudSync] 🔄 用户已登录 (${userId})，启动全面数据对齐...`);
+      console.log(`[useCloudSync] 🔄 用户已登录，启动数据同步...`);
 
       // A. 同步离线队列 (处理故障恢复)
       try {
@@ -118,10 +115,8 @@ export function useCloudSync(state: GameState, dispatch: React.Dispatch<GameActi
       // C. 拉取云端数据并合并
       try {
         const cloudRecords = await CloudGameRepository.fetchUserGameHistory();
-        console.log(`[useCloudSync] ☁️ 已拉取云端记录: ${cloudRecords.length} 条`);
         
-        // 无条件同步：即使云端为空（[]），也要传递给 syncWithCloudRecords，
-        // 这样它就会执行 "如果云端为空则强制清空本地脏数据" 的逻辑。
+        // 无条件同步：即使云端为空（[]），也要传递给 syncWithCloudRecords
         GameDataManager.syncWithCloudRecords(cloudRecords);
         
         // 重新从本地存储加载合并（或已清空）后的数据并更新 UI
@@ -131,7 +126,7 @@ export function useCloudSync(state: GameState, dispatch: React.Dispatch<GameActi
           payload: mergedLeaderboard
         });
         
-        console.log("[useCloudSync] 🏁 数据同步完成，UI 已刷新");
+        // console.log("[useCloudSync] 🏁 数据同步完成");
       } catch (fetchErr) {
         console.error("[useCloudSync] 云端数据拉取失败:", fetchErr);
       }

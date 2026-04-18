@@ -121,7 +121,7 @@ const executeGameCompletion = (
   // 1. 状态锁：如果已经标记为完成，则不再执行
   if (!state.gameStats || !state.isGameActive || state.isGameComplete) return;
 
-  console.log("✅ [GameContext] 执行游戏完成逻辑!");
+  // console.log("✅ [GameContext] 执行游戏完成逻辑!");
 
   // 1. 计算完成统计
   const gameEndTime = Date.now();
@@ -222,9 +222,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const newPuzzle = action.payload;
       const newMinRotations = calculateMinimumRotations(newPuzzle || []);
 
+      /*
       console.log(
         `[SET_PUZZLE] 重新计算最小旋转次数: ${newMinRotations}, 拼图片段数: ${newPuzzle?.length || 0}`,
       );
+      */
 
       // 如果游戏已经开始，更新gameStats中的minRotations
       let updatedGameStats = state.gameStats;
@@ -233,9 +235,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...state.gameStats,
           minRotations: newMinRotations,
         };
+        /*
         console.log(
           `[SET_PUZZLE] 更新gameStats.minRotations: ${newMinRotations}`,
         );
+        */
       }
 
       return {
@@ -382,7 +386,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       // 调试信息
       // 游戏启动汇总日志
-      console.log(`[SCATTER_PUZZLE] Game started: ${gameStats.difficulty.actualPieces} pieces, Initial Score: ${initialScore}`);
+      // console.log(`[SCATTER_PUZZLE] Game started: ${gameStats.difficulty.actualPieces} pieces, Initial Score: ${initialScore}`);
 
       return {
         ...state,
@@ -844,7 +848,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
       state.isGameActive &&
       !state.isGameComplete
     ) {
-      console.log("✅ [GameContext] 所有拼图已完成，自动触发完成!");
+      console.log("✅ [GameContext] 游戏完成");
       
       // 1. 延迟播放完成音效
       setTimeout(() => {
@@ -913,9 +917,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
   }, [state.originalShape, state.cutType, state.cutCount, dispatch]);
 
   const scatterPuzzle = useCallback(() => {
-    console.log("[scatterPuzzle] Function called");
     const puzzle = puzzleRef.current;
-    console.log("[scatterPuzzle] Puzzle pieces:", puzzle?.length || 0);
 
     const canvasSize = state.canvasSize || { width: 640, height: 640 };
     let canvasWidth = canvasSize.width;
@@ -931,7 +933,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
       return;
     }
     if (state.isScattered) {
-      console.warn("Puzzle already scattered");
       return;
     }
     const targetShape = calculateScatterTarget(state.originalShape);
