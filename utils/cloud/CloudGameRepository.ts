@@ -477,48 +477,40 @@ class CloudGameRepositoryClass implements ICloudGameRepository {
   }
 
   /**
-   * 删除特定用户的所有游戏记录
+   * 删除特定用户的所有游戏记录（通过 SECURITY DEFINER RPC 绕过 RLS）
    */
   async adminDeleteUserScores(userId: string): Promise<boolean> {
     if (!isSupabaseConfigured || !supabase) return false;
-    const { error } = await supabase
-      .from("game_sessions")
-      .delete()
-      .eq("user_id", userId);
-    
-    if (error) return false;
 
-    // 清除该用户的汇总排行榜记录
-    await supabase
-      .from("public_leaderboard_entries")
-      .delete()
-      .eq("user_id", userId);
+    // 使用 RPC 调用 SECURITY DEFINER 函数，绕过 RLS 的 append-only 限制
+    const { error } = await supabase.rpc('admin_clear_user_data', { 
+      target_user_id: userId 
+    });
 
-    // 同时重置该用户的最高分
-    await supabase
-      .from("player_profiles")
-      .update({ best_score: 0 })
-      .eq("id", userId);
+    if (error) {
+      console.error("[Admin] Delete user scores failed:", error);
+      return false;
+    }
 
     return true;
   }
 
   /**
-   * 彻底注销用户身份并清除所有关联数据
+   * 彻底注销用户身份并清除所有关联数据（通过 SECURITY DEFINER RPC 绕过 RLS）
    */
   async adminDeleteUserCompletely(userId: string): Promise<boolean> {
     if (!isSupabaseConfigured || !supabase) return false;
     
-    // 1. 删除所有成绩记录
-    await supabase.from("game_sessions").delete().eq("user_id", userId);
-    
-    // 2. 清除汇总排行榜
-    await supabase.from("public_leaderboard_entries").delete().eq("user_id", userId);
-    
-    // 3. 删除用户档案
-    const { error } = await supabase.from("player_profiles").delete().eq("id", userId);
-    
-    return !error;
+    const { error } = await supabase.rpc('admin_delete_user_completely', { 
+      target_user_id: userId 
+    });
+
+    if (error) {
+      console.error("[Admin] Delete user completely failed:", error);
+      return false;
+    }
+
+    return true;
   }
 }
 
