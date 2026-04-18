@@ -6,6 +6,16 @@ import { VirtualAuthService, PlayerProfile } from '@/utils/cloud/VirtualAuthServ
 import { User, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/contexts/I18nContext';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface IdentityChipProps {
   onClick?: () => void;
@@ -34,6 +44,7 @@ export default function IdentityChip({ onClick, onClose, isPanelOpen, className,
 
   const mainFontSize = "14px"; 
   const iconSize = 18;
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   if (authLoading) {
     return (
@@ -41,11 +52,14 @@ export default function IdentityChip({ onClick, onClose, isPanelOpen, className,
     );
   }
 
-  const handleLogout = async (e: React.MouseEvent) => {
+  const handleLogoutClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (window.confirm(t('auth.logoutConfirm') || 'Confirm Logout?')) {
-      await signOut();
-    }
+    setShowLogoutDialog(true);
+  };
+
+  const executeLogout = async () => {
+    await signOut();
+    setShowLogoutDialog(false);
   };
 
   const handleLoginAction = (e: React.MouseEvent) => {
@@ -89,7 +103,7 @@ export default function IdentityChip({ onClick, onClose, isPanelOpen, className,
       </div>
 
       <button
-        onClick={user ? handleLogout : handleLoginAction}
+        onClick={user ? handleLogoutClick : handleLoginAction}
         className="px-3 py-1 rounded-full text-[11px] font-bold transition-all uppercase tracking-wider glass-btn-active text-white shadow-lg"
       >
         {user 
@@ -99,6 +113,29 @@ export default function IdentityChip({ onClick, onClose, isPanelOpen, className,
             : (t('auth.login') || 'Login')
         }
       </button>
+
+      {/* Modern non-blocking logout confirmation */}
+      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <AlertDialogContent className="bg-[#1A1825]/95 border-white/10 backdrop-blur-xl text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-brand-peach">{t('auth.logoutConfirm') || 'Confirm Logout?'}</AlertDialogTitle>
+            <AlertDialogDescription className="text-white/60">
+              {t('common.cancel') ? '确定要退出当前账号吗？这不会删除您的记录。' : 'Are you sure you want to log out? Your records are safely saved.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-transparent border-white/10 hover:bg-white/5 hover:text-white transition-all">
+              {t('common.cancel') || 'Cancel'}
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={executeLogout}
+              className="bg-brand-orange hover:bg-brand-peach text-white transition-all shadow-[0_0_15px_rgba(255,107,0,0.3)]"
+            >
+              {t('common.confirm') || 'Confirm'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

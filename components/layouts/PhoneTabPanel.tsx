@@ -4,7 +4,17 @@ import ShapeControls from "@/components/ShapeControls";
 import PuzzleControlsCutType from "@/components/PuzzleControlsCutType";
 import PuzzleControlsCutCount from "@/components/PuzzleControlsCutCount";
 import PuzzleControlsScatter from "@/components/PuzzleControlsScatter";
-import GlobalUtilityButtons from "@/components/GlobalUtilityButtons";
+import { GlobalUtilityButtons } from "@/components/GlobalUtilityButtons";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import RestartButton from "@/components/RestartButton";
 import { Button } from "@/components/ui/button";
 import MobileScoreLayout from "@/components/score/MobileScoreLayout";
@@ -162,6 +172,8 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
     ).sort((a: any, b: any) => (b.finalScore || 0) - (a.finalScore || 0));
   }, [globalLeaderboard]);
 
+  const [showRestartDialog, setShowRestartDialog] = useState(false);
+
   const handleToggleLeaderboard = () => {
     if (!showLeaderboard) {
       const data = GameDataManager.getLeaderboard();
@@ -218,8 +230,14 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
   const handleRestart = () => {
     const isGameInProgress = state.isGameActive && state.puzzle && state.isScattered && !state.isCompleted;
     if (isGameInProgress) {
-      if (!window.confirm(t('game.controls.restartConfirm'))) return;
+      setShowRestartDialog(true);
+      return;
     }
+    executeRestart();
+  };
+
+  const executeRestart = () => {
+    setShowRestartDialog(false);
     resetGame();
     if (goToFirstTab) goToFirstTab();
     setTimeout(() => {
@@ -594,6 +612,29 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
           </div>
         </div>
       )}
+
+      {/* Modern non-blocking restart confirmation */}
+      <AlertDialog open={showRestartDialog} onOpenChange={setShowRestartDialog}>
+        <AlertDialogContent className="bg-[#1A1825]/95 border-white/10 backdrop-blur-xl text-white w-[90%] sm:w-full rounded-xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-brand-peach">{t('game.controls.restartGame') || 'Restart Game'}</AlertDialogTitle>
+            <AlertDialogDescription className="text-white/60">
+              {t('common.cancel') ? '确定要重新开始当前进度吗？' : 'Are you sure you want to restart the current game?'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-transparent border-white/10 hover:bg-white/5 hover:text-white transition-all">
+              {t('common.cancel') || 'Cancel'}
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={executeRestart}
+              className="bg-brand-orange hover:bg-brand-peach text-white transition-all shadow-[0_0_15px_rgba(255,107,0,0.3)]"
+            >
+              {t('common.confirm') || 'Confirm'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
