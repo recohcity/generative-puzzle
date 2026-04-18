@@ -366,7 +366,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                       className="space-y-3"
                     >
                       {/* 个人最佳容器 */}
-                      <div className="rounded-xl p-2 bg-white/[0.04]">
+                      <div className="rounded-xl p-2">
                         <div className={cn(isLandscape ? "space-y-1" : "space-y-0.5")}>
                           {leaderboardData.length > 0 ? (
                             leaderboardData.slice(0, 5).map((record, index) => {
@@ -417,7 +417,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                       initial={{ opacity: 0, x: 10 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -10 }}
-                      className="rounded-xl px-2 py-2 bg-white/[0.04]"
+                      className="rounded-xl px-2 py-2"
                     >
                       {isGlobalLoading ? (
                         <div className="flex-1 flex flex-col items-center justify-center py-12 gap-3">

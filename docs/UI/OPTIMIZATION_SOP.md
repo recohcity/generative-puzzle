@@ -56,6 +56,7 @@
 | **色彩 Token** | 数值全量锁定 Peach (#FFD5AB) / 警告 Red | 结算面板 | `DesktopScoreLayout.tsx`, `MobileScoreLayout.tsx` |
 | **字重规范** | 数值、名次、计时锁定 font-medium (500) | 排行榜/详情 | `LeaderboardPanel.tsx`, `PhoneTabPanel.tsx` |
 | **排名限制** | **全端仅显示前 5 名 (Strict Top 5)** | 全局一致性 | `LeaderboardPanel.tsx`, `PhoneTabPanel.tsx` |
+| **极致空气感** | 移除个人最佳与全服排名容器底色框，实现无边悬浮 | 排行榜/详情 | `LeaderboardPanel.tsx`, `PhoneTabPanel.tsx` |
 | **排版对齐** | Tabular-nums 等宽对齐 / 移除背景色 | 纪录明细 | `RecentGameDetails.tsx` |
 | **响应式** | 横屏字号缩至 11px / 移除 HR 分割线 | 移动端结算 | `MobileScoreLayout.tsx` |
 
@@ -84,6 +85,6 @@
 *   **[历史规范与指南](file:///Users/citylivepark/Documents/project/generative-puzzle/docs/archive/legacy-specs/)**: 包含 PRD、架构视角及早期规则定义。
 
 ---
-*上次修订：2026-04-14*  
-*全量结案更新：2026-04-17 (SOP v2.61 - 深度回归评审矩阵修正版)*  
+*上次修订：2026-04-18*  
+*全量结案更新：2026-04-18 (SOP v2.62 - 深度回归评审与空气感布局修正版)*  
 *文档状态：**Official Standard / Strictly Enforced***

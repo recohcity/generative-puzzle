@@ -74,7 +74,7 @@
 
 ### 3.2 结算系统 (Scoring Layouts)
 *   **数据镜像原则**: `RecentGameDetails` 与 `GameRecordDetails` 必须使用完全同构的数值行组件。
-*   **视觉剔除**: 2026-04-17 规范移除了结算面板的背景实色块，统一改用 `border-white/10` 框架。
+*   **视觉留白**: 2026-04-18 规范移除了排行榜/结算面板中顶级的磨砂背景色块 (`bg-white/[0.04]`)，统一实现无框悬浮效果，提升呼吸感与空气感。
 *   **横屏空间防溢**: 横屏下字号强制降至 `11px`，移除 `<hr />` 分离线，间距压缩至 `gap-1`。
 
 ### 3.3 画布与 HUD 图层 (Canvas & HUD)
@@ -111,6 +111,6 @@
 ```
 
 ---
-*版本：V3.5 (Detailed Technical Manual)*
-*最近同步：2026-04-17 (SOP v2 全量回归版)*
+*版本：V3.6 (Detailed Technical Manual)*
+*最近同步：2026-04-18 (无框空气感与布局清洗)*
 *状态：**Strict Enforcement***
