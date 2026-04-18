@@ -68,7 +68,7 @@
 ### 3.1 激活按钮规范 (Action Button Machine)
 | 状态 | CSS 特性 | 交互行为 |
 | :--- | :--- | :--- |
-| **Active** | `.glass-btn-active` (Peach-Orange 渐变) | 反色文字 (#232035)，强制 `border-none` 取缔透明边框及内阴影，彻底消除“重叠 / 溢色边缘”错觉。 |
+| **Active** | `.glass-btn-active` (Peach-Orange 渐变) | 反色文字 (#232035)；锁定 `border-color: rgba(255,255,255,0)` 阻断闪黑边现象，配以 `background-clip: padding-box` 防溢出。 |
 | **Inactive** | `.glass-btn-inactive` (30% White 底色) | 白色/Peach 文字，扫光特效 (`.glass-btn-sheen`)。 |
 | **Disabled** | `opacity-30` | `pointer-events-none` 拦截。 |
 
@@ -111,6 +111,6 @@
 ```
 
 ---
-*版本：V3.7 (Detailed Technical Manual)*
-*最近同步：2026-04-18 (无框空气感与金钮渲染修正版)*
+*版本：V3.8 (Detailed Technical Manual)*
+*最近同步：2026-04-18 (过渡状态缝隙与闪黑补帧规范)*
 *状态：**Strict Enforcement***

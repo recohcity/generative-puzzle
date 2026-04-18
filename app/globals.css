@@ -634,8 +634,10 @@ svg {
 
   /* Active / Selected / Primary Action State */
   .glass-btn-active {
-    @apply glass-btn-base border-none text-brand-dark font-bold;
+    @apply glass-btn-base text-brand-dark font-bold;
+    border-color: rgba(255, 255, 255, 0);
     background: linear-gradient(135deg, var(--brand-peach) 0%, var(--brand-orange) 100%);
+    background-clip: padding-box;
     box-shadow: 0 4px 15px rgba(var(--brand-orange-rgb), 0.4);
   }
 
