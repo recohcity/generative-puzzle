@@ -55,9 +55,9 @@ const PhonePortraitLayout: React.FC<PhonePortraitLayoutProps> = ({
       className="flex flex-col items-center min-h-[100dvh] w-full overflow-y-auto overflow-x-hidden no-scrollbar"
       style={{
         background: 'none',
-        // 确保顶部绝对安全，不再被截断
-        paddingTop: isTabletPortrait ? 60 : Math.max(MOBILE_ADAPTATION.PORTRAIT.SAFE_AREA_TOP || 24, 24), 
-        paddingBottom: Math.max(MOBILE_ADAPTATION.PORTRAIT.SAFE_AREA_BOTTOM, 16),
+        // 🎯 优化：增加微信端与常规移动端的顶部间距，利用底部空白使垂直分布更均衡
+        paddingTop: isTabletPortrait ? 60 : (device.isWeChat ? 50 : 32), 
+        paddingBottom: Math.max(MOBILE_ADAPTATION.PORTRAIT.SAFE_AREA_BOTTOM, 20),
       }}
     >
       <div className="flex flex-col items-center w-full my-auto shrink-0 space-y-2">
@@ -90,7 +90,7 @@ const PhonePortraitLayout: React.FC<PhonePortraitLayoutProps> = ({
         className="order-2 flex flex-col items-center gap-4 pb-4 w-full"
         style={{
           width: canvasWidth,
-          marginTop: 5, // 画布和面板间距设为5px
+          marginTop: device.isWeChat ? 18 : 10, // 增加间距使布局更舒展
           paddingTop: 0, // 移除额外的顶部padding
         }}
       >
