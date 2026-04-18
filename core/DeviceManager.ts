@@ -117,19 +117,21 @@ export class DeviceManager {
     const newState = this.detectDevice();
     const hasChanged = JSON.stringify(newState) !== JSON.stringify(this.currentState);
 
-    deviceLogger.debug('设备状态检测', {
-      previous: {
-        deviceType: this.currentState.deviceType,
-        layoutMode: this.currentState.layoutMode,
-        screenSize: `${this.currentState.screenWidth}x${this.currentState.screenHeight}`
-      },
-      current: {
-        deviceType: newState.deviceType,
-        layoutMode: newState.layoutMode,
-        screenSize: `${newState.screenWidth}x${newState.screenHeight}`
-      },
-      hasChanged
-    });
+      /*
+      deviceLogger.debug('设备状态检测', {
+        previous: {
+          deviceType: this.currentState.deviceType,
+          layoutMode: this.currentState.layoutMode,
+          screenSize: `${this.currentState.screenWidth}x${this.currentState.screenHeight}`
+        },
+        current: {
+          deviceType: newState.deviceType,
+          layoutMode: newState.layoutMode,
+          screenSize: `${newState.screenWidth}x${newState.screenHeight}`
+        },
+        hasChanged
+      });
+      */
 
     if (hasChanged) {
       const previousState = { ...this.currentState };
@@ -343,11 +345,13 @@ export class DeviceManager {
         changes
       );
       
+      /*
       deviceLogger.debug('发射设备状态变化事件', {
         changes,
         previousType: previousState.deviceType,
         currentType: currentState.deviceType
       });
+      */
     } catch (error) {
       deviceLogger.warn('Failed to emit device state change event', error as Error);
     }

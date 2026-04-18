@@ -7,7 +7,7 @@ import { LogLevel, LoggingConfig } from '../../core/LoggingService';
 
 // Development logging configuration
 export const DEVELOPMENT_LOGGING_CONFIG: LoggingConfig = {
-  level: LogLevel.DEBUG,
+  level: LogLevel.INFO,
   enableConsole: true,
   enableStorage: true,
   maxStorageEntries: 1000,
