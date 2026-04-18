@@ -300,7 +300,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                         {filteredLeaderboard.length === 0 ? (
                           <div className="text-center text-[#FFD5AB] opacity-40 py-8">
                             <Trophy className="w-8 h-8 mx-auto mb-2 opacity-20" />
-                            <div style={{ fontSize: baseFontSize }}>{t('game.leaderboard.empty')}</div>
+                            <div style={{ fontSize: baseFontSize }}>{t('leaderboard.empty')}</div>
                           </div>
                         ) : (
                           <div className="space-y-2.5">

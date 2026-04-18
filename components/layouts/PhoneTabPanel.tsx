@@ -437,7 +437,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                             })
                           ) : (
                             <div className="h-20 flex items-center justify-center">
-                              <p className="text-[10px] text-white/20 uppercase font-bold">{t('game.leaderboard.empty')}</p>
+                              <p className="text-[10px] text-white/20 uppercase font-bold">{t('leaderboard.empty')}</p>
                             </div>
                           )}
                         </div>
