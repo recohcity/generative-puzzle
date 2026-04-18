@@ -91,7 +91,7 @@ const PhonePortraitLayout: React.FC<PhonePortraitLayoutProps> = ({
         className="order-2 flex flex-col items-center gap-4 pb-4 w-full"
         style={{
           width: canvasWidth,
-          marginTop: device.isWeChat ? 32 : 18, // 进一步加大间距，消除微信端的拥挤感
+          marginTop: device.isWeChat ? 6 : 4, // 收窄间距，为下方统计/榜单面板腾出更多展示空间
           paddingTop: 0, // 移除额外的顶部padding
         }}
       >
