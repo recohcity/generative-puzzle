@@ -17,7 +17,8 @@ import {
   Languages,
   LogOut,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Gamepad2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
