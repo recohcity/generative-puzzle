@@ -191,7 +191,7 @@ export const getShapeMultiplier = (shapeType?: ShapeType | string): number => {
   };
 
   const multiplier = shapeMultipliers[shapeType] || 1.0;
-  // console.log(`[getShapeMultiplier] 形状类型 ${shapeType} -> 形状系数 ${multiplier}`);
+  if (typeof window !== "undefined" && (window as any).DEBUG) console.log(`[getShapeMultiplier] 形状类型 ${shapeType} -> 形状系数 ${multiplier}`);
   return multiplier;
 };
 
@@ -275,11 +275,11 @@ export const calculateDifficultyMultiplier = (config: DifficultyConfig): number 
 
   const finalMultiplier = baseMultiplier * cutTypeMultiplier * deviceMultiplier * shapeMultiplier;
 
-  // console.log(`[calculateDifficultyMultiplier] 难度级别 ${config.cutCount} -> 基础系数 ${baseMultiplier}`);
-  // console.log(`[calculateDifficultyMultiplier] 切割类型 ${config.cutType} -> 切割系数 ${cutTypeMultiplier}`);
-  // console.log(`[calculateDifficultyMultiplier] 设备系数 ${deviceMultiplier}`);
-  // console.log(`[calculateDifficultyMultiplier] 形状系数 ${shapeMultiplier}`);
-  // console.log(`[calculateDifficultyMultiplier] 最终系数 ${finalMultiplier}`);
+  if (typeof window !== "undefined" && (window as any).DEBUG) console.log(`[calculateDifficultyMultiplier] 难度级别 ${config.cutCount} -> 基础系数 ${baseMultiplier}`);
+  if (typeof window !== "undefined" && (window as any).DEBUG) console.log(`[calculateDifficultyMultiplier] 切割类型 ${config.cutType} -> 切割系数 ${cutTypeMultiplier}`);
+  if (typeof window !== "undefined" && (window as any).DEBUG) console.log(`[calculateDifficultyMultiplier] 设备系数 ${deviceMultiplier}`);
+  if (typeof window !== "undefined" && (window as any).DEBUG) console.log(`[calculateDifficultyMultiplier] 形状系数 ${shapeMultiplier}`);
+  if (typeof window !== "undefined" && (window as any).DEBUG) console.log(`[calculateDifficultyMultiplier] 最终系数 ${finalMultiplier}`);
 
   return finalMultiplier;
 };
@@ -290,7 +290,7 @@ export const calculateDifficultyMultiplier = (config: DifficultyConfig): number 
 export const getBaseScore = (difficultyLevel: number): number => {
   // 🔧 重新设计：基于难度级别获取基础分数
   const baseScore = BASE_SCORES_BY_DIFFICULTY[difficultyLevel] || 1000;
-  // console.log(`[getBaseScore] 难度级别 ${difficultyLevel} -> 基础分数 ${baseScore}`);
+  if (typeof window !== "undefined" && (window as any).DEBUG) console.log(`[getBaseScore] 难度级别 ${difficultyLevel} -> 基础分数 ${baseScore}`);
   return baseScore;
 };
 
@@ -307,7 +307,7 @@ export const getBaseScoreByPieces = (actualPieces: number): number => {
 export const getBaseDifficultyMultiplierByPieces = (actualPieces: number): number => {
   // 简化处理，基于拼图数量计算难度系数
   const multiplier = Math.min(2.0, 1.0 + (actualPieces - 10) * 0.1); // 拼图越多，难度系数越高，最高2.0
-  // console.log(`[getBaseDifficultyMultiplierByPieces] 拼图数量 ${actualPieces} -> 难度系数 ${multiplier}`);
+  if (typeof window !== "undefined" && (window as any).DEBUG) console.log(`[getBaseDifficultyMultiplierByPieces] 拼图数量 ${actualPieces} -> 难度系数 ${multiplier}`);
   return multiplier;
 };
 
@@ -325,7 +325,7 @@ export const getHintAllowance = (_difficultyLevel: string): number => {
 export const getHintAllowanceByCutCount = (_cutCount: number): number => {
   // 统一为全局配置，不再区分切割次数
   const allowance = HINT_CONFIG.freeHintsPerGame;
-  // console.log(`[getHintAllowanceByCutCount] 统一赠送 -> 提示赠送 ${allowance}次`);
+  if (typeof window !== "undefined" && (window as any).DEBUG) console.log(`[getHintAllowanceByCutCount] 统一赠送 -> 提示赠送 ${allowance}次`);
   return allowance;
 };
 
@@ -538,7 +538,7 @@ export const calculateTimeBonus = (
   const { totalDuration, difficulty } = stats;
   const { cutCount, actualPieces } = difficulty;
 
-  // console.log(`[calculateTimeBonus] 速度奖励计算: 游戏时长${totalDuration}秒, 难度${cutCount}, 拼图${actualPieces}片`);
+  if (typeof window !== "undefined" && (window as any).DEBUG) console.log(`[calculateTimeBonus] 速度奖励计算: 游戏时长${totalDuration}秒, 难度${cutCount}, 拼图${actualPieces}片`);
 
   // 使用动态速度奖励系统（v3.4）
   // 基于难度级别和拼图数量计算合理的时间阈值（已优化）
@@ -548,7 +548,7 @@ export const calculateTimeBonus = (
   const avgTimePerPiece = getAverageTimePerPiece(cutCount);
   const baseTime = actualPieces * avgTimePerPiece;
   
-  // console.log(`[calculateTimeBonus] 动态阈值计算: 拼图${actualPieces}片 × ${avgTimePerPiece}秒/片 = 基础时间${baseTime}秒`);
+  if (typeof window !== "undefined" && (window as any).DEBUG) console.log(`[calculateTimeBonus] 动态阈值计算: 拼图${actualPieces}片 × ${avgTimePerPiece}秒/片 = 基础时间${baseTime}秒`);
 
   // 基于游戏时长给予奖励分数
   let timeBonus = 0;
@@ -569,7 +569,7 @@ export const calculateTimeBonus = (
     bonusDescription = `超过${maxTime}秒（${Math.round(maxTime / 60)}分钟）`;
   }
 
-  // console.log(`[calculateTimeBonus] ${bonusDescription}: +${timeBonus}分`);
+  if (typeof window !== "undefined" && (window as any).DEBUG) console.log(`[calculateTimeBonus] ${bonusDescription}: +${timeBonus}分`);
 
   return {
     timeBonus,
@@ -711,7 +711,7 @@ export const validateScoreParams = (stats: GameStats | null | undefined): stats 
     return false;
   }
 
-  // console.log('[validateScoreParams] 验证通过');
+  if (typeof window !== "undefined" && (window as any).DEBUG) console.log('[validateScoreParams] 验证通过');
   return true;
 };
 
@@ -725,7 +725,8 @@ export const calculateLiveScore = (stats: GameStats, leaderboard: GameRecord[] =
     return 0;
   }
 
-  // console.log('[calculateLiveScore] 开始计算，输入数据:', {
+  /*
+  if (typeof window !== "undefined" && (window as any).DEBUG) console.log('[calculateLiveScore] 开始计算，输入数据:', {
     stats: stats,
     hasStats: !!stats,
     hasDifficulty: !!(stats && stats.difficulty),
@@ -736,6 +737,7 @@ export const calculateLiveScore = (stats: GameStats, leaderboard: GameRecord[] =
     hintUsageCount: stats?.hintUsageCount,
     minRotations: stats?.minRotations
   });
+  */
 
   if (!validateScoreParams(stats)) {
     console.error('[calculateLiveScore] 数据验证失败');
@@ -745,11 +747,11 @@ export const calculateLiveScore = (stats: GameStats, leaderboard: GameRecord[] =
   return safeCalculateScore(() => {
     // 1. 基础分数
     const baseScore = getBaseScore(stats.difficulty.cutCount);
-    // console.log('[calculateLiveScore] 1. 基础分数:', baseScore);
+    if (typeof window !== "undefined" && (window as any).DEBUG) console.log('[calculateLiveScore] 1. 基础分数:', baseScore);
 
     // 2. 速度奖励
     const timeBonus = calculateTimeBonus(stats, leaderboard).timeBonus;
-    // console.log('[calculateLiveScore] 2. 速度奖励:', timeBonus);
+    if (typeof window !== "undefined" && (window as any).DEBUG) console.log('[calculateLiveScore] 2. 速度奖励:', timeBonus);
 
     // 3. 旋转效率分数
     // 如果minRotations为0，说明数据丢失，暂时返回0分避免错误计算
@@ -759,25 +761,25 @@ export const calculateLiveScore = (stats: GameStats, leaderboard: GameRecord[] =
     } else {
       console.warn('[calculateLiveScore] minRotations为0或undefined，跳过旋转分数计算');
     }
-    // console.log('[calculateLiveScore] 3. 旋转分数:', rotationScore);
+    if (typeof window !== "undefined" && (window as any).DEBUG) console.log('[calculateLiveScore] 3. 旋转分数:', rotationScore);
 
     // 4. 提示使用分数
     const hintScore = calculateHintScoreFromStats(stats);
-    // console.log('[calculateLiveScore] 4. 提示分数:', hintScore);
+    if (typeof window !== "undefined" && (window as any).DEBUG) console.log('[calculateLiveScore] 4. 提示分数:', hintScore);
 
     // 5. 小计
     const subtotal = baseScore + timeBonus + rotationScore + hintScore;
-    // console.log('[calculateLiveScore] 5. 小计:', subtotal);
+    if (typeof window !== "undefined" && (window as any).DEBUG) console.log('[calculateLiveScore] 5. 小计:', subtotal);
 
     // 6. 难度系数
     const difficultyMultiplier = calculateDifficultyMultiplier(stats.difficulty);
-    // console.log('[calculateLiveScore] 6. 难度系数:', difficultyMultiplier);
+    if (typeof window !== "undefined" && (window as any).DEBUG) console.log('[calculateLiveScore] 6. 难度系数:', difficultyMultiplier);
 
     // 7. 实时分数应该显示小计，不应用难度系数
     // 难度系数只在最终分数计算时应用（游戏完成后）
     const liveScore = Math.max(100, Math.round(subtotal));
-    // console.log('[calculateLiveScore] 7. 实时分数（小计）:', liveScore);
-    // console.log('[calculateLiveScore] 注意：实时分数不应用难度系数，难度系数只在游戏完成时应用');
+    if (typeof window !== "undefined" && (window as any).DEBUG) console.log('[calculateLiveScore] 7. 实时分数（小计）:', liveScore);
+    if (typeof window !== "undefined" && (window as any).DEBUG) console.log('[calculateLiveScore] 注意：实时分数不应用难度系数，难度系数只在游戏完成时应用');
 
     // 检查是否被Math.max限制
     if (subtotal < 100) {
@@ -815,7 +817,7 @@ export const calculateRotationScore = (stats: GameStats, pieces?: PuzzlePiece[])
   // 避免游戏完成时重新计算导致得到0的问题
   if ((!minRotations || minRotations === 0) && pieces && pieces.length > 0) {
     minRotations = calculateMinimumRotations(pieces);
-    // console.log(`[calculateRotationScore] 重新计算最小旋转次数: ${minRotations}`);
+    if (typeof window !== "undefined" && (window as any).DEBUG) console.log(`[calculateRotationScore] 重新计算最小旋转次数: ${minRotations}`);
   }
 
   // 如果还没有旋转数据，返回0分（不奖励不惩罚）
@@ -833,7 +835,7 @@ export const calculateRotationScore = (stats: GameStats, pieces?: PuzzlePiece[])
     // 使用新算法计算旋转分数
     const newScore = calculateNewRotationScore(stats.totalRotations, minRotations);
 
-    // console.log(`[calculateRotationScore] 新算法计算结果: 最小${minRotations}次, 实际${stats.totalRotations}次, 分数${newScore}`);
+    if (typeof window !== "undefined" && (window as any).DEBUG) console.log(`[calculateRotationScore] 新算法计算结果: 最小${minRotations}次, 实际${stats.totalRotations}次, 分数${newScore}`);
 
     return newScore;
   } catch (error) {
@@ -857,7 +859,7 @@ const calculateLegacyRotationScore = (stats: GameStats, minRotations: number): n
   // 计算旋转效率百分比
   const rotationEfficiency = (minRotations / stats.totalRotations) * 100;
 
-  // console.log(`[calculateLegacyRotationScore] 降级算法计算: 最小${minRotations}次, 实际${stats.totalRotations}次, 效率${rotationEfficiency.toFixed(1)}%`);
+  if (typeof window !== "undefined" && (window as any).DEBUG) console.log(`[calculateLegacyRotationScore] 降级算法计算: 最小${minRotations}次, 实际${stats.totalRotations}次, 效率${rotationEfficiency.toFixed(1)}%`);
 
   // 简化的降级评分逻辑
   let rotationScore = 0;
@@ -875,7 +877,7 @@ const calculateLegacyRotationScore = (stats: GameStats, minRotations: number): n
     rotationScore = -200;     // 看清楚再旋转：-200分
   }
 
-  // console.log(`[calculateLegacyRotationScore] 降级算法分数: ${rotationScore}`);
+  if (typeof window !== "undefined" && (window as any).DEBUG) console.log(`[calculateLegacyRotationScore] 降级算法分数: ${rotationScore}`);
   return rotationScore;
 };
 
@@ -906,12 +908,14 @@ export const calculateHintScoreFromStats = (stats: GameStats): number => {
   const allowance = getHintAllowanceByCutCount(stats.difficulty.cutCount);
   const hintScore = calculateHintScore(stats.hintUsageCount, allowance);
 
-  // console.log('[calculateHintScoreFromStats] Debug:', {
+  /*
+  if (typeof window !== "undefined" && (window as any).DEBUG) console.log('[calculateHintScoreFromStats] Debug:', {
     hintUsageCount: stats.hintUsageCount,
     cutCount: stats.difficulty.cutCount,
     allowance: allowance,
     hintScore: hintScore
   });
+  */
 
   return hintScore;
 };
@@ -1093,24 +1097,26 @@ export const calculateFinalScore = (
     const baseScore = getBaseScore(stats.difficulty.cutCount);
 
     // 基于排行榜的速度奖励系统
-    // console.log(`[calculateFinalScore] 调用calculateTimeBonus，排行榜记录数: ${currentLeaderboard?.length || 0}`);
+    /*
+    if (typeof window !== "undefined" && (window as any).DEBUG) console.log(`[calculateFinalScore] 调用calculateTimeBonus，排行榜记录数: ${currentLeaderboard?.length || 0}`);
     if (currentLeaderboard && currentLeaderboard.length > 0) {
-      // console.log(`[calculateFinalScore] 排行榜前3条:`, currentLeaderboard.slice(0, 3).map(r => `${r.finalScore}分-${r.totalDuration}秒`));
+      if (typeof window !== "undefined" && (window as any).DEBUG) console.log(`[calculateFinalScore] 排行榜前3条:`, currentLeaderboard.slice(0, 3).map(r => `${r.finalScore}分-${r.totalDuration}秒`));
     }
+    */
 
     const timeBonusResult = calculateTimeBonus(stats, currentLeaderboard);
 
     // 使用游戏开始时保存的最小旋转次数，而不是重新计算
     // 因为游戏完成时拼图片段角度已经是0度，重新计算会得到0
     const minRotations = stats.minRotations || calculateMinimumRotations(pieces);
-    // console.log(`[calculateFinalScore] 使用最小旋转次数: ${minRotations} (来源: ${stats.minRotations ? '游戏开始时保存' : '重新计算'}), 拼图片段数: ${pieces.length}`);
+    if (typeof window !== "undefined" && (window as any).DEBUG) console.log(`[calculateFinalScore] 使用最小旋转次数: ${minRotations} (来源: ${stats.minRotations ? '游戏开始时保存' : '重新计算'}), 拼图片段数: ${pieces.length}`);
 
     // 旋转效率评分（基于最优解）
     const rotationEfficiency = calculateRotationEfficiency(minRotations, stats.totalRotations);
-    // console.log(`[calculateFinalScore] 旋转效率: ${rotationEfficiency.toFixed(1)}%, 实际旋转: ${stats.totalRotations}次`);
+    if (typeof window !== "undefined" && (window as any).DEBUG) console.log(`[calculateFinalScore] 旋转效率: ${rotationEfficiency.toFixed(1)}%, 实际旋转: ${stats.totalRotations}次`);
 
     const rotationScore = calculateRotationScore({ ...stats, minRotations }, pieces);
-    // console.log(`[calculateFinalScore] 旋转分数: ${rotationScore}`);
+    if (typeof window !== "undefined" && (window as any).DEBUG) console.log(`[calculateFinalScore] 旋转分数: ${rotationScore}`);
 
     // 提示使用评分（基于切割次数，按设计文档v2）
     const hintAllowance = getHintAllowanceByCutCount(stats.difficulty.cutCount);

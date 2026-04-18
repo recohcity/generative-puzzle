@@ -54,7 +54,7 @@ const DesktopPuzzleSettings: React.FC<DesktopPuzzleSettingsProps> = ({ goToNextT
   );
 
   // 根据当前面板状态渲染不同内容
-  // console.log('[DesktopPuzzleSettings] 当前面板状态:', panelState.currentView);
+  if (typeof window !== "undefined" && (window as any).DEBUG) console.log('[DesktopPuzzleSettings] 当前面板状态:', panelState.currentView);
   switch (panelState.currentView) {
     case 'leaderboard':
       return (

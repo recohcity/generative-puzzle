@@ -398,7 +398,7 @@ export default function CurveTestOptimized() {
               (window.screen.orientation as any).unlock();
             }
           } catch (error) {
-            // console.log("释放屏幕方向锁定出错:", error);
+            if (typeof window !== "undefined" && (window as any).DEBUG) console.log("释放屏幕方向锁定出错:", error);
           }
 
           setIsFullscreen(false);
@@ -409,7 +409,7 @@ export default function CurveTestOptimized() {
 
         // 如果实际上不在全屏状态，但状态显示在全屏中，直接更新状态
         if (!actuallyInFullscreen) {
-          // console.log("检测到状态不一致：UI显示全屏但实际没有全屏");
+          if (typeof window !== "undefined" && (window as any).DEBUG) console.log("检测到状态不一致：UI显示全屏但实际没有全屏");
           setIsFullscreen(false);
           return;
         }
@@ -431,10 +431,10 @@ export default function CurveTestOptimized() {
               (window.screen.orientation as any).unlock();
             }
           } catch (error) {
-            // console.log("释放Android屏幕方向锁定出错:", error);
+            if (typeof window !== "undefined" && (window as any).DEBUG) console.log("释放Android屏幕方向锁定出错:", error);
           }
         } catch (error) {
-          // console.log("退出全屏出错:", error);
+          if (typeof window !== "undefined" && (window as any).DEBUG) console.log("退出全屏出错:", error);
           // 如果使用了备用方法，恢复原始样式
           const gameContainer = gameContainerRef.current;
           if (gameContainer && (gameContainer as any)._originalStyles) {
@@ -457,12 +457,12 @@ export default function CurveTestOptimized() {
 
         // 如果实际上不在全屏状态，但状态显示在全屏中，直接更新状态
         if (!actuallyInFullscreen) {
-          // console.log("检测到状态不一致：UI显示全屏但实际没有全屏");
+          if (typeof window !== "undefined" && (window as any).DEBUG) console.log("检测到状态不一致：UI显示全屏但实际没有全屏");
           setIsFullscreen(false);
           return;
         }
 
-        // console.log("桌面设备退出全屏");
+        if (typeof window !== "undefined" && (window as any).DEBUG) console.log("桌面设备退出全屏");
         // 使用简化的退出全屏逻辑
         try {
           if (document.exitFullscreen) {
@@ -478,12 +478,12 @@ export default function CurveTestOptimized() {
           // 切换按钮状态 - 如果直接调用没有触发fullscreenchange事件，手动更新状态
           setTimeout(() => {
             if (!checkFullscreenState() && isFullscreen) {
-              // console.log("全屏已退出但状态未更新，手动更新");
+              if (typeof window !== "undefined" && (window as any).DEBUG) console.log("全屏已退出但状态未更新，手动更新");
               setIsFullscreen(false);
             }
           }, 300);
         } catch (error) {
-          // console.log("退出全屏时出错:", error);
+          if (typeof window !== "undefined" && (window as any).DEBUG) console.log("退出全屏时出错:", error);
           // 强制更新状态
           setIsFullscreen(false);
         }

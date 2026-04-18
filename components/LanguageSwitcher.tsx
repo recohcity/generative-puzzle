@@ -131,12 +131,12 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
               console.error('Failed to play button click sound:', error);
             }
 
-            // console.log('Direct language switch clicked, current:', locale, 'switching to:', nextLocale);
+            if (typeof window !== "undefined" && (window as any).DEBUG) console.log('Direct language switch clicked, current:', locale, 'switching to:', nextLocale);
 
             if (!isLoading) {
               try {
                 await changeLocale(nextLocale);
-                // console.log('Language switched successfully to:', nextLocale);
+                if (typeof window !== "undefined" && (window as any).DEBUG) console.log('Language switched successfully to:', nextLocale);
               } catch (error) {
                 console.error('Failed to switch language:', error);
               }
