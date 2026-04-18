@@ -4,7 +4,7 @@ import ShapeControls from "@/components/ShapeControls";
 import PuzzleControlsCutType from "@/components/PuzzleControlsCutType";
 import PuzzleControlsCutCount from "@/components/PuzzleControlsCutCount";
 import PuzzleControlsScatter from "@/components/PuzzleControlsScatter";
-import { GlobalUtilityButtons } from "@/components/GlobalUtilityButtons";
+import GlobalUtilityButtons from "@/components/GlobalUtilityButtons";
 import {
   AlertDialog,
   AlertDialogAction,
