@@ -241,7 +241,7 @@ export class GameDataManager {
     try {
       // 1. 绝对真理规则：如果云端明确返回空数据集，意味着后台管理员清空了数据，此时本地必须严格跟随抹除脏数据
       if (!cloudRecords || cloudRecords.length === 0) {
-        console.warn("[GameDataManager] ⚠️ 云端数据为空，强制清空本地可能残留的脏数据");
+        console.log("[GameDataManager] ☁️ 云端数据暂为空，已同步清理本地可能残留的冗余数据");
         this.memoryHistory = [];
         this.memoryLeaderboard = [];
         localStorage.removeItem(this.GAME_HISTORY_KEY);

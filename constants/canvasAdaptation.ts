@@ -125,14 +125,14 @@ export function calculateMobilePortraitCanvasSize(windowWidth: number, windowHei
         // 如果没有传入检测结果，使用DeviceManager进行检测
         if (typeof window !== 'undefined') {
             try {
-                const { DeviceManager } = require('../core/DeviceManager');
-                const deviceManager = DeviceManager.getInstance();
-                const layoutInfo = deviceManager.getDeviceLayoutMode(windowWidth, windowHeight);
+                const { DeviceLayoutManager } = require('../core/DeviceLayoutManager');
+                const layoutManager = DeviceLayoutManager.getInstance();
+                const layoutInfo = layoutManager.getDeviceLayoutMode(windowWidth, windowHeight);
                 return {
-                    detected: layoutInfo.iPhone16Model !== undefined,
-                    model: layoutInfo.iPhone16Model || null,
+                    detected: layoutInfo.iPhoneModel !== undefined,
+                    model: layoutInfo.iPhoneModel || null,
                     orientation: layoutInfo.layoutMode === 'desktop' ? null : layoutInfo.layoutMode,
-                    exact: layoutInfo.iPhone16Exact || false
+                    exact: layoutInfo.iPhoneExact || false
                 };
             } catch (error) {
                 // 如果DeviceManager不可用，使用本地检测作为回退
@@ -280,14 +280,14 @@ export function calculateMobileLandscapeCanvasSize(windowWidth: number, windowHe
         // 如果没有传入检测结果，使用DeviceManager进行检测
         if (typeof window !== 'undefined') {
             try {
-                const { DeviceManager } = require('../core/DeviceManager');
-                const deviceManager = DeviceManager.getInstance();
-                const layoutInfo = deviceManager.getDeviceLayoutMode(windowWidth, windowHeight);
+                const { DeviceLayoutManager } = require('../core/DeviceLayoutManager');
+                const layoutManager = DeviceLayoutManager.getInstance();
+                const layoutInfo = layoutManager.getDeviceLayoutMode(windowWidth, windowHeight);
                 return {
-                    detected: layoutInfo.iPhone16Model !== undefined,
-                    model: layoutInfo.iPhone16Model || null,
+                    detected: layoutInfo.iPhoneModel !== undefined,
+                    model: layoutInfo.iPhoneModel || null,
                     orientation: layoutInfo.layoutMode === 'desktop' ? null : layoutInfo.layoutMode,
-                    exact: layoutInfo.iPhone16Exact || false
+                    exact: layoutInfo.iPhoneExact || false
                 };
             } catch (error) {
                 // 如果DeviceManager不可用，使用本地检测作为回退
@@ -439,17 +439,17 @@ function detectiPhone16Series(windowWidth: number, windowHeight: number) {
     // Try to use DeviceManager for detection
     if (typeof window !== 'undefined') {
         try {
-            const { DeviceManager } = require('../core/DeviceManager');
-            const deviceManager = DeviceManager.getInstance();
-            const layoutInfo = deviceManager.getDeviceLayoutMode(windowWidth, windowHeight);
+            const { DeviceLayoutManager } = require('../core/DeviceLayoutManager');
+            const layoutManager = DeviceLayoutManager.getInstance();
+            const layoutInfo = layoutManager.getDeviceLayoutMode(windowWidth, windowHeight);
             return {
-                detected: layoutInfo.iPhone16Model !== undefined,
-                model: layoutInfo.iPhone16Model || null,
+                detected: layoutInfo.iPhoneModel !== undefined,
+                model: layoutInfo.iPhoneModel || null,
                 orientation: layoutInfo.layoutMode === 'desktop' ? null : layoutInfo.layoutMode,
-                exact: layoutInfo.iPhone16Exact || false
+                exact: layoutInfo.iPhoneExact || false
             };
         } catch (error) {
-            console.warn('DeviceManager not available, iPhone 16 detection disabled');
+            console.warn('DeviceLayoutManager not available, iPhone detection disabled');
         }
     }
 
