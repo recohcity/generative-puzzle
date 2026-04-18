@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import ShapeControls from "@/components/ShapeControls";
 import PuzzleControlsCutType from "@/components/PuzzleControlsCutType";
@@ -146,6 +146,21 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
       fetchGlobalData();
     }
   }, [activeLeaderboardTab, globalLeaderboard.length, fetchGlobalData]);
+
+  const uniqueGlobalData = useMemo(() => {
+    if (!globalLeaderboard.length) return [];
+    
+    return Array.from(
+      globalLeaderboard.reduce((map, record) => {
+        const key = record.id || (record as any).nickname || (record as any).userId;
+        const existing = map.get(key);
+        if (!existing || record.finalScore > existing.finalScore) {
+          map.set(key, record);
+        }
+        return map;
+      }, new Map<string, any>()).values()
+    ).sort((a, b) => (b.finalScore || 0) - (a.finalScore || 0));
+  }, [globalLeaderboard]);
 
   const handleToggleLeaderboard = () => {
     if (!showLeaderboard) {
@@ -431,7 +446,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                         </div>
                       ) : (
                         <div className={cn(isLandscape ? "space-y-1" : "space-y-0.5")}>
-                          {globalLeaderboard.slice(0, 5).map((record, index) => {
+                          {uniqueGlobalData.slice(0, 5).map((record, index) => {
                             const r = record as any;
                             const difficultyKey = record.difficulty?.difficultyLevel;
                             const difficultyLabel = difficultyKey ? t(`difficulty.${difficultyKey}`) : '';
@@ -470,9 +485,6 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                                   <div className="flex items-center gap-1.5 shrink-0">
                                     <div className="text-[15px] font-medium tabular-nums tracking-tighter" style={{ color: '#FFD5AB' }}>
                                       {record.finalScore?.toString()}
-                                    </div>
-                                    <div className="text-[#FFD5AB]/20 text-[9px] font-medium tabular-nums">
-                                      {sessions}{t('game.leaderboard.sessionsUnit')}
                                     </div>
                                   </div>
                                 </div>
