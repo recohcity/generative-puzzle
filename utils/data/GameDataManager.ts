@@ -153,28 +153,34 @@ export class GameDataManager {
 
   private static updateLeaderboard(record: GameRecord): void {
     try {
-      let leaderboard = this.getLeaderboard();
+      // 1. 获取最新列表（优先使用内存中的，防止同步循环中读取到旧的 localStorage 值）
+      let leaderboard = [...this.getLeaderboard()];
       
-      // 增强查重算法：如果分数、时长、步数和拼图数量一致，即便时间戳有微秒差也视为同一局
+      // 2. 生成核心业绩指纹（分数 + 时长 + 步数）
+      // 强制取整，消除 JS 浮点数与数据库整数之间的微小刻度差异
+      const getFingerprint = (r: GameRecord) => 
+        `${Math.round(r.finalScore || 0)}-${Math.round(r.totalDuration || 0)}-${Math.round(r.totalRotations || 0)}`;
+      
+      const newFingerprint = getFingerprint(record);
+      
+      // 3. 查重：ID 匹配或核心业绩指纹匹配
       const isDuplicate = leaderboard.some(r => 
         (record.id && r.id === record.id) || 
-        (r.finalScore === record.finalScore && 
-         r.totalDuration === record.totalDuration && 
-         r.totalRotations === record.totalRotations &&
-         r.difficulty?.cutCount === record.difficulty?.cutCount)
+        (getFingerprint(r) === newFingerprint)
       );
       
-      if (!isDuplicate) {
-        leaderboard.push(record);
-        leaderboard.sort((a, b) => b.finalScore - a.finalScore);
-        leaderboard = leaderboard.slice(0, this.MAX_LEADERBOARD_RECORDS);
-        localStorage.setItem(this.LEADERBOARD_KEY, JSON.stringify(leaderboard));
-        this.memoryLeaderboard = leaderboard;
-      }
+      if (isDuplicate) return;
+      
+      // 4. 插入并排序
+      leaderboard.push(record);
+      leaderboard.sort((a, b) => b.finalScore - a.finalScore);
+      leaderboard = leaderboard.slice(0, this.MAX_LEADERBOARD_RECORDS);
+      
+      // 5. 持久化
+      this.memoryLeaderboard = leaderboard;
+      localStorage.setItem(this.LEADERBOARD_KEY, JSON.stringify(leaderboard));
     } catch (error) {
-      this.memoryLeaderboard.push(record);
-      this.memoryLeaderboard.sort((a, b) => b.finalScore - a.finalScore);
-      this.memoryLeaderboard = this.memoryLeaderboard.slice(0, this.MAX_LEADERBOARD_RECORDS);
+      console.error("[GameDataManager] Update leaderboard failed:", error);
     }
   }
 

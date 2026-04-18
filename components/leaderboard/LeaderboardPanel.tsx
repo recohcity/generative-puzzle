@@ -107,7 +107,25 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
   };
 
   const filteredLeaderboard = useMemo(() => {
-    return leaderboard.slice(0, 5);
+    // 个人最佳 UI 层暴力去重：防止历史同步产生的脏数据回流
+    const uniqueMap = new Map<string, GameRecord>();
+    
+    leaderboard.forEach(record => {
+      // 生成强指纹：分数 + 时长 + 步数 + 块数
+      const fingerprint = `${record.finalScore}-${record.totalDuration}-${record.totalRotations}-${record.difficulty?.cutCount}`;
+      const existing = uniqueMap.get(fingerprint);
+      
+      // 只有当前记录比已存记录包含更多精度信息（比如非直线、非多边形）时才覆盖，或者已存为空
+      const isHighPrecision = record.difficulty?.cutType !== 'straight' || record.difficulty?.shapeType !== 'polygon';
+      
+      if (!existing || isHighPrecision) {
+        uniqueMap.set(fingerprint, record);
+      }
+    });
+
+    return Array.from(uniqueMap.values())
+      .sort((a, b) => (b.finalScore || 0) - (a.finalScore || 0))
+      .slice(0, 5);
   }, [leaderboard]);
 
   const sortedHistory = useMemo(() => {

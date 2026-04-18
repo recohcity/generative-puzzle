@@ -1,5 +1,16 @@
 # 生成式拼图游戏 Changelog
 
+## [v1.4.0] - 2026-04-18
+
+### 🔧 修复全服排名同步失败的根因 (Critical: Fix Global Leaderboard Sync)
+
+**根因**：`uploadGameSession` 尝试向 `game_sessions` 表写入 `cut_count`、`cut_type`、`shape_type` 三个列，但这些列在数据库中**从未被创建**。每次 INSERT 都因此返回 `400 Bad Request`，导致数据从未真正写入云端，触发器也因此无法执行，全服排行榜永远无法更新。
+
+- **移除幽灵列**: 不再向 `game_sessions` 表 INSERT 不存在的列，消除了所有 400 错误
+- **metadata JSONB 存储**: 精度字段（cutCount、cutType、shapeType）改为存入已有的 `metadata` JSON 列
+- **读取路径对齐**: `fetchUserGameHistory` 现在从 `metadata` 中解析精度字段，而非从不存在的列中读取
+- **触发器恢复**: 由于 INSERT 不再失败，数据库原生触发器可以正常执行，自动更新 `public_leaderboard_entries`
+
 ## [v1.3.88] - 2026-04-18
 
 ### 🛡️ 数据指纹强化与全球榜单去重 (Sync Fingerprint & Leaderboard Optimization)

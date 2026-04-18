@@ -18,9 +18,6 @@ type PublicLeaderboardRow = {
   best_score: number | null;
   best_duration_ms: number | null;
   sessions_count: number | null;
-  cut_count: number | null;
-  cut_type: string | null;
-  shape_type: string | null;
   updated_at: string | null;
 };
 
@@ -36,8 +33,8 @@ const cutCountFromDifficultyLevel = (level: DifficultyLevel): number => {
 
 const mapPublicRowToGameRecord = (row: PublicLeaderboardRow): GameRecord => {
   const difficultyLevel = row.difficulty as DifficultyLevel;
-  const cutCount = row.cut_count || cutCountFromDifficultyLevel(difficultyLevel);
-  const actualPieces = row.cut_count ? row.cut_count + 1 : getPieceCountByDifficulty(difficultyLevel);
+  const cutCount = cutCountFromDifficultyLevel(difficultyLevel);
+  const actualPieces = getPieceCountByDifficulty(difficultyLevel);
 
   const updatedAtMs = row.updated_at ? new Date(row.updated_at).getTime() : Date.now();
   const bestDurationSeconds = row.best_duration_ms
@@ -51,9 +48,9 @@ const mapPublicRowToGameRecord = (row: PublicLeaderboardRow): GameRecord => {
     difficulty: {
       difficultyLevel,
       cutCount,
-      cutType: (row.cut_type as any) || CutType.Straight,
+      cutType: CutType.Straight,
       actualPieces,
-      shapeType: (row.shape_type as any) || ShapeType.Polygon,
+      shapeType: ShapeType.Polygon,
     },
     deviceInfo: { type: "desktop", screenWidth: 0, screenHeight: 0 },
     totalRotations: 0,
@@ -62,7 +59,6 @@ const mapPublicRowToGameRecord = (row: PublicLeaderboardRow): GameRecord => {
     rotationEfficiency: 1.0,
     scoreBreakdown: null,
     id: row.user_id,
-    // Add display_name as an extra property for the leaderboard
     nickname: row.display_name,
     displayName: row.display_name,
     sessionsCount: row.sessions_count ?? 0,
@@ -171,25 +167,30 @@ class CloudGameRepositoryClass implements ICloudGameRepository {
       // 升级幂等键：包含所有精度维度，确保唯一性
       const idempotencyKey = `${userId}-${gameEndTimeMs}-${difficultyLevel}-${diff.cutCount}-${diff.cutType}-${diff.shapeType}-${Math.round(params.finalScore)}`;
 
+      const safeNum = (val: any) => (Number.isFinite(val) ? Math.round(val) : 0);
+      const safeFloat = (val: any) => (Number.isFinite(val) ? val : 0);
+
+      // 注意：game_sessions 表中没有 cut_count/cut_type/shape_type 列
+      // 这些精度字段统一存入 metadata JSONB
       const { error } = await supabase.from("game_sessions").insert({
         user_id: userId,
         idempotency_key: idempotencyKey,
-        difficulty: difficultyLevel,
-        cut_count: diff.cutCount,
-        cut_type: diff.cutType,
-        shape_type: diff.shapeType,
-        duration_ms: durationMs,
-        score: Math.round(params.finalScore),
-        moves: params.gameStats.totalRotations,
+        difficulty: (difficultyLevel as string).toLowerCase(),
+        duration_ms: safeNum(durationMs),
+        score: safeNum(params.finalScore),
+        moves: safeNum(params.gameStats?.totalRotations),
         client_created_at: new Date(gameEndTimeMs).toISOString(),
         metadata: {
-          scoreBreakdown: params.scoreBreakdown,
-          deviceType: params.gameStats.deviceType,
-          canvasSize: params.gameStats.canvasSize,
-          hintUsageCount: params.gameStats.hintUsageCount,
-          dragOperations: params.gameStats.dragOperations,
-          rotationEfficiency: params.gameStats.rotationEfficiency,
-          gameStartTime: params.gameStats.gameStartTime,
+          cutCount: safeNum(diff?.cutCount),
+          cutType: diff?.cutType || 'straight',
+          shapeType: diff?.shapeType || 'polygon',
+          scoreBreakdown: params.scoreBreakdown || {},
+          deviceType: params.gameStats.deviceType || 'unknown',
+          canvasSize: params.gameStats.canvasSize || { width: 0, height: 0 },
+          hintUsageCount: safeNum(params.gameStats.hintUsageCount),
+          dragOperations: safeNum(params.gameStats.dragOperations),
+          rotationEfficiency: safeFloat(params.gameStats.rotationEfficiency),
+          gameStartTime: safeNum(params.gameStats.gameStartTime),
         },
       });
 
@@ -318,30 +319,22 @@ class CloudGameRepositoryClass implements ICloudGameRepository {
       this.consecutiveErrors = 0;
       return (data ?? []).map((row: any) => {
         const difficultyLevel = row.difficulty as DifficultyLevel;
+        // 精度字段从 metadata JSONB 中读取
+        const meta = row.metadata || {};
         return {
           timestamp: new Date(row.client_created_at).getTime(),
           finalScore: row.score,
           totalDuration: Math.round(row.duration_ms / 1000),
           difficulty: {
             difficultyLevel,
-            cutCount: row.cut_count || cutCountFromDifficultyLevel(difficultyLevel),
-            cutType: (row.cut_type as any) || CutType.Straight,
-            actualPieces: (row.cut_count ? row.cut_count + 1 : getPieceCountByDifficulty(difficultyLevel)),
-            shapeType: (row.shape_type as any) || ShapeType.Polygon,
-          },
-          deviceInfo: {
-            type: row.metadata?.deviceType || "unknown",
-            screenWidth: row.metadata?.canvasSize?.width || 0,
-            screenHeight: row.metadata?.canvasSize?.height || 0,
+            cutCount: meta.cutCount || cutCountFromDifficultyLevel(difficultyLevel),
+            cutType: (meta.cutType as any) || CutType.Straight,
+            actualPieces: (meta.cutCount ? meta.cutCount + 1 : getPieceCountByDifficulty(difficultyLevel)),
+            shapeType: (meta.shapeType as any) || ShapeType.Polygon,
           },
           totalRotations: row.moves || 0,
-          hintUsageCount: row.metadata?.hintUsageCount || 0,
-          dragOperations: row.metadata?.dragOperations || 0,
-          rotationEfficiency: row.metadata?.rotationEfficiency || 1.0,
-          scoreBreakdown: row.metadata?.scoreBreakdown || null,
-          gameStartTime: row.metadata?.gameStartTime || (new Date(row.client_created_at).getTime() - row.duration_ms),
           id: row.id,
-        };
+        } as any;
       });
     } catch (e) {
       this.handleNetworkError(e, "fetchUserGameHistory");
