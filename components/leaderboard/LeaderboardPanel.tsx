@@ -438,9 +438,6 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                                       )} style={{ color: '#FFD5AB' }}>
                                         {formatScore(record.finalScore)}
                                       </div>
-                                      <div className="px-1.5 py-0.5 rounded-full bg-white/5 border border-white/5 text-[#FFD5AB]/20 text-[9px] font-medium shrink-0 tabular-nums">
-                                        {sessions} {t('game.leaderboard.sessionsUnit')}
-                                      </div>
                                     </div>
                                   </div>
                                 </div>

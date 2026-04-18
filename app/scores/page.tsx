@@ -293,6 +293,7 @@ export default function ScoreManagementPage() {
                 <tr className="border-b border-white/5 bg-white/[0.02]">
                   <th className="px-10 py-6 text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">{L.profile}</th>
                   <th className="px-10 py-6 text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">{L.best}</th>
+                  <th className="px-10 py-6 text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">{isCN ? '总局数' : 'GAMES'}</th>
                   <th className="px-10 py-6 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] text-center">{L.lastSync}</th>
                   <th className="px-10 py-6 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] text-right">{L.actions}</th>
                 </tr>
@@ -327,6 +328,12 @@ export default function ScoreManagementPage() {
                          <div className="flex items-center gap-3 text-white">
                            <Zap className="w-4 h-4 text-amber-500" />
                            <span className="text-xl font-black">{p.best_score?.toLocaleString() || 0}</span>
+                         </div>
+                      </td>
+                      <td className="px-10 py-7">
+                         <div className="flex items-center gap-2 text-white/50">
+                           <Gamepad2 className="w-4 h-4 text-emerald-500/70" />
+                           <span className="text-sm font-bold">{p.total_games?.toLocaleString() || 0}</span>
                          </div>
                       </td>
                       <td className="px-10 py-7 text-center">

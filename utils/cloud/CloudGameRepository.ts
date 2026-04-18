@@ -464,16 +464,41 @@ class CloudGameRepositoryClass implements ICloudGameRepository {
    */
   async adminFetchAllProfiles(): Promise<any[]> {
     if (!isSupabaseConfigured || !supabase) return [];
-    const { data, error } = await supabase
+    
+    // 1. 获取所有用户
+    const { data: profiles, error: profileErr } = await supabase
       .from("player_profiles")
       .select("*")
       .order("best_score", { ascending: false });
     
-    if (error) {
-      console.error("[Admin] Fetch profiles failed:", error);
+    if (profileErr) {
+      console.error("[Admin] Fetch profiles failed:", profileErr);
       return [];
     }
-    return data || [];
+
+    if (!profiles || profiles.length === 0) return [];
+
+    // 2. 获取每个用户游玩的总局数 (从各个难度的排行榜记录中聚合)
+    const { data: lbData, error: lbErr } = await supabase
+      .from("leaderboards")
+      .select("user_id, sessions_count");
+
+    if (!lbErr && lbData) {
+      // 聚合每个用户的局数
+      const sessionsMap = lbData.reduce((acc, row) => {
+        const uid = row.user_id;
+        acc[uid] = (acc[uid] || 0) + (row.sessions_count || 0);
+        return acc;
+      }, {} as Record<string, number>);
+
+      // 将总局数注入到 profile 中返回
+      return profiles.map(p => ({
+        ...p,
+        total_games: sessionsMap[p.id] || 0
+      }));
+    }
+
+    return profiles;
   }
 
   /**
