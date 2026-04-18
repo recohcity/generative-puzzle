@@ -21,6 +21,7 @@
 #### 4. 极致细节修复与交互防护 (Polishing & Safety)
 - **阴影截断根治**: 修复了排行榜及移动端 Tab 切换按钮阴影被父容器 `overflow-hidden` 裁切的问题。通过迁移至 `overflow-x-hidden` 并注入底部 padding 缓冲，恢复了 11px 的物理发光阴影完整性。
 - **触控色边抑制**: 彻底解决了移动端及桌面端按钮在点击/触摸后残留的浏览器默认橙色焦点框（Focus Ring）。通过全局注入 `outline: none !important` 并优先覆盖 `:focus-visible` 样式，确保交互反馈干净利落。
+- **数据库保活 (Supabase Keep-Alive)**: 部署了专属 `/api/keep-alive` 静默接口。通过 `head: true` 极简查询策略，在消耗极低流量（Bytes 级别）的前提下确保 Supabase 免费版项目永不休眠。
 
 
 ## [v1.4.0] - 2026-04-18
