@@ -120,18 +120,18 @@ export function useCloudSync(state: GameState, dispatch: React.Dispatch<GameActi
         const cloudRecords = await CloudGameRepository.fetchUserGameHistory();
         console.log(`[useCloudSync] ☁️ 已拉取云端记录: ${cloudRecords.length} 条`);
         
-        if (cloudRecords.length > 0) {
-          GameDataManager.syncWithCloudRecords(cloudRecords);
-          
-          // 重新从本地存储加载合并后的数据并更新 UI (排行榜等)
-          const mergedLeaderboard = GameDataManager.getLeaderboard();
-          dispatch({ 
-            type: "LOAD_LEADERBOARD", 
-            payload: mergedLeaderboard
-          });
-          
-          console.log("[useCloudSync] 🏁 数据合并完成，UI 已刷新");
-        }
+        // 无条件同步：即使云端为空（[]），也要传递给 syncWithCloudRecords，
+        // 这样它就会执行 "如果云端为空则强制清空本地脏数据" 的逻辑。
+        GameDataManager.syncWithCloudRecords(cloudRecords);
+        
+        // 重新从本地存储加载合并（或已清空）后的数据并更新 UI
+        const mergedLeaderboard = GameDataManager.getLeaderboard();
+        dispatch({ 
+          type: "LOAD_LEADERBOARD", 
+          payload: mergedLeaderboard
+        });
+        
+        console.log("[useCloudSync] 🏁 数据同步完成，UI 已刷新");
       } catch (fetchErr) {
         console.error("[useCloudSync] 云端数据拉取失败:", fetchErr);
       }
