@@ -159,7 +159,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
         }
         return map;
       }, new Map<string, any>()).values()
-    ).sort((a, b) => (b.finalScore || 0) - (a.finalScore || 0));
+    ).sort((a: any, b: any) => (b.finalScore || 0) - (a.finalScore || 0));
   }, [globalLeaderboard]);
 
   const handleToggleLeaderboard = () => {
