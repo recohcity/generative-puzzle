@@ -446,7 +446,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                         </div>
                       ) : (
                         <div className={cn(isLandscape ? "space-y-1" : "space-y-0.5")}>
-                          {uniqueGlobalData.slice(0, 5).map((record, index) => {
+                          {uniqueGlobalData.slice(0, 5).map((record: any, index: number) => {
                             const r = record as any;
                             const difficultyKey = record.difficulty?.difficultyLevel;
                             const difficultyLabel = difficultyKey ? t(`difficulty.${difficultyKey}`) : '';
