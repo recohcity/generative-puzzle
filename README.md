@@ -8,71 +8,75 @@
 [![Vercel Speed Insights](https://img.shields.io/badge/Speed--Insights-Optimized-blueviolet)](https://vercel.com/speed-insights)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-15.5-black.svg)](https://nextjs.org/)
+[![Version](https://img.shields.io/badge/version-1.4.1-orange.svg)]()
 
-**基于 Next.js 15 和 React 19 构建的专业级生成式拼图引擎**
+**基于 Next.js 15 和 React 19 构建的极致前端全栈拼图引擎**
 
-*无限生成 • 线性/曲线切割 • 云端全同步 • 移动端极速性能调优*
+*无限生成 • 无框悬浮 UI • 云端全服连线 • 移动端极速性能调优*
 
 </div>
 
 ---
 
-## 🏗️ 核心架构与部署
+## 🏗️ 核心架构与生态
 
-本项目采用现代全栈架构，确保算法性能与交互体验的极致融合：
+本项目代表了现代全栈 Web 开发的最佳实践，将响应式视觉、极致交互体验与重度核心算法优雅剥离：
 
-- **生产环境**: 部署于 **Vercel**，完美集成 **Supabase** (Auth & Database) 提供持久化云端存档。
-- **性能监控**: 接入 **Vercel Speed Insights**，持续针对真实用户体验（RUM）进行专项优化。
-- **独占域名**: [www.citylivepark.com](https://www.citylivepark.com)
-
----
-
-## ✨ 核心特性
-
-### ☁️ 云端联机同步 (Cloud Sync)
-- **无感多端同步**：通过 `useCloudSync` 架构实现游戏进程全自动存档。
-- **全服竞技排行榜**：1-8 难度级动态刷新，支持个人成绩与全服榜单切换。
-- **合规性管理**：采用 PostgreSQL RPC (`SECURITY DEFINER`) 实现服务器端权限校验，确保数据安全。
-
-### 📦 物理隔离算法层 (Monorepo)
-- 核心几何算法托管于独立包 `@generative-puzzle/game-core`。
-- 切割算子、计分矩阵与视图层完全解耦，支持未来的多端（如 React Native）平滑迁移。
-
-### ✨ 智能切割算法
-- **三模形态**: 支持直线、斜线、以及基于贝塞尔曲线的**曲线切割模式**。
-- **动态难度**: 实时生成互锁拼图路径，确保每一场对局都是全球唯一的几何解。
+- **生产环境框架**: 基于 **Next.js 15** 和 **React 19** 构建骨架。
+- **云端与数据底座**: 完美集成 **Supabase** (Auth & Database)，提供多端云存档和全服竞技看板。通过 PostgreSQL RPC (`SECURITY DEFINER`) 实现原生服务器级别的权限校验。
+- **UI / UX 视觉升级**: 最新的 **v1.4.1** 版本全面实行了**悬浮玻璃拟态（Premium Glassmorphism）**。摒弃厚重的容器底色，利用金橙色系（#FFD5AB）搭配亚克力质感、流光按钮与无缝渐变，营造极致空气感。
+- **性能层优化 (Vercel Speed Insights)**: 通过重写 React 事件监听器和移除阻塞主线程的 `window.confirm`（替换为 Shadcn AlertDialog 异步弹窗），彻底解决了移动端高频交互带来的 INP（交互及绘制延迟）风暴问题。
 
 ---
 
-## 🎮 游戏交互亮点
-- **灵动微交互**：磁性智能归位、真实的碰撞物理音频反馈、拟物阴影动效。
-- **多维度评分系统**：计算模型涵盖了步数、旋转频率、提示请求及完成时长，引导玩家探索全局最优路径。
-- **全设备适配**：PC 端极速响应，移动端响应式触控，针对 iOS Safari 的视口缩放问题实现了 16px 基准加固。
+## ✨ 杀手级特性系统
+
+### ☁️ 全服数据流与云同步 (Cloud System)
+- **无感跨设备存档**：基于抽象好的 `useCloudSync` 机制自动上传玩家解谜进度（包括难度评定、完赛时间与游戏统计）。
+- **Global Leaderboard 全服排行榜**：按切片刀数（1-8 难度）和切割模式分组的实时竞速榜卡片。在前端通过强化的 `useMemo` 运用去重排序策略，保证频繁刷新时的极高帧率。
+- **后台看板与系统化管理**：增设管理专线 (`/scores`)，实时洞察分析所有账户的游玩频次及全服热度。
+
+### 📦 隔离部署的物理/算法层 (Monorepo)
+- 拼图切割的重度多边形几何与数学计算被隔离托管至独立的包 `@generative-puzzle/game-core` 内部进行。
+- 完全剥离逻辑算法和渲染引擎（Canvas GPU），使得未来的 React Native / 客户端多端跨全平台迁移成本趋近于零。
+
+### 📐 随机多态智能切割模型
+- **三模拼图切割**: 同时支援三种动态解算生成：基础直线（Line）、斜向切割（Diagonal）、以及高级仿真曲线连结（Bezier Jigsaw Curve）。
+- **千变万化，唯一解题**: 巧妙利用动态加密的随机生成种子保证：即便选择相同的切片刀数，每一局所切割出的每片多边形的边缘走向、中心质心坐标在全球范围内都是毫不重复的唯一解。
 
 ---
 
-## 🛠️ 技术栈一览
+## 🎮 人机交互与体验打磨
 
-| 类别 | 技术 | 说明 |
+- **硬核触控优化手势识别**：不仅支持 PC 的快捷键映射，移动端更专门重制了多点触控（Mutli-touch）。玩家可直接靠双指甚至多指进行拼图（Two-finger rotating）、并具有边界回弹震荡动画（Bouncing animation）反馈系统。
+- **音频系统与磁吸定位**：拖拽拼图接近目标吻合卡槽位时，散发出真实的“咔嗒”音效并启用阈值自动吸附（Magnetic Snap）；附带环境音乐渐入渐变音箱。
+- **国际化 (i18n) 与全局无缝操作**：提供中、英、粤繁体三大语种实时无刷新热切换。配合 `framer-motion` 构筑物理级平滑视图转场。
+
+---
+
+## 🛠️ 技术栈一览表
+
+| 层面 | 选用技术 / 框架 | 核心效用说明 |
 |------|------|------|
-| **骨干框架** | Next.js 15, React 19 | 当前最前沿的 React 服务端渲染与全栈能力 |
-| **云端底座** | Supabase, Vercel | PostgreSQL 实时库与边缘网络加速 |
-| **工程模式** | Monorepo (NPM Workspaces) | 领域驱动设计 (DDD)，核心逻辑与业务剥离 |
-| **样式与动效** | Tailwind CSS, Motion | 极致的视觉表达与 60FPS 转场效果 |
-| **渲染引擎** | HTML5 Canvas + GPU | 针对移动端定制的低功耗、高性能绘图底座 |
+| **骨干框架** | Next.js 15, React 19 | 当今最新的流式渲染 (App Router)及 React 并发特性支持 |
+| **云端服务** | Supabase, Vercel | 高效的 PostgreSQL 与全球边缘节点加速支持 |
+| **工程模式** | Monorepo (NPM Workspaces)| 领域驱动与依赖管控核心设计，保障项目纵向扩展自由度 |
+| **基础 UI 组件**| Shadcn UI, Tailwind CSS | 原生扩展的预构积木与 Utility-first CSS 的极致原子化控制 |
+| **动画/动效** | Framer Motion | 稳定 60FPS 的布局测算动画与物理惯性转场 |
+| **底层绘图** | HTML5 Canvas + Web API | 面向移动设备定制的低功耗、高性能二维重叠绘制 |
 
 ---
 
-## 📄 许可证
+## 📄 许可证信息
 
-本项目采用 [MIT 许可证](./LICENSE)。
+本项目及其相关源代码遵循 [MIT 许可证](./LICENSE) 分发。
 
 ---
 
 <div align="center">
 
-**发现 Bug 或有好的建议？欢迎提交 Issue 或 PR！**
+**如果这个项目对您启发了灵感，欢迎提供建设意见甚至 PR 贡献！**
 
-[🌟 GitHub Repository](https://github.com/recohcity/generative-puzzle)
+[🌟 前往 GitHub 代码仓库](https://github.com/recohcity/generative-puzzle)
 
 </div>
