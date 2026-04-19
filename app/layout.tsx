@@ -93,7 +93,7 @@ export default function RootLayout({
             {children}
           </I18nProvider>
         </AuthProvider>
-        <SpeedInsights />
+        {process.env.VERCEL && <SpeedInsights />}
       </body>
     </html>
   )
