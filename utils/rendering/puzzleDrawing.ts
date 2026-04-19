@@ -1,10 +1,10 @@
 // Path: utils/rendering/puzzleDrawing.ts
 // Functions for drawing puzzle elements on a Canvas. 
 
-import { calculateCenter } from "@generative-puzzle/game-core"; // Import geometry helpers
+import { calculateCenter, Point } from "@generative-puzzle/game-core"; // Import geometry helpers
 import { appendAlpha } from "@/utils/rendering/colorUtils"; // Assuming appendAlpha is needed
-// 使用统一的Point类型定义
-import type { Point } from '@generative-puzzle/game-core';
+import { textureCache } from "@/utils/rendering/TextureCache";
+// 使用统一的类型定义
 
 // 定义类型 (从 PuzzleCanvas.tsx 迁移)
 export interface PuzzlePiece { // Export the interface
@@ -175,60 +175,37 @@ export const drawPiece = (
 
   ctx.closePath();
 
-  // 🎯 填充颜色：使用不透明的纯色，取消透明度
-  // 根据是否已完成和是否有颜色属性设置填充颜色
+  // 🎯 填充颜色：根据是否已完成和是否有颜色属性设置填充颜色
   const currentFillColor = isCompleted
     ? "#B8A9E8" // 🎯 已完成拼图使用浅蓝紫色
     : (piece.color || "#CCCCCC"); // 使用拼图的原始颜色
 
-  ctx.fillStyle = currentFillColor;
-  ctx.fill(); // 填充当前路径
-
-  // 【关键改进】用相同颜色进行描边，消除抗锯齿导致的 1px 缝隙问题
-  ctx.strokeStyle = currentFillColor;
-  ctx.lineWidth = 0.5; // 轻微描边即可
-  ctx.stroke();
-
-  // --------- 叠加瓷砖气孔纹理 ---------
+  // --------- 叠加瓷砖气孔纹理 (已优化为基于缓存的 AOT 模式) ---------
   try {
-    // 只加载一次图片
-    if (!(window as any)._puzzleTextureImg) {
-      const img = new window.Image();
-      img.src = '/texture-tile.png';
-      (window as any)._puzzleTextureImg = img;
+    // 异步触发初始化（仅首次）
+    textureCache.initStack(); 
+
+    const cached = textureCache.getPiece(
+      index, 
+      piece.points, 
+      currentFillColor, 
+      shapeType, 
+      isCompleted
+    );
+
+    if (cached.valid) {
+      // 这里的 piece.points 是未旋转的基准点
+      // 我们在外部已经应用了 ctx.rotate，所以直接绘制即可
+      ctx.drawImage(
+        cached.canvas, 
+        Math.min(...piece.points.map(p => p.x)) - cached.offsetX,
+        Math.min(...piece.points.map(p => p.y)) - cached.offsetX
+      );
     }
-    const textureImg = (window as any)._puzzleTextureImg;
-    if (textureImg.complete) {
-      ctx.save();
-      ctx.globalAlpha = 0.28; // 纹理透明度
-      ctx.globalCompositeOperation = 'multiply'; // 让黑色气孔叠加到主色
-      const pattern = ctx.createPattern(textureImg, 'repeat');
-      if (pattern) {
-        ctx.fillStyle = pattern;
-        ctx.beginPath();
-        ctx.moveTo(piece.points[0].x, piece.points[0].y);
-        for (let i = 1; i < piece.points.length; i++) {
-          const prev = piece.points[i - 1];
-          const current = piece.points[i];
-          const next = piece.points[(i + 1) % piece.points.length];
-          if (shapeType !== "polygon" && current.isOriginal !== false) {
-            const midX = (prev.x + current.x) / 2;
-            const midY = (prev.y + current.y) / 2;
-            const nextMidX = (current.x + next.x) / 2;
-            const nextMidY = (current.y + next.y) / 2;
-            ctx.quadraticCurveTo(current.x, current.y, nextMidX, nextMidY);
-          } else {
-            ctx.lineTo(current.x, current.y);
-          }
-        }
-        ctx.closePath();
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1.0;
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.restore();
-    }
-  } catch (e) { /* ignore */ }
+  } catch (e) {
+    console.error("[drawPiece] Texture cache error:", e);
+    // 回退到原色填充（已经在上面做了）
+  }
   // --------- END 材质纹理 ---------
 
   // 🎯 优化边框绘制：去掉选中拼图的橙色外轮廓，保持简洁
@@ -489,45 +466,26 @@ export const drawPuzzle = (
     ctx.shadowBlur = 0;
     ctx.fill();
 
-    // --------- 叠加瓷砖气孔纹理 ---------
+    // --------- 叠加瓷砖气孔纹理 (全量完成态缓存优化) ---------
     try {
-      if (!(window as any)._puzzleTextureImg) {
-        const img = new window.Image();
-        img.src = '/texture-tile.png';
-        (window as any)._puzzleTextureImg = img;
+      const cachedFull = textureCache.getPiece(
+        -1, // 特殊索引代表全量形状
+        originalShape, 
+        fillColor, 
+        shapeType, 
+        true
+      );
+
+      if (cachedFull.valid) {
+        ctx.drawImage(
+          cachedFull.canvas, 
+          Math.min(...originalShape.map(p => p.x)) - cachedFull.offsetX,
+          Math.min(...originalShape.map(p => p.y)) - cachedFull.offsetX
+        );
       }
-      const textureImg = (window as any)._puzzleTextureImg;
-      if (textureImg.complete) {
-        ctx.save();
-        ctx.globalAlpha = 0.28;
-        ctx.globalCompositeOperation = 'multiply';
-        const pattern = ctx.createPattern(textureImg, 'repeat');
-        if (pattern) {
-          ctx.fillStyle = pattern;
-          ctx.beginPath();
-          ctx.moveTo(originalShape[0].x, originalShape[0].y);
-          for (let i = 1; i < originalShape.length; i++) {
-            const prev = originalShape[i - 1];
-            const current = originalShape[i];
-            const next = originalShape[(i + 1) % originalShape.length];
-            if (shapeType !== "polygon" && current.isOriginal !== false) {
-              const midX = (prev.x + current.x) / 2;
-              const midY = (prev.y + current.y) / 2;
-              const nextMidX = (current.x + next.x) / 2;
-              const nextMidY = (current.y + next.y) / 2;
-              ctx.quadraticCurveTo(current.x, current.y, nextMidX, nextMidY);
-            } else {
-              ctx.lineTo(current.x, current.y);
-            }
-          }
-          ctx.closePath();
-          ctx.fill();
-        }
-        ctx.globalAlpha = 1.0;
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.restore();
-      }
-    } catch (e) { /* ignore */ }
+    } catch (e) {
+      console.error("[drawPuzzle] Full texture cache error:", e);
+    }
     // --------- END 材质纹理 ---------
 
     // 绘制完成效果

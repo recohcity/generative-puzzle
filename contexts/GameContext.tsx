@@ -831,15 +831,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
   );
 
   useEffect(() => {
-    console.log("🔍 [GameContext] 游戏完成检测:", {
-      hasPuzzle: !!state.puzzle,
-      completedPieces: state.completedPieces.length,
-      totalPieces: state.puzzle?.length || 0,
-      isCompleted: state.isCompleted,
-      isGameActive: state.isGameActive,
-      isGameComplete: state.isGameComplete,
-    });
-
     // 检测游戏刚刚完成：所有拼图完成 + 游戏活跃 + 尚未处理完成状态
     if (
       state.puzzle &&
@@ -860,7 +851,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
     }
   }, [
     state.completedPieces,
-    state.puzzle,
+    state.puzzle?.length,
     state.isGameActive,
     state.isGameComplete,
   ]);

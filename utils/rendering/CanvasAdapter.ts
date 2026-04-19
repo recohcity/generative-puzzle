@@ -1,5 +1,6 @@
 import { GameState, CanvasSize } from "@generative-puzzle/game-core";
 import { adaptAllElements } from "@/utils/SimpleAdapter";
+import { textureCache } from "@/utils/rendering/TextureCache";
 
 export const handleCanvasResize = (
   state: GameState,
@@ -18,11 +19,16 @@ export const handleCanvasResize = (
     !currentSize ||
     Math.abs(newCanvasSize.width - currentSize.width) > 100 ||
     Math.abs(newCanvasSize.height - currentSize.height) > 100;
+
   const needsProtection = (isExtremeRatio || hasSignificantChange) && !forceUpdate;
 
   if (needsProtection) {
     return { ...state, canvasSize: newCanvasSize };
   }
+
+  // 关键：当发生有效的尺寸变化导致需要重新适配时，清理拼图纹理缓存
+  // 因为缩放会导致原有的离屏位图失真或尺寸不符
+  textureCache.clear();
 
   if (
     currentSize &&
