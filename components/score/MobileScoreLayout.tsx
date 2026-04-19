@@ -70,7 +70,7 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
     )}>
       
       {/* 标题与分数并排一行 - 图标对齐桌面端 & 横屏字号拉齐 */}
-      <div className={cn("w-full flex items-center justify-between px-0.5", isLandscape ? "mb-0" : "mb-1")}>
+      <div className={cn("w-full flex items-center justify-between px-0.5", isLandscape ? "mb-0" : "mb-0")}>
         <div className="flex items-center gap-1.5 min-w-0">
            <Trophy className="shrink-0" size={16} style={{ color: SCORE_COLOR }} />
            <h3 className="text-white/90 uppercase tracking-[0.1em] font-medium whitespace-nowrap text-[11px]">
@@ -93,11 +93,11 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
       {/* 成绩明细外边框容器 - 仅留边框 */}
       <div className={cn(
         "w-full border border-white/10 rounded-2xl bg-transparent",
-        isLandscape ? "p-3 px-3.5" : "p-3.5"
+        isLandscape ? "p-3 px-3.5" : "p-2.5"
       )}>
-        <div className={isLandscape ? "space-y-1.5" : "space-y-2"}>
+        <div className={isLandscape ? "space-y-1.5" : "space-y-1"}>
           {/* 明细行 */}
-          <div className="space-y-0.5">
+          <div className="space-y-0">
             {rows.map((row, i) => (
               <div key={i} className="flex items-baseline justify-between leading-none py-0.5 overflow-hidden">
                 <div className="flex items-baseline gap-2 flex-1 min-w-0 pr-1.5 overflow-hidden">
@@ -121,7 +121,7 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
           <div className="h-px bg-white/10 w-full opacity-15" />
 
           {/* 结算与系数 */}
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             <div className="flex items-center justify-between leading-tight">
               <span className="text-white/25 uppercase tracking-tight font-medium text-[10px]">
                 {t('score.breakdown.subtotal')}
@@ -141,7 +141,7 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
             </div>
 
             {/* 底部最终得分 */}
-            <div className="flex items-baseline justify-between pt-1.5 border-t border-white/5 mt-1">
+            <div className="flex items-baseline justify-between pt-1 border-t border-white/5 mt-0">
               <span className="text-white/50 uppercase tracking-tight font-medium text-[12px]">
                 {t('score.breakdown.final')}
               </span>

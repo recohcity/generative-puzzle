@@ -617,6 +617,13 @@ svg {
       0 10px 30px rgba(0, 0, 0, 0.1);
   }
 
+  /* 拖拽状态下降级模糊效果，大幅优化 INP */
+  .dragging-active .glass-panel {
+    @apply backdrop-blur-[4px] border-white/10;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    will-change: transform, opacity;
+  }
+
   .glass-card {
     @apply bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl;
   }

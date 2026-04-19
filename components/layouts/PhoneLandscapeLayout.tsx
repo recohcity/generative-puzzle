@@ -8,6 +8,8 @@ import { MOBILE_ADAPTATION } from '@/src/config/adaptationConfig';
 import { calculateMobileLandscapeCanvasSize } from '@/constants/canvasAdaptation';
 import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 
+import { useGame } from "@/contexts/GameContext";
+
 interface PhoneLandscapeLayoutProps {
   isMusicPlaying: boolean;
   isFullscreen: boolean;
@@ -31,6 +33,7 @@ const PhoneLandscapeLayout: React.FC<PhoneLandscapeLayoutProps> = ({
 }) => {
   // 使用统一的设备检测和画布管理系统
   const device = useDeviceDetection();
+  const { state } = useGame();
   const containerRef = useRef<HTMLDivElement>(null);
 
   // 直接使用适配常量计算画布尺寸，不依赖useCanvas
@@ -50,7 +53,9 @@ const PhoneLandscapeLayout: React.FC<PhoneLandscapeLayoutProps> = ({
   // 横屏画布尺寸计算调试输出已移除
 
   return (
-    <div style={{
+    <div 
+      className={state.draggingPiece ? "dragging-active" : ""}
+      style={{
       display: 'flex',
       flexDirection: 'row',
       height: '100dvh', // 使用 dynamic viewport height，精准适配移动工具栏

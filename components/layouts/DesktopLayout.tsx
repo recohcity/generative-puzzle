@@ -321,7 +321,9 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
 
 
   return (
-    <div style={{
+    <div 
+      className={cn(state.draggingPiece ? "dragging-active" : "")}
+      style={{
       width: '100%',
       boxSizing: 'border-box',
       display: 'flex',
@@ -361,7 +363,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
         >
           {/* 装饰层，视觉效果 */}
           <div
-            className="bg-white/30 backdrop-blur-xl rounded-3xl border-2 border-white/30"
+            className="glass-panel"
             style={{
               width: '100%',
               height: '100%',
@@ -403,7 +405,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
             ...(panelScale <= 0.5 ? { '--panel-scale': 0.4 } : { '--panel-scale': panelScale })
           } as React.CSSProperties}
         >
-          <div className="bg-white/30 backdrop-blur-xl rounded-3xl border-2 border-white/30 h-full flex flex-col overflow-auto"
+          <div className="glass-panel h-full flex flex-col overflow-auto"
             style={{ padding: panelContentPadding, fontSize: panelScale <= 0.5 ? 16 : 'calc(16px * var(--panel-scale))', gap: panelContentGap }}
           >
             <div className="flex flex-col mb-1 flex-shrink-0">

@@ -193,13 +193,20 @@ export const drawPiece = (
       isCompleted
     );
 
+    let minX = Infinity;
+    let minY = Infinity;
+    for (const p of piece.points) {
+      if (p.x < minX) minX = p.x;
+      if (p.y < minY) minY = p.y;
+    }
+
     if (cached.valid) {
       // 这里的 piece.points 是未旋转的基准点
       // 我们在外部已经应用了 ctx.rotate，所以直接绘制即可
       ctx.drawImage(
         cached.canvas, 
-        Math.min(...piece.points.map(p => p.x)) - cached.offsetX,
-        Math.min(...piece.points.map(p => p.y)) - cached.offsetX
+        minX - cached.offsetX,
+        minY - cached.offsetX
       );
     }
   } catch (e) {
@@ -477,10 +484,16 @@ export const drawPuzzle = (
       );
 
       if (cachedFull.valid) {
+        let minX = Infinity;
+        let minY = Infinity;
+        for (const p of originalShape) {
+          if (p.x < minX) minX = p.x;
+          if (p.y < minY) minY = p.y;
+        }
         ctx.drawImage(
           cachedFull.canvas, 
-          Math.min(...originalShape.map(p => p.x)) - cachedFull.offsetX,
-          Math.min(...originalShape.map(p => p.y)) - cachedFull.offsetX
+          minX - cachedFull.offsetX,
+          minY - cachedFull.offsetX
         );
       }
     } catch (e) {

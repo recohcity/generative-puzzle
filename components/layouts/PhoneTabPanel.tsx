@@ -59,7 +59,7 @@ const SECTION_CLASS = "mb-1";
 
 // 面板根容器样式
 const PANEL_CLASS_BASE = "glass-panel h-full w-full flex flex-col overflow-hidden";
-const PANEL_PADDING_PORTRAIT = "p-2.5";
+const PANEL_PADDING_PORTRAIT = "p-2.5 pt-1.5";
 const PANEL_PADDING_LANDSCAPE = "px-3 py-2";
 
 const CONTENT_HORIZONTAL_PADDING = 0;
@@ -252,7 +252,15 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
 
   return (
     <div
-      className={`${PANEL_CLASS_BASE} ${isLandscape ? PANEL_PADDING_LANDSCAPE : PANEL_PADDING_PORTRAIT} ${isLandscape ? 'gap-1' : 'gap-2'}`}
+      className={cn(
+        PANEL_CLASS_BASE,
+        isLandscape 
+          ? PANEL_PADDING_LANDSCAPE 
+          : (isGameCompleted ? "p-2 pt-1" : PANEL_PADDING_PORTRAIT),
+        isLandscape 
+          ? "gap-1" 
+          : (isGameCompleted ? "gap-0.5" : "gap-2")
+      )}
       style={style}
     >
       <div className="flex items-center justify-between mb-1">
@@ -521,10 +529,10 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
         ) : isGameCompleted ? (
           /* 游戏结算界面 */
           <div className="flex flex-col h-full">
-            <div className="flex-1 overflow-y-auto min-h-0 pt-1">
+            <div className="flex-1 overflow-y-auto min-h-0 pt-0">
               <MobileScoreLayout gameStats={state.gameStats!} currentScore={state.currentScore} scoreBreakdown={state.scoreBreakdown || undefined} isNewRecord={state.isNewRecord} isLandscape={isLandscape} />
             </div>
-            <div className={cn("flex-shrink-0 flex flex-row gap-2 mt-1", isLandscape ? "mb-0" : "mb-1")}>
+            <div className={cn("flex-shrink-0 flex flex-row gap-2 mt-0.5", isLandscape ? "mb-0" : "mb-1")}>
               <RestartButton onClick={handleRetryCurrent} icon="retry" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.retryCurrent')}</RestartButton>
               <RestartButton onClick={handleRestart} icon="refresh" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.restartGame')}</RestartButton>
             </div>
