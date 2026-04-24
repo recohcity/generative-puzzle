@@ -1,5 +1,21 @@
 # 生成式拼图游戏 Changelog
 
+## [v1.4.5] - 2024-04-24
+
+### 📱 移动端布局精致化微调 (Mobile UI Refinement)
+
+针对移动端小视口环境，对数据展示密度进行了专项优化，提升了核心信息的易读性。
+
+#### 1. 榜单显示深度截断 (Leaderboard Display Capping)
+- **Top 3 策略**: 在移动端（`PhoneTabPanel` 与 `SimplifiedLeaderboardPanel`）中，将“个人最佳”与“全服排名”的显示数量从前 5 名缩减为 **前 3 名**。
+- **视觉呼吸感提升**: 缩减名次后，释放了约 30% 的垂直空间，有效避免了小屏设备下的布局拥挤，并让前三名的奖牌（🥇🥈🥉）视觉焦点更加集中。
+- **桌面端保持**: 桌面端（`LeaderboardPanel`）继续维持 **前 5 名** 显示，利用大屏幕优势提供更丰富的数据参考。
+
+#### 2. 响应式组件同步 (Responsive Component Sync)
+- **SimplifiedLeaderboardPanel 升级**: 实现了基于 `isMobile` 状态的动态标题切换。移动端自动变更为 "Top 3" 标题，确保文本与实际显示数量严格对应。
+
+---
+
 ## [v1.4.4] - 2024-04-24
 
 ### 🛠️ UI 深度清理与链路一致性加固 (UI Cleanup & Data Parity)

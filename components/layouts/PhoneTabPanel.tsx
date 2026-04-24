@@ -410,7 +410,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                       <div className="rounded-xl p-2">
                         <div className={cn(isLandscape ? "space-y-1" : "space-y-0.5")}>
                           {leaderboardData.length > 0 ? (
-                            leaderboardData.slice(0, 5).map((record, index) => {
+                            leaderboardData.slice(0, 3).map((record, index) => {
                               const isTop3 = index < 3;
                               const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : null;
                               const subtitle = [
@@ -472,7 +472,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                         </div>
                       ) : (
                         <div className={cn(isLandscape ? "space-y-1" : "space-y-0.5")}>
-                          {uniqueGlobalData.slice(0, 5).map((record: any, index: number) => {
+                          {uniqueGlobalData.slice(0, 3).map((record: any, index: number) => {
                             const r = record as any;
                             const difficultyKey = record.difficulty?.difficultyLevel;
                             const difficultyLabel = difficultyKey ? t(`difficulty.${difficultyKey}`) : '';

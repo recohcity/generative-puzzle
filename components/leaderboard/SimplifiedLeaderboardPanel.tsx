@@ -153,12 +153,12 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
           
           <h4 className="text-brand-peach font-medium mb-2 text-sm flex items-center gap-1 pr-12">
             <Trophy className="w-4 h-4" />
-            Top 5
+            {isMobile ? 'Top 3' : 'Top 5'}
           </h4>
 
           {simplifiedData.top5Records.length > 0 ? (
             <div className="space-y-1">
-              {simplifiedData.top5Records.map((record, index) => {
+              {simplifiedData.top5Records.slice(0, isMobile ? 3 : 5).map((record, index) => {
                 const rank = index + 1;
                 const isPlayerNewEntry = simplifiedData.playerNewEntry?.timestamp === record.timestamp;
                 
