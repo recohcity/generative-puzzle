@@ -28,8 +28,7 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
 }) => {
   const { t, locale } = useTranslation();
   
-  // 统一配色 (#FFD5AB)
-  const BRAND_GOLD = '#FFD5AB';
+  // 颜色通过 Tailwind Token (text-brand-peach) 和 CSS 变量 (var(--brand-peach)) 统一管理
 
   const formatScore = (score: number): string => score.toString();
 
@@ -79,19 +78,18 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
       {/* Header Row - Removed transparency from Title and Icon */}
       <div className="flex items-center justify-between w-full px-1 mb-1.5 flex-shrink-0">
         <div className="flex items-center gap-1.5 min-w-0">
-          <Trophy className="shrink-0" size={16} style={{ color: BRAND_GOLD }} />
+          <Trophy className="shrink-0 text-brand-peach" size={16} />
           <h2 className="text-white/90 font-medium uppercase tracking-[0.1em] leading-none text-[12px] truncate">
             {t('stats.currentGameResult')}
           </h2>
           {isNewRecord && (
-            <span className="bg-[#FFD5AB]/20 text-[#FFD5AB] px-1 py-0.5 rounded text-[8px] font-bold uppercase border border-[#FFD5AB]/30 leading-none shrink-0">
+            <span className="bg-brand-peach/20 text-brand-peach px-1 py-0.5 rounded text-[8px] font-bold uppercase border border-brand-peach/30 leading-none shrink-0">
               NEW
             </span>
           )}
         </div>
         <div 
-          className="tabular-nums tracking-tighter font-medium leading-none text-xl ml-2 shrink-0" 
-          style={{ color: BRAND_GOLD }}
+          className="tabular-nums tracking-tighter font-medium leading-none text-xl ml-2 shrink-0 text-brand-peach"
         >
           {formatScore(currentScore)}
         </div>
@@ -116,8 +114,7 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
                   </span>
                 </div>
                 <span 
-                  className="tabular-nums shrink-0 font-medium text-[13px] text-right" 
-                  style={{ color: row.sign === '-' ? '#FF8A80' : BRAND_GOLD }}
+                  className={cn("tabular-nums shrink-0 font-medium text-[13px] text-right", row.sign === '-' ? 'text-red-400' : 'text-brand-peach')}
                 >
                   {row.sign}{row.value}
                 </span>
@@ -142,7 +139,7 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
               <span className="text-white/30 uppercase tracking-tight font-medium text-[10px]">
                 {t('score.breakdown.multiplier')}
               </span>
-              <span className="tabular-nums font-medium text-[12px]" style={{ color: BRAND_GOLD, opacity: 0.8 }}>
+              <span className="tabular-nums font-medium text-[12px] text-brand-peach/80">
                 ×{(scoreBreakdown?.difficultyMultiplier || 1).toFixed(2)}
               </span>
             </div>
@@ -152,8 +149,7 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
                 {t('score.breakdown.final')}
               </span>
               <span 
-                className="tabular-nums tracking-tight font-medium leading-none text-lg" 
-                style={{ color: BRAND_GOLD }}
+                className="tabular-nums tracking-tight font-medium leading-none text-lg text-brand-peach"
               >
                 {formatScore(currentScore)}
               </span>
@@ -165,7 +161,7 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
       {onClose && isModal && (
         <button 
           onClick={onClose} 
-          className="mt-4 w-full h-10 rounded-xl bg-white/5 border border-white/10 text-[#FFD5AB] font-bold uppercase tracking-widest hover:bg-white/10 transition-all text-xs"
+          className="mt-4 w-full h-10 rounded-xl bg-white/5 border border-white/10 text-brand-peach font-bold uppercase tracking-widest hover:bg-white/10 transition-all text-xs"
         >
           {t('common.close') || 'Close'}
         </button>

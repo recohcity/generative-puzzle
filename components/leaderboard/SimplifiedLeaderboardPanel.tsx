@@ -118,7 +118,7 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-[#FFD5AB]">Loading...</div>
+        <div className="text-brand-peach">Loading...</div>
       </div>
     );
   }
@@ -146,12 +146,12 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
             onClick={handleClose}
             variant="ghost"
             size="sm"
-            className="absolute top-2 right-2 text-[#FFD5AB] hover:text-white text-xs px-2 py-1 h-auto"
+            className="absolute top-2 right-2 text-brand-peach hover:text-white text-xs px-2 py-1 h-auto"
           >
             {t('common.close')}
           </Button>
           
-          <h4 className="text-[#FFD5AB] font-medium mb-2 text-sm flex items-center gap-1 pr-12">
+          <h4 className="text-brand-peach font-medium mb-2 text-sm flex items-center gap-1 pr-12">
             <Trophy className="w-4 h-4" />
             Top 5
           </h4>
@@ -181,12 +181,12 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
                           <div className="flex flex-col flex-1">
                             {/* 第一行：分数（与名次字号一样大） */}
                             <div className={`text-lg font-medium ${
-                              isPlayerNewEntry ? 'text-white' : 'text-[#FFD5AB]'
+                              isPlayerNewEntry ? 'text-white' : 'text-brand-peach'
                             }`}>
                               {LeaderboardSimplifier.formatScore(record.finalScore)}
                             </div>
                             {/* 第二行：时间和难度（字号较小） */}
-                            <div className="text-[#FFD5AB] opacity-70 truncate">
+                            <div className="text-brand-peach opacity-70 truncate">
                               <span className="text-xs">{LeaderboardSimplifier.formatTime(record.totalDuration)} · </span>
                               <span className="text-[10px]">{getDifficultyWithDetails(record.difficulty)} · {record.difficulty.actualPieces}{t('stats.piecesUnit')}</span>
                             </div>
@@ -221,7 +221,7 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
               })}
             </div>
           ) : (
-            <div className="text-[#FFD5AB] opacity-60 text-xs text-center py-4">
+            <div className="text-brand-peach opacity-60 text-xs text-center py-4">
               {t('leaderboard.empty')}
             </div>
           )}
@@ -230,13 +230,13 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
         {/* 最近游戏记录区域 - 移动端使用极简格式 */}
         {lastGameRecord && (
           <div className="bg-[#2A2A2A] rounded-lg p-2">
-            <h4 className="text-[#FFD5AB] font-medium mb-2 text-sm flex items-center gap-1">
+            <h4 className="text-brand-peach font-medium mb-2 text-sm flex items-center gap-1">
               <Clock className="w-4 h-4" />
               {t('stats.scoreHistory')}
             </h4>
             {isMobile ? (
               // 移动端极简格式
-              <div className="flex items-center justify-between py-1 px-1 text-[#FFD5AB]">
+               <div className="flex items-center justify-between py-1 px-1 text-brand-peach">
                 <div className="flex items-center gap-2">
                   <span className="text-lg">🎮</span>
                   <div className="text-xs flex-1 min-w-0">
@@ -256,15 +256,15 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
             ) : (
               // 桌面端详细格式
               <div
-                className="relative p-4 rounded-lg bg-gradient-to-br from-[#3A3A3A] to-[#2D2D2D] hover:from-[#444] hover:to-[#333] cursor-pointer transition-all duration-300 border-2 border-transparent hover:border-[#FFD5AB] group shadow-lg hover:shadow-xl"
+                className="relative p-4 rounded-lg bg-gradient-to-br from-[#3A3A3A] to-[#2D2D2D] hover:from-[#444] hover:to-[#333] cursor-pointer transition-all duration-300 border-2 border-transparent hover:border-brand-peach group shadow-lg hover:shadow-xl"
                 onClick={() => handleViewDetails(lastGameRecord)}
               >
                 {/* 主要分数显示 */}
                 <div className="text-center mb-4">
-                  <div className="text-3xl font-bold text-[#FFD5AB] font-mono mb-1 tracking-wider">
+                  <div className="text-3xl font-bold text-brand-peach font-mono mb-1 tracking-wider">
                     {LeaderboardSimplifier.formatScore(lastGameRecord.finalScore)}
                   </div>
-                  <div className="text-sm text-[#FFD5AB] opacity-70 flex items-center justify-center gap-1">
+                  <div className="text-sm text-brand-peach opacity-70 flex items-center justify-center gap-1">
                     <Clock className="w-3 h-3" />
                     {LeaderboardSimplifier.formatTime(lastGameRecord.totalDuration)}
                   </div>
@@ -272,24 +272,24 @@ const SimplifiedLeaderboardPanel: React.FC<SimplifiedLeaderboardPanelProps> = ({
 
                 {/* 游戏统计信息 */}
                 <div className="flex items-center justify-center gap-4 mb-3 text-xs">
-                  <div className="flex items-center gap-1 bg-[#FFD5AB] bg-opacity-10 px-2 py-1 rounded">
+                  <div className="flex items-center gap-1 bg-brand-peach bg-opacity-10 px-2 py-1 rounded">
                     <Trophy className="w-3 h-3 text-yellow-400" />
-                    <span className="text-[#FFD5AB] font-medium">{lastGameRecord.difficulty.actualPieces}</span>
+                    <span className="text-brand-peach font-medium">{lastGameRecord.difficulty.actualPieces}</span>
                   </div>
-                  <div className="flex items-center gap-1 bg-[#FFD5AB] bg-opacity-10 px-2 py-1 rounded">
-                    <span className="text-[#FFD5AB] font-medium">🔄 {lastGameRecord.totalRotations}</span>
+                  <div className="flex items-center gap-1 bg-brand-peach bg-opacity-10 px-2 py-1 rounded">
+                    <span className="text-brand-peach font-medium">🔄 {lastGameRecord.totalRotations}</span>
                   </div>
-                  <div className="flex items-center gap-1 bg-[#FFD5AB] bg-opacity-10 px-2 py-1 rounded">
-                    <span className="text-[#FFD5AB] font-medium">💡 {lastGameRecord.hintUsageCount}</span>
+                  <div className="flex items-center gap-1 bg-brand-peach bg-opacity-10 px-2 py-1 rounded">
+                    <span className="text-brand-peach font-medium">💡 {lastGameRecord.hintUsageCount}</span>
                   </div>
                 </div>
 
                 {/* 难度和日期信息 */}
                 <div className="flex items-center justify-between pt-3 border-t border-[#555]">
-                  <span className="px-3 py-1 bg-gradient-to-r from-[#FFD5AB] to-[#F4C2A1] text-[#2A2A2A] text-xs font-medium rounded-full">
+                  <span className="px-3 py-1 bg-gradient-to-r from-brand-peach to-[#F4C2A1] text-brand-dark text-xs font-medium rounded-full">
                     {getDifficultyWithDetails(lastGameRecord.difficulty)}
                   </span>
-                  <div className="text-xs text-[#FFD5AB] opacity-60">
+                  <div className="text-xs text-brand-peach opacity-60">
                     {formatDate(lastGameRecord.timestamp)}
                   </div>
                 </div>

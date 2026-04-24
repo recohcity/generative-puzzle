@@ -80,7 +80,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   const optionStyle = {
     padding: variant === 'iconOnly' ? '8px' : '8px 16px',
     fontSize: '13px',
-    color: '#FFD5AB',
+    color: 'var(--brand-peach)',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     display: 'flex',
@@ -91,8 +91,8 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
 
   const activeOptionStyle = {
     ...optionStyle,
-    background: 'linear-gradient(135deg, #FFD5AB 0%, #F68E5F 100%)',
-    color: '#232035',
+    background: 'linear-gradient(135deg, var(--brand-peach) 0%, #F68E5F 100%)',
+    color: 'var(--brand-dark)',
     fontWeight: 700,
   };
 
@@ -165,7 +165,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
               WebkitUserSelect: 'none',
               userSelect: 'none',
               backgroundColor: 'rgba(255, 255, 255, 0.05)',
-              color: '#FFB17A',
+              color: 'var(--brand-amber)',
             }}
           data-testid="language-switcher-button"
           title={`当前: ${SUPPORTED_LOCALES[locale]} → 点击切换到: ${SUPPORTED_LOCALES[nextLocale]}`}
@@ -195,7 +195,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
           onClick={() => setIsOpen(!isOpen)}
           disabled={isLoading}
           variant="ghost"
-          className="text-[#FFB17A] glass-btn-inactive transition-all border-none shadow-none"
+          className="text-brand-amber glass-btn-inactive transition-all border-none shadow-none"
           style={{
             fontSize,
             padding: '4px 12px',
@@ -252,7 +252,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
         style={{
             ...buttonStyle,
             backgroundColor: 'rgba(255, 255, 255, 0.05)',
-            color: '#FFB17A',
+            color: 'var(--brand-amber)',
         }}
         data-testid="language-switcher-button"
         title={`当前语言: ${SUPPORTED_LOCALES[locale]}`}

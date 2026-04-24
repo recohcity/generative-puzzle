@@ -1,4 +1,4 @@
-# 🧩 Generative Puzzle 核心 UI/UX 规范手册 (V3.5 - 完整技术全案版)
+# 🧩 Generative Puzzle 核心 UI/UX 规范手册 (V3.9 - 2026 完整技术全案-全量清理版)
 
 本文档是 Generative Puzzle 项目的**官方 UI/UX 唯一事实来源 (Source of Truth)**。它整合了从全局布局架构、Design Tokens、组件状态机到性能工程与跨端安全的所有技术细节。
 
@@ -100,20 +100,28 @@
 
 ---
 
-## 5. 开发者修改指南 (Technical Modification Guide)
+## 5. 数据一致性与链路规范 (Data Integrity & Parity)
 
-### 5.1 修改品牌色彩
+*   **身份验证数据类型**:
+    *   **PIN 码**: 在所有数据链路（Supabase RPC, Cloud Sync, Local Storage）中必须强制对齐为 **`number` (Int4)**。严禁以字符串形式传递或存储 PIN 码，以防止数据库查询错误。
+*   **字段对齐**: 跨端（桌面/移动）同步数据时，必须确保字段名称与 `Database.ts` 定义完全一致，严禁使用 Alias。
+
+---
+
+## 6. 开发者修改指南 (Technical Modification Guide)
+
+### 6.1 修改品牌色彩
 1.  在 `app/globals.css` 中找到对应变量：`--brand-peach: 255, 213, 171;`
 2.  修改 RGB 数值。**切勿在此填入十六进制。**
 3.  系统会自动同步至全项目 100+ 个应用场景。
 
-### 5.2 注册新语义 Token
+### 6.2 注册新语义 Token
 在 `tailwind.config.ts` 的 `extend.colors` 块中添加：
 ```typescript
 'brand-custom': 'rgba(var(--brand-custom), <alpha-value>)',
 ```
 
 ---
-*版本：V3.8 (Detailed Technical Manual)*
-*最近同步：2026-04-18 (过渡状态缝隙与闪黑补帧规范)*
+*版本：V3.9 (Detailed Technical Manual)*
+*最近同步：2026-04-24 (全量颜色 Token 化与数据链路类型对齐版)*
 *状态：**Strict Enforcement***

@@ -34,6 +34,7 @@
 ### 第四步：全局回归检查 (Mandatory Regression Gate)
 *   **三端视图验证**: 检查侧边控制面板比例、底部 Tab 面板遮挡及横屏滚动条。
 *   **组件映射对齐**: 确保修改同步涉及 `PhoneTabPanel.tsx` 等移动端专用容器。
+*   **数据链路对齐 (New)**: 涉及 Supabase RPC 或 Cloud Sync 时，必须核对 `Database.ts` 定义，严禁将 String 传给 Int 字段。
 
 ### 第五步：版本化记录 (Versioning)
 *   详细标注影响的 Token 及组件列表并滚动版本号。
@@ -89,6 +90,6 @@
 *   **[历史规范与指南](file:///Users/citylivepark/Documents/project/generative-puzzle/docs/archive/legacy-specs/)**: 包含 PRD、架构视角及早期规则定义。
 
 ---
-*上次修订：2026-04-18*  
-*全量结案更新：2026-04-18 (SOP v2.64 - 按钮形变与补帧修正版)*  
+*上次修订：2026-04-24*  
+*全量结案更新：2026-04-24 (SOP v2.8 - 数据链路对齐与硬编码深度清理结案版)*  
 *文档状态：**Official Standard / Strictly Enforced***

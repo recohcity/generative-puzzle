@@ -23,8 +23,7 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
 }) => {
   const { t, locale } = useTranslation();
 
-  // 统一配色 (#FFD5AB)
-  const SCORE_COLOR = '#FFD5AB';
+  // 颜色通过 Tailwind Token (text-brand-peach) 统一管理
 
   const getShape = (s?: string) => { try { return s ? t(`game.shapes.names.${s}`) : ''; } catch { return s || ''; } };
   
@@ -72,19 +71,18 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
       {/* 标题与分数并排一行 - 图标对齐桌面端 & 横屏字号拉齐 */}
       <div className={cn("w-full flex items-center justify-between px-0.5", isLandscape ? "mb-0" : "mb-0")}>
         <div className="flex items-center gap-1.5 min-w-0">
-           <Trophy className="shrink-0" size={16} style={{ color: SCORE_COLOR }} />
-           <h3 className="text-white/90 uppercase tracking-[0.1em] font-medium whitespace-nowrap text-[11px]">
+           <Trophy className="shrink-0 text-brand-peach" size={16} />
+           <h3 className="text-white/90 uppercase tracking-[0.1em] font-medium whitespace-nowrap text-[12px]">
              {t('stats.currentGameResult')}
            </h3>
            {isNewRecord && (
-             <span className="bg-[#FFD5AB]/20 text-[#FFD5AB] px-1 py-0.5 rounded font-bold uppercase text-[8px] leading-none shrink-0">
+             <span className="bg-brand-peach/20 text-brand-peach px-1 py-0.5 rounded font-bold uppercase text-[8px] leading-none shrink-0">
                NEW
              </span>
            )}
         </div>
         <div 
-          className="tabular-nums tracking-tighter font-medium leading-none text-xl" 
-          style={{ color: SCORE_COLOR }}
+          className="tabular-nums tracking-tighter font-medium leading-none text-xl text-brand-peach"
         >
           {fmt(currentScore)}
         </div>
@@ -109,8 +107,7 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
                   </span>
                 </div>
                 <span 
-                  className="tabular-nums shrink-0 font-medium text-[13px]" 
-                  style={{ color: row.sign === '-' ? '#FF8A80' : SCORE_COLOR }}
+                  className={cn("tabular-nums shrink-0 font-medium text-[13px]", row.sign === '-' ? 'text-red-400' : 'text-brand-peach')}
                 >
                   {row.sign}{row.value}
                 </span>
@@ -135,7 +132,7 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
               <span className="text-white/25 uppercase tracking-tight font-medium text-[10px]">
                 {t('score.breakdown.multiplier')}
               </span>
-              <span className="tabular-nums font-medium text-[11px]" style={{ color: SCORE_COLOR, opacity: 0.7 }}>
+              <span className="tabular-nums font-medium text-[11px] text-brand-peach/70">
                 ×{(scoreBreakdown?.difficultyMultiplier || 1).toFixed(2)}
               </span>
             </div>
@@ -146,8 +143,7 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
                 {t('score.breakdown.final')}
               </span>
               <span 
-                className="tabular-nums tracking-tight font-medium text-[16px]" 
-                style={{ color: SCORE_COLOR }}
+                className="tabular-nums tracking-tight font-medium text-[16px] text-brand-peach"
               >
                 {fmt(currentScore)}
               </span>

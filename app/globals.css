@@ -33,11 +33,12 @@
   scrollbar-width: none;
 }
 
-/* 规范化焦点状态：移除暴力禁用，改用具有高辨识度的焦点环 */
+/* 焦点策略：全局禁用触控焦点框，防止移动端点击出现色边残留 (SOP: outline: none !important) */
+/* 键盘无障碍焦点环已由 .glass-btn-base:focus-visible 等组件级选择器单独管理 */
 button:focus-visible,
 [role="button"]:focus-visible {
-  outline: 2px solid var(--brand-amber) !important;
-  outline-offset: 2px !important;
+  outline: none !important;
+  outline-offset: 0 !important;
 }
 
 /* 确保按钮文本不可选择 */
@@ -611,7 +612,7 @@ svg {
 @layer utilities {
   /* --- Containers & Backgrounds --- */
   .glass-panel {
-    @apply bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-3xl;
+    @apply bg-white/10 backdrop-blur-xl border border-white/30 shadow-2xl rounded-3xl;
     box-shadow: 
       inset 0 0 20px rgba(255, 255, 255, 0.05),
       0 10px 30px rgba(0, 0, 0, 0.1);
@@ -702,7 +703,7 @@ svg {
   }
 
   .text-premium-value {
-    @apply text-brand-peach font-semibold;
+    @apply text-brand-peach font-medium;
   }
 
   /* --- Animation Utilities --- */

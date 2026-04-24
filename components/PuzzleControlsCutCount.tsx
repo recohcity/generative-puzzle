@@ -74,7 +74,7 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
     return cn(
         "glass-btn-sheen",
         localCutCount === num ? "glass-btn-active" : "glass-btn-inactive",
-        "flex-1 font-bold transition-all duration-500",
+        "flex-1 font-medium transition-all duration-500",
         localCutCount === num && "scale-110 z-10",
         !canModifySettings && "opacity-30 pointer-events-none"
     );
@@ -119,7 +119,7 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
           ))}
         </div>
         {/* 难度指示器 */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#FFD5AB', padding: '0 4px', marginTop: '4px', marginBottom: '12px', lineHeight: '16px' }}>
+        <div className="text-brand-peach" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', padding: '0 4px', marginTop: '4px', marginBottom: '12px', lineHeight: '16px' }}>
           <span>{t('game.cutCount.difficulty.easy')}</span>
           <span style={{ marginLeft: 'auto' }}>{t('game.cutCount.difficulty.hard')}</span>
         </div>
@@ -153,7 +153,7 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
       </button>
       {/* 添加提示信息，当按钮不可点击时显示原因 */}
       {isShapeGenerated && !state.isScattered && (!hasCutType || !hasSelectedCount) && (
-        <div style={{ fontSize: '12px', color: '#FFD5AB', textAlign: 'center', marginTop: '4px', lineHeight: '16px' }}>
+        <div className="text-brand-peach" style={{ fontSize: '12px', textAlign: 'center', marginTop: '4px', lineHeight: '16px' }}>
           {!hasCutType ? t('game.cutCount.hints.selectCutType') : !hasSelectedCount ? t('game.cutCount.hints.selectCount') : ""}
         </div>
       )}

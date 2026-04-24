@@ -71,7 +71,7 @@ export class VirtualAuthServiceClass {
 
     const { data, error } = await supabase.rpc("lookup_player_profiles", {
       p_nickname: searchNickname,
-      p_pin_code: searchPin,
+      p_pin_code: Number(searchPin),
     });
 
     if (error) {

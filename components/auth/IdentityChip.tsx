@@ -77,7 +77,7 @@ export default function IdentityChip({ onClick, onClose, isPanelOpen, className,
         {/* Removed background color block from the icon left of the username */}
         <div className={cn(
           "flex-shrink-0 flex items-center justify-center transition-all duration-300",
-          user ? "text-[#FFD5AB]" : "text-white/40"
+          user ? "text-brand-peach" : "text-white/40"
         )}
         style={{ width: iconSize, height: iconSize }}
         >

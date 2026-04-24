@@ -59,14 +59,14 @@ function useCanvasResizeObserver(
             clearTimeout(resizeTimeoutRef.current);
           }
 
-          // 解冻机制：窗口稳定100ms后解冻
+          // 解冻机制：窗口稳定150ms后解冻
           resizeTimeoutRef.current = setTimeout(() => {
             if (pendingResizeRef.current && isFrozenRef.current) {
               onUnfreeze(pendingResizeRef.current.width, pendingResizeRef.current.height);
               isFrozenRef.current = false;
               pendingResizeRef.current = null;
             }
-          }, 100);
+          }, 150);
         }
       });
     };

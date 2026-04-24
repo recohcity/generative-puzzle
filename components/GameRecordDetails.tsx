@@ -15,8 +15,7 @@ interface GameRecordDetailsProps {
 const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({ record, onBack }) => {
   const { t, locale } = useTranslation();
   
-  // 统一各端主色调为与用户名一致的米金色
-  const BRAND_GOLD = '#FFD5AB';
+  // 颜色通过 Tailwind Token (text-brand-peach) 统一管理
 
   const handleBack = () => { playButtonClickSound(); onBack(); };
 
@@ -63,12 +62,12 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({ record, onBack })
       {/* 1. Header & Score in ONE line - 11px matches standard layout */}
       <div className="flex items-center justify-between w-full px-0.5 mb-1 mt-1 shrink-0">
         <div className="flex items-center gap-1.5">
-          <Trophy className="w-4 h-4 shrink-0" style={{ color: BRAND_GOLD }} />
-          <h2 className="text-white/90 font-medium uppercase tracking-[0.1em] leading-none text-[11px]">
+          <Trophy className="w-4 h-4 shrink-0 text-brand-peach" />
+          <h2 className="text-white/90 font-medium uppercase tracking-[0.1em] leading-none text-[12px]">
             {t('leaderboard.recentGameScore') || '本局成绩'}
           </h2>
         </div>
-        <div className="tabular-nums tracking-tighter font-medium leading-none text-xl" style={{ color: BRAND_GOLD }}>
+        <div className="tabular-nums tracking-tighter font-medium leading-none text-xl text-brand-peach">
           {record.finalScore}
         </div>
       </div>
@@ -85,7 +84,7 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({ record, onBack })
                     <span className="text-white/70 text-[12px] font-medium shrink-0">{row.label}</span>
                     <span className="text-white/20 text-[10px] truncate uppercase font-medium">{row.sub}</span>
                   </div>
-                  <span className="text-[13px] font-medium tabular-nums shrink-0" style={{ color: (row as any).sign === '-' ? '#FF8A80' : BRAND_GOLD }}>
+                  <span className={cn("text-[13px] font-medium tabular-nums shrink-0", (row as any).sign === '-' ? 'text-red-400' : 'text-brand-peach')}>
                     {(row as any).sign || ''}{row.value}
                   </span>
                 </div>
@@ -109,7 +108,7 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({ record, onBack })
                 <span className="text-white/25 text-[10px] font-medium uppercase tracking-tight">
                   {t('score.breakdown.multiplier')}
                 </span>
-                <span className="text-[11px] font-medium tabular-nums" style={{ color: BRAND_GOLD, opacity: 0.7 }}>
+                <span className="text-[11px] font-medium tabular-nums text-brand-peach/70">
                   ×{(record.scoreBreakdown?.difficultyMultiplier || 1).toFixed(2)}
                 </span>
               </div>
@@ -119,7 +118,7 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({ record, onBack })
                 <span className="text-white/50 text-[12px] font-medium uppercase tracking-tight">
                   {t('score.breakdown.final')}
                 </span>
-                <span className="text-[16px] font-medium tabular-nums tracking-tight leading-none" style={{ color: BRAND_GOLD }}>
+                <span className="text-[16px] font-medium tabular-nums tracking-tight leading-none text-brand-peach">
                   {record.finalScore}
                 </span>
               </div>
@@ -131,8 +130,7 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({ record, onBack })
       {/* Back button - aligned to standard control buttons size */}
       <button
         onClick={handleBack}
-        className="glass-btn-active w-full mt-3 shrink-0 h-9 rounded-xl text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2"
-        style={{ color: BRAND_GOLD }}
+        className="glass-btn-active w-full mt-3 shrink-0 h-9 rounded-xl text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2 text-brand-peach"
       >
         <ArrowLeft className="w-4 h-4" strokeWidth={2} />
         {t('leaderboard.backToLeaderboard') || '返回'}

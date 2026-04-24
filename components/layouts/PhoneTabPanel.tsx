@@ -353,7 +353,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                       activeLeaderboardTab === 'personal' ? "glass-btn-active" : "glass-btn-inactive"
                     )}
                   >
-                    <User className={cn("w-3.5 h-3.5", activeLeaderboardTab === 'personal' ? "text-[#232035]" : "text-current")} />
+                    <User className={cn("w-3.5 h-3.5", activeLeaderboardTab === 'personal' ? "text-brand-dark" : "text-current")} />
                     <span>{t('game.leaderboard.tabs.personal')}</span>
                   </button>
                   <button
@@ -366,7 +366,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                       activeLeaderboardTab === 'global' ? "glass-btn-active" : "glass-btn-inactive"
                     )}
                   >
-                    <Globe className={cn("w-3.5 h-3.5", activeLeaderboardTab === 'global' ? "text-[#232035]" : "text-current")} />
+                    <Globe className={cn("w-3.5 h-3.5", activeLeaderboardTab === 'global' ? "text-brand-dark" : "text-current")} />
                     <span>{t('game.leaderboard.tabs.global')}</span>
                   </button>
                 </div>
@@ -377,7 +377,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                       onClick={fetchGlobalData}
                       disabled={isGlobalLoading}
                       className={cn(
-                        "text-[11px] text-[#FFD5AB] font-medium hover:text-white transition-colors px-2 py-1 flex items-center gap-1",
+                        "text-[11px] text-brand-peach font-medium hover:text-white transition-colors px-2 py-1 flex items-center gap-1",
                         isGlobalLoading && "opacity-50"
                       )}
                     >
@@ -389,7 +389,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                   )}
                   <button
                     onClick={() => setShowLeaderboard(false)}
-                    className="text-[11px] text-[#FFD5AB] font-medium hover:text-white transition-colors px-2 py-1"
+                    className="text-[11px] text-brand-peach font-medium hover:text-white transition-colors px-2 py-1"
                   >
                     {t('game.leaderboard.close')}
                   </button>
@@ -422,21 +422,21 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
 
                               return (
                                 <div key={record.id || record.timestamp} className={cn(
-                                  "flex items-center gap-3 px-3 bg-white/[0.06] rounded-xl border border-white/10 hover:border-[#FFD5AB]/40 hover:bg-white/[0.10] transition-all active:scale-[0.98]",
+                                  "flex items-center gap-3 px-3 bg-white/[0.06] rounded-xl border border-white/10 hover:border-brand-peach/40 hover:bg-white/[0.10] transition-all active:scale-[0.98]",
                                   isLandscape ? "py-1" : "py-1.5"
                                 )}>
                                   <div className={cn(
                                     "flex items-center justify-center shrink-0 font-medium rounded-lg transition-all",
                                     isLandscape ? "w-5 h-5 px-0" : "w-7 h-7",
-                                    isTop3 ? (isLandscape ? "text-lg bg-transparent" : "text-2xl bg-transparent") : (isLandscape ? "bg-white/10 text-[#FFD5AB]/70 text-[9px]" : "bg-white/10 text-[#FFD5AB]/70 text-sm")
+                                    isTop3 ? (isLandscape ? "text-lg bg-transparent" : "text-2xl bg-transparent") : (isLandscape ? "bg-white/10 text-brand-peach/70 text-[9px]" : "bg-white/10 text-brand-peach/70 text-sm")
                                   )}>
                                     {medal || index + 1}
                                   </div>
                                   <div className="flex-1 min-w-0 flex items-center justify-between gap-1 overflow-hidden">
-                                    <div className="text-[10px] text-[#FFD5AB]/40 font-medium truncate">
+                                    <div className="text-[10px] text-brand-peach/40 font-medium truncate">
                                       {subtitle}
                                     </div>
-                                    <div className="text-[15px] font-medium tabular-nums tracking-tighter shrink-0" style={{ color: '#FFD5AB' }}>
+                                    <div className="text-[15px] font-medium tabular-nums tracking-tighter shrink-0" style={{ color: 'var(--brand-peach)' }}>
                                       {record.finalScore?.toString()}
                                     </div>
                                   </div>
@@ -483,7 +483,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                               <div
                                 key={`global-${record.id || index}`}
                                 className={cn(
-                                  "flex items-center gap-3 px-3 bg-white/[0.06] rounded-xl border border-white/10 hover:border-[#FFD5AB]/40 hover:bg-white/[0.10] transition-all active:scale-[0.98] overflow-hidden",
+                                  "flex items-center gap-3 px-3 bg-white/[0.06] rounded-xl border border-white/10 hover:border-brand-peach/40 hover:bg-white/[0.10] transition-all active:scale-[0.98] overflow-hidden",
                                   isLandscape ? "py-1" : "py-1.5"
                                 )}
                               >
@@ -491,25 +491,25 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                                 <div className={cn(
                                   "flex items-center justify-center shrink-0 font-medium rounded-lg transition-all",
                                   isLandscape ? "w-5 h-5 px-0" : "w-7 h-7",
-                                  index < 3 ? (isLandscape ? "text-lg bg-transparent" : "text-2xl bg-transparent") : (isLandscape ? "bg-white/10 text-[#FFD5AB]/70 text-[9px]" : "bg-white/10 text-[#FFD5AB]/70 text-sm")
+                                  index < 3 ? (isLandscape ? "text-lg bg-transparent" : "text-2xl bg-transparent") : (isLandscape ? "bg-white/10 text-brand-peach/70 text-[9px]" : "bg-white/10 text-brand-peach/70 text-sm")
                                 )}>
                                   {medal || index + 1}
                                 </div>
                                 {/* Content row — Single line optimized */}
                                 <div className="flex-1 min-w-0 flex items-center justify-between gap-1 overflow-hidden">
                                   <div className="flex items-center gap-1 min-w-0 flex-1">
-                                    <span className="text-[#FFD5AB]/90 text-[12px] font-medium truncate shrink-0 max-w-[65px]">
+                                    <span className="text-brand-peach/90 text-[12px] font-medium truncate shrink-0 max-w-[65px]">
                                       {playerName}
                                     </span>
                                     {difficultyLabel && (
-                                      <span className="text-[9px] text-[#FFD5AB]/30 font-medium truncate opacity-80">
+                                      <span className="text-[9px] text-brand-peach/30 font-medium truncate opacity-80">
                                         · {difficultyLabel}
                                       </span>
                                     )}
                                   </div>
                                   
                                   <div className="flex items-center gap-1.5 shrink-0">
-                                    <div className="text-[15px] font-medium tabular-nums tracking-tighter" style={{ color: '#FFD5AB' }}>
+                                    <div className="text-[15px] font-medium tabular-nums tracking-tighter" style={{ color: 'var(--brand-peach)' }}>
                                       {record.finalScore?.toString()}
                                     </div>
                                   </div>

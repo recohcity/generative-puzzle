@@ -108,7 +108,7 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
           }}
           title={t('game.controls.hint')}
         >
-          <Lightbulb style={{ width: '16px', height: '16px' }} className="text-[#232035] shrink-0" strokeWidth={2.5} />
+          <Lightbulb style={{ width: '16px', height: '16px' }} className="text-brand-dark shrink-0" strokeWidth={2.5} />
           {layout === 'mobile' && <span className="text-[14px] ml-0.5">{t('game.controls.hint')}</span>}
         </button>
 
@@ -133,7 +133,7 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
           }}
           title={t('game.controls.rotateLeft')}
         >
-          <RotateCcw style={{ width: '16px', height: '16px' }} className="text-[#232035] shrink-0" strokeWidth={2.5} />
+          <RotateCcw style={{ width: '16px', height: '16px' }} className="text-brand-dark shrink-0" strokeWidth={2.5} />
           {layout === 'mobile' && <span className="text-[14px] ml-0.5">{t('game.controls.rotateLeft')}</span>}
         </button>
 
@@ -158,7 +158,7 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
           }}
           title={t('game.controls.rotateRight')}
         >
-          <RotateCw style={{ width: '16px', height: '16px' }} className="text-[#232035] shrink-0" strokeWidth={2.5} />
+          <RotateCw style={{ width: '16px', height: '16px' }} className="text-brand-dark shrink-0" strokeWidth={2.5} />
           {layout === 'mobile' && <span className="text-[14px] ml-0.5">{t('game.controls.rotateRight')}</span>}
         </button>
       </div>
@@ -168,7 +168,7 @@ export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: 
         <div style={{ textAlign: 'center', marginTop: '8px' }}>
           {shouldShowAngle(state.selectedPiece) ? (
             <>
-              <div className={cn("text-premium-value text-sm font-bold", isTemporaryDisplay() ? 'animate-pulse-slow' : '')}>
+              <div className={cn("text-premium-value text-sm", isTemporaryDisplay() ? 'animate-pulse-slow' : '')}>
                 {isTemporaryDisplay() 
                   ? t('game.controls.angleTemporary', { angle: Math.round(state.puzzle[state.selectedPiece].rotation) })
                   : t('game.controls.currentAngle', { angle: Math.round(state.puzzle[state.selectedPiece].rotation) })

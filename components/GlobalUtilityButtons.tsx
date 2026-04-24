@@ -61,7 +61,7 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
           style={{
             ...buttonStyle,
             backgroundColor: isLeaderboardOpen ? undefined : 'rgba(255, 255, 255, 0.05)',
-            color: isLeaderboardOpen ? '#232035' : '#FFB17A',
+            color: isLeaderboardOpen ? 'var(--brand-dark)' : 'var(--brand-amber)',
           }}
           data-testid="toggle-leaderboard-button"
           aria-label={isLeaderboardOpen ? t('game.leaderboard.close') : t('game.leaderboard.show')}
@@ -79,7 +79,7 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
         style={{
           ...buttonStyle,
           backgroundColor: 'rgba(255, 255, 255, 0.05)',
-          color: '#FFB17A',
+          color: 'var(--brand-amber)',
         }}
         data-testid="toggle-music-button"
         aria-label={isMusicPlaying ? t('game.audio.toggleOff') : t('game.audio.toggleOn')}
@@ -100,7 +100,7 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
         style={{
           ...buttonStyle,
           backgroundColor: 'rgba(255, 255, 255, 0.05)',
-          color: '#FFB17A',
+          color: 'var(--brand-amber)',
         }}
         data-testid="toggle-fullscreen-button"
         aria-label={isFullscreen ? t('game.fullscreen.exit') : t('game.fullscreen.enter')}

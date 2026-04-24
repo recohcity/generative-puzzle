@@ -1,5 +1,27 @@
 # 生成式拼图游戏 Changelog
 
+## [v1.4.4] - 2024-04-24
+
+### 🛠️ UI 深度清理与链路一致性加固 (UI Cleanup & Data Parity)
+
+本版本完成了项目历史上最彻底的一次 UI 规范清理，并解决了影响生产环境稳定性的关键链路问题。
+
+#### 1. 全量 Design Tokens 迁移 (Project-wide Tokenization)
+- **硬编码 Hex 清零**: 彻底移除了 `LoadingScreen`, `SupabaseAuthWidget`, `IdentityChip`, `LanguageSwitcher`, `RotationCounter` 等 20+ 个组件中的硬编码 Hex 色值。
+- **全端规范一致化**: 确保了桌面端与移动端在主色调 (`brand-peach`)、强调色 (`brand-amber`) 上的 100% 视觉一致性。
+- **排版标准化**: 按照规范修正了 `.text-premium-value` 等呈现类文本的字重，统一回归至 `font-medium` (500)，杜绝了加粗样式对高级感的破坏。
+
+#### 2. 关键 Bug 阻击与编译修复 (Critical Bug Fixes)
+- **RPC 类型对齐 (INT4 Parity)**: 修复了 `VirtualAuth` 找回账号功能报 `{}` 错误的问题。根源在于 PIN 码以字符串形式传递给 SQL 函数，现已强制转换为 `Number` 以匹配数据库 `INT4` 类型。
+- **桌面榜单可见性修复**: 解决了优化过程中因误删 `isLoading` 条件导致桌面端排行榜永久卡在 "Loading..." 状态的严重 UI 回归。
+- **TypeScript 编译门禁**: 修复了 `LeaderboardPanel.tsx` 中缺失的非空断言，确保项目在严格类型检查下 100% 编译通过。
+
+#### 3. 规范法典升版 (Spec & SOP Upgrade)
+- **UI_SPECIFICATION V3.9**: 新增了“数据一致性与链路规范”章节，明确了 PIN 码等敏感字段的类型强制要求。
+- **OPTIMIZATION_SOP V2.8**: 将“数据链路对齐检查”正式列入全局回归门禁，从制度上防止同类类型不匹配错误再次发生。
+
+---
+
 ## [v1.4.3] - 2026-04-20
 
 ### 🚀 交互性能极致优化与合成层降维 (Phase 1 INP Optimization)

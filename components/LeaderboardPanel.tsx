@@ -181,7 +181,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-[#FFD5AB]">Loading...</div>
+        <div className="text-brand-peach">Loading...</div>
       </div>
     );
   }
@@ -189,25 +189,25 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
   return (
     <div
       key={`old-leaderboard-${locale}`}
-      className="p-3 bg-[#463E50] rounded-2xl shadow-[0_4px_10px_rgba(0,0,0,0.2)] space-y-3 h-full flex flex-col"
+      className="glass-panel p-3 space-y-3 h-full flex flex-col"
     >
 
 
       {/* 滚动内容区域 */}
       <div className="flex-1 overflow-y-auto space-y-4">
         {/* Top5 个人最佳成绩 */}
-        <div className="bg-[#2A2A2A] rounded-lg p-3 relative">
+        <div className="glass-card p-3 relative">
           {/* 关闭按钮 - 移动到卡片右上角 */}
           <Button
             onClick={handleBack}
             variant="ghost"
             size="sm"
-            className="absolute top-2 right-2 text-[#FFD5AB] hover:text-white text-xs px-2 py-1 h-auto"
+            className="absolute top-2 right-2 text-brand-peach hover:text-white text-xs px-2 py-1 h-auto"
           >
             {t('game.leaderboard.close')}
           </Button>
           
-          <h4 className="text-[#FFD5AB] font-medium mb-3 text-sm flex items-center gap-1 pr-12">
+          <h4 className="text-brand-peach font-medium mb-3 text-sm flex items-center gap-1 pr-12">
             <Trophy className="w-4 h-4" />
             Top 5
           </h4>
@@ -224,8 +224,8 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
                 variant={selectedDifficulty === difficulty ? "default" : "ghost"}
                 size="sm"
                 className={`text-xs px-2 py-1 ${selectedDifficulty === difficulty
-                  ? 'bg-[#FFD5AB] text-[#232035]'
-                  : 'text-[#FFD5AB] hover:text-white hover:bg-[#FFD5AB]/20'
+                  ? 'bg-brand-peach text-brand-dark'
+                  : 'text-brand-peach hover:text-white hover:bg-brand-peach/20'
                   }`}
                 style={{ fontSize: '11px' }}
               >
@@ -243,46 +243,46 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
               {filteredLeaderboard.slice(0, 5).map((record, index) => (
                 <div
                   key={record.id || record.timestamp}
-                  className="flex items-center justify-between p-2 rounded bg-[#333] text-xs"
+                  className="flex items-center justify-between p-2 rounded bg-white/5 text-xs"
                 >
                   <div className="flex items-center gap-2">
                     <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${index === 0 ? 'bg-yellow-500 text-black' :
                       index === 1 ? 'bg-gray-400 text-black' :
                         index === 2 ? 'bg-orange-600 text-white' :
-                          'bg-[#555] text-white'
+                          'bg-white/10 text-white'
                       }`}>
                       {getRankIcon(index)}
                     </span>
                     <div>
-                      <div className="text-[#FFD5AB] font-medium">{record.finalScore.toLocaleString()}</div>
-                      <div className="text-[#FFD5AB] opacity-60">
+                      <div className="text-brand-peach font-medium">{record.finalScore.toLocaleString()}</div>
+                      <div className="text-brand-peach opacity-60">
                         <span className="text-xs">{formatTime(record.totalDuration)} · </span>
                         <span className="text-[10px]">{getDifficultyWithShape(record.difficulty)} · {record.difficulty?.actualPieces || 0}{t('stats.piecesUnit')}</span>
                       </div>
                     </div>
                   </div>
-                  <div className="text-[#FFD5AB] opacity-60 text-xs">
+                  <div className="text-brand-peach opacity-60 text-xs">
                     {new Date(record.gameStartTime || record.timestamp).toLocaleDateString()}
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-[#FFD5AB] opacity-60 text-xs text-center py-4">
+            <div className="text-brand-peach opacity-60 text-xs text-center py-4">
               {t('leaderboard.empty')}
             </div>
           )}
         </div>
 
         {/* 最近一次游戏记录 - 优化版 */}
-        <div className="bg-[#2A2A2A] rounded-lg p-3">
-          <h4 className="text-[#FFD5AB] font-medium mb-3 text-sm flex items-center gap-1">
+        <div className="glass-card p-3">
+          <h4 className="text-brand-peach font-medium mb-3 text-sm flex items-center gap-1">
             <Clock className="w-4 h-4" />
             {t('stats.scoreHistory') || '最近一次游戏记录'}
           </h4>
           {recentGame ? (
             <div
-              className="relative p-4 rounded-lg bg-gradient-to-br from-[#3A3A3A] to-[#2D2D2D] hover:from-[#444] hover:to-[#333] cursor-pointer transition-all duration-300 border-2 border-transparent hover:border-[#FFD5AB] group shadow-lg hover:shadow-xl"
+              className="relative p-4 rounded-lg bg-white/5 hover:bg-white/10 cursor-pointer transition-all duration-300 border border-white/10 hover:border-brand-peach/50 group shadow-lg hover:shadow-xl"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -294,7 +294,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
               <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 <div className="flex flex-col items-center gap-1">
                   <div className="text-lg animate-bounce">👆</div>
-                  <div className="text-xs text-[#FFD5AB] whitespace-nowrap bg-[#FFD5AB] bg-opacity-20 px-2 py-1 rounded">
+                  <div className="text-xs text-brand-peach whitespace-nowrap bg-brand-peach bg-opacity-20 px-2 py-1 rounded">
                     {t('stats.viewDetails') || '查看详情'}
                   </div>
                 </div>
@@ -302,10 +302,10 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
 
               {/* 主要分数显示 */}
               <div className="text-center mb-4">
-                <div className="text-3xl font-bold text-[#FFD5AB] font-mono mb-1 tracking-wider">
+                <div className="text-3xl font-bold text-brand-peach font-mono mb-1 tracking-wider">
                   {recentGame.finalScore.toLocaleString()}
                 </div>
-                <div className="text-sm text-[#FFD5AB] opacity-70 flex items-center justify-center gap-1">
+                <div className="text-sm text-brand-peach opacity-70 flex items-center justify-center gap-1">
                   <Clock className="w-3 h-3" />
                   {formatTime(recentGame.totalDuration)}
                 </div>
@@ -313,31 +313,31 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
 
               {/* 游戏统计信息 - 紧凑布局 */}
               <div className="flex items-center justify-center gap-4 mb-3 text-xs">
-                <div className="flex items-center gap-1 bg-[#FFD5AB] bg-opacity-10 px-2 py-1 rounded">
+                <div className="flex items-center gap-1 bg-brand-peach bg-opacity-10 px-2 py-1 rounded">
                   <Trophy className="w-3 h-3 text-yellow-400" />
-                  <span className="text-[#FFD5AB] font-medium">{recentGame.difficulty.actualPieces}</span>
+                  <span className="text-brand-peach font-medium">{recentGame.difficulty.actualPieces}</span>
                 </div>
-                <div className="flex items-center gap-1 bg-[#FFD5AB] bg-opacity-10 px-2 py-1 rounded">
+                <div className="flex items-center gap-1 bg-brand-peach bg-opacity-10 px-2 py-1 rounded">
                   <RotateCcw className="w-3 h-3 text-blue-400" />
-                  <span className="text-[#FFD5AB] font-medium">{recentGame.totalRotations}</span>
+                  <span className="text-brand-peach font-medium">{recentGame.totalRotations}</span>
                 </div>
-                <div className="flex items-center gap-1 bg-[#FFD5AB] bg-opacity-10 px-2 py-1 rounded">
+                <div className="flex items-center gap-1 bg-brand-peach bg-opacity-10 px-2 py-1 rounded">
                   <Lightbulb className="w-3 h-3 text-green-400" />
-                  <span className="text-[#FFD5AB] font-medium">{recentGame.hintUsageCount}</span>
+                  <span className="text-brand-peach font-medium">{recentGame.hintUsageCount}</span>
                 </div>
               </div>
 
               {/* 难度和日期信息 */}
-              <div className="flex items-center justify-between pt-3 border-t border-[#555]">
+              <div className="flex items-center justify-between pt-3 border-t border-white/10">
                 <div className="flex items-center gap-2">
-                  <span className="px-3 py-1 bg-gradient-to-r from-[#FFD5AB] to-[#F4C2A1] text-[#2A2A2A] text-xs font-medium rounded-full">
+                  <span className="px-3 py-1 bg-gradient-to-r from-brand-peach to-[#F4C2A1] text-brand-dark text-xs font-medium rounded-full">
                     {t('difficulty.levelLabel', { level: recentGame.difficulty.cutCount })}
                   </span>
-                  <span className="text-xs text-[#FFD5AB] opacity-70 bg-[#FFD5AB] bg-opacity-10 px-2 py-1 rounded">
+                  <span className="text-xs text-brand-peach opacity-70 bg-brand-peach bg-opacity-10 px-2 py-1 rounded">
                     {t(`cutType.${recentGame.difficulty.cutType}`) || recentGame.difficulty.cutType}
                   </span>
                 </div>
-                <div className="text-xs text-[#FFD5AB] opacity-60">
+                <div className="text-xs text-brand-peach opacity-60">
                   {(() => {
                     const date = new Date(recentGame.gameStartTime || recentGame.timestamp);
                     const now = new Date();
@@ -355,15 +355,15 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
               </div>
 
               {/* 悬停效果 - 底部光晕 */}
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#FFD5AB] to-transparent opacity-0 group-hover:opacity-50 transition-opacity duration-300 rounded-b-lg"></div>
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-brand-peach to-transparent opacity-0 group-hover:opacity-50 transition-opacity duration-300 rounded-b-lg"></div>
             </div>
           ) : (
             <div className="text-center py-8">
               <div className="text-4xl mb-2 opacity-50">🎮</div>
-              <div className="text-[#FFD5AB] opacity-60 text-sm">
+              <div className="text-brand-peach opacity-60 text-sm">
                 {t('leaderboard.empty')}
               </div>
-              <div className="text-[#FFD5AB] opacity-40 text-xs mt-1">
+              <div className="text-brand-peach opacity-40 text-xs mt-1">
                 {t('leaderboard.emptyHint')}
               </div>
             </div>

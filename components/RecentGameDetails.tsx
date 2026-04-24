@@ -32,8 +32,7 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
 }) => {
   const { t, locale } = useTranslation();
 
-  // 统一配色 (#FFD5AB)
-  const BRAND_GOLD = '#FFD5AB';
+  // 颜色通过 Tailwind Token (text-brand-peach) 统一管理
 
   const handleBack = () => {
     playButtonClickSound();
@@ -81,14 +80,13 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
       {/* 顶部单行设计：标题 + 分数 - 字体字号对齐 DesktopScoreLayout */}
       <div className="w-full flex items-center justify-between px-1 mb-1.5 shrink-0">
         <div className="flex items-center gap-1.5 min-w-0">
-          <Trophy className="shrink-0" size={16} style={{ color: BRAND_GOLD }} />
+          <Trophy className="shrink-0 text-brand-peach" size={16} />
           <h2 className="text-white/90 font-medium uppercase tracking-[0.1em] leading-none text-[12px] truncate">
             {t('leaderboard.recentGameScore') || '本局成绩'}
           </h2>
         </div>
         <div 
-          className="tabular-nums tracking-tighter leading-none font-medium text-xl ml-2 shrink-0" 
-          style={{ color: BRAND_GOLD }}
+          className="tabular-nums tracking-tighter leading-none font-medium text-xl ml-2 shrink-0 text-brand-peach"
         >
           {record.finalScore}
         </div>
@@ -106,7 +104,7 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
                   <span className="text-white/70 shrink-0 font-medium text-[12px]">{row.label}</span>
                   <span className="text-white/15 truncate uppercase font-medium text-[10px] hidden sm:inline">{row.sub}</span>
                 </div>
-                <span className="tabular-nums shrink-0 font-medium text-[13px] text-right" style={{ color: row.sign === '-' ? '#FF8A80' : BRAND_GOLD }}>
+                <span className={cn("tabular-nums shrink-0 font-medium text-[13px] text-right", row.sign === '-' ? 'text-red-400' : 'text-brand-peach')}>
                   {row.sign}{row.value}
                 </span>
               </div>
@@ -124,14 +122,14 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
 
              <div className="flex items-center justify-between">
                 <span className="text-white/30 uppercase tracking-tight font-medium text-[10px]">{t('score.breakdown.multiplier')}</span>
-                <span className="tabular-nums font-medium text-[12px]" style={{ color: BRAND_GOLD, opacity: 0.8 }}>
+                <span className="tabular-nums font-medium text-[12px] text-brand-peach/80">
                   ×{(record.scoreBreakdown?.difficultyMultiplier || 1).toFixed(2)}
                 </span>
              </div>
 
              <div className="border-t border-white/5 flex items-baseline justify-between pt-2.5 mt-1">
                 <span className="text-white/60 uppercase tracking-widest font-medium text-[12px]">{t('score.breakdown.final')}</span>
-                <span className="tabular-nums tracking-tight leading-none font-medium text-lg" style={{ color: BRAND_GOLD }}>
+                <span className="tabular-nums tracking-tight leading-none font-medium text-lg text-brand-peach">
                   {record.finalScore}
                 </span>
              </div>
@@ -142,8 +140,7 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
       {/* 返回按钮 - 对齐结算页操作按钮风格 */}
       <button
         onClick={handleBack}
-        className="glass-btn-inactive glass-btn-sheen w-full mt-3 shrink-0 h-10 rounded-xl text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2"
-        style={{ color: BRAND_GOLD }}
+        className="glass-btn-inactive glass-btn-sheen w-full mt-3 shrink-0 h-10 rounded-xl text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2 text-brand-peach"
       >
         <ArrowLeft className="w-4 h-4" strokeWidth={2} />
         {t('leaderboard.backToLeaderboard') || '返回'}

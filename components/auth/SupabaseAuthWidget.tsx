@@ -74,7 +74,7 @@ export default function SupabaseAuthWidget() {
 
   return (
     <div className="mb-6 rounded-2xl border border-white/10 bg-[#2A2A2A]/40 backdrop-blur-xl p-5 shadow-xl transition-all">
-      <div className="text-[#FFD5AB] font-bold text-lg mb-4 flex items-center gap-2">
+      <div className="text-brand-peach font-bold text-lg mb-4 flex items-center gap-2">
         <User className="w-5 h-5" />
         {t('auth.title')}
       </div>
@@ -83,7 +83,7 @@ export default function SupabaseAuthWidget() {
         <div className="flex items-center justify-between gap-4 bg-white/5 p-4 rounded-xl border border-white/10">
           <div className="text-sm text-white/80 flex flex-col">
             <span className="text-white/40 text-xs mb-1 uppercase tracking-wider">{t('auth.synced')}</span>
-            <span className="font-mono text-[#FFD5AB]">{displayUserId}</span>
+            <span className="font-mono text-brand-peach">{displayUserId}</span>
           </div>
           <Button 
             onClick={signOut} 
@@ -97,29 +97,29 @@ export default function SupabaseAuthWidget() {
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="text-sm text-[#FFD5AB]/70 leading-relaxed bg-[#FFD5AB]/5 p-3 rounded-lg border border-[#FFD5AB]/10">
+          <div className="text-sm text-brand-peach/70 leading-relaxed bg-brand-peach/5 p-3 rounded-lg border border-brand-peach/10">
             {t('auth.description')}
           </div>
           <div className="flex flex-col gap-3">
             <div className="relative group">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 group-focus-within:text-[#FFD5AB] transition-colors" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 group-focus-within:text-brand-peach transition-colors" />
               <input
                 value={email}
                 type="email"
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={t('auth.emailPlaceholder')}
-                className="w-full pl-10 pr-4 py-3 rounded-xl bg-black/20 border border-white/10 text-[#FFD5AB] text-base placeholder:text-white/20 outline-none focus:border-[#FFD5AB]/30 focus:bg-black/40 transition-all font-medium"
+                className="w-full pl-10 pr-4 py-3 rounded-xl bg-black/20 border border-white/10 text-brand-peach text-base placeholder:text-white/20 outline-none focus:border-brand-peach/30 focus:bg-black/40 transition-all font-medium"
                 disabled={busy}
               />
             </div>
             <Button
               onClick={signInWithMagicLink}
               disabled={busy}
-              className="w-full py-6 rounded-xl bg-gradient-to-r from-[#FFD5AB] to-[#F68E5F] hover:from-[#F68E5F] hover:to-[#FFD5AB] text-[#2A2A2A] font-bold shadow-lg shadow-orange-900/20 active:scale-[0.98] transition-all disabled:opacity-50"
+              className="w-full py-6 rounded-xl bg-gradient-to-r from-brand-peach to-[#F68E5F] hover:from-[#F68E5F] hover:to-brand-peach text-brand-dark font-bold shadow-lg shadow-orange-900/20 active:scale-[0.98] transition-all disabled:opacity-50"
             >
               {busy ? (
                 <span className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-[#2A2A2A]/30 border-t-[#2A2A2A] rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-brand-dark/30 border-t-brand-dark rounded-full animate-spin" />
                   {t('auth.sending')}
                 </span>
               ) : (

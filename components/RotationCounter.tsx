@@ -67,7 +67,7 @@ const RotationCounter: React.FC = () => {
     top: '80px', // 位于LiveScore下方
     right: '20px',
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    color: '#FFD5AB',
+    color: 'var(--brand-peach)',
     padding: '8px 16px',
     borderRadius: '8px',
     fontFamily: 'monospace',
@@ -75,7 +75,7 @@ const RotationCounter: React.FC = () => {
     fontWeight: 'bold',
     zIndex: 1000,
     backdropFilter: 'blur(4px)',
-    border: '1px solid rgba(255, 213, 171, 0.2)',
+    border: '1px solid rgba(255, 211, 171, 0.2)', // 保持一致性，也可使用 var(--brand-peach-20) 如果定义了
     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
     userSelect: 'none',
     pointerEvents: 'none',

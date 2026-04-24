@@ -26,13 +26,13 @@ export const LeaderboardItemStyles: React.FC<LeaderboardItemStylesProps> = ({
   const baseStyles = "flex items-center justify-between p-2 rounded-lg transition-all duration-300";
   
   // 普通成绩样式
-  const normalStyles = "bg-black bg-opacity-20 border border-[#FFD5AB] border-opacity-20";
+  const normalStyles = "bg-black bg-opacity-20 border border-brand-peach border-opacity-20";
   
   // 玩家新入榜成绩高亮样式
   const playerNewEntryStyles = `
-    bg-gradient-to-r from-[#FFD5AB]/30 via-[#FFD5AB]/20 to-[#FFD5AB]/30
-    border-2 border-[#FFD5AB]/60
-    shadow-lg shadow-[#FFD5AB]/20
+    bg-gradient-to-r from-brand-peach/30 via-brand-peach/20 to-brand-peach/30
+    border-2 border-brand-peach/60
+    shadow-lg shadow-brand-peach/20
     animate-pulse-glow
   `;
   
@@ -64,9 +64,9 @@ export const LeaderboardItemStyles: React.FC<LeaderboardItemStylesProps> = ({
       {isPlayerNewEntry && (
         <>
           {/* 底部光晕效果 */}
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#FFD5AB] to-transparent opacity-50 rounded-b-lg animate-pulse" />
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-brand-peach to-transparent opacity-50 rounded-b-lg animate-pulse" />
           {/* 新入榜标识 */}
-          <div className="absolute -top-1 -right-1 bg-[#FFD5AB] text-[#2A2A2A] text-xs px-2 py-0.5 rounded-full font-medium shadow-lg animate-bounce">
+          <div className="absolute -top-1 -right-1 bg-brand-peach text-brand-dark text-xs px-2 py-0.5 rounded-full font-medium shadow-lg animate-bounce">
             NEW
           </div>
         </>
@@ -138,13 +138,13 @@ export const LeaderboardItemContent: React.FC<LeaderboardItemContentProps> = ({
         <div className="flex-1 min-w-0">
           {/* 第一行：分数（与名次字号一样大） */}
           <div className={`text-lg font-medium truncate ${
-            isPlayerNewEntry ? 'text-white/80' : 'text-[#FFD5AB]'
+            isPlayerNewEntry ? 'text-white/80' : 'text-brand-peach'
           }`}>
             {formatScore(score)}
           </div>
           {/* 第二行：时间和难度（字号较小） */}
           <div className={`text-xs truncate ${
-            isPlayerNewEntry ? 'text-[#FFD5AB] opacity-90' : 'text-[#FFD5AB] opacity-60'
+            isPlayerNewEntry ? 'text-brand-peach opacity-90' : 'text-brand-peach opacity-60'
           }`}>
             {formatTime(duration)} · {difficulty}：{pieces}片
           </div>
@@ -154,14 +154,14 @@ export const LeaderboardItemContent: React.FC<LeaderboardItemContentProps> = ({
       {/* 日期和操作 */}
       <div className="text-right">
         <div className={`text-xs ${
-          isPlayerNewEntry ? 'text-[#FFD5AB] opacity-90' : 'text-[#FFD5AB] opacity-60'
+          isPlayerNewEntry ? 'text-brand-peach opacity-90' : 'text-brand-peach opacity-60'
         }`}>
           {date}
         </div>
         {onViewDetails && (
           <button
             onClick={onViewDetails}
-            className="text-xs text-[#FFD5AB] hover:text-white mt-1 transition-colors"
+            className="text-xs text-brand-peach hover:text-white mt-1 transition-colors"
           >
             详情
           </button>
