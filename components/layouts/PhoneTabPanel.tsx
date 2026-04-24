@@ -263,19 +263,33 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
       )}
       style={style}
     >
-      <div className="flex items-center justify-between mb-1">
-        <h1 className={TITLE_CLASS}>{t('game.title')}</h1>
-        <GlobalUtilityButtons
-          isMusicPlaying={isMusicPlaying}
-          isFullscreen={isFullscreen}
-          onToggleMusic={onToggleMusic}
-          onToggleFullscreen={onToggleFullscreen}
-          onToggleLeaderboard={handleToggleLeaderboard}
-          isLeaderboardOpen={showLeaderboard}
-        />
-      </div>
+      {/* 🎯 优化：游戏完成时隐藏标题栏中的“生成式拼图游戏”文字，仅保留功能按钮，极致节省垂直空间 */}
+      {!isGameCompleted ? (
+        <div className="flex items-center justify-between mb-1">
+          <h1 className={TITLE_CLASS}>{t('game.title')}</h1>
+          <GlobalUtilityButtons
+            isMusicPlaying={isMusicPlaying}
+            isFullscreen={isFullscreen}
+            onToggleMusic={onToggleMusic}
+            onToggleFullscreen={onToggleFullscreen}
+            onToggleLeaderboard={handleToggleLeaderboard}
+            isLeaderboardOpen={showLeaderboard}
+          />
+        </div>
+      ) : (
+        <div className="flex items-center justify-end mb-1">
+          <GlobalUtilityButtons
+            isMusicPlaying={isMusicPlaying}
+            isFullscreen={isFullscreen}
+            onToggleMusic={onToggleMusic}
+            onToggleFullscreen={onToggleFullscreen}
+            onToggleLeaderboard={handleToggleLeaderboard}
+            isLeaderboardOpen={showLeaderboard}
+          />
+        </div>
+      )}
 
-      {!showLeaderboard && (
+      {!showLeaderboard && !isGameCompleted && (
         <div className="mb-0.5 mt-0">
           <IdentityChip
             panelScale={isLandscape ? 0.7 : 0.8}

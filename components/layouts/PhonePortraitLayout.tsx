@@ -41,15 +41,10 @@ const PhonePortraitLayout: React.FC<PhonePortraitLayoutProps> = ({
   // 直接使用适配常量计算画布尺寸，不依赖useCanvas
   // 使用 useMemo 确保屏幕旋转时能够重新计算
   const { canvasSizeValue, canvasWidth, canvasHeight, canvasMargin } = useMemo(() => {
-    // 🎯 优化：游戏完成状态下，模拟一个更大的面板高度，强制画布缩小，为成绩单腾出空间
-    const simulatedPanelHeight = isCompleted
-      ? (device.screenHeight < 700 ? 360 : 320) // 在短屏设备上缩小更多
-      : undefined;
-
+    // 🎯 修复：移除游戏完成时对画布尺寸的模拟调整，保持布局一致性
     const portraitResult = calculateMobilePortraitCanvasSize(
       device.screenWidth,
-      device.screenHeight,
-      simulatedPanelHeight
+      device.screenHeight
     );
 
     const canvasSizeValue = portraitResult.canvasSize;
@@ -58,7 +53,7 @@ const PhonePortraitLayout: React.FC<PhonePortraitLayoutProps> = ({
     const canvasMargin = MOBILE_ADAPTATION.PORTRAIT.CANVAS_MARGIN;
 
     return { canvasSizeValue, canvasWidth, canvasHeight, canvasMargin };
-  }, [device.screenWidth, device.screenHeight, isCompleted]);
+  }, [device.screenWidth, device.screenHeight]);
 
   // 竖屏画布尺寸计算完成
 
@@ -73,11 +68,8 @@ const PhonePortraitLayout: React.FC<PhonePortraitLayoutProps> = ({
       )}
       style={{
         background: 'none',
-        // 🎯 再次深度调优：针对 100dvh 下的竖长屏幕，给予充裕的顶部空间
-        // 游戏完成时，大幅度压缩顶部间距 (从 48/100 降至 16/24)，确保内容上移
-        paddingTop: isCompleted
-          ? (device.isWeChat ? 24 : 16)
-          : (isTabletPortrait ? 60 : (device.isWeChat ? 100 : 48)),
+        // 🎯 极致修复：固定顶部间距，不随游戏完成状态改变，防止布局抖动
+        paddingTop: isTabletPortrait ? 60 : (device.isWeChat ? 100 : 48),
         paddingBottom: Math.max(MOBILE_ADAPTATION.PORTRAIT.SAFE_AREA_BOTTOM, 40),
       }}
     >

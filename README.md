@@ -8,7 +8,7 @@
 [![Vercel Speed Insights](https://img.shields.io/badge/Speed--Insights-Optimized-blueviolet)](https://vercel.com/speed-insights)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-15.5-black.svg)](https://nextjs.org/)
-[![Version](https://img.shields.io/badge/version-1.4.5-orange.svg)]()
+[![Version](https://img.shields.io/badge/version-1.4.6-orange.svg)]()
 
 **基于 Next.js 15 和 React 19 构建的极致前端全栈拼图引擎**
 
@@ -25,7 +25,7 @@
 - **生产环境框架**: 基于 **Next.js 15** 和 **React 19** 构建骨架。
 - **云端与数据底座**: 完美集成 **Supabase** (Auth & Database)，提供多端云存档和全服竞技看板。通过 PostgreSQL RPC (`SECURITY DEFINER`) 实现原生服务器级别的权限校验。
 - **UI / UX 视觉升级**: 最新的 **v1.4.4** 版本全量完成了 **Design Tokens 语义化迁移**。彻底清除了所有组件中的硬编码色值，利用金橙色系（#FFD5AB）搭配亚克力质感、流光按钮与无缝渐变，营造极致空气感。
-- **渲染管线与布局优化**: **v1.4.5** 引入了基于设备环境的 **响应式榜单截断策略**。移动端精准截取 Top 3 以释放视口压力，配合基于 **OffscreenCanvas** 的纹理缓存系统，确保了全端极致的 60FPS 稳定性。
+- **渲染管线与布局优化**: **v1.4.6** 实现了移动端竖屏的 **位置锚定 (Position Anchoring)**。通过锁定画布顶部间距并动态压缩结算面板冗余元素（如隐藏用户名/退出键），解决了结算态下的布局跳动，确保了极致的交互稳定性。。
 
 ---
 
