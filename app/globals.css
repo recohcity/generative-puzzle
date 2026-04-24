@@ -164,6 +164,16 @@ h6,
     --brand-dark-rgb: 35, 32, 53;
   }
 
+  /* 安卓字体缩放终极防御：锁死 rem 基准值，禁止系统篡改根字号 */
+  html {
+    font-size: 16px !important;
+    -webkit-text-size-adjust: 100% !important;
+    -moz-text-size-adjust: 100% !important;
+    text-size-adjust: 100% !important;
+    /* 安卓大字体模式会缩放默认行高，显式声明基准行高（不加 !important 允许组件覆盖） */
+    line-height: 1.15;
+  }
+
   * {
     @apply border-border;
   }

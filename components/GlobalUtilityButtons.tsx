@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Volume2, VolumeX, Maximize, Minimize, Trophy } from "lucide-react";
+import { Volume2, VolumeX, Maximize, Minimize, Trophy, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import LanguageSwitcher from './LanguageSwitcher';
 import { useTranslation } from '@/contexts/I18nContext';
@@ -14,6 +14,10 @@ interface GlobalUtilityButtonsProps {
   onToggleFullscreen: () => void;
   onToggleLeaderboard?: () => void;
   isLeaderboardOpen?: boolean;
+  // 用户状态按钮
+  onToggleUser?: () => void;
+  isLoggedIn?: boolean;
+  isUserPanelOpen?: boolean;
 }
 
 const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
@@ -23,6 +27,9 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
   onToggleFullscreen,
   onToggleLeaderboard,
   isLeaderboardOpen = false,
+  onToggleUser,
+  isLoggedIn = false,
+  isUserPanelOpen = false,
 }) => {
   const { t } = useTranslation();
   const buttonClass = `rounded-full border-none shadow-none cursor-pointer utility-button-fixed`;
@@ -48,6 +55,30 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
 
   return (
     <div className="flex items-center" style={{ gap: '8px' }}>
+      {/* 用户状态按钮：灰=游客，金=已登录 */}
+      {onToggleUser && (
+        <button
+          onClick={() => {
+            playButtonClickSound();
+            onToggleUser();
+          }}
+          className={cn(buttonClass, isUserPanelOpen ? "glass-btn-active" : "glass-btn-inactive")}
+          style={{
+            ...buttonStyle,
+            backgroundColor: isUserPanelOpen ? undefined : 'rgba(255, 255, 255, 0.05)',
+            color: isUserPanelOpen
+              ? 'var(--brand-dark)'
+              : isLoggedIn
+                ? 'var(--brand-amber)'
+                : 'rgba(255,255,255,0.35)',
+          }}
+          data-testid="toggle-user-button"
+          aria-label={isLoggedIn ? t('auth.userPanel') || '用户' : t('auth.login') || '登录'}
+          title={isLoggedIn ? t('auth.userPanel') || '用户' : t('auth.login') || '登录'}
+        >
+          <User width={iconSize} height={iconSize} strokeWidth={2} style={{ pointerEvents: 'none' }} />
+        </button>
+      )}
       <LanguageSwitcher
         variant="iconOnly"
       />

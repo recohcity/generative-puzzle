@@ -351,12 +351,14 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
             </label>
             <input
               type="password"
+              inputMode="numeric"
               placeholder={t('auth.inputs.pinPlaceholder')}
               maxLength={4}
               className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-brand-peach text-base placeholder-brand-peach/30 focus:outline-none focus:ring-1 focus:ring-brand-amber/40 transition-all text-center font-mono tracking-[0.3em]"
               value={pin}
               onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
               onKeyDown={handleKeyDown}
+              onFocus={(e) => { e.target.setAttribute('readonly', 'readonly'); setTimeout(() => { e.target.removeAttribute('readonly'); e.target.focus(); }, 100); }}
               disabled={loading}
             />
           </div>
@@ -433,12 +435,14 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
             </label>
             <input
               type="password"
+              inputMode="numeric"
               placeholder={t('auth.inputs.pinPlaceholder')}
               maxLength={4}
               className="w-full bg-black/20 border border-white/10 rounded-xl p-2.5 text-brand-peach text-base placeholder-brand-peach/30 focus:outline-none focus:ring-1 focus:ring-brand-amber/40 focus:border-brand-amber/60 transition-all outline-none text-center font-mono tracking-[0.5em]"
               value={pin}
               onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
               onKeyDown={handleKeyDown}
+              onFocus={(e) => { e.target.setAttribute('readonly', 'readonly'); setTimeout(() => { e.target.removeAttribute('readonly'); e.target.focus(); }, 100); }}
               disabled={loading}
             />
           </div>

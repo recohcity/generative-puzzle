@@ -17,7 +17,9 @@ const defaultMessages = {
   "auth": {
     "guest": "游客",
     "login": "立即登录",
-    "logout": "退出"
+    "logout": "退出",
+    "loggedIn": "已登录",
+    "userPanel": "用户"
   },
   "game": {
     "title": "生成式拼图游戏",

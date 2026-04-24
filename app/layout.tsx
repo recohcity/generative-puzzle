@@ -5,6 +5,7 @@ import { Inter } from "next/font/google"
 import { AuthProvider } from "@/contexts/AuthContext"
 import { I18nProvider } from "@/contexts/I18nContext"
 import EnvModeClient from "@/components/EnvModeClient"
+import FontScaleLock from "@/components/FontScaleLock"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { cn } from "@/lib/utils"
 
@@ -61,11 +62,16 @@ export const metadata: Metadata = {
     title: '生成式拼图游戏',
   },
   manifest: '/manifest.json',
+  other: {
+    'wap-font-scale': 'no',
+  },
 }
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: 'cover',
 }
 
@@ -85,14 +91,45 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* 微信专属：禁止调整本页面字体大小 */}
+        <meta name="wap-font-scale" content="no" />
       </head>
       <body className={cn(inter.className, "antialiased")}>
         <EnvModeClient />
-        <AuthProvider>
-          <I18nProvider>
-            {children}
-          </I18nProvider>
-        </AuthProvider>
+        <FontScaleLock>
+          <AuthProvider>
+            <I18nProvider>
+              {children}
+            </I18nProvider>
+          </AuthProvider>
+        </FontScaleLock>
+        <script dangerouslySetInnerHTML={{__html: `
+          (function() {
+            if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
+              // iOS \u548c Android \u5fae\u4fe1\u7981\u6b62\u5b57\u4f53\u653e\u5927
+              if (/MicroMessenger/i.test(navigator.userAgent)) {
+                function handleFontSize() {
+                  if (typeof WeixinJSBridge == "object" && typeof WeixinJSBridge.invoke == "function") {
+                    WeixinJSBridge.invoke('setFontSizeCallback', { 'fontSize': 0 });
+                    WeixinJSBridge.on('menu:setfont', function() {
+                      WeixinJSBridge.invoke('setFontSizeCallback', { 'fontSize': 0 });
+                    });
+                  }
+                }
+                if (typeof WeixinJSBridge == "object" && typeof WeixinJSBridge.invoke == "function") {
+                  handleFontSize();
+                } else {
+                  if (document.addEventListener) {
+                    document.addEventListener("WeixinJSBridgeReady", handleFontSize, false);
+                  } else if (document.attachEvent) {
+                    document.attachEvent("WeixinJSBridgeReady", handleFontSize);
+                    document.attachEvent("onWeixinJSBridgeReady", handleFontSize);
+                  }
+                }
+              }
+            }
+          })();
+        `}} />
         {process.env.VERCEL && <SpeedInsights />}
       </body>
     </html>

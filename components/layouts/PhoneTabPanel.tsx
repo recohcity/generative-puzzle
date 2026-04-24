@@ -24,9 +24,9 @@ import { useGame } from "@/contexts/GameContext";
 import { playRotateSound, playButtonClickSound } from "@/utils/rendering/soundEffects";
 import { useTranslation } from '@/contexts/I18nContext';
 import { useAngleDisplay } from '@/utils/angleDisplay';
-import IdentityChip from '@/components/auth/IdentityChip';
 import { useAuth } from '@/contexts/AuthContext';
 import VirtualAuthWidget from '@/components/auth/VirtualAuthWidget';
+import { VirtualAuthService, PlayerProfile } from '@/utils/cloud/VirtualAuthService';
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { CloudGameRepository } from "@/utils/cloud/CloudGameRepository";
@@ -51,8 +51,8 @@ const TITLE_CLASS = "text-premium-title text-lg leading-tight whitespace-nowrap"
 // card标题样式
 const CARD_TITLE_CLASS = "text-premium-label text-[11px] mb-2 leading-tight text-center opacity-70";
 
-// tab按钮样式
-const TAB_BUTTON_CLASS = "flex-1 px-0 py-1 text-sm font-bold transition-all text-center";
+// tab按钮样式 — flex居中 + leading-none 防止安卓大字体下文字贴底
+const TAB_BUTTON_CLASS = "flex-1 px-0 py-1 text-sm font-bold transition-all text-center flex items-center justify-center leading-none";
 
 // 分区容器样式
 const SECTION_CLASS = "mb-1";
@@ -127,10 +127,38 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
   const [globalLeaderboard, setGlobalLeaderboard] = useState<any[]>([]);
   const [isGlobalLoading, setIsGlobalLoading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [showUserPanel, setShowUserPanel] = useState(false);
+  const [userProfile, setUserProfile] = useState<Omit<PlayerProfile, 'virtual_email'> | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // 加载用户 Profile
+  useEffect(() => {
+    if (user) {
+      VirtualAuthService.getCurrentProfile()
+        .then(p => setUserProfile(p))
+        .catch(() => setUserProfile(null));
+    } else {
+      setUserProfile(null);
+      setShowUserPanel(false);
+    }
+  }, [user]);
+
+  const handleToggleUserPanel = () => {
+    if (!user) {
+      // 未登录：触发登录弹窗
+      handleToggleLeaderboard();
+    } else {
+      setShowUserPanel(prev => !prev);
+    }
+  };
+
+  const handleUserPanelLogout = async () => {
+    await signOut();
+    setShowUserPanel(false);
+  };
 
   const fetchGlobalData = useCallback(async () => {
     try {
@@ -274,6 +302,9 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
             onToggleFullscreen={onToggleFullscreen}
             onToggleLeaderboard={handleToggleLeaderboard}
             isLeaderboardOpen={showLeaderboard}
+            onToggleUser={handleToggleUserPanel}
+            isLoggedIn={!!user}
+            isUserPanelOpen={showUserPanel || (!user && showLeaderboard)}
           />
         </div>
       ) : (
@@ -285,22 +316,15 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
             onToggleFullscreen={onToggleFullscreen}
             onToggleLeaderboard={handleToggleLeaderboard}
             isLeaderboardOpen={showLeaderboard}
+            onToggleUser={handleToggleUserPanel}
+            isLoggedIn={!!user}
+            isUserPanelOpen={showUserPanel || (!user && showLeaderboard)}
           />
         </div>
       )}
 
-      {!showLeaderboard && !isGameCompleted && (
-        <div className="mb-0.5 mt-0">
-          <IdentityChip
-            panelScale={isLandscape ? 0.7 : 0.8}
-            isPanelOpen={showLeaderboard}
-            onClose={() => setShowLeaderboard(false)}
-            onClick={handleToggleLeaderboard}
-          />
-        </div>
-      )}
 
-      {/* 身份验证弹窗 - 仅限未登录用户 */}
+      {/* 登录弹窗 - 未登录时 */}
       {isMounted && typeof document !== 'undefined' && !user && createPortal(
         <AnimatePresence>
           {showLeaderboard && (
@@ -309,7 +333,11 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              onClick={handleToggleLeaderboard}
+              onPointerDown={(e) => {
+                if (e.target === e.currentTarget) {
+                  handleToggleLeaderboard();
+                }
+              }}
               className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/20 backdrop-blur-3xl cursor-pointer"
             >
               <motion.div
@@ -328,6 +356,59 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                 <div className="bg-transparent rounded-[2.5rem] shrink-0 h-full">
                   <VirtualAuthWidget onAuthSuccess={() => setShowLeaderboard(false)} isLandscape={isLandscape} />
                 </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {/* 用户面板弹窗 - 已登录时 */}
+      {isMounted && typeof document !== 'undefined' && !!user && createPortal(
+        <AnimatePresence>
+          {showUserPanel && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onPointerDown={(e) => {
+                if (e.target === e.currentTarget) setShowUserPanel(false);
+              }}
+              className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/20 backdrop-blur-3xl cursor-pointer"
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.1 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white/10 backdrop-blur-2xl border border-white/15 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden flex flex-col items-center gap-6 outline-none cursor-default w-full max-w-[300px]"
+              >
+
+                {/* 用户头像 */}
+                <div className="w-16 h-16 rounded-full bg-brand-amber/20 border-2 border-brand-amber/40 flex items-center justify-center">
+                  <User width={28} height={28} className="text-brand-amber" />
+                </div>
+
+                {/* 昵称 */}
+                <div className="text-center">
+                  <div className="text-brand-peach font-bold text-lg leading-tight">
+                    {userProfile?.nickname || t('auth.loading')}
+                  </div>
+                  <div className="flex items-center justify-center gap-1.5 mt-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_5px_rgba(74,222,128,0.5)]" />
+                    <span className="text-white/50 text-xs">{t('auth.loggedIn') || '已登录'}</span>
+                  </div>
+                </div>
+
+                {/* 退出按钮 */}
+                <button
+                  onClick={handleUserPanelLogout}
+                  className="w-full py-3 rounded-2xl bg-white/10 border border-white/15 text-white/80 font-medium text-sm hover:bg-red-500/20 hover:border-red-400/30 hover:text-red-300 transition-all"
+                >
+                  {t('auth.logout') || '退出登录'}
+                </button>
               </motion.div>
             </motion.div>
           )}
@@ -356,18 +437,18 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
             <div className={cn("rounded-2xl flex flex-col flex-1 min-h-0 relative overflow-x-hidden", isLandscape ? "p-1.5" : "p-3")}>
               {/* 顶部标签切换器 + 关闭按钮 (紧凑布局) */}
               <div className="flex items-center justify-between mb-1 shrink-0 px-0.5">
-                <div className="flex gap-1.5">
+                <div className="flex gap-1.5 shrink-0">
                   <button
                     onClick={() => {
                       playButtonClickSound();
                       setActiveLeaderboardTab('personal');
                     }}
                     className={cn(
-                      "flex items-center gap-1.5 px-2 py-0.5 rounded-xl text-[12.5px] font-medium transition-all",
+                      "flex items-center gap-1.5 px-2 py-0.5 rounded-xl text-[12.5px] font-medium transition-all whitespace-nowrap",
                       activeLeaderboardTab === 'personal' ? "glass-btn-active" : "glass-btn-inactive"
                     )}
                   >
-                    <User className={cn("w-3.5 h-3.5", activeLeaderboardTab === 'personal' ? "text-brand-dark" : "text-current")} />
+                    <User className={cn("w-3.5 h-3.5 shrink-0", activeLeaderboardTab === 'personal' ? "text-brand-dark" : "text-current")} />
                     <span>{t('game.leaderboard.tabs.personal')}</span>
                   </button>
                   <button
@@ -376,11 +457,11 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                       setActiveLeaderboardTab('global');
                     }}
                     className={cn(
-                      "flex items-center gap-1.5 px-2 py-0.5 rounded-xl text-[12.5px] font-medium transition-all",
+                      "flex items-center gap-1.5 px-2 py-0.5 rounded-xl text-[12.5px] font-medium transition-all whitespace-nowrap",
                       activeLeaderboardTab === 'global' ? "glass-btn-active" : "glass-btn-inactive"
                     )}
                   >
-                    <Globe className={cn("w-3.5 h-3.5", activeLeaderboardTab === 'global' ? "text-brand-dark" : "text-current")} />
+                    <Globe className={cn("w-3.5 h-3.5 shrink-0", activeLeaderboardTab === 'global' ? "text-brand-dark" : "text-current")} />
                     <span>{t('game.leaderboard.tabs.global')}</span>
                   </button>
                 </div>
@@ -391,7 +472,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                       onClick={fetchGlobalData}
                       disabled={isGlobalLoading}
                       className={cn(
-                        "text-[11px] text-brand-peach font-medium hover:text-white transition-colors px-2 py-1 flex items-center gap-1",
+                        "text-[11px] text-brand-peach font-medium hover:text-white transition-colors px-2 py-1 flex items-center gap-1 whitespace-nowrap",
                         isGlobalLoading && "opacity-50"
                       )}
                     >
@@ -403,7 +484,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                   )}
                   <button
                     onClick={() => setShowLeaderboard(false)}
-                    className="text-[11px] text-brand-peach font-medium hover:text-white transition-colors px-2 py-1"
+                    className="text-[11px] text-brand-peach font-medium hover:text-white transition-colors px-2 py-1 whitespace-nowrap"
                   >
                     {t('game.leaderboard.close')}
                   </button>

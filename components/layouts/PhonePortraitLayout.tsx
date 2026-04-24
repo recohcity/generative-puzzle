@@ -68,9 +68,9 @@ const PhonePortraitLayout: React.FC<PhonePortraitLayoutProps> = ({
       )}
       style={{
         background: 'none',
-        // 🎯 极致修复：固定顶部间距，不随游戏完成状态改变，防止布局抖动
-        paddingTop: isTabletPortrait ? 60 : (device.isWeChat ? 100 : 48),
-        paddingBottom: Math.max(MOBILE_ADAPTATION.PORTRAIT.SAFE_AREA_BOTTOM, 40),
+        paddingTop: isTabletPortrait ? 60 : (device.isWeChat ? 80 : 48),
+        // 使用 CSS 原生安全区变量适配安卓系统导航栏，避免硬编码导致溢出
+        paddingBottom: 'env(safe-area-inset-bottom, 8px)',
       }}
     >
       {/* 🎯 极致布局：将画布与面板间距收窄至 5px 极简状态 */}

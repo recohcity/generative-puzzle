@@ -12,6 +12,8 @@
         "login": "立即登录",
         "logout": "退出",
         "logoutConfirm": "确定要退出当前账号吗？",
+        "loggedIn": "已登录",
+        "userPanel": "用户",
         "synced": "数据已加密同步",
         "offline": "离线模式，点击持久化",
         "loading": "加载中...",

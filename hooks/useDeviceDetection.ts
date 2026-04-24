@@ -79,6 +79,13 @@ export function useDeviceDetection(): DeviceDetectionState {
     const unsubscribe = deviceManager.subscribe(updateInternalState);
 
     const handleResize = () => {
+      // 安卓适配：输入框聚焦(软键盘弹出)或拖拽拼图时，跳过设备状态更新
+      // 防止 visualViewport 变化触发画布尺寸重算导致的界面跳动/闪烁
+      const activeEl = document.activeElement;
+      const isInputFocused = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA');
+      const isDragging = document.querySelector('.dragging-active');
+      if (isInputFocused || isDragging) return;
+
       requestAnimationFrame(() => {
         deviceManager.updateState();
       });
@@ -86,15 +93,25 @@ export function useDeviceDetection(): DeviceDetectionState {
 
     const handleOrientationChange = () => {
       // 屏幕方向改变时，使用多重延迟确保浏览器完成所有布局调整
-      setTimeout(handleResize, 50);
-      setTimeout(handleResize, 150);
-      setTimeout(handleResize, 300);
+      setTimeout(() => {
+        requestAnimationFrame(() => deviceManager.updateState());
+      }, 50);
+      setTimeout(() => {
+        requestAnimationFrame(() => deviceManager.updateState());
+      }, 150);
+      setTimeout(() => {
+        requestAnimationFrame(() => deviceManager.updateState());
+      }, 300);
     };
 
     window.addEventListener('resize', handleResize);
     window.addEventListener('orientationchange', handleOrientationChange);
     
-    if (window.visualViewport) {
+    // 安卓适配：完全禁用 visualViewport resize 监听
+    // 安卓上 visualViewport 在触摸、软键盘、地址栏变化时频繁触发，
+    // 导致画布尺寸重算和界面跳动。window.resize 已足够覆盖真实布局变化。
+    const isAndroid = /android/i.test(navigator.userAgent);
+    if (window.visualViewport && !isAndroid) {
       window.visualViewport.addEventListener('resize', handleResize);
     }
 
@@ -102,7 +119,7 @@ export function useDeviceDetection(): DeviceDetectionState {
       unsubscribe();
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleOrientationChange);
-      if (window.visualViewport) {
+      if (window.visualViewport && !isAndroid) {
         window.visualViewport.removeEventListener('resize', handleResize);
       }
     };

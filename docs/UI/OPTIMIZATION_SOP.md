@@ -48,7 +48,8 @@
 | :--- | :--- | :--- | :--- |
 | **品牌化** | 标题 Amber (#FFB17A) / 进度 Peach (#FFD5AB) | 加载屏幕 | `components/loading/LoadingScreen.tsx` |
 | **自适应** | 单图 Object-fit cover / scale(1.2) 逻辑 | 背景渲染 | `components/ResponsiveBackground.tsx` |
-| **安全区** | Safe Area Inset 变量注入与 Padding | 全局包裹层 | `app/layout.tsx` |
+| **安全区** | Safe Area Inset 变量注入与 Padding，**安卓底部防溢出必须使用 `env(safe-area-inset-bottom)` 替代硬编码** | 全局包裹层 | `app/layout.tsx`, `PhonePortraitLayout.tsx` |
+| **安卓防御** | `FontScaleLock` 运行时防缩放 / 冻结 `visualViewport` resize / 锁死 `html` 行高为 `1.15` | 系统底层 | `useDeviceDetection.ts`, `globals.css` |
 | **交互域** | 触控拦截与 User-select 划分 | 根容器逻辑 | `components/GameInterface.tsx` |
 
 ### B. 计分与统计系统 (Scoring & Statistics)
@@ -71,6 +72,7 @@
 | **阴影截断防护** | **使用 `overflow-x-hidden` 替代 `overflow-hidden`** 并配合 `pb-2` 内补，确保 11px 的物理阴影渲染空间 | 容器布局规则 | `LeaderboardPanel.tsx`, `PhoneTabPanel.tsx` |
 | **动态缩放** | 基于 panel-scale 计算的半径与间距 | 切割/难度 | `PuzzleControlsCutCount.tsx` |
 | **一致性** | 提示文字统一使用 Peach (#FFD5AB) | 控件组合器 | `PuzzleControlsScatter.tsx` |
+| **顶部工具条** | 用户状态（访客灰/登录金）集成至 `GlobalUtilityButtons`，废除独立 IdentityChip 行，极致压缩垂直空间 | 全局工具栏 | `GlobalUtilityButtons.tsx`, `PhoneTabPanel.tsx` |
 | **比例适配** | 基于 panel-scale 的图标与容器尺寸 | 全局工具栏 | `GlobalUtilityButtons.tsx`, `RestartButton.tsx` |
 
 ### D. 游戏引擎与 HUD (Engine & HUD)
@@ -90,6 +92,6 @@
 *   **[历史规范与指南](file:///Users/citylivepark/Documents/project/generative-puzzle/docs/archive/legacy-specs/)**: 包含 PRD、架构视角及早期规则定义。
 
 ---
-*上次修订：2026-04-24*  
-*全量结案更新：2026-04-24 (SOP v2.8 - 数据链路对齐与硬编码深度清理结案版)*  
+*上次修订：2026-04-25*  
+*全量结案更新：2026-04-25 (SOP v2.9 - 安卓系统级适配与极致纵向空间优化版)*  
 *文档状态：**Official Standard / Strictly Enforced***

@@ -1,4 +1,4 @@
-# 🧩 Generative Puzzle 核心 UI/UX 规范手册 (V3.9 - 2026 完整技术全案-全量清理版)
+# 🧩 Generative Puzzle 核心 UI/UX 规范手册 (V4.0 - 2026 极致全端适配版)
 
 本文档是 Generative Puzzle 项目的**官方 UI/UX 唯一事实来源 (Source of Truth)**。它整合了从全局布局架构、Design Tokens、组件状态机到性能工程与跨端安全的所有技术细节。
 
@@ -80,6 +80,14 @@
 *   **细节间距与分隔**: 移除了结算面板操作按钮上方的 `border-t` 分隔线，按钮高度统一为 `36px` (Mobile) / `40px` (Desktop)。
 *   **横屏空间防溢**: 横屏下字号强制降至 `11px`，移除 `<hr />` 分离线，间距压缩至 `gap-1`。
 
+### 3.3 顶部控制与用户状态栏 (Utility & Identity Bar)
+*   **空间压缩**: 为彻底消除移动端垂直溢出，**全面弃用独立的 `IdentityChip` 行**。
+*   **整合设计**: 用户状态（登录/游客）集成至 `GlobalUtilityButtons`，位于语言切换按钮左侧。
+*   **状态辨识**: 
+    *   **游客态**: 灰色半透明图标 `rgba(255,255,255,0.35)`。
+    *   **已登录**: 品牌金 `var(--brand-amber)`。
+*   **交互规范**: 点击均呼出沉浸式弹窗 (Portal Full-Screen)，登录面板与退出信息面板保持一致体验。通过点击遮罩层背景关闭，不设独立关闭按钮。
+
 ### 3.3 画布与 HUD 图层 (Canvas & HUD)
 *   **安全边距**: HUD 元素左右边距锁定为 `--overlay-side-margin: 8px`。
 *   **背景表现**: HUD 统一背景为 `rgba(0,0,0,0.3)` 叠加 `blur(4px)`。
@@ -93,10 +101,14 @@
 *   **变换优先**: 进度条、面板伸缩必须使用 `transform: translate3d/scale`。
 *   **合成层管理**: 关键动效组件必须配备 `will-change: transform` 并在动画结束后移除。
 
-### 4.2 平台安全 (iOS & Touch Hacks)
-*   **Focus Safe**: 所有输入框字体强制 `16px` 以拦截 iOS 系统级自动缩放。
+### 4.2 平台安全 (iOS & Android Hacks)
+*   **iOS Focus Safe**: 所有输入框字体强制 `16px` 以拦截 iOS 系统级自动缩放。
 *   **Rubber Banding**: `PuzzleCanvas` 强制 `touch-action: none` 防止滚动穿透。
-*   **Safe Area Insets**: 通过 CSS 变量 `env(safe-area-inset-top)` 注入全局变量 `var(--safe-top)`。
+*   **安卓防跳动**: 在 Android 终端**全面屏蔽 `visualViewport` resize 监听**，仅通过 window orientation 触发刷新，避免输入与拖拽导致的 UI 剧烈跳动。
+*   **安卓大字体防御**: 
+    *   CSS `html`: 锁死 `font-size: 16px !important`，并显式声明 `line-height: 1.15` 防止系统膨胀。
+    *   客户端防线: `FontScaleLock.tsx` 使用 `MutationObserver` 实时压制安卓微信/系统对 HTML 根字号的篡改。
+*   **Safe Area Insets**: 通过 CSS 变量 `env(safe-area-inset-top)` 注入顶部变量。底部间距必须使用 `env(safe-area-inset-bottom)` 处理 Android 系统原生控制栏的遮挡问题。
 
 ---
 
@@ -122,6 +134,6 @@
 ```
 
 ---
-*版本：V3.9 (Detailed Technical Manual)*
-*最近同步：2026-04-24 (全量颜色 Token 化与数据链路类型对齐版)*
+*版本：V4.0 (Detailed Technical Manual)*
+*最近同步：2026-04-25 (全网安卓深层适配与 UI 空气感收缩版)*
 *状态：**Strict Enforcement***

@@ -12,6 +12,8 @@
         "login": "Login Now",
         "logout": "Logout",
         "logoutConfirm": "Are you sure you want to log out?",
+        "loggedIn": "Logged In",
+        "userPanel": "User",
         "synced": "Data encrypted & synced",
         "offline": "Offline mode, click to sync",
         "loading": "Loading...",

@@ -1,5 +1,24 @@
 # 生成式拼图游戏 Changelog
 
+## [v1.4.7] - 2026-04-25
+
+### 📱 安卓深层系统适配与垂直空间极致优化 (Android Deep Adaptation & Vertical Space Optimization)
+
+针对安卓微信环境下的大字体模式以及系统导航栏导致的页面溢出与跳动问题，进行了架构级重构与防御机制部署。
+
+#### 1. 字体与布局防膨胀 (Font Scaling Defense)
+- **CSS 物理锁死**: 全局 `html` 强制注入 `font-size: 16px !important` 与 `line-height: 1.15`，剥夺安卓系统层面对 Web 渲染字号及行高的缩放权限。
+- **运行时压制**: 新增 `FontScaleLock` 组件，利用 `MutationObserver` 实时监听并修正被微信或系统底层强行篡改的根字号。在用户输入与拼图拖拽期间自动挂起，完美平衡了布局稳定性与交互连贯性。
+
+#### 2. 系统交互跳动根治 (VisualViewport Jitter Fix)
+- **Resize 事件过滤**: 针对安卓系统键盘弹出与触摸拖拽导致的 `visualViewport` 抖动，在 `useDeviceDetection` 钩子中全量熔断了该环境下的 resize 监听，仅依靠系统 orientation change 驱动响应式刷新，彻底解决了触控带来的 UI 跳变。
+
+#### 3. 用户身份栏架构演进与安全区防溢 (Identity Bar Evolution & Safe Area)
+- **垂直空间极限释放**: 彻底废弃原本独立占据一行的 `IdentityChip` 身份卡片模块，将其以极简图标状态（访客灰/登录金）整合至右上角 `GlobalUtilityButtons` 导航区。配合沉浸式全屏用户面板，成功释放逾 36px 垂直空间。
+- **动态导航栏规避**: 移除了移动端布局底层 `PhonePortraitLayout` 中硬编码的底部内补数值，全面采用 CSS 环境变量 `env(safe-area-inset-bottom, 8px)`，实现了对各式安卓机型底部虚拟导航栏的完美贴合，根治了纵向溢出隐患。
+
+---
+
 ## [v1.4.6] - 2024-04-24
 
 ### 🏗️ 移动端竖屏布局稳定性增强 (Mobile Portrait Stability)
