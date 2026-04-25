@@ -129,10 +129,22 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
   const [isMounted, setIsMounted] = useState(false);
   const [showUserPanel, setShowUserPanel] = useState(false);
   const [userProfile, setUserProfile] = useState<Omit<PlayerProfile, 'virtual_email'> | null>(null);
+  const [showScoreModal, setShowScoreModal] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // 游戏完成时自动弹出成绩单遮罩
+  useEffect(() => {
+    if (state.isCompleted && state.gameStats) {
+      // 延迟一小段时间弹出，等待完成动画
+      const timer = setTimeout(() => setShowScoreModal(true), 500);
+      return () => clearTimeout(timer);
+    } else {
+      setShowScoreModal(false);
+    }
+  }, [state.isCompleted, state.gameStats]);
 
   // 加载用户 Profile
   useEffect(() => {
@@ -416,6 +428,47 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
         document.body
       )}
 
+      {/* 游戏结算全屏弹窗 */}
+      {isMounted && typeof document !== 'undefined' && isGameCompleted && createPortal(
+        <AnimatePresence>
+          {showScoreModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onPointerDown={(e) => {
+                if (e.target === e.currentTarget) setShowScoreModal(false);
+              }}
+              className="fixed inset-0 z-[1000] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-md cursor-pointer"
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                transition={{ duration: 0.3, type: "spring", bounce: 0.3 }}
+                onClick={(e) => e.stopPropagation()}
+                className={cn(
+                  "bg-white/10 backdrop-blur-2xl border border-white/15 shadow-2xl relative flex flex-col outline-none w-full max-h-[85vh] cursor-default",
+                  isLandscape ? "rounded-[2rem] max-w-[500px]" : "rounded-[2.5rem] max-w-[360px]"
+                )}
+              >
+                <div className={cn("flex flex-col h-full", isLandscape ? "p-4" : "p-5")}>
+                  <div className="flex-1 overflow-y-auto min-h-0 custom-scrollbar mb-4 pr-1">
+                    <MobileScoreLayout gameStats={state.gameStats!} currentScore={state.currentScore} scoreBreakdown={state.scoreBreakdown || undefined} isNewRecord={state.isNewRecord} isLandscape={isLandscape} />
+                  </div>
+                  <div className="flex-shrink-0 flex flex-row gap-3 pt-4 border-t border-white/10">
+                    <RestartButton onClick={handleRetryCurrent} icon="retry" height={44} style={{ flex: 1 }} fontSize={15} iconSize={18}>{t('game.controls.retryCurrent')}</RestartButton>
+                    <RestartButton onClick={handleRestart} icon="refresh" height={44} style={{ flex: 1 }} fontSize={15} iconSize={18}>{t('game.controls.restartGame')}</RestartButton>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
       {/* 游戏面板主内容区 */}
       {!isGameCompleted && !showLeaderboard && (
         <div className="mb-0" style={{ paddingLeft: CONTENT_HORIZONTAL_PADDING, paddingRight: CONTENT_HORIZONTAL_PADDING }}>
@@ -622,12 +675,17 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
             </div>
           </div>
         ) : isGameCompleted ? (
-          /* 游戏结算界面 */
-          <div className="flex flex-col h-full">
-            <div className="flex-1 overflow-y-auto min-h-0 pt-0">
-              <MobileScoreLayout gameStats={state.gameStats!} currentScore={state.currentScore} scoreBreakdown={state.scoreBreakdown || undefined} isNewRecord={state.isNewRecord} isLandscape={isLandscape} />
-            </div>
-            <div className={cn("flex-shrink-0 flex flex-row gap-2 mt-0.5", isLandscape ? "mb-0" : "mb-1")}>
+          /* 游戏结算界面 - 已重构为全屏遮罩弹出，这里只保留底部的精简入口，防止挤压画布 */
+          <div className="flex flex-col h-full items-center justify-center p-2 gap-2 w-full">
+            <button 
+              onClick={() => setShowScoreModal(true)} 
+              className="glass-btn-active w-full rounded-2xl font-bold text-brand-peach flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(255,213,171,0.15)] transition-transform active:scale-[0.98]"
+              style={{ height: MOBILE_RESTART_BUTTON_HEIGHT, fontSize: MOBILE_RESTART_FONT_SIZE }}
+            >
+              <Trophy size={MOBILE_RESTART_ICON_SIZE} />
+              {t('stats.viewScore') || '查看成绩'}
+            </button>
+            <div className={cn("flex-shrink-0 flex w-full flex-row gap-2", isLandscape ? "mb-0" : "mb-0")}>
               <RestartButton onClick={handleRetryCurrent} icon="retry" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.retryCurrent')}</RestartButton>
               <RestartButton onClick={handleRestart} icon="refresh" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.restartGame')}</RestartButton>
             </div>

@@ -49,6 +49,7 @@ const defaultMessages = {
   },
   "stats": {
     "gameComplete": "游戏完成",
+    "viewScore": "查看成绩",
     "currentGameResult": "本局成绩",
     "currentGameScore": "本局成绩",
     "duration": "游戏时长",
