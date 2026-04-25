@@ -8,7 +8,7 @@
 [![Vercel Speed Insights](https://img.shields.io/badge/Speed--Insights-Optimized-blueviolet)](https://vercel.com/speed-insights)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-15.5-black.svg)](https://nextjs.org/)
-[![Version](https://img.shields.io/badge/version-1.4.8-orange.svg)]()
+[![Version](https://img.shields.io/badge/version-1.4.9-orange.svg)]()
 
 **基于 Next.js 15 和 React 19 构建的极致前端全栈拼图引擎**
 
@@ -24,7 +24,7 @@
 
 - **生产环境框架**: 基于 **Next.js 15** 和 **React 19** 构建骨架。
 - **云端与数据底座**: 完美集成 **Supabase** (Auth & Database)，提供多端云存档和全服竞技看板。通过 PostgreSQL RPC (`SECURITY DEFINER`) 实现原生服务器级别的权限校验。
-- **UI / UX 视觉升级**: 最新的 **v1.4.8** 版本完成了 **移动端游戏结算的全屏遮罩重构**，彻底解决了结算面板在小屏幕设备上挤压拼图画布造成的布局溢出问题，实现了百分百的沉浸式无缝体验。
+- **UI / UX 视觉升级**: 最新的 **v1.4.9** 版本完成了 **移动端控制区与认证弹窗的深度稳定性与体验重构**，彻底解决了移动端特定场景下的布局抖动与视觉模糊问题。
 
 ---
 

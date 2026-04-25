@@ -323,12 +323,14 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
 
         {/* Right column: Form (Fixed Width via Flex-1) */}
         <div className="flex-1 flex flex-col justify-center gap-2.5 min-w-0 px-8">
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-200 p-2 rounded-xl text-[10px] flex items-start gap-2 animate-in fade-in slide-in-from-top-1">
-              <AlertCircle className="w-3 h-3 flex-shrink-0 text-red-500" />
-              <span className="truncate">{error}</span>
-            </div>
-          )}
+          <div className="h-[36px] flex items-center w-full">
+            {error && (
+              <div className="w-full bg-red-500/10 border border-red-500/20 text-red-200 p-2 rounded-xl text-[10px] flex items-start gap-2 animate-in fade-in zoom-in-95 duration-200">
+                <AlertCircle className="w-3 h-3 flex-shrink-0 text-red-500 mt-0.5" />
+                <span className="truncate leading-tight">{error}</span>
+              </div>
+            )}
+          </div>
 
           <div className="space-y-1">
             <label className="flex items-center gap-1.5 text-[9px] font-bold text-white/30 uppercase tracking-widest pl-1">
@@ -363,27 +365,39 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
             />
           </div>
 
-          <div className="mt-1 flex flex-col gap-2">
+          <div className="mt-1 flex gap-2">
             <button
-                onClick={mode === 'register' ? handleRegister : handleRecover}
+                onClick={mode === 'register' ? handleRegister : () => { setError(null); setMode('register'); }}
                 disabled={loading}
-                className="w-full box-border font-bold bg-gradient-to-r from-brand-peach to-brand-orange text-brand-dark rounded-xl h-10 text-xs shadow-lg shadow-brand-orange/20 active:opacity-80 transition-all disabled:opacity-50"
+                className={cn(
+                  "flex-1 h-10 rounded-xl font-bold text-xs transition-all",
+                  mode === 'register' 
+                    ? "bg-gradient-to-r from-brand-peach to-brand-orange text-brand-dark shadow-lg shadow-brand-orange/20" 
+                    : "bg-white/5 text-brand-peach/60 border border-white/10 hover:bg-white/10"
+                )}
             >
-              {loading ? (
-                <div className="flex items-center justify-center gap-2">
-                    <RotateCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>{t('auth.status.processing')}</span>
-                </div>
+              {loading && mode === 'register' ? (
+                <RotateCw className="w-3.5 h-3.5 animate-spin mx-auto" />
               ) : (
-                <span>{mode === 'register' ? t('auth.modes.register.button') : t('auth.modes.recover.button')}</span>
+                <span>注册</span>
               )}
             </button>
 
             <button 
-                onClick={() => { setError(null); setMode(mode === "register" ? "recover" : "register"); }}
-                className="w-full box-border bg-white/5 hover:bg-white/10 text-brand-peach border border-white/15 rounded-xl h-9 text-[10px] font-bold transition-all"
+                onClick={mode === 'recover' ? handleRecover : () => { setError(null); setMode('recover'); }}
+                disabled={loading}
+                className={cn(
+                  "flex-1 h-10 rounded-xl font-bold text-xs transition-all",
+                  mode === 'recover' 
+                    ? "bg-gradient-to-r from-brand-peach to-brand-orange text-brand-dark shadow-lg shadow-brand-orange/20" 
+                    : "bg-white/5 text-brand-peach/60 border border-white/10 hover:bg-white/10"
+                )}
             >
-              {mode === "register" ? t('auth.modes.recover.button') : t('auth.modes.recover.back')}
+              {loading && mode === 'recover' ? (
+                <RotateCw className="w-3.5 h-3.5 animate-spin mx-auto" />
+              ) : (
+                <span>登录</span>
+              )}
             </button>
           </div>
         </div>
@@ -392,108 +406,111 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
   }
 
   return (
-    <div className="relative text-white w-full transition-all duration-500 p-1 h-full flex flex-col">
+    <div className="relative text-white w-full transition-all duration-500 p-1 h-full flex flex-col overflow-hidden">
       <div className="relative z-10 flex flex-col h-full">
-        <div className="flex-1 flex flex-col justify-center">
-        <div className="flex justify-center mb-2">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-peach to-brand-orange flex items-center justify-center shadow-xl shadow-brand-orange/20 relative">
-                <div className="absolute inset-0 bg-white/20 rounded-2xl blur-sm animate-pulse-slow"></div>
-                {mode === 'register' ? <User className="w-6 h-6 text-brand-dark relative" /> : <RotateCw className="w-6 h-6 text-brand-dark relative" />}
-            </div>
-        </div>
-
-        <h2 className="text-sm font-bold mb-2 text-center text-brand-amber tracking-tight uppercase">
-          {mode === 'register' ? t('auth.modes.register.title') : t('auth.modes.recover.title')}
-        </h2>
-
-        {error && (
-          <div className="mb-2 bg-red-500/10 border border-red-500/20 text-red-200 p-2 rounded-xl text-[10px] flex items-start gap-2 animate-in fade-in slide-in-from-top-2">
-            <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 text-red-500" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        <div className="space-y-2.5">
-          <div className="space-y-0.5">
-            <label className="flex items-center gap-1.5 text-[9px] font-bold text-white/30 uppercase tracking-widest pl-1">
-                <User className="w-2 h-2" /> {t('auth.inputs.nickname')}
-            </label>
-            <input
-              type="text"
-              placeholder={t('auth.inputs.nicknamePlaceholder')}
-              className="w-full bg-black/20 border border-white/10 rounded-xl p-2.5 text-brand-peach text-base placeholder-brand-peach/30 focus:outline-none focus:ring-1 focus:ring-brand-amber/40 focus:border-brand-amber/60 transition-all outline-none"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              onKeyDown={handleKeyDown}
-              disabled={loading}
-            />
-          </div>
-          
-          <div className="space-y-0.5 pb-0.5">
-            <label className="flex items-center gap-1.5 text-[9px] font-bold text-white/30 uppercase tracking-widest pl-1">
-                <Key className="w-2 h-2" /> {t('auth.inputs.pin')}
-            </label>
-            <input
-              type="password"
-              inputMode="numeric"
-              placeholder={t('auth.inputs.pinPlaceholder')}
-              maxLength={4}
-              className="w-full bg-black/20 border border-white/10 rounded-xl p-2.5 text-brand-peach text-base placeholder-brand-peach/30 focus:outline-none focus:ring-1 focus:ring-brand-amber/40 focus:border-brand-amber/60 transition-all outline-none text-center font-mono tracking-[0.5em]"
-              value={pin}
-              onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-              onKeyDown={handleKeyDown}
-              onFocus={(e) => { e.target.setAttribute('readonly', 'readonly'); setTimeout(() => { e.target.removeAttribute('readonly'); e.target.focus(); }, 100); }}
-              disabled={loading}
-            />
+        <div className="flex-1 flex flex-col justify-center py-2">
+          <div className="flex justify-center mb-1">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-peach to-brand-orange flex items-center justify-center shadow-xl shadow-brand-orange/20 relative">
+                  <div className="absolute inset-0 bg-white/20 rounded-2xl blur-sm animate-pulse-slow"></div>
+                  {mode === 'register' ? <User className="w-6 h-6 text-brand-dark relative" /> : <RotateCw className="w-6 h-6 text-brand-dark relative" />}
+              </div>
           </div>
 
-          <div className="space-y-2">
-            <button
-                onClick={mode === 'register' ? handleRegister : handleRecover}
+          <h2 className="text-sm font-bold text-center text-brand-amber tracking-tight uppercase">
+            {mode === 'register' ? t('auth.modes.register.title') : t('auth.modes.recover.title')}
+          </h2>
+
+          <div className="h-[34px] my-1 flex items-center w-full">
+            {error && (
+              <div className="w-full bg-red-500/10 border border-red-500/20 text-red-200 p-2 rounded-xl text-[10px] flex items-start gap-2 animate-in fade-in zoom-in-95 duration-200">
+                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 text-red-500 mt-0.5" />
+                <span className="leading-tight">{error}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-2.5">
+            <div className="space-y-0.5">
+              <label className="flex items-center gap-1.5 text-[9px] font-bold text-white/30 uppercase tracking-widest pl-1">
+                  <User className="w-2 h-2" /> {t('auth.inputs.nickname')}
+              </label>
+              <input
+                type="text"
+                placeholder={t('auth.inputs.nicknamePlaceholder')}
+                className="w-full bg-black/20 border border-white/10 rounded-xl p-2.5 text-brand-peach text-base placeholder-brand-peach/30 focus:outline-none focus:ring-1 focus:ring-brand-amber/40 focus:border-brand-amber/60 transition-all outline-none"
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                onKeyDown={handleKeyDown}
                 disabled={loading}
-                style={{ WebkitTapHighlightColor: 'transparent' }}
-                className="w-full box-border font-bold bg-gradient-to-r from-brand-peach to-brand-orange hover:from-[#FFE0C2] hover:to-[#FF9F7A] text-brand-dark rounded-2xl h-10 text-xs shadow-lg shadow-brand-orange/20 active:opacity-80 transition-all disabled:opacity-50 cursor-pointer outline-none focus:outline-none select-none"
-            >
-              {loading ? (
-                <div className="flex items-center justify-center gap-2">
-                    <RotateCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>{mode === 'register' ? t('auth.modes.register.loading') : t('auth.modes.recover.loading')}</span>
-                </div>
-              ) : (
-                <span>{mode === 'register' ? t('auth.modes.register.button') : t('auth.modes.recover.button')}</span>
-              )}
-            </button>
-
-            <p className="text-[9px] text-brand-peach/30 text-center px-4 leading-tight font-medium">
-              {mode === 'register' 
-                ? t('auth.modes.register.hint')
-                : t('auth.modes.recover.hint')}
-            </p>
-          </div>
-          </div>
-        </div>
-
-        <div className="mt-auto pt-4 border-t border-white/5 text-center">
-          {mode === "register" ? (
-            <div className="space-y-2">
-               <button
-                onClick={() => { setError(null); setMode("recover"); }}
-                style={{ WebkitTapHighlightColor: 'transparent' }}
-                className="w-full box-border bg-white/5 hover:bg-white/10 active:bg-white/[0.04] text-brand-peach hover:text-white border border-white/15 rounded-xl h-10 text-xs font-bold transition-all cursor-pointer outline-none focus:outline-none select-none"
-              >
-                {t('auth.modes.recover.button')}
-              </button>
-              <p className="text-[9px] text-white/20 uppercase tracking-[0.1em]">{t('auth.modes.recover.hint')}</p>
+              />
             </div>
-          ) : (
-            <button 
-                onClick={() => { setError(null); setMode("register"); }}
-                style={{ WebkitTapHighlightColor: 'transparent' }}
-                className="w-full box-border bg-white/5 hover:bg-white/10 active:bg-white/[0.04] text-brand-peach hover:text-white border border-white/15 rounded-xl h-10 text-xs font-bold transition-all cursor-pointer outline-none focus:outline-none select-none"
-            >
-              {t('auth.modes.recover.back')}
-            </button>
-          )}
+            
+            <div className="space-y-0.5 pb-0.5">
+              <label className="flex items-center gap-1.5 text-[9px] font-bold text-white/30 uppercase tracking-widest pl-1">
+                  <Key className="w-2 h-2" /> {t('auth.inputs.pin')}
+              </label>
+              <input
+                type="password"
+                inputMode="numeric"
+                placeholder={t('auth.inputs.pinPlaceholder')}
+                maxLength={4}
+                className="w-full bg-black/20 border border-white/10 rounded-xl p-2.5 text-brand-peach text-base placeholder-brand-peach/30 focus:outline-none focus:ring-1 focus:ring-brand-amber/40 focus:border-brand-amber/60 transition-all outline-none text-center font-mono tracking-[0.5em]"
+                value={pin}
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+                onKeyDown={handleKeyDown}
+                onFocus={(e) => { e.target.setAttribute('readonly', 'readonly'); setTimeout(() => { e.target.removeAttribute('readonly'); e.target.focus(); }, 100); }}
+                disabled={loading}
+              />
+            </div>
+
+            <div className="space-y-2 pt-1">
+              <div className="flex gap-3">
+                <button
+                    onClick={mode === 'register' ? handleRegister : () => { setError(null); setMode('register'); }}
+                    disabled={loading}
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                    className={cn(
+                      "flex-1 h-11 rounded-xl font-bold text-sm transition-all outline-none select-none",
+                      mode === 'register' 
+                        ? "bg-gradient-to-r from-brand-peach to-brand-orange text-brand-dark shadow-lg shadow-brand-orange/20" 
+                        : "bg-white/5 text-brand-peach/60 border border-white/10 hover:bg-white/10"
+                    )}
+                >
+                  {loading && mode === 'register' ? (
+                    <RotateCw className="w-4 h-4 animate-spin mx-auto" />
+                  ) : (
+                    <span>注册</span>
+                  )}
+                </button>
+
+                <button
+                    onClick={mode === 'recover' ? handleRecover : () => { setError(null); setMode('recover'); }}
+                    disabled={loading}
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                    className={cn(
+                      "flex-1 h-11 rounded-xl font-bold text-sm transition-all outline-none select-none",
+                      mode === 'recover' 
+                        ? "bg-gradient-to-r from-brand-peach to-brand-orange text-brand-dark shadow-lg shadow-brand-orange/20" 
+                        : "bg-white/5 text-brand-peach/60 border border-white/10 hover:bg-white/10"
+                    )}
+                >
+                  {loading && mode === 'recover' ? (
+                    <RotateCw className="w-4 h-4 animate-spin mx-auto" />
+                  ) : (
+                    <span>登录</span>
+                  )}
+                </button>
+              </div>
+
+              <div className="h-[28px] flex items-center justify-center">
+                <p className="text-[10px] text-brand-peach/40 text-center px-2 leading-relaxed italic">
+                  {mode === 'register' 
+                    ? t('auth.modes.register.hint')
+                    : t('auth.modes.recover.hint')}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

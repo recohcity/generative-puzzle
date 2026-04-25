@@ -51,8 +51,8 @@ const TITLE_CLASS = "text-premium-title text-lg leading-tight whitespace-nowrap"
 // card标题样式
 const CARD_TITLE_CLASS = "text-premium-label text-[11px] mb-2 leading-tight text-center opacity-70";
 
-// tab按钮样式 — flex居中 + leading-none 防止安卓大字体下文字贴底
-const TAB_BUTTON_CLASS = "flex-1 px-0 py-1 text-sm font-bold transition-all text-center flex items-center justify-center leading-none";
+// tab按钮样式 — flex居中，移除 leading-none 和 py-1 以确保在各种机型下文字完美垂直居中
+const TAB_BUTTON_CLASS = "flex-1 h-full px-0 text-sm font-bold transition-all text-center flex items-center justify-center";
 
 // 分区容器样式
 const SECTION_CLASS = "mb-1";
@@ -472,11 +472,28 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
       {/* 游戏面板主内容区 */}
       {!isGameCompleted && !showLeaderboard && (
         <div className="mb-0" style={{ paddingLeft: CONTENT_HORIZONTAL_PADDING, paddingRight: CONTENT_HORIZONTAL_PADDING }}>
-          <div className="flex w-full bg-white/5 backdrop-blur-md rounded-2xl overflow-hidden no-scrollbar whitespace-nowrap" style={{ height: isLandscape ? TAB_BUTTON_HEIGHT_LANDSCAPE : TAB_BUTTON_HEIGHT }}>
-            {(['shape', 'puzzle', 'cut', 'scatter', 'controls'] as const).map((tab) => (
-              <button key={tab} className={cn(TAB_BUTTON_CLASS, activeTab === tab ? 'glass-btn-active z-10' : 'text-premium-label opacity-60')} onClick={() => onTabChange(tab)} style={{ fontSize: isLandscape ? TAB_BUTTON_FONT_SIZE_LANDSCAPE : TAB_BUTTON_FONT_SIZE }}>
-                {getTabLabel(tab)}
-              </button>
+          <div className="flex w-full bg-white/5 backdrop-blur-md rounded-2xl overflow-hidden no-scrollbar whitespace-nowrap items-center" style={{ height: isLandscape ? TAB_BUTTON_HEIGHT_LANDSCAPE : TAB_BUTTON_HEIGHT }}>
+            {(['shape', 'puzzle', 'cut', 'scatter', 'controls'] as const).map((tab, idx, arr) => (
+              <React.Fragment key={tab}>
+                {idx > 0 && (
+                  <div 
+                    className={cn(
+                      "w-[1px] h-full shrink-0 bg-white/20 transition-opacity duration-300",
+                      (activeTab === tab || activeTab === arr[idx - 1]) ? "opacity-0" : "opacity-100"
+                    )} 
+                  />
+                )}
+                <button 
+                  className={cn(
+                    TAB_BUTTON_CLASS, 
+                    activeTab === tab ? 'glass-btn-active z-10' : 'text-premium-label opacity-90 hover:opacity-100'
+                  )} 
+                  onClick={() => onTabChange(tab)} 
+                  style={{ fontSize: isLandscape ? TAB_BUTTON_FONT_SIZE_LANDSCAPE : TAB_BUTTON_FONT_SIZE }}
+                >
+                  {getTabLabel(tab)}
+                </button>
+              </React.Fragment>
             ))}
           </div>
         </div>
