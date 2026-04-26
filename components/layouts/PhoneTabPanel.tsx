@@ -303,31 +303,15 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
       )}
       style={style}
     >
-      {/* 🎯 优化：游戏完成时隐藏标题栏中的“生成式拼图游戏”文字，仅保留功能按钮，极致节省垂直空间 */}
-      {!isGameCompleted ? (
-        <div className="flex items-center justify-between mb-1 gap-2">
-          {/* 使用 SVG text 完全免疫安卓微信 textZoom 暴力缩放，确保中英文永不被放大截断 */}
-          <svg viewBox="0 0 200 24" className="h-[22px] w-[183px] max-w-[55%] shrink min-w-0 text-brand-amber filter drop-shadow-sm">
-            <text x="0" y="18" fill="currentColor" fontSize="18" fontWeight="normal" fontFamily="ui-sans-serif, system-ui, sans-serif" letterSpacing="0">
-              {t('game.title')}
-            </text>
-          </svg>
-          <div className="flex-shrink-0">
-            <GlobalUtilityButtons
-              isMusicPlaying={isMusicPlaying}
-              isFullscreen={isFullscreen}
-              onToggleMusic={onToggleMusic}
-              onToggleFullscreen={onToggleFullscreen}
-              onToggleLeaderboard={handleToggleLeaderboard}
-              isLeaderboardOpen={showLeaderboard}
-              onToggleUser={handleToggleUserPanel}
-              isLoggedIn={!!user}
-              isUserPanelOpen={showUserPanel || (!user && showLeaderboard)}
-            />
-          </div>
-        </div>
-      ) : (
-        <div className="flex items-center justify-end mb-1">
+      {/* 始终显示游戏标题和全局功能按钮 */}
+      <div className="flex items-center justify-between mb-1 gap-2">
+        {/* 使用 SVG text 完全免疫安卓微信 textZoom 暴力缩放，确保中英文永不被放大截断 */}
+        <svg viewBox="0 0 200 24" className="h-[22px] w-[183px] max-w-[55%] shrink min-w-0 text-brand-amber filter drop-shadow-sm">
+          <text x="0" y="18" fill="currentColor" fontSize="18" fontWeight="normal" fontFamily="ui-sans-serif, system-ui, sans-serif" letterSpacing="0">
+            {t('game.title')}
+          </text>
+        </svg>
+        <div className="flex-shrink-0">
           <GlobalUtilityButtons
             isMusicPlaying={isMusicPlaying}
             isFullscreen={isFullscreen}
@@ -340,7 +324,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
             isUserPanelOpen={showUserPanel || (!user && showLeaderboard)}
           />
         </div>
-      )}
+      </div>
 
 
       {/* 登录弹窗 - 未登录时 */}
