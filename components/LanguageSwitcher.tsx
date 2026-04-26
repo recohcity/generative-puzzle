@@ -172,9 +172,10 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
           suppressHydrationWarning
         >
           <span
+            className="text-zoom-lock"
             style={{
-              fontSize: '11px',
-              fontWeight: 'bold',
+              fontSize: '13px',
+              fontWeight: 'normal',
               fontFamily: 'system-ui, sans-serif',
               color: 'inherit',
               pointerEvents: 'none',

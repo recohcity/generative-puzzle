@@ -19,6 +19,9 @@ const defaultMessages = {
     "login": "立即登录",
     "logout": "退出",
     "loggedIn": "已登录",
+    "logoutDescription": "确定要退出当前账号吗？这不会删除您的记录。",
+    "registerButton": "注册",
+    "loginButton": "登录",
     "userPanel": "用户"
   },
   "game": {

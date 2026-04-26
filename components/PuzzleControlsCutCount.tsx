@@ -14,7 +14,7 @@ interface PuzzleControlsCutCountProps {
   actionButtonHeight?: number;
 }
 
-export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28, actionButtonHeight = 36 }: PuzzleControlsCutCountProps) {
+export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28, actionButtonHeight = 40 }: PuzzleControlsCutCountProps) {
   const {
     state,
     dispatch,
@@ -74,7 +74,7 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
     return cn(
         "glass-btn-sheen",
         localCutCount === num ? "glass-btn-active" : "glass-btn-inactive",
-        "flex-1 font-medium transition-all duration-500",
+        "flex-1 font-normal transition-all duration-500",
         localCutCount === num && "scale-110 z-10",
         !canModifySettings && "opacity-30 pointer-events-none"
     );
@@ -141,14 +141,13 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
           height: actionButtonHeight,
           padding: '0 16px',
           lineHeight: '18px',
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em',
+          fontWeight: 'normal',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center'
         }}
       >
-        <PuzzleIcon style={{ width: '20px', height: '20px', marginRight: '8px', flexShrink: 0 }} strokeWidth={2.5} />
+        <PuzzleIcon style={{ width: '18px', height: '18px', marginRight: '8px', flexShrink: 0 }} strokeWidth={2.5} />
         <span style={{ fontSize: '14px' }}>{t('game.cutCount.button')}</span>
       </button>
       {/* 添加提示信息，当按钮不可点击时显示原因 */}

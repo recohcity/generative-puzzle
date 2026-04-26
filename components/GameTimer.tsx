@@ -84,7 +84,7 @@ export const GameTimer: React.FC<GameTimerProps> = ({ className = '', style = {}
       data-testid="game-timer"
       aria-label={`游戏时间: ${displayTime}`}
     >
-      {displayTime}
+      <span className="text-zoom-lock">{displayTime}</span>
     </div>
   );
 };

@@ -78,10 +78,25 @@ export default function LoadingScreen({ onLoadComplete }: LoadingScreenProps) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-violet-900 to-blue-900">
       {/* ResponsiveBackground 已移除，直接用渐变背景 */}
-      <div className="relative z-10 flex flex-col items-center">
-        <h1 className="text-6xl font-black mb-8 md:text-6xl text-4xl sm:text-center text-left w-full px-6" style={{ color: 'var(--brand-amber)' }}>
-          Generative<br className="md:hidden" /> Puzzle
-        </h1>
+      <div className="relative z-10 flex flex-col items-center w-full">
+        <div className="w-full px-6 flex sm:justify-center justify-start mb-8">
+          {/* 移动端：双行排版 SVG，彻底免疫安卓大字体缩放 */}
+          <svg viewBox="0 0 280 110" className="block md:hidden w-[90%] max-w-[280px] h-auto text-brand-amber filter drop-shadow-md">
+            <text x="0" y="45" fill="currentColor" fontSize="46" fontWeight="900" fontFamily="ui-sans-serif, system-ui, sans-serif" letterSpacing="-1">
+              Generative
+            </text>
+            <text x="0" y="100" fill="currentColor" fontSize="46" fontWeight="900" fontFamily="ui-sans-serif, system-ui, sans-serif" letterSpacing="-1">
+              Puzzle
+            </text>
+          </svg>
+          
+          {/* 桌面端：单行排版 SVG */}
+          <svg viewBox="0 0 500 70" className="hidden md:block w-full max-w-[500px] h-auto text-brand-amber filter drop-shadow-lg">
+            <text x="50%" y="55" textAnchor="middle" fill="currentColor" fontSize="60" fontWeight="900" fontFamily="ui-sans-serif, system-ui, sans-serif" letterSpacing="-1">
+              Generative Puzzle
+            </text>
+          </svg>
+        </div>
         <div className="w-80 h-3 bg-white/10 rounded-full overflow-hidden border border-white/20">
           <div
             className="h-full transition-[width] ease-out"
@@ -94,7 +109,7 @@ export default function LoadingScreen({ onLoadComplete }: LoadingScreenProps) {
             }}
           />
         </div>
-        <p className="mt-4 font-medium" style={{ color: 'var(--brand-peach)' }}>
+        <p className="mt-4 font-medium text-zoom-lock" style={{ color: 'var(--brand-peach)' }}>
           {done ? '100% Load Complete' : `${Math.floor(displayProgress)}% ${displayProgress >= 100 ? 'Load Complete' : 'Loading...'}`}
         </p>
       </div>

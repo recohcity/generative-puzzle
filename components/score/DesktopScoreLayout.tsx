@@ -79,11 +79,11 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
       <div className="flex items-center justify-between w-full px-1 mb-1.5 flex-shrink-0">
         <div className="flex items-center gap-1.5 min-w-0">
           <Trophy className="shrink-0 text-brand-peach" size={16} />
-          <h2 className="text-white/90 font-medium uppercase tracking-[0.1em] leading-none text-[12px] truncate">
+          <h2 className="text-white/90 font-normal leading-none text-[14px] truncate">
             {t('stats.currentGameResult')}
           </h2>
           {isNewRecord && (
-            <span className="bg-brand-peach/20 text-brand-peach px-1 py-0.5 rounded text-[8px] font-bold uppercase border border-brand-peach/30 leading-none shrink-0">
+            <span className="bg-brand-peach/20 text-brand-peach px-1 py-0.5 rounded text-[8px] font-normal border border-brand-peach/30 leading-none shrink-0">
               NEW
             </span>
           )}

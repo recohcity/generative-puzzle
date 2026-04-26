@@ -410,7 +410,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
           >
             <div className="flex flex-col mb-1 flex-shrink-0">
               <div className="flex items-center justify-between">
-                <h1 className="font-bold text-brand-amber" style={{ fontSize: 18, marginTop: 0, marginBottom: 0 }}>{t('game.title')}</h1>
+                <h1 className="font-normal text-brand-amber" style={{ fontSize: 18, marginTop: 0, marginBottom: 0 }}>{t('game.title')}</h1>
                 <GlobalUtilityButtons
                   isMusicPlaying={isMusicPlaying}
                   isFullscreen={isFullscreen}

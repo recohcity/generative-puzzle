@@ -71,7 +71,7 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
     if (isShapeButtonDisabled) {
       base += " opacity-30 cursor-not-allowed";
     }
-    return cn("flex flex-col items-center justify-center glass-btn-sheen", base);
+    return cn("flex flex-col items-center justify-center glass-btn-sheen font-normal", base);
   };
 
   // --- 响应式样式 ---
@@ -89,8 +89,8 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
     width: 'auto',
   };
   const iconStyle = {
-    width: buttonHeight * 0.27,
-    height: buttonHeight * 0.27,
+    width: Math.round(buttonHeight * 0.3),
+    height: Math.round(buttonHeight * 0.3),
     marginBottom: '2px',
   };
   const labelStyle = {
@@ -121,7 +121,7 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
               style={iconStyle}
               strokeWidth={2.5}
             />
-            <span style={labelStyle} className="font-bold">{t('game.shapes.polygon')}</span>
+            <span style={labelStyle} className="font-normal">{t('game.shapes.polygon')}</span>
           </button>
           <button
             className={getButtonClass(ShapeType.Cloud)}
@@ -136,7 +136,7 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
               style={iconStyle}
               strokeWidth={2.5}
             />
-            <span style={labelStyle} className="font-bold">{t('game.shapes.curve')}</span>
+            <span style={labelStyle} className="font-normal">{t('game.shapes.curve')}</span>
           </button>
           <button
             className={getButtonClass(ShapeType.Jagged)}
@@ -151,7 +151,7 @@ export default function ShapeControls({ goToNextTab, buttonHeight = 60, fontSize
               style={iconStyle}
               strokeWidth={2.5}
             />
-            <span style={labelStyle} className="font-bold">{t('game.shapes.irregular')}</span>
+            <span style={labelStyle} className="font-normal">{t('game.shapes.irregular')}</span>
           </button>
         </div>
       </div>

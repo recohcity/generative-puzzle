@@ -13,7 +13,7 @@ interface PuzzleControlsScatterProps {
   buttonHeight?: number;
 }
 
-export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 34 }: PuzzleControlsScatterProps) {
+export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 40 }: PuzzleControlsScatterProps) {
   const {
     state,
     scatterPuzzle
@@ -61,8 +61,7 @@ export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 34 }
           height: buttonHeight,
           padding: '0 16px',
           lineHeight: '18px',
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em'
+          fontWeight: 'normal'
         }}
       >
         <ScatterChart style={{ width: '18px', height: '18px', marginRight: '8px', flexShrink: 0 }} strokeWidth={2.5} />

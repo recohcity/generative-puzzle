@@ -1,5 +1,42 @@
 # 生成式拼图游戏 Changelog
 
+## [v1.4.11] - 2026-04-26
+
+### 🛡️ 安卓大字体终极防御与全局弹窗同构化 (Ultimate Android Defense & Modal Unification)
+
+本版本解决了项目长期存在的几个核心 UI 痛点，通过架构级的防篡改机制与标准化的弹窗设计，达成了全平台的绝对视觉一致性。
+
+#### 1. 安卓大字体/TextZoom 物理防御装甲 (Android TextZoom Armor)
+- **SVG 降维打击**: 针对安卓微信/浏览器底层强制放大的 `textZoom` 行为，将移动端 `PhoneTabPanel` 中的主标题与 `LoadingScreen` 的大标题重构为 `<svg><text/></svg>` 渲染。利用内核对矢量图形缩放锁定的特性，**100% 免疫系统级字体放大**，彻底根除了横向溢出问题。
+- **动态抵消机制**: 升级 `FontScaleLock`。不再依赖不可靠的 API，而是通过渲染隐藏的 `10px` 物理元素并测量 `clientHeight`，获取系统底层的真实放大倍率，从而反向推导出 `--text-zoom-scale`。
+- **防爆破样式**: 全局新增 `.text-zoom-lock` 工具类，基于测算出的 `scale` 变量，利用 CSS `transform` 对所有无法 SVG 化的关键文本（如多语言切换的 'EN'、计时器分数等）进行视觉上的逆向微缩，完美抵消系统放大，保障排版不崩坏。
+- **物理间距锁定**: 顶部控制栏 (`GlobalUtilityButtons`) 中放弃基于 `rem` 的间距体系，强制使用固定的 `gap: '4px'` 物理像素，阻止间距因基础字号膨胀而爆炸。
+
+#### 2. 全局弹窗体系同构化 (Unified Modal Ecosystem)
+- **设计语言统一**: 将 `VirtualAuthWidget`、`AlertDialog` 以及用户 Profile 面板等所有弹窗收拢为绝对一致的高级视觉规范。
+- **极简深层磨砂**: 强制所有弹窗继承 `bg-white/10 backdrop-blur-2xl`，剥离多余的杂色。
+- **渐变徽标顶框**: 在所有模态框顶部统一采用 `12x12 rounded-2xl bg-gradient-to-tr from-brand-peach to-brand-orange` 的渐变图标容器，带来极度统一且高端的沉浸感。
+- **I18n 绝对纯洁**: 在所有弹窗的底层渲染中，清理了所有的中文字符串硬编码，全面挂载 `t()` 翻译器接口，实现 100% 国际化支持。
+
+#### 3. 法典基建升级 (Specification Law Enforcement)
+- **文档升级**: `OPTIMIZATION_SOP.md` 演进至 V3.0，`UI_SPECIFICATION.md` 演进至 V4.1。
+- **新规入库**: 将大字体防御体系和弹窗一致性纳入全局回归检查门禁，作为不可违反的强制标准执行。
+
+---
+
+## [v1.4.10] - 2026-04-26
+
+### 🎨 重新开始/重玩按钮图标视觉对齐 (Restart/Retry Icon Visual Alignment)
+
+本版本解决了操作按钮间图标比例不统一的视觉缺陷，进一步完善了全端 UI 的一致性。
+
+#### 1. 图标规格标准化 (Icon Scaling)
+- **统一尺寸**: 将“重玩本局”与“重开游戏”按钮内的图标大小由之前的 24px (及部分场景 18px) 统一收缩至 **16px**。
+- **视觉重心对齐**: 使得该组按钮与“提示”、“左旋”、“右旋”等核心交互按钮在视觉上达到了 1:1 的规格对齐，消除了原本图标过大的突兀感。
+- **全端同步**: 同时修复了 `RestartButton` 的默认参数以及 `PhoneTabPanel` 中的硬编码覆盖值，确保在所有设备环境下均表现一致。
+
+---
+
 ## [v1.4.9] - 2026-04-25
 
 ### 📱 移动端认证弹窗与控制面板体验重塑 (Mobile Auth Modal & Tab UI Polish)

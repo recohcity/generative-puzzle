@@ -19,7 +19,7 @@ import RestartButton from "@/components/RestartButton";
 import { Button } from "@/components/ui/button";
 import MobileScoreLayout from "@/components/score/MobileScoreLayout";
 import { GameDataManager } from '@/utils/data/GameDataManager';
-import { Lightbulb, RotateCcw, RotateCw, Trophy, User, X, Globe, History as HistoryIcon, Loader2 } from "lucide-react";
+import { Lightbulb, RotateCcw, RotateCw, Trophy, User, X, Globe, History as HistoryIcon, Loader2, RefreshCw } from "lucide-react";
 import { useGame } from "@/contexts/GameContext";
 import { playRotateSound, playButtonClickSound } from "@/utils/rendering/soundEffects";
 import { useTranslation } from '@/contexts/I18nContext';
@@ -46,13 +46,13 @@ interface PhoneTabPanelProps {
 }
 
 // 主标题样式（横竖屏统一字号）
-const TITLE_CLASS = "text-premium-title text-lg leading-tight whitespace-nowrap";
+const TITLE_CLASS = "text-premium-title text-lg leading-tight whitespace-nowrap text-zoom-lock";
 
 // card标题样式
 const CARD_TITLE_CLASS = "text-premium-label text-[11px] mb-2 leading-tight text-center opacity-70";
 
-// tab按钮样式 — flex居中，移除 leading-none 和 py-1 以确保在各种机型下文字完美垂直居中
-const TAB_BUTTON_CLASS = "flex-1 h-full px-0 text-sm font-bold transition-all text-center flex items-center justify-center";
+// tab按钮样式 — flex居中，transition-colors 避免字体属性被过渡动画干扰
+const TAB_BUTTON_CLASS = "flex-1 h-full px-0 text-sm font-bold transition-colors duration-200 text-center flex items-center justify-center";
 
 // 分区容器样式
 const SECTION_CLASS = "mb-1";
@@ -70,13 +70,13 @@ const TAB_BUTTON_FONT_SIZE_LANDSCAPE_BASE = 12;
 const TAB_BUTTON_HEIGHT_LANDSCAPE_BASE = 32;
 const SHAPE_BUTTON_HEIGHT_BASE = 60;
 const MOBILE_SHAPE_BUTTON_FONT_SIZE_BASE = 14;
-const CUT_TYPE_BUTTON_HEIGHT_BASE = 36;
+const CUT_TYPE_BUTTON_HEIGHT_BASE = 40;
 const NUMBER_BUTTON_HEIGHT_BASE = 28;
-const ACTION_BUTTON_HEIGHT_BASE = 36;
-const MOBILE_CONTROL_BUTTON_HEIGHT_BASE = 36;
+const ACTION_BUTTON_HEIGHT_BASE = 40;
+const MOBILE_CONTROL_BUTTON_HEIGHT_BASE = 40;
 const MOBILE_CONTROL_BUTTON_FONT_SIZE_BASE = 14;
-const MOBILE_RESTART_BUTTON_HEIGHT_BASE = 36;
-const MOBILE_RESTART_BUTTON_FONT_SIZE_BASE = 14;
+const MOBILE_RESTART_BUTTON_HEIGHT_BASE = 40;
+const MOBILE_RESTART_FONT_SIZE_BASE = 14;
 const MOBILE_RESTART_ICON_SIZE_BASE = 18;
 
 const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
@@ -105,14 +105,14 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
   const TAB_BUTTON_HEIGHT_LANDSCAPE = isUltraSmall ? 28 : TAB_BUTTON_HEIGHT_LANDSCAPE_BASE;
   const SHAPE_BUTTON_HEIGHT = isUltraSmall ? 52 : SHAPE_BUTTON_HEIGHT_BASE;
   const MOBILE_SHAPE_BUTTON_FONT_SIZE = isUltraSmall ? 12 : MOBILE_SHAPE_BUTTON_FONT_SIZE_BASE;
-  const CUT_TYPE_BUTTON_HEIGHT = isUltraSmall ? 32 : CUT_TYPE_BUTTON_HEIGHT_BASE;
+  const CUT_TYPE_BUTTON_HEIGHT = isLandscape ? 32 : (isUltraSmall ? 36 : CUT_TYPE_BUTTON_HEIGHT_BASE);
   const NUMBER_BUTTON_HEIGHT = isUltraSmall ? 24 : NUMBER_BUTTON_HEIGHT_BASE;
-  const ACTION_BUTTON_HEIGHT = isUltraSmall ? 32 : ACTION_BUTTON_HEIGHT_BASE;
-  const MOBILE_CONTROL_BUTTON_HEIGHT = isLandscape ? 30 : (isUltraSmall ? 32 : MOBILE_CONTROL_BUTTON_HEIGHT_BASE);
+  const ACTION_BUTTON_HEIGHT = isLandscape ? 32 : (isUltraSmall ? 36 : ACTION_BUTTON_HEIGHT_BASE);
+  const MOBILE_CONTROL_BUTTON_HEIGHT = isLandscape ? 32 : (isUltraSmall ? 36 : MOBILE_CONTROL_BUTTON_HEIGHT_BASE);
   const MOBILE_CONTROL_BUTTON_FONT_SIZE = isLandscape ? 11 : (isUltraSmall ? 12 : MOBILE_CONTROL_BUTTON_FONT_SIZE_BASE);
-  const MOBILE_RESTART_BUTTON_HEIGHT = isLandscape ? 28 : (isUltraSmall ? 32 : MOBILE_RESTART_BUTTON_HEIGHT_BASE);
-  const MOBILE_RESTART_FONT_SIZE = isLandscape ? 11 : (isUltraSmall ? 12 : MOBILE_RESTART_BUTTON_FONT_SIZE_BASE);
-  const MOBILE_RESTART_ICON_SIZE = isLandscape ? 13 : (isUltraSmall ? 16 : MOBILE_RESTART_ICON_SIZE_BASE);
+  const MOBILE_RESTART_BUTTON_HEIGHT = isLandscape ? 32 : (isUltraSmall ? 36 : MOBILE_RESTART_BUTTON_HEIGHT_BASE);
+  const MOBILE_RESTART_FONT_SIZE = isLandscape ? 11 : (isUltraSmall ? 12 : MOBILE_RESTART_FONT_SIZE_BASE);
+  const MOBILE_RESTART_ICON_SIZE = isLandscape ? 14 : (isUltraSmall ? 16 : MOBILE_RESTART_ICON_SIZE_BASE);
 
   const {
     shouldShowAngle,
@@ -305,19 +305,26 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
     >
       {/* 🎯 优化：游戏完成时隐藏标题栏中的“生成式拼图游戏”文字，仅保留功能按钮，极致节省垂直空间 */}
       {!isGameCompleted ? (
-        <div className="flex items-center justify-between mb-1">
-          <h1 className={TITLE_CLASS}>{t('game.title')}</h1>
-          <GlobalUtilityButtons
-            isMusicPlaying={isMusicPlaying}
-            isFullscreen={isFullscreen}
-            onToggleMusic={onToggleMusic}
-            onToggleFullscreen={onToggleFullscreen}
-            onToggleLeaderboard={handleToggleLeaderboard}
-            isLeaderboardOpen={showLeaderboard}
-            onToggleUser={handleToggleUserPanel}
-            isLoggedIn={!!user}
-            isUserPanelOpen={showUserPanel || (!user && showLeaderboard)}
-          />
+        <div className="flex items-center justify-between mb-1 gap-2">
+          {/* 使用 SVG text 完全免疫安卓微信 textZoom 暴力缩放，确保中英文永不被放大截断 */}
+          <svg viewBox="0 0 200 24" className="h-[22px] w-[183px] max-w-[55%] shrink min-w-0 text-brand-amber filter drop-shadow-sm">
+            <text x="0" y="18" fill="currentColor" fontSize="18" fontWeight="normal" fontFamily="ui-sans-serif, system-ui, sans-serif" letterSpacing="0">
+              {t('game.title')}
+            </text>
+          </svg>
+          <div className="flex-shrink-0">
+            <GlobalUtilityButtons
+              isMusicPlaying={isMusicPlaying}
+              isFullscreen={isFullscreen}
+              onToggleMusic={onToggleMusic}
+              onToggleFullscreen={onToggleFullscreen}
+              onToggleLeaderboard={handleToggleLeaderboard}
+              isLeaderboardOpen={showLeaderboard}
+              onToggleUser={handleToggleUserPanel}
+              isLoggedIn={!!user}
+              isUserPanelOpen={showUserPanel || (!user && showLeaderboard)}
+            />
+          </div>
         </div>
       ) : (
         <div className="flex items-center justify-end mb-1">
@@ -399,13 +406,16 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
               >
 
                 {/* 用户头像 */}
-                <div className="w-16 h-16 rounded-full bg-brand-amber/20 border-2 border-brand-amber/40 flex items-center justify-center">
-                  <User width={28} height={28} className="text-brand-amber" />
+                <div className="flex justify-center mb-1">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-peach to-brand-orange flex items-center justify-center shadow-xl shadow-brand-orange/20 relative">
+                    <div className="absolute inset-0 bg-white/20 rounded-2xl blur-sm animate-pulse-slow"></div>
+                    <User className="w-6 h-6 text-brand-dark relative" />
+                  </div>
                 </div>
 
                 {/* 昵称 */}
                 <div className="text-center">
-                  <div className="text-brand-peach font-bold text-lg leading-tight">
+                  <div className="text-sm font-bold text-center text-brand-amber tracking-tight uppercase mb-1">
                     {userProfile?.nickname || t('auth.loading')}
                   </div>
                   <div className="flex items-center justify-center gap-1.5 mt-1.5">
@@ -458,8 +468,8 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                     <MobileScoreLayout gameStats={state.gameStats!} currentScore={state.currentScore} scoreBreakdown={state.scoreBreakdown || undefined} isNewRecord={state.isNewRecord} isLandscape={isLandscape} />
                   </div>
                   <div className="flex-shrink-0 flex flex-row gap-3 pt-4 border-t border-white/10">
-                    <RestartButton onClick={handleRetryCurrent} icon="retry" height={44} style={{ flex: 1 }} fontSize={15} iconSize={18}>{t('game.controls.retryCurrent')}</RestartButton>
-                    <RestartButton onClick={handleRestart} icon="refresh" height={44} style={{ flex: 1 }} fontSize={15} iconSize={18}>{t('game.controls.restartGame')}</RestartButton>
+                    <RestartButton onClick={handleRetryCurrent} icon="retry" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.retryCurrent')}</RestartButton>
+                    <RestartButton onClick={handleRestart} icon="refresh" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.restartGame')}</RestartButton>
                   </div>
                 </div>
               </motion.div>
@@ -478,7 +488,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                 {idx > 0 && (
                   <div 
                     className={cn(
-                      "w-[1px] h-full shrink-0 bg-white/20 transition-opacity duration-300",
+                      "w-[1px] h-full shrink-0 bg-white/10 transition-opacity duration-300",
                       (activeTab === tab || activeTab === arr[idx - 1]) ? "opacity-0" : "opacity-100"
                     )} 
                   />
@@ -486,7 +496,10 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                 <button 
                   className={cn(
                     TAB_BUTTON_CLASS, 
-                    activeTab === tab ? 'glass-btn-active z-10' : 'text-premium-label opacity-90 hover:opacity-100'
+                    "focus:outline-none border-none",
+                    activeTab === tab 
+                      ? 'bg-gradient-to-br from-brand-peach to-brand-orange text-brand-dark shadow-[0_2px_10px_rgba(246,142,95,0.2)] active:brightness-95 z-10' 
+                      : 'text-brand-peach/60 active:bg-white/5'
                   )} 
                   onClick={() => onTabChange(tab)} 
                   style={{ fontSize: isLandscape ? TAB_BUTTON_FONT_SIZE_LANDSCAPE : TAB_BUTTON_FONT_SIZE }}
@@ -541,23 +554,15 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                     <button
                       onClick={fetchGlobalData}
                       disabled={isGlobalLoading}
-                      className={cn(
-                        "text-[11px] text-brand-peach font-medium hover:text-white transition-colors px-2 py-1 flex items-center gap-1 whitespace-nowrap",
-                        isGlobalLoading && "opacity-50"
-                      )}
+                      className="w-8 h-8 flex items-center justify-center text-brand-peach/50 hover:text-brand-peach transition-all disabled:opacity-40"
                     >
                       {isGlobalLoading ? (
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                      ) : null}
-                      {t('game.leaderboard.refresh')}
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <RotateCw className="w-4 h-4" />
+                      )}
                     </button>
                   )}
-                  <button
-                    onClick={() => setShowLeaderboard(false)}
-                    className="text-[11px] text-brand-peach font-medium hover:text-white transition-colors px-2 py-1 whitespace-nowrap"
-                  >
-                    {t('game.leaderboard.close')}
-                  </button>
                 </div>
               </div>
 
@@ -744,9 +749,9 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
               <div className={SECTION_CLASS}>
                 <div className="flex flex-col items-center">
                   <div className="flex w-full mb-2 gap-2">
-                    <Button style={{ height: MOBILE_CONTROL_BUTTON_HEIGHT, flex: 1 }} className="glass-btn-active p-0" onClick={handleShowHint} disabled={isHintDisabled}><Lightbulb className="w-4 h-4" /></Button>
-                    <Button style={{ height: MOBILE_CONTROL_BUTTON_HEIGHT, flex: 1 }} className="glass-btn-active p-0" onClick={handleRotateLeft} disabled={isRotateDisabled}><RotateCcw className="w-4 h-4" /></Button>
-                    <Button style={{ height: MOBILE_CONTROL_BUTTON_HEIGHT, flex: 1 }} className="glass-btn-active p-0" onClick={handleRotateRight} disabled={isRotateDisabled}><RotateCw className="w-4 h-4" /></Button>
+                    <Button style={{ height: MOBILE_CONTROL_BUTTON_HEIGHT, flex: 1 }} className="glass-btn-active p-0" onClick={handleShowHint} disabled={isHintDisabled}><Lightbulb style={{ width: 18, height: 18 }} /></Button>
+                    <Button style={{ height: MOBILE_CONTROL_BUTTON_HEIGHT, flex: 1 }} className="glass-btn-active p-0" onClick={handleRotateLeft} disabled={isRotateDisabled}><RotateCcw style={{ width: 18, height: 18 }} /></Button>
+                    <Button style={{ height: MOBILE_CONTROL_BUTTON_HEIGHT, flex: 1 }} className="glass-btn-active p-0" onClick={handleRotateRight} disabled={isRotateDisabled}><RotateCw style={{ width: 18, height: 18 }} /></Button>
                   </div>
                   {state.selectedPiece !== null && state.puzzle && (
                     <div className="text-center mt-2 px-4 whitespace-normal">
@@ -793,22 +798,28 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
 
       {/* Modern non-blocking restart confirmation */}
       <AlertDialog open={showRestartDialog} onOpenChange={setShowRestartDialog}>
-        <AlertDialogContent className="bg-[#1A1825]/95 border-white/10 backdrop-blur-xl text-white w-[90%] sm:w-full rounded-xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-brand-peach">{t('game.controls.restartGame') || 'Restart Game'}</AlertDialogTitle>
+        <AlertDialogContent className="bg-white/10 backdrop-blur-2xl border-white/15 text-white w-[90%] sm:w-full rounded-[2rem] shadow-2xl">
+          <AlertDialogHeader className="flex flex-col items-center sm:items-center sm:text-center">
+            <div className="flex justify-center mb-1">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-peach to-brand-orange flex items-center justify-center shadow-xl shadow-brand-orange/20 relative">
+                <div className="absolute inset-0 bg-white/20 rounded-2xl blur-sm animate-pulse-slow"></div>
+                <RefreshCw className="w-6 h-6 text-brand-dark relative" />
+              </div>
+            </div>
+            <AlertDialogTitle className="text-brand-peach font-bold">{t('game.controls.restartGame')}</AlertDialogTitle>
             <AlertDialogDescription className="text-white/60">
-              {t('common.cancel') ? '确定要重新开始当前进度吗？' : 'Are you sure you want to restart the current game?'}
+              {t('game.controls.restartConfirmDescription')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-transparent border-white/10 hover:bg-white/5 hover:text-white transition-all">
-              {t('common.cancel') || 'Cancel'}
+            <AlertDialogCancel className="bg-white/5 border-white/10 hover:bg-white/10 hover:text-white text-white/70 transition-all rounded-xl">
+              {t('common.cancel')}
             </AlertDialogCancel>
             <AlertDialogAction 
               onClick={executeRestart}
-              className="bg-brand-orange hover:bg-brand-peach text-white transition-all shadow-[0_0_15px_rgba(255,107,0,0.3)]"
+              className="bg-gradient-to-r from-brand-peach to-brand-orange text-brand-dark font-medium transition-all shadow-lg shadow-brand-orange/20 rounded-xl hover:brightness-110"
             >
-              {t('common.confirm') || 'Confirm'}
+              {t('common.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

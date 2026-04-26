@@ -72,11 +72,11 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
       <div className={cn("w-full flex items-center justify-between px-0.5", isLandscape ? "mb-0" : "mb-0")}>
         <div className="flex items-center gap-1.5 min-w-0">
            <Trophy className="shrink-0 text-brand-peach" size={16} />
-           <h3 className="text-white/90 uppercase tracking-[0.1em] font-medium whitespace-nowrap text-[12px]">
+           <h3 className="text-white/90 font-normal whitespace-nowrap text-[14px]">
              {t('stats.currentGameResult')}
            </h3>
            {isNewRecord && (
-             <span className="bg-brand-peach/20 text-brand-peach px-1 py-0.5 rounded font-bold uppercase text-[8px] leading-none shrink-0">
+             <span className="bg-brand-peach/20 text-brand-peach px-1 py-0.5 rounded font-normal text-[8px] leading-none shrink-0">
                NEW
              </span>
            )}

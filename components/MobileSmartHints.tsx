@@ -23,9 +23,9 @@ const MobileSmartHints: React.FC = () => {
   if (state.isCompleted && state.gameStats) {
     // 游戏完成时显示完成提示 - 优先显示新纪录
     if (state.isNewRecord) {
-      return <span>{t('game.hints.newRecord')}</span>;
+      return <span className="text-zoom-lock">{t('game.hints.newRecord')}</span>;
     } else {
-      return <span>{t('game.hints.completed')}</span>;
+      return <span className="text-zoom-lock">{t('game.hints.completed')}</span>;
     }
   }
 
@@ -66,7 +66,7 @@ const MobileSmartHints: React.FC = () => {
   }
 
   return (
-    <span>{progressTip}</span>
+    <span className="text-zoom-lock">{progressTip}</span>
   );
 };
 

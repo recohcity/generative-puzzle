@@ -63,7 +63,7 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({ record, onBack })
       <div className="flex items-center justify-between w-full px-0.5 mb-1 mt-1 shrink-0">
         <div className="flex items-center gap-1.5">
           <Trophy className="w-4 h-4 shrink-0 text-brand-peach" />
-          <h2 className="text-white/90 font-medium uppercase tracking-[0.1em] leading-none text-[12px]">
+          <h2 className="text-white/90 font-normal leading-none text-[14px]">
             {t('leaderboard.recentGameScore') || '本局成绩'}
           </h2>
         </div>
@@ -130,7 +130,7 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({ record, onBack })
       {/* Back button - aligned to standard control buttons size */}
       <button
         onClick={handleBack}
-        className="glass-btn-active w-full mt-3 shrink-0 h-9 rounded-xl text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2 text-brand-peach"
+        className="glass-btn-active w-full mt-3 shrink-0 h-9 rounded-xl text-[14px] font-normal flex items-center justify-center gap-2 text-brand-peach"
       >
         <ArrowLeft className="w-4 h-4" strokeWidth={2} />
         {t('leaderboard.backToLeaderboard') || '返回'}

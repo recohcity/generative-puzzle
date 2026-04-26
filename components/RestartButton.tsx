@@ -15,9 +15,9 @@ interface RestartButtonProps {
   icon?: 'refresh' | 'retry'; // 新增：图标类型
 }
 
-const DEFAULT_HEIGHT = 36;
-const DEFAULT_FONT_SIZE = 15;
-const DEFAULT_ICON_SIZE = 24;
+const DEFAULT_HEIGHT = 40;
+const DEFAULT_FONT_SIZE = 14;
+const DEFAULT_ICON_SIZE = 18;
 
 const RestartButton: React.FC<RestartButtonProps> = ({
   onClick,
@@ -57,6 +57,7 @@ const RestartButton: React.FC<RestartButtonProps> = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        fontWeight: 'normal',
         ...style,
       }}
     >

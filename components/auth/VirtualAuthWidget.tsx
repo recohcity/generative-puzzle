@@ -148,63 +148,91 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
     }
   };
 
-  // 渲染不同区块
   if (mode === "authenticated") {
-    return (
-      <div className={cn(
-        "relative overflow-hidden transition-all duration-500 animate-in fade-in zoom-in-95 w-full h-full flex flex-col justify-center",
-        isLandscape ? "p-4" : "p-2"
-      )}>
-        <div className={cn(
-          "flex items-center justify-between relative z-10 w-full",
-          isLandscape ? "flex-row gap-8" : "flex-col gap-4"
-        )}>
-          <div className={cn(
-            "flex items-center gap-3",
-            isLandscape ? "flex-1 min-w-0" : "w-full"
-          )}>
-            <div className="w-10 h-10 rounded-full bg-brand-orange/20 flex items-center justify-center shadow-lg shadow-brand-orange/10 flex-shrink-0">
-              <User className="text-brand-peach w-5 h-5" />
-            </div>
-            <div className="min-w-0 flex-1 text-left">
-              <div className="flex items-center gap-2 mb-0.5">
-                <h3 className="text-md font-bold text-brand-amber truncate tracking-tight">{currentProfile?.nickname || t('auth.loading')}</h3>
-                <div className="w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_5px_rgba(74,222,128,0.5)]" />
+    if (isLandscape) {
+      return (
+        <div className="relative overflow-hidden transition-all duration-500 animate-in fade-in zoom-in-95 w-full h-full flex flex-col justify-center p-4">
+          <div className="flex items-center justify-between relative z-10 w-full flex-row gap-8">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-peach to-brand-orange flex items-center justify-center shadow-xl shadow-brand-orange/20 relative flex-shrink-0">
+                <div className="absolute inset-0 bg-white/20 rounded-2xl blur-sm animate-pulse-slow"></div>
+                <User className="w-6 h-6 text-brand-dark relative" />
               </div>
-              <p className="text-[10px] text-white/30 font-mono truncate">
-                {t('auth.status.sessionId')}: {(user?.id || "").slice(0, 8).toUpperCase()}
-              </p>
+              <div className="min-w-0 flex-1 text-left">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <h3 className="text-md font-bold text-brand-amber truncate tracking-tight uppercase">{currentProfile?.nickname || t('auth.loading')}</h3>
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_5px_rgba(74,222,128,0.5)]" />
+                </div>
+                <p className="text-[10px] text-white/30 font-mono truncate">
+                  {t('auth.loggedIn')} | {t('auth.status.sessionId')}: {(user?.id || "").slice(0, 8).toUpperCase()}
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Button 
+                  onClick={() => onAuthSuccess?.()} 
+                  variant="ghost" 
+                  size="sm"
+                  className="h-9 text-xs text-white/50 hover:text-white hover:bg-white/5 border border-white/5 rounded-lg px-6"
+              >
+                {t('auth.status.sync')}
+              </Button>
+              <Button 
+                variant="destructive" 
+                size="sm"
+                onClick={handleSignOut} 
+                disabled={loading}
+                className="h-9 text-[14px] bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 font-normal gap-1.5 rounded-lg px-6"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                {loading ? t('auth.status.processing') : t('auth.status.exit')}
+              </Button>
             </div>
           </div>
-          
-          <div className={cn(
-            "flex items-center gap-2",
-            isLandscape ? "flex-shrink-0" : "w-full"
-          )}>
-            <Button 
-                onClick={() => onAuthSuccess?.()} 
-                variant="ghost" 
-                size="sm"
-                className={cn(
-                  "h-9 text-xs text-white/50 hover:text-white hover:bg-white/5 border border-white/5 rounded-lg",
-                  isLandscape ? "px-6" : "flex-1"
-                )}
-            >
-              {t('auth.status.sync')}
-            </Button>
-            <Button 
-              variant="destructive" 
-              size="sm"
-              onClick={handleSignOut} 
-              disabled={loading}
-              className={cn(
-                "h-9 text-xs bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 font-bold gap-1.5 rounded-lg",
-                isLandscape ? "px-6" : "flex-1"
-              )}
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              {loading ? t('auth.status.processing') : t('auth.status.exit')}
-            </Button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="relative text-white w-full transition-all duration-500 p-1 h-full flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
+        <div className="relative z-10 flex flex-col h-full">
+          <div className="flex-1 flex flex-col justify-center py-2">
+            <div className="flex justify-center mb-1">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-peach to-brand-orange flex items-center justify-center shadow-xl shadow-brand-orange/20 relative">
+                    <div className="absolute inset-0 bg-white/20 rounded-2xl blur-sm animate-pulse-slow"></div>
+                    <User className="w-6 h-6 text-brand-dark relative" />
+                </div>
+            </div>
+
+            <h2 className="text-sm font-bold text-center text-brand-amber tracking-tight uppercase mb-1">
+              {currentProfile?.nickname || t('auth.loading')}
+            </h2>
+
+            <div className="flex items-center justify-center gap-1.5 mb-6">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_5px_rgba(74,222,128,0.5)]" />
+              <p className="text-[10px] text-white/40 font-medium">
+                {t('auth.loggedIn')}
+              </p>
+            </div>
+
+            <div className="space-y-2.5 px-1 mt-auto">
+              <button
+                  onClick={() => onAuthSuccess?.()} 
+                  className="w-full h-11 rounded-xl font-normal text-[14px] transition-all bg-white/5 text-brand-peach/60 border border-white/10 hover:bg-white/10 flex items-center justify-center outline-none select-none"
+              >
+                {t('auth.status.sync')}
+              </button>
+
+              <button
+                  onClick={handleSignOut} 
+                  disabled={loading}
+                  className="w-full h-11 rounded-xl font-normal text-[14px] transition-all bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 flex items-center justify-center gap-1.5 outline-none select-none"
+              >
+                {loading ? <RotateCw className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
+                {loading ? t('auth.status.processing') : t('auth.status.exit')}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -370,7 +398,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
                 onClick={mode === 'register' ? handleRegister : () => { setError(null); setMode('register'); }}
                 disabled={loading}
                 className={cn(
-                  "flex-1 h-10 rounded-xl font-bold text-xs transition-all",
+                  "flex-1 h-10 rounded-xl font-normal text-[14px] transition-all",
                   mode === 'register' 
                     ? "bg-gradient-to-r from-brand-peach to-brand-orange text-brand-dark shadow-lg shadow-brand-orange/20" 
                     : "bg-white/5 text-brand-peach/60 border border-white/10 hover:bg-white/10"
@@ -379,7 +407,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
               {loading && mode === 'register' ? (
                 <RotateCw className="w-3.5 h-3.5 animate-spin mx-auto" />
               ) : (
-                <span>注册</span>
+                <span>{t('auth.registerButton')}</span>
               )}
             </button>
 
@@ -387,7 +415,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
                 onClick={mode === 'recover' ? handleRecover : () => { setError(null); setMode('recover'); }}
                 disabled={loading}
                 className={cn(
-                  "flex-1 h-10 rounded-xl font-bold text-xs transition-all",
+                  "flex-1 h-10 rounded-xl font-normal text-[14px] transition-all",
                   mode === 'recover' 
                     ? "bg-gradient-to-r from-brand-peach to-brand-orange text-brand-dark shadow-lg shadow-brand-orange/20" 
                     : "bg-white/5 text-brand-peach/60 border border-white/10 hover:bg-white/10"
@@ -396,7 +424,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
               {loading && mode === 'recover' ? (
                 <RotateCw className="w-3.5 h-3.5 animate-spin mx-auto" />
               ) : (
-                <span>登录</span>
+                <span>{t('auth.loginButton')}</span>
               )}
             </button>
           </div>
@@ -431,7 +459,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
 
           <div className="space-y-2.5">
             <div className="space-y-0.5">
-              <label className="flex items-center gap-1.5 text-[9px] font-bold text-white/30 uppercase tracking-widest pl-1">
+              <label className="flex items-center gap-1.5 text-[10px] font-normal text-white/30 uppercase tracking-widest pl-1">
                   <User className="w-2 h-2" /> {t('auth.inputs.nickname')}
               </label>
               <input
@@ -470,7 +498,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
                     disabled={loading}
                     style={{ WebkitTapHighlightColor: 'transparent' }}
                     className={cn(
-                      "flex-1 h-11 rounded-xl font-bold text-sm transition-all outline-none select-none",
+                      "flex-1 h-11 rounded-xl font-normal text-[14px] transition-all outline-none select-none",
                       mode === 'register' 
                         ? "bg-gradient-to-r from-brand-peach to-brand-orange text-brand-dark shadow-lg shadow-brand-orange/20" 
                         : "bg-white/5 text-brand-peach/60 border border-white/10 hover:bg-white/10"
@@ -479,7 +507,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
                   {loading && mode === 'register' ? (
                     <RotateCw className="w-4 h-4 animate-spin mx-auto" />
                   ) : (
-                    <span>注册</span>
+                    <span>{t('auth.registerButton')}</span>
                   )}
                 </button>
 
@@ -488,7 +516,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
                     disabled={loading}
                     style={{ WebkitTapHighlightColor: 'transparent' }}
                     className={cn(
-                      "flex-1 h-11 rounded-xl font-bold text-sm transition-all outline-none select-none",
+                      "flex-1 h-11 rounded-xl font-normal text-[14px] transition-all outline-none select-none",
                       mode === 'recover' 
                         ? "bg-gradient-to-r from-brand-peach to-brand-orange text-brand-dark shadow-lg shadow-brand-orange/20" 
                         : "bg-white/5 text-brand-peach/60 border border-white/10 hover:bg-white/10"
@@ -497,7 +525,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
                   {loading && mode === 'recover' ? (
                     <RotateCw className="w-4 h-4 animate-spin mx-auto" />
                   ) : (
-                    <span>登录</span>
+                    <span>{t('auth.loginButton')}</span>
                   )}
                 </button>
               </div>

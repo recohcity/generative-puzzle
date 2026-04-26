@@ -22,10 +22,12 @@
     - 检查数值粗体：`grep -E "font-bold|font-black" <file_path>` (数值位严禁加粗)
     - 检查硬编码白色：`grep -E "text-white(?!/| )|#ffffff" <file_path>` (数值位严禁纯白)
     - 检查非标背景：`grep "bg-gray" <file_path>`
+    - **硬编码文本检查**：除 `t()` 函数外，严禁在 UI 渲染层直接使用中文字符串，确保 I18n 绝对纯洁。
 
-### 第二步：跨端响应式注入 (Responsive Parity)
+### 第二步：跨端响应式与大字体防御 (Responsive & textZoom Defense)
 *   **布局分流**: 必须同时在 `DesktopLayout`, `PhonePortraitLayout`, `PhoneLandscapeLayout` 下验证。
 *   **物理适配**: 使用 `panel-scale` 变量进行按钮与边距的等比缩放计算。
+*   **大字体灾难防御**：在安卓微信大字体极端场景下，所有核心标题必须强制使用 **SVG `<text>`** 渲染以彻底免疫 `textZoom`；对于图标内文本与动态数据，必须挂载 `.text-zoom-lock` 样式。布局间距严禁使用 `gap-1` 等 `rem` 单位，必须使用 `gap: '4px'` 物理像素。
 
 ### 第三步：性能与合成层优化 (Performance)
 *   **动画选型**: 涉及位移或缩放的动画必须使用 `transform`，严禁操作 `width/height`。
@@ -34,7 +36,8 @@
 ### 第四步：全局回归检查 (Mandatory Regression Gate)
 *   **三端视图验证**: 检查侧边控制面板比例、底部 Tab 面板遮挡及横屏滚动条。
 *   **组件映射对齐**: 确保修改同步涉及 `PhoneTabPanel.tsx` 等移动端专用容器。
-*   **数据链路对齐 (New)**: 涉及 Supabase RPC 或 Cloud Sync 时，必须核对 `Database.ts` 定义，严禁将 String 传给 Int 字段。
+*   **弹窗标准对齐**: 所有新增 Modal 必须继承统一的 `bg-white/10 backdrop-blur-2xl` 磨砂底，顶部图标容器必须严格执行 `12x12 rounded-2xl bg-gradient-to-tr` 规范，严禁私自定义弹窗。
+*   **数据链路对齐**: 涉及 Supabase RPC 或 Cloud Sync 时，必须核对 `Database.ts` 定义，严禁将 String 传给 Int 字段。
 
 ### 第五步：版本化记录 (Versioning)
 *   详细标注影响的 Token 及组件列表并滚动版本号。
@@ -48,8 +51,8 @@
 | :--- | :--- | :--- | :--- |
 | **品牌化** | 标题 Amber (#FFB17A) / 进度 Peach (#FFD5AB) | 加载屏幕 | `components/loading/LoadingScreen.tsx` |
 | **自适应** | 单图 Object-fit cover / scale(1.2) 逻辑 | 背景渲染 | `components/ResponsiveBackground.tsx` |
-| **安全区** | Safe Area Inset 变量注入与 Padding，**安卓底部防溢出必须使用 `env(safe-area-inset-bottom)` 替代硬编码** | 全局包裹层 | `app/layout.tsx`, `PhonePortraitLayout.tsx` |
-| **安卓防御** | `FontScaleLock` 运行时防缩放 / 冻结 `visualViewport` resize / 锁死 `html` 行高为 `1.15` | 系统底层 | `useDeviceDetection.ts`, `globals.css` |
+| **弹窗与覆盖层** | 统一 `backdrop-blur-2xl` / Header 渐变图标库对齐 / I18n 全面挂载 | 弹窗体系 | `AlertDialog`, `VirtualAuthWidget` |
+| **安卓防御** | **关键标题 SVG 化** / `.text-zoom-lock` 反向缩放 / 绝对像素间隙 `gap: '4px'` | 系统底层 | `FontScaleLock.tsx`, `globals.css` |
 | **交互域** | 触控拦截与 User-select 划分 | 根容器逻辑 | `components/GameInterface.tsx` |
 
 ### B. 计分与统计系统 (Scoring & Statistics)
@@ -79,7 +82,7 @@
 | 评审维度 | 检查项 | 对应功能 | 核心源代码 (Source Files) |
 | :--- | :--- | :--- | :--- |
 | **几何稳定** | ResizeObserver 延迟 150ms 重新映射坐标 | 画布图层 | `PuzzleCanvas.tsx` |
-| **品牌色** | HUD 文本锁定 Peach (#FFD5AB) / Blur(4px) | 计时与滚分 | `GameTimer.tsx`, `LiveScore.tsx` |
+| **品牌色** | HUD 文本锁定 Peach (#FFD5AB) / 提示信息剥离 monospace | 计时与滚分 | `GameTimer.tsx`, `LiveScore.tsx` |
 | **动画性能** | requestAnimationFrame 驱动数字滚动 | 实时得分 | `LiveScore.tsx` |
 
 ---
@@ -92,6 +95,6 @@
 *   **[历史规范与指南](file:///Users/citylivepark/Documents/project/generative-puzzle/docs/archive/legacy-specs/)**: 包含 PRD、架构视角及早期规则定义。
 
 ---
-*上次修订：2026-04-25*  
-*全量结案更新：2026-04-25 (SOP v2.9 - 安卓系统级适配与极致纵向空间优化版)*  
+*上次修订：2026-04-26*  
+*全量结案更新：2026-04-26 (SOP v3.0 - 极致弹窗一致性与安卓大字体物理免疫版)*  
 *文档状态：**Official Standard / Strictly Enforced***

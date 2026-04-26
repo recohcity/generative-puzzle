@@ -54,7 +54,7 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
   } as React.CSSProperties;
 
   return (
-    <div className="flex items-center" style={{ gap: '8px' }}>
+    <div className="flex items-center" style={{ gap: '4px' }}>
       {/* 用户状态按钮：灰=游客，金=已登录 */}
       {onToggleUser && (
         <button

@@ -121,7 +121,7 @@ export const LiveScore: React.FC<LiveScoreProps> = ({ className = '', style = {}
       data-testid="live-score"
       aria-label={`当前分数: ${formatScore(displayScore)}`}
     >
-      {formatScore(displayScore)}
+      <span className="text-zoom-lock">{formatScore(displayScore)}</span>
     </div>
   );
 };

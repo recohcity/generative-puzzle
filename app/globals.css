@@ -174,6 +174,13 @@ h6,
     line-height: 1.15;
   }
 
+  /* 终极文字缩放防御类：抵消微信底层的 textZoom */
+  .text-zoom-lock {
+    transform: scale(var(--text-zoom-scale, 1));
+    transform-origin: center center;
+    display: inline-block;
+  }
+
   * {
     @apply border-border;
   }
@@ -704,12 +711,12 @@ svg {
 
   /* --- Standardized Typography --- */
   .text-premium-title {
-    @apply text-brand-amber font-bold tracking-wider;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    @apply text-brand-amber font-normal;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   }
 
   .text-premium-label {
-    @apply text-brand-peach/60 font-medium uppercase tracking-[0.1em] leading-none;
+    @apply text-brand-peach/60 font-normal leading-none;
   }
 
   .text-premium-value {

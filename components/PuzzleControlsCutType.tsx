@@ -12,7 +12,7 @@ interface PuzzleControlsCutTypeProps {
   buttonHeight?: number;
 }
 
-export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }: PuzzleControlsCutTypeProps) {
+export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 40 }: PuzzleControlsCutTypeProps) {
   const { state, dispatch } = useGame()
   const { t } = useTranslation()
   // 添加本地状态，初始值为空字符串，表示未选择
@@ -108,7 +108,7 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 36 }
               width: '100%',
               outline: 'none',
               padding: 0,
-              fontWeight: 700,
+              fontWeight: 'normal',
             }}
           >
             {item.label}

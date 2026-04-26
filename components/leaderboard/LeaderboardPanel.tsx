@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { Button } from "@/components/ui/button";
-import { Trophy, Medal, Award, Star, ShieldCheck, Globe, User, Loader2, History, RotateCw } from "lucide-react";
+
+import { Trophy, Globe, User, Loader2, History, RotateCw } from "lucide-react";
 import { useTranslation } from '@/contexts/I18nContext';
 import { playButtonClickSound } from "@/utils/rendering/soundEffects";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "motion/react";
 
 import GameRecordDetails from '@/components/GameRecordDetails';
 
-import { GameRecord, DifficultyLevel } from '@generative-puzzle/game-core';
+import { GameRecord } from '@generative-puzzle/game-core';
 import { CloudGameRepository } from "@/utils/cloud/CloudGameRepository";
 import { cn } from '@/lib/utils';
 
@@ -241,7 +241,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                       setActiveTab('personal');
                     }}
                     className={cn(
-                      "flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-medium transition-all duration-300",
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[13px] font-normal transition-all duration-300 whitespace-nowrap",
                       activeTab === 'personal' ? "glass-btn-active" : "glass-btn-inactive"
                     )}
                   >
@@ -254,7 +254,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                       setActiveTab('global');
                     }}
                     className={cn(
-                      "flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-medium transition-all duration-300",
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[13px] font-normal transition-all duration-300 whitespace-nowrap",
                       activeTab === 'global' ? "glass-btn-active" : "glass-btn-inactive"
                     )}
                   >
@@ -265,18 +265,17 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
 
                 <div className="flex items-center gap-1">
                   {activeTab === 'global' && (
-                    <Button
+                    <button
                       onClick={handleRefreshGlobal}
                       disabled={isGlobalLoading}
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 px-2 text-brand-peach hover:text-white/90 glass-btn-inactive rounded-lg flex items-center gap-1.5"
+                      className="w-8 h-8 flex items-center justify-center text-brand-peach/50 hover:text-brand-peach transition-all disabled:opacity-40"
                     >
                       {isGlobalLoading ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      ) : null}
-                      <span className="text-xs font-medium">{t('game.leaderboard.refresh')}</span>
-                    </Button>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <RotateCw className="w-4 h-4" />
+                      )}
+                    </button>
                   )}
                 </div>
               </div>
@@ -293,7 +292,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                     >
                       {/* Top 5 个人最佳成绩 */}
                       <div className="rounded-2xl p-2.5">
-                        <h2 className="text-brand-peach/60 mb-2.5 text-xs flex items-center gap-2 uppercase tracking-wider font-medium">
+                        <h2 className="text-brand-peach/60 mb-2.5 text-[14px] flex items-center gap-2 font-normal">
                           <Trophy className="w-3.5 h-3.5 opacity-40" />
                           {t('leaderboard.title')}
                         </h2>
@@ -334,7 +333,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                       </div>
                       {/* 最近游戏历史 */}
                       <div className="rounded-2xl p-2.5">
-                        <h2 className="text-brand-peach/60 mb-2.5 text-xs flex items-center gap-2 uppercase tracking-wider font-medium">
+                        <h2 className="text-brand-peach/60 mb-2.5 text-[14px] flex items-center gap-2 font-normal">
                           <History className="w-3.5 h-3.5 opacity-40" />
                           {t('stats.scoreHistory')}
                         </h2>
@@ -380,7 +379,7 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                       className="min-h-[300px] flex flex-col"
                     >
                       <div className="rounded-2xl p-2.5 flex-1 flex flex-col no-scrollbar">
-                        <h2 className="text-brand-peach/60 font-medium mb-2.5 text-xs flex items-center gap-2 uppercase tracking-wider">
+                        <h2 className="text-brand-peach/60 font-normal mb-2.5 text-[14px] flex items-center gap-2">
                           <Globe className="w-3.5 h-3.5 opacity-40" />
                           {t('game.leaderboard.tabs.global')}
                         </h2>
