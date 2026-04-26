@@ -109,3 +109,6 @@ Desktop.ini
 # /docs/UI/reports
 # /docs/UI/
 
+
+# AI Agent working directories
+.agent/
