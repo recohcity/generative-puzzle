@@ -46,9 +46,8 @@ export default function FontScaleLock({ children }: { children: React.ReactNode 
         html.style.setProperty('-webkit-text-size-adjust', '100%', 'important')
         html.style.setProperty('text-size-adjust', '100%', 'important')
         
-        // 方法 3：强制计算反向 rem 根字号
-        const currentStyleSize = parseFloat(html.style.fontSize) || 16
-        html.style.setProperty('font-size', `${currentStyleSize * scale}px`, 'important')
+        // 方法 3：强制计算反向 rem 根字号（永远基于标准的 16px 进行缩放）
+        html.style.setProperty('font-size', `${16 * scale}px`, 'important')
       } else {
         html.style.setProperty('--text-zoom-scale', '1')
       }
