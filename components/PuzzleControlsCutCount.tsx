@@ -119,9 +119,10 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
           ))}
         </div>
         {/* 难度指示器 */}
-        <div className="text-brand-peach" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', padding: '0 4px', marginTop: '4px', marginBottom: '12px', lineHeight: '16px' }}>
+        <div className="text-brand-peach" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', padding: '0 4px', marginTop: '4px', marginBottom: '8px', lineHeight: '16px' }}>
           <span>{t('game.cutCount.difficulty.easy')}</span>
-          <span style={{ marginLeft: 'auto' }}>{t('game.cutCount.difficulty.hard')}</span>
+          <span className="opacity-60 text-[11px] font-medium tracking-wider">{t('game.cutCount.title')}</span>
+          <span>{t('game.cutCount.difficulty.hard')}</span>
         </div>
       </div>
 

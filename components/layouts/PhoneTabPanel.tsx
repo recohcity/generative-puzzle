@@ -713,8 +713,8 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
             </div>
           </div>
         ) : (
-          /* 游戏控制面板内容 */
-          <>
+          /* 游戏控制面板内容 - 统一固定高度，防止切换Tab时画布跳动 */
+          <div className="flex flex-col justify-start w-full pt-2" style={{ height: isLandscape ? 110 : (isUltraSmall ? 124 : 130) }}>
             {(activeTab === 'shape' || activeTab === 'puzzle' || activeTab === 'cut' || activeTab === 'scatter') && (
               <div className={SECTION_CLASS}>
                 {activeTab === 'shape' && (
@@ -731,7 +731,6 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                 )}
                 {activeTab === 'cut' && (
                   <div className="flex flex-col items-center px-3">
-                    <h2 className={CARD_TITLE_CLASS}>{t('game.cutCount.title')}</h2>
                     <div className="max-w-[290px] w-full mx-auto">
                       <PuzzleControlsCutCount goToNextTab={goToNextTab} buttonHeight={NUMBER_BUTTON_HEIGHT} actionButtonHeight={ACTION_BUTTON_HEIGHT} />
                     </div>
@@ -747,44 +746,47 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
             )}
             {activeTab === 'controls' && (
               <div className={SECTION_CLASS}>
-                <div className="flex flex-col items-center">
-                  <div className="flex w-full mb-2 gap-2">
-                    <Button style={{ height: MOBILE_CONTROL_BUTTON_HEIGHT, flex: 1 }} className="glass-btn-active p-0" onClick={handleShowHint} disabled={isHintDisabled}><Lightbulb style={{ width: 18, height: 18 }} /></Button>
-                    <Button style={{ height: MOBILE_CONTROL_BUTTON_HEIGHT, flex: 1 }} className="glass-btn-active p-0" onClick={handleRotateLeft} disabled={isRotateDisabled}><RotateCcw style={{ width: 18, height: 18 }} /></Button>
-                    <Button style={{ height: MOBILE_CONTROL_BUTTON_HEIGHT, flex: 1 }} className="glass-btn-active p-0" onClick={handleRotateRight} disabled={isRotateDisabled}><RotateCw style={{ width: 18, height: 18 }} /></Button>
-                  </div>
-                  {state.selectedPiece !== null && state.puzzle && (
-                    <div className="text-center mt-2 px-4 whitespace-normal">
-                      {shouldShowAngle(state.selectedPiece) ? (
-                        <>
-                          <div className={cn("text-premium-value text-sm font-medium", isTemporaryDisplay() ? 'animate-pulse' : '')}>
+                <div className="flex flex-col items-center w-full">
+                  {/* 提示信息容器（单行显示），预留固定高度防止按钮跳动 */}
+                  <div className="text-center px-2 flex flex-row justify-center items-center h-[16px] w-full mb-0.5">
+                    {state.selectedPiece !== null && state.puzzle && (
+                      shouldShowAngle(state.selectedPiece) ? (
+                        <div className={cn("flex items-center justify-center gap-1.5 text-[11px] leading-none", isTemporaryDisplay() ? 'animate-pulse' : '')}>
+                          <span className="text-premium-value font-medium whitespace-nowrap">
                             {isTemporaryDisplay()
                               ? t('game.controls.angleTemporary', { angle: Math.round(state.puzzle[state.selectedPiece].rotation) })
                               : t('game.controls.currentAngle', { angle: Math.round(state.puzzle[state.selectedPiece].rotation) })
                             }
-                          </div>
-                          <div className="text-premium-label text-[11px] mt-1 opacity-70 leading-relaxed">
+                          </span>
+                          <span className="text-premium-label opacity-70 whitespace-nowrap">
                             {isTemporaryDisplay()
                               ? t('game.controls.hintRevealedAngle')
                               : t('game.controls.rotateInstruction')
                             }
-                          </div>
-                        </>
+                          </span>
+                        </div>
                       ) : (
-                        <div className="text-premium-label text-[11px] mt-1 opacity-60 leading-relaxed">
+                        <div className="text-premium-label text-[11px] opacity-60 leading-none">
                           {needsHintEnhancement() ? t('game.controls.useHintToReveal') : t('game.controls.rotateInstruction')}
                         </div>
-                      )}
-                    </div>
-                  )}
-                  <div className="flex flex-row gap-2 mt-2 w-full">
+                      )
+                    )}
+                  </div>
+
+                  <div className="flex w-full gap-2 mb-1">
+                    <Button style={{ height: MOBILE_CONTROL_BUTTON_HEIGHT, flex: 1 }} className="glass-btn-active p-0" onClick={handleShowHint} disabled={isHintDisabled}><Lightbulb style={{ width: 18, height: 18 }} /></Button>
+                    <Button style={{ height: MOBILE_CONTROL_BUTTON_HEIGHT, flex: 1 }} className="glass-btn-active p-0" onClick={handleRotateLeft} disabled={isRotateDisabled}><RotateCcw style={{ width: 18, height: 18 }} /></Button>
+                    <Button style={{ height: MOBILE_CONTROL_BUTTON_HEIGHT, flex: 1 }} className="glass-btn-active p-0" onClick={handleRotateRight} disabled={isRotateDisabled}><RotateCw style={{ width: 18, height: 18 }} /></Button>
+                  </div>
+                  
+                  <div className="flex flex-row gap-2 w-full">
                     <RestartButton onClick={handleRetryCurrent} icon="retry" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }}>{t('game.controls.retryCurrent')}</RestartButton>
                     <RestartButton onClick={handleRestart} icon="refresh" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }}>{t('game.controls.restartGame')}</RestartButton>
                   </div>
                 </div>
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
 

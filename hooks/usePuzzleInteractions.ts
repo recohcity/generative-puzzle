@@ -7,8 +7,9 @@ import { RefObject, useState, useRef, useEffect, useCallback } from "react";
 import { GameState, Point, PuzzlePiece } from "@generative-puzzle/game-core";
 import { useGame } from "@/contexts/GameContext";
 import { calculateCenter, isPointInPolygon, rotatePoint, calculateAngle } from "@generative-puzzle/game-core";
-import { playPieceSelectSound, playPieceSnapSound, playFinishSound, playRotateSound } from "@/utils/rendering/soundEffects";
+import { playPieceSelectSound, playPieceSnapSound, playFinishSound, playRotateSound, playCollideSound } from "@/utils/rendering/soundEffects";
 import { drawPuzzle } from "@/utils/rendering/puzzleDrawing";
+import { triggerHaptic } from "@/utils/haptics";
 
 // 拖拽跟手系数：
 // - 1.0: 与鼠标/手指目标位移完全一致（当前推荐默认）
@@ -263,6 +264,8 @@ export function usePuzzleInteractions({
 
     // 如果触碰到边界，立即停止拖拽并添加震动动画
     if (hitBoundary) {
+      triggerHaptic('collide');
+      playCollideSound();
       // 只有在碰到画布边缘时才停止拖拽，而不是目标轮廓
       dispatch({ type: "SET_DRAGGING_PIECE", payload: null });
       dispatch({ type: "SET_SELECTED_PIECE", payload: null });
@@ -384,6 +387,7 @@ export function usePuzzleInteractions({
 
       // 播放拼图吸附音效
       playPieceSnapSound()
+      triggerHaptic('success')
     }
 
     // 清除拖动状态
@@ -391,9 +395,8 @@ export function usePuzzleInteractions({
   }, [state, dispatch]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
-    // 在React事件中，preventDefault通常是安全的
-    // 如果仍有问题，浏览器会忽略而不会抛出错误
-    e.preventDefault();
+    // 已移除 e.preventDefault()，避免 passive event listener 警告
+    // 滚动行为已由 CSS touch-action: none 控制
 
     if (!canvasRef.current || !state.puzzle) return
     if (!state.isScattered) return // 如果拼图没有散开，不允许交互
@@ -546,13 +549,9 @@ export function usePuzzleInteractions({
   const handleTouchMove = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
     const now = performance.now();
     if (now - lastMoveRef.current < 16) {
-      // 在React合成事件中，preventDefault通常是安全的
-      e.preventDefault();
       return; 
     }
     
-    // 在React合成事件中，preventDefault通常是安全的
-    e.preventDefault();
     lastMoveRef.current = now;
 
     const canvas = canvasRef.current
@@ -652,6 +651,8 @@ export function usePuzzleInteractions({
 
         // 如果触碰到边界，立即停止拖拽并添加震动动画
         if (hitBoundary) {
+          triggerHaptic('collide');
+          playCollideSound();
           // 只有在碰到画布边缘时才停止拖拽
           dispatch({ type: "SET_DRAGGING_PIECE", payload: null });
           dispatch({ type: "SET_SELECTED_PIECE", payload: null });
@@ -723,8 +724,6 @@ export function usePuzzleInteractions({
 
   // 处理触摸结束事件
   const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
-    // 在React合成事件中，preventDefault通常是安全的
-    e.preventDefault();
     e.stopPropagation();
 
     // 检查是否所有触摸点都已结束

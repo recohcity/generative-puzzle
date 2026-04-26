@@ -1,5 +1,30 @@
 # 生成式拼图游戏 Changelog
 
+## [v1.4.12] - 2026-04-26
+
+### 📱 移动端感官反馈增强与交互稳定性固化 (Mobile Multi-modal Feedback & Interaction Stability)
+
+本版本通过引入触觉与听觉的多维度反馈，并彻底固化了移动端控制面板的物理布局，达成了“指尖感官”与“视觉稳定”的双重进化。
+
+#### 1. 多维度交互反馈系统 (Multi-modal Feedback)
+- **Android 原生震动**: 集成 Web Vibration API。在拼图碰撞画布边缘时触发 15ms 短震，吸附成功时触发 `[20, 30, 20]` 节奏震动，提供真实的物理反馈。
+- **iOS 穿透性音效补偿**: 针对 iOS 不支持 Web 震动的限制，定制了基于 Web Audio API 的 `Triangle Wave` (300Hz) 碰撞音效。该频率具有极强的穿透力，确保在背景音乐开启时仍能提供清晰的碰撞暗示。
+- **视觉防闪烁**: 移除了拖拽拼图时背景模糊度（Backdrop-blur）的性能降级策略，消除了点击拼图时底部面板出现的视觉闪烁，维持了高阶玻璃态的稳定性。
+
+#### 2. 移动端 UI 布局深度固化 (UI Layout Stabilization)
+- **Tab 面板高度锁死**: 为 `PhoneTabPanel` 引入了固定高度容器（130px/110px），彻底根治了切换 Tab 或操作拼图时，由于内容动态显隐导致的画布垂直跳动问题。
+- **控制面板空间重组**: 
+    - 将提示文本移动至按钮上方并压缩为单行显示。
+    - 为提示文本容器锁定 `h-[16px]` 固定高度，确保无论是否有提示，按钮位置始终如一。
+    - 极致缩减行间距，为小屏设备腾出更多显示安全区。
+- **切割次数页极致压缩**: 将“选择难度”标题整合进难度滑块行，释放了逾 20px 的垂直空间。
+
+#### 3. 控制台零报错治理 (Clean Console & Performance)
+- **Passive Listener 冲突修复**: 移除了 touch 事件中冗余的 `e.preventDefault()`。依靠 CSS `touch-action: none` 拦截默认行为，消除了 Chrome/Safari 中红色的“Unable to preventDefault inside passive event listener”报错。
+- **字体预加载警告消除**: 将 `next/font` (Inter) 的 `preload` 设置为 `false`，解决了 Chrome 长期存在的资源预加载未使用的黄色警告。
+
+---
+
 ## [v1.4.11] - 2026-04-26
 
 ### 🛡️ 安卓大字体终极防御与全局弹窗同构化 (Ultimate Android Defense & Modal Unification)

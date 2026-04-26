@@ -27,11 +27,16 @@
 ### 第二步：跨端响应式与大字体防御 (Responsive & textZoom Defense)
 *   **布局分流**: 必须同时在 `DesktopLayout`, `PhonePortraitLayout`, `PhoneLandscapeLayout` 下验证。
 *   **物理适配**: 使用 `panel-scale` 变量进行按钮与边距的等比缩放计算。
+*   **交互稳定性**: 移动端 Tab 面板必须采用 **Fixed Height Container**，且提示信息容器必须锁定 `h-[16px]`，确保内容动态显隐时按钮位置不跳动。
 *   **大字体灾难防御**：在安卓微信大字体极端场景下，所有核心标题必须强制使用 **SVG `<text>`** 渲染以彻底免疫 `textZoom`；对于图标内文本与动态数据，必须挂载 `.text-zoom-lock` 样式。布局间距严禁使用 `gap-1` 等 `rem` 单位，必须使用 `gap: '4px'` 物理像素。
 
 ### 第三步：性能与合成层优化 (Performance)
 *   **动画选型**: 涉及位移或缩放的动画必须使用 `transform`，严禁操作 `width/height`。
 *   **渲染频率**: 实时刷新组件需评估 React 重绘压力，必要时进行降频处理。
+*   **交互质量监控**: 
+    - **震动反馈审计**: 检查所有交互组件是否通过 `haptics.ts` 规范化触发，严禁裸调原生态震动 API。
+    - **事件审计**: 强制通过 `grep -E "onWheel|onTouchStart" <file_path>` 检查，严禁添加会导致 Chrome/Android 滚动卡顿的 Passive Event 隐患。
+    - **报错防御**: 严禁控制台出现任何 `Passive event listener` 或 `Non-passive event` 警告。
 
 ### 第四步：全局回归检查 (Mandatory Regression Gate)
 *   **三端视图验证**: 检查侧边控制面板比例、底部 Tab 面板遮挡及横屏滚动条。
@@ -81,9 +86,12 @@
 ### D. 游戏引擎与 HUD (Engine & HUD)
 | 评审维度 | 检查项 | 对应功能 | 核心源代码 (Source Files) |
 | :--- | :--- | :--- | :--- |
-| **几何稳定** | ResizeObserver 延迟 150ms 重新映射坐标 | 画布图层 | `PuzzleCanvas.tsx` |
+| **几何稳定** | ResizeObserver 延迟 150ms 重新映射坐标 / **锁定 Tab 面板物理高度** | 画布图层 | `PuzzleCanvas.tsx`, `PhoneTabPanel.tsx` |
+| **感官反馈** | Android 震动适配 / **iOS 高穿透性音效补偿 (Triangle Wave)** | 物理反馈 | `haptics.ts`, `soundEffects.ts` |
+| **代码纯净度** | **禁止 Passive Event 冲突** / 禁用 next/font 预加载 (防止 Preload 警告) | 控制台质量 | `usePuzzleInteractions.ts`, `layout.tsx` |
 | **品牌色** | HUD 文本锁定 Peach (#FFD5AB) / 提示信息剥离 monospace | 计时与滚分 | `GameTimer.tsx`, `LiveScore.tsx` |
-| **动画性能** | requestAnimationFrame 驱动数字滚动 | 实时得分 | `LiveScore.tsx` |
+| **动画性能** | 移除拖拽时的 backdrop-blur 动态降级，防止视觉闪烁 | 交互流畅度 | `app/globals.css` |
+| **动画驱动** | requestAnimationFrame 驱动数字滚动 | 实时得分 | `LiveScore.tsx` |
 
 ---
 

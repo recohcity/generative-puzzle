@@ -356,6 +356,36 @@ export const playRotateSound = async (): Promise<void> => {
   }
 };
 
+// Play sound when a piece collides with the canvas boundary
+export const playCollideSound = async (): Promise<void> => {
+  soundPlayedForTest('collide');
+  const audioContext = createAudioContext();
+  if (!audioContext) return;
+
+  try {
+    await ensureAudioContextRunning(audioContext);
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    // 碰撞音效：改用 triangle 波形，并提高基础频率，确保在手机扬声器上能穿透背景音乐
+    oscillator.type = 'triangle';
+    oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(80, audioContext.currentTime + 0.1);
+
+    // 增大音量，并稍微延长一点时间，确保开启 BGM 时也能听清
+    gainNode.gain.setValueAtTime(0.8, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.15);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.15);
+  } catch (error) {
+    console.error('Error playing collide sound:', error);
+  }
+};
+
 // Play sound when cutting/generating puzzle pieces
 export const playCutSound = async (): Promise<void> => {
   soundPlayedForTest('cut');

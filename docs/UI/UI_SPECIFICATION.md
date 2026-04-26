@@ -17,6 +17,7 @@
 | **容器层** | `.glass-panel` | `bg-white/10` | `backdrop-blur-xl` | `border-2 border-white/30`, 内发光 `inset 0 0 20px` |
 | **卡片层** | `.glass-card` | `bg-white/5` | `backdrop-blur-md` | `border border-white/10`, 无外部阴影 |
 | **弹窗层** | `AlertDialogContent` | `bg-white/10` | `backdrop-blur-2xl` | 必须伴随深色背景遮罩 `bg-black/60` |
+| **交互容器** | `PhoneTabPanel` | `bg-white/10` | `backdrop-blur-xl` | **必须锁定物理高度**（130px/110px），禁止因内容变化导致画布跳动。 |
 | **无边界规范** | N/A | N/A | N/A | **禁止使用硬投影**。通过细腻的边缘反射替代阴影。 |
 
 ### 1.2 颜色系统 (Color Tokens - 2026-04-17 锁定)
@@ -107,9 +108,12 @@
 3.  **万能缩放锁 (`.text-zoom-lock`)**: 针对无法 SVG 化的提示元素（如游戏计时、分数、多语言切换的 'EN' 文字），必须挂载该样式，底层将利用 `transform: scale(var(--text-zoom-scale))` 强制从视觉层面进行精准逆向抵消。
 
 ### 4.3 其他平台安全 (iOS Hacks)
-*   **iOS Focus Safe**: 所有输入框字体强制 `16px` 以拦截 iOS 系统级自动缩放。
-*   **Rubber Banding**: `PuzzleCanvas` 强制 `touch-action: none` 防止滚动穿透。
-*   **安卓防跳动**: 在 Android 终端**全面屏蔽 `visualViewport` resize 监听**，仅通过 window orientation 触发刷新，避免输入与拖拽导致的 UI 剧烈跳动。
+*  **iOS Focus Safe**: 所有输入框字体强制 `16px` 以拦截 iOS 系统级自动缩放。
+* **iOS Audio Fallback**: iOS 不支持 Web Vibration API。必须通过 `playCollideSound` (Triangle wave, 300Hz) 补充听觉反馈，确保在背景音乐开启时仍具穿透力。
+* **Android Haptic**: 碰撞边缘触发 15ms 短震；吸附成功触发 `[20, 30, 20]` 节奏震动。
+* **Rubber Banding**: `PuzzleCanvas` 强制 `touch-action: none` 防止滚动穿透。
+* **Passive Listener Safe**: 严禁在挂载了 `touch-action: none` 的 Canvas 事件处理器中使用 `e.preventDefault()`，以防止 Chrome/Safari 报错。
+* **安卓防跳动**: 在 Android 终端**全面屏蔽 `visualViewport` resize 监听**，仅通过 window orientation 触发刷新，避免输入与拖拽导致的 UI 剧烈跳动。
 
 ---
 
