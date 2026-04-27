@@ -17,7 +17,7 @@
 | **容器层** | `.glass-panel` | `bg-white/10` | `backdrop-blur-xl` | `border-2 border-white/30`, 内发光 `inset 0 0 20px` |
 | **卡片层** | `.glass-card` | `bg-white/5` | `backdrop-blur-md` | `border border-white/10`, 无外部阴影 |
 | **弹窗层** | `AlertDialogContent` | `bg-white/10` | `backdrop-blur-2xl` | 必须伴随深色背景遮罩 `bg-black/60` |
-| **交互容器** | `PhoneTabPanel` | `bg-white/10` | `backdrop-blur-xl` | **必须锁定物理高度**（130px/110px），禁止因内容变化导致画布跳动。 |
+| **交互容器** | `PhoneTabPanel` | `bg-white/10` | `backdrop-blur-xl` | **必须锁定物理高度且三态对齐**：控制面板、完成结算、排行榜三个状态的高度必须严格一致（Portrait 约 170px / Landscape 160px），禁止因状态切换导致画布跳动。 |
 | **无边界规范** | N/A | N/A | N/A | **禁止使用硬投影**。通过细腻的边缘反射替代阴影。 |
 
 ### 1.2 颜色系统 (Color Tokens - 2026-04-17 锁定)

@@ -502,7 +502,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
           /* 已登录状态：在面板内显示成绩榜单 (精准复刻桌面版 parity 设计) */
           <div 
             className="animate-in fade-in slide-in-from-bottom-2 duration-300 flex flex-col pt-0"
-            style={{ height: isLandscape ? TAB_BUTTON_HEIGHT_LANDSCAPE + 110 - 2 : TAB_BUTTON_HEIGHT + (isUltraSmall ? 134 : 140) - 2 }}
+            style={{ height: isLandscape ? 160 : TAB_BUTTON_HEIGHT + (isUltraSmall ? 134 : 140) - 2 }}
           >
             <div className={cn("rounded-2xl flex flex-col flex-1 min-h-0 relative overflow-x-hidden", isLandscape ? "p-1" : "pt-0.5 pb-1 px-2")}>
               {/* 顶部标签切换器 + 关闭按钮 (极度紧凑布局) */}
@@ -683,8 +683,8 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
             </div>
           </div>
         ) : isGameCompleted ? (
-          /* 游戏结算界面 - 已重构为全屏遮罩弹出，这里只保留底部的精简入口，防止挤压画布 */
-          <div className="flex flex-col h-full items-center justify-center p-2 gap-2 w-full">
+          /* 游戏结算界面 - 统一固定高度，防止切换Tab时画布跳动 */
+          <div className="flex flex-col justify-start w-full pt-2" style={{ height: isLandscape ? 160 : TAB_BUTTON_HEIGHT + (isUltraSmall ? 134 : 140) - 2 }}>
             <button 
               onClick={() => setShowScoreModal(true)} 
               className="glass-btn-active w-full rounded-2xl font-bold text-brand-peach flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(255,213,171,0.15)] transition-transform active:scale-[0.98]"
@@ -700,7 +700,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
           </div>
         ) : (
           /* 游戏控制面板内容 - 统一固定高度，防止切换Tab时画布跳动 */
-          <div className="flex flex-col justify-start w-full pt-2" style={{ height: isLandscape ? 110 : (isUltraSmall ? 134 : 140) }}>
+          <div className="flex flex-col justify-start w-full pt-2" style={{ height: isLandscape ? 160 : TAB_BUTTON_HEIGHT + (isUltraSmall ? 134 : 140) - 2 }}>
             {(activeTab === 'shape' || activeTab === 'puzzle' || activeTab === 'cut' || activeTab === 'scatter') && (
               <div className={SECTION_CLASS}>
                 {activeTab === 'shape' && (
@@ -775,14 +775,12 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
           </div>
         )}
       </div>
-
-      {!isGameCompleted && (
-        <div className="mt-auto pt-1 pb-2">
-          <div className="text-white text-[10px] text-center opacity-40">
-            recoh AI project 2026 | generative puzzle V{process.env.APP_VERSION || '1.3.51'}
-          </div>
+      
+      <div className="mt-auto pt-1 pb-2">
+        <div className="text-white text-[10px] text-center opacity-40">
+          recoh AI project 2026 | generative puzzle V{process.env.APP_VERSION || '1.3.51'}
         </div>
-      )}
+      </div>
 
       {/* Modern non-blocking restart confirmation */}
       <AlertDialog open={showRestartDialog} onOpenChange={setShowRestartDialog}>

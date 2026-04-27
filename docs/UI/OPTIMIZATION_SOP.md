@@ -27,7 +27,7 @@
 ### 第二步：跨端响应式与大字体防御 (Responsive & textZoom Defense)
 *   **布局分流**: 必须同时在 `DesktopLayout`, `PhonePortraitLayout`, `PhoneLandscapeLayout` 下验证。
 *   **物理适配**: 使用 `panel-scale` 变量进行按钮与边距的等比缩放计算。
-*   **交互稳定性**: 移动端 Tab 面板必须采用 **Fixed Height Container**，且提示信息容器必须锁定 `h-[16px]`，确保内容动态显隐时按钮位置不跳动。
+*   **交互稳定性**: 移动端 Tab 面板必须采用 **Fixed Height Container**。必须确保“游戏控制”、“游戏完成结算”以及“个人/全服排行榜”这三个状态下的面板总高度在像素级别上完全对齐（Portrait 约 170px / Landscape 160px），且提示信息容器必须锁定 `h-[16px]`，确保内容动态显隐时按钮位置不跳动。
 *   **大字体灾难防御**：在安卓微信大字体极端场景下，所有核心标题必须强制使用 **SVG `<text>`** 渲染以彻底免疫 `textZoom`；对于图标内文本与动态数据，必须挂载 `.text-zoom-lock` 样式。布局间距严禁使用 `gap-1` 等 `rem` 单位，必须使用 `gap: '4px'` 物理像素。
 
 ### 第三步：性能与合成层优化 (Performance)
@@ -86,7 +86,7 @@
 ### D. 游戏引擎与 HUD (Engine & HUD)
 | 评审维度 | 检查项 | 对应功能 | 核心源代码 (Source Files) |
 | :--- | :--- | :--- | :--- |
-| **几何稳定** | ResizeObserver 延迟 150ms 重新映射坐标 / **锁定 Tab 面板物理高度** | 画布图层 | `PuzzleCanvas.tsx`, `PhoneTabPanel.tsx` |
+| **几何稳定** | ResizeObserver 延迟 150ms 重新映射坐标 / **锁定 Tab 面板物理高度 (三态对齐：控制/结算/榜单)** | 画布图层 | `PuzzleCanvas.tsx`, `PhoneTabPanel.tsx` |
 | **感官反馈** | Android 震动适配 / **iOS 高穿透性音效补偿 (Triangle Wave)** | 物理反馈 | `haptics.ts`, `soundEffects.ts` |
 | **代码纯净度** | **禁止 Passive Event 冲突** / 禁用 next/font 预加载 (防止 Preload 警告) | 控制台质量 | `usePuzzleInteractions.ts`, `layout.tsx` |
 | **品牌色** | HUD 文本锁定 Peach (#FFD5AB) / 提示信息剥离 monospace | 计时与滚分 | `GameTimer.tsx`, `LiveScore.tsx` |
