@@ -460,11 +460,11 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                         <div className="flex items-start gap-1.5">
                           <span className="text-[10px] text-white/30 font-bold mt-1.5 uppercase tracking-widest">{t('score.breakdown.base')}</span>
                           <h2 className={cn("text-5xl font-black tracking-tighter drop-shadow-sm leading-none text-brand-peach")}>
-                            {t(getDifficultyMetadata(state.gameStats!.difficulty.level).nameKey)}
+                            {t(getDifficultyMetadata(state.gameStats!.difficulty.cutCount).nameKey)}
                           </h2>
                         </div>
                         <p className="mt-2 text-white/30 text-[11px] font-medium tracking-wide">
-                          {t(getDifficultyMetadata(state.gameStats!.difficulty.level).descriptionKey)}
+                          {t(getDifficultyMetadata(state.gameStats!.difficulty.cutCount).descriptionKey)}
                         </p>
                       </div>
                     </div>
@@ -729,7 +729,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                   <div className="flex items-center gap-2">
                     <Trophy className={cn("w-9 h-9 drop-shadow-xl text-brand-orange")} />
                     <span className={cn("text-3xl font-black tracking-tighter drop-shadow-md text-brand-peach")}>
-                      {t(getDifficultyMetadata(state.gameStats!.difficulty.level).nameKey)}
+                      {t(getDifficultyMetadata(state.gameStats!.difficulty.cutCount).nameKey)}
                     </span>
                   </div>
                 </div>

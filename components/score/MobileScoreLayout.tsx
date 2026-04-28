@@ -54,7 +54,7 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
   ] : [];
 
   if (isLandscape) {
-    const diffMeta = getDifficultyMetadata(gameStats.difficulty?.level || 1);
+    const diffMeta = getDifficultyMetadata(gameStats.difficulty?.cutCount || 1);
     return (
       <div className="flex flex-row items-stretch w-full gap-2 animate-in fade-in slide-in-from-bottom-4 duration-700 py-1 min-h-[220px]">
         {/* Zone 1: 左侧 - 奖杯荣誉 (精致化) */}
@@ -98,7 +98,7 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
               <div key={idx} className="flex flex-col items-center gap-0.5 opacity-80">
                 <span className="text-xl filter drop-shadow-sm">{badge.icon}</span>
                 <span className="text-[10px] text-white/50 font-bold uppercase tracking-tighter whitespace-nowrap">
-                  {badge.label === '速度' ? '速度' : badge.label === '空间推理' ? '空间推理' : '专注力'}
+                  {badge.id === 'speed' ? '速度' : badge.id === 'accuracy' ? '空间推理' : '专注力'}
                 </span>
               </div>
             ))}
@@ -123,7 +123,7 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
               ))}
               <div className="pt-1.5 mt-1 border-t border-white/5 flex justify-between items-center opacity-40">
                 <span className="text-[9px] font-bold uppercase tracking-widest">{t('score.breakdown.multiplier')}</span>
-                <span className="text-[13px] font-sans font-bold text-brand-amber">×{(gameStats.difficulty?.scoreMultiplier || 1).toFixed(2)}</span>
+                <span className="text-[13px] font-sans font-bold text-brand-amber">×{(gameStats.difficultyMultiplier || 1).toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -162,13 +162,13 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
             <div className="flex items-center gap-3">
               <Trophy className={cn("w-10 h-10 drop-shadow-xl text-brand-orange")} />
               <span className={cn("text-4xl font-black tracking-tighter drop-shadow-md text-brand-peach")}>
-                {t(getDifficultyMetadata(gameStats.difficulty?.level || 1).nameKey)}
+                {t(getDifficultyMetadata(gameStats.difficulty?.cutCount || 1).nameKey)}
               </span>
             </div>
           </div>
           
           <p className="mt-2 text-white/40 text-[11px] font-medium tracking-wide max-w-[200px] text-center leading-relaxed">
-            {t(getDifficultyMetadata(gameStats.difficulty?.level || 1).descriptionKey)}
+            {t(getDifficultyMetadata(gameStats.difficulty?.cutCount || 1).descriptionKey)}
           </p>
         </div>
       )}

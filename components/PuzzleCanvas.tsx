@@ -387,6 +387,7 @@ export default function PuzzleCanvas() {
     isShaking,
     state.showHint,
     state.originalPositions,
+    state.currentScore,
     calculatePieceBounds,
     canvasRef,
     backgroundCanvasRef,

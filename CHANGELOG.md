@@ -2,7 +2,7 @@
 
 ## [v1.4.13] - 2026-04-28
 
-### 📱 全平台结算架构深度重塑与视觉大一统 (Full-scale Settlement System Overhaul)
+### 📱 全平台结算架构深度重塑与视觉统一 (Full-scale Settlement System Overhaul)
 
 本版本基于 `ui_upgrade_plan.md` 确立的“游戏化仪表盘”理念，对全平台（桌面、移动端竖屏、移动端横屏）的结算系统进行了从底层逻辑到视觉表现的彻底重塑。告别了传统“数学账单”式的展示，实现了跨设备、跨姿态的专业级排版逻辑对齐。
 

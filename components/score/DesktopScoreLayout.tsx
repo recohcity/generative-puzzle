@@ -84,13 +84,13 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
               </span>
               <Trophy className="w-10 h-10 drop-shadow-2xl text-brand-orange" />
               <span className="text-4xl font-black tracking-tighter drop-shadow-lg text-brand-peach">
-                {t(getDifficultyMetadata(gameStats.difficulty?.level || 1).nameKey)}
+                {t(getDifficultyMetadata(gameStats.difficulty?.cutCount || 1).nameKey)}
               </span>
             </div>
           </div>
           
           <p className="mt-2 text-white/40 text-[11px] font-medium tracking-wide max-w-[220px] text-center leading-relaxed">
-            {t(getDifficultyMetadata(gameStats.difficulty?.level || 1).descriptionKey)}
+            {t(getDifficultyMetadata(gameStats.difficulty?.cutCount || 1).descriptionKey)}
           </p>
         </div>
       </div>
