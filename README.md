@@ -8,11 +8,11 @@
 [![Vercel Speed Insights](https://img.shields.io/badge/Speed--Insights-Optimized-blueviolet)](https://vercel.com/speed-insights)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-15.5-black.svg)](https://nextjs.org/)
-[![Version](https://img.shields.io/badge/version-1.4.12-orange.svg)]()
+[![Version](https://img.shields.io/badge/version-1.4.13-orange.svg)]()
 
 **基于 Next.js 15 和 React 19 构建的极致前端全栈拼图引擎**
 
-*无限生成 • 无框悬浮 UI • 云端全服连线 • 移动端触感反馈与布局固化*
+*无限生成 • 无框悬浮 UI • 云端全服连线 • 移动端结算仪表盘与标准数字审美*
 
 </div>
 
@@ -24,7 +24,7 @@
 
 - **生产环境框架**: 基于 **Next.js 15** 和 **React 19** 构建骨架。
 - **云端与数据底座**: 完美集成 **Supabase** (Auth & Database)，提供多端云存档和全服竞技看板。通过 PostgreSQL RPC (`SECURITY DEFINER`) 实现原生服务器级别的权限校验。
-- **UI / UX 视觉与触感升级**: 最新的 **v1.4.12** 版本引入了 **移动端多维度感官反馈（Haptic/Audio）与布局固化机制**，通过 Android 原生震动与 iOS 听觉补偿，配合 Fixed-height Tab 面板，达成了极致的交互稳定性。
+- **UI / UX 视觉与触感升级**: 最新的 **v1.4.13** 版本引入了 **全平台“仪表盘化”结算系统 (Unified Settlement System)**。通过将结算 UI 从原始的“账单式”重构为“分区仪表盘（Zone-based Dashboard）”，实现了从桌面大屏到移动双态（竖/横屏）的极致排版对齐与逻辑大一统，配合标准无斜线数字美学，确立了项目级的视觉工业标准。
 
 ---
 

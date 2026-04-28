@@ -25,7 +25,7 @@ export const LiveScore: React.FC<LiveScoreProps> = ({ className = '', style = {}
 
   // 格式化数字为千分位分隔符格式
   const formatScore = useCallback((score: number): string => {
-    return Math.floor(score).toLocaleString('zh-CN');
+    return Math.floor(score).toString();
   }, []);
 
   // 数字滚动动画
@@ -116,7 +116,7 @@ export const LiveScore: React.FC<LiveScoreProps> = ({ className = '', style = {}
 
   return (
     <div
-      className={`${styles.liveScore} ${isAnimating ? styles.animating : ''} ${className}`}
+      className={`overlay-element ${styles.liveScore} ${isAnimating ? styles.animating : ''} ${className}`}
       style={style}
       data-testid="live-score"
       aria-label={`当前分数: ${formatScore(displayScore)}`}

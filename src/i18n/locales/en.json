@@ -98,7 +98,7 @@
                 "Nice!",
                 "Cool!",
                 "Pro!",
-                "GG!",
+                "Fantastic!",
                 "Lit!",
                 "Sick!",
                 "Smooth!",
@@ -221,12 +221,10 @@
             "baseMultiplier": "Base",
             "multiplierDetail": "Base×{base} · {cutType}×{cutMult} · {shape}×{shapeMult}",
             "multiplierBreakdown": "= {base} × {cutMult} × {shapeMult}",
-            "final": "Final Score",
             "subtotal": "Subtotal",
             "gameDuration": "Game Duration",
             "gameTime": "Game Time"
         },
-        "final": "Final Score",
         "timeBonus": "Speed Bonus",
         "noReward": "No Reward",
         "speedBonus": {
@@ -237,6 +235,11 @@
             "within2min": "Within 2min",
             "over2min": "Over 2min",
             "levelsTitle": "Speed Bonus Levels:"
+        },
+        "badges": {
+            "speedster": "Speedster",
+            "deadshot": "Deadshot",
+            "focus": "Pure Focus"
         }
     },
     "stats": {
@@ -324,7 +327,19 @@
         "medium": "Medium",
         "hard": "Hard",
         "extreme": "Extreme",
-        "levelLabel": "L{level}"
+        "levelLabel": "L{level}",
+        "levels": {
+            "zen": "Zen",
+            "classic": "Classic",
+            "elite": "Elite",
+            "legend": "Legend"
+        },
+        "desc": {
+            "zen": "Relaxing and meditative",
+            "classic": "Balanced challenge",
+            "elite": "Skill and patience",
+            "legend": "Ultimate mastery"
+        }
     },
     "cutType": {
         "straight": "Straight",

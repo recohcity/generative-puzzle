@@ -79,7 +79,7 @@ export const GameTimer: React.FC<GameTimerProps> = ({ className = '', style = {}
 
   return (
     <div
-      className={`${styles.gameTimer} ${className}`}
+      className={`overlay-element ${styles.gameTimer} ${className}`}
       style={style}
       data-testid="game-timer"
       aria-label={`游戏时间: ${displayTime}`}

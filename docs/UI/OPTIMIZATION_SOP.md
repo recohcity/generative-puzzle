@@ -8,7 +8,7 @@
 
 1.  **极简玻璃拟态统一**：强制执行高阶玻璃拟态（`backdrop-blur-xl` + `border-white/30`），严禁使用硬阴影或不通透的实色背景。
 2.  **Design Tokens 绝对引用**：严禁在组件内写死任何 HEX/RGB 色值。所有色彩必须引用 [UI_SPECIFICATION.md](file:///Users/citylivepark/Documents/project/generative-puzzle/docs/UI/UI_SPECIFICATION.md) 定义的语义 Token。
-3.  **字重标准化回归**：所有数值、姓名、计时等呈现类文本必须锁定为 `font-medium` (500)。
+3.  **字重与数字美学统一**：所有呈现类文本锁定为 `font-medium` (500)。**数值标准**：所有面向用户的分数、时长、倍率必须统一使用 `font-sans` 并挂载 `tabular-nums`，严禁使用带有中斜线 0 的 `font-mono` 字体。
 
 ---
 
@@ -68,8 +68,9 @@
 | **排名限制** | **全端仅显示前 5 名 (Strict Top 5)** | 全局一致性 | `LeaderboardPanel.tsx`, `PhoneTabPanel.tsx` |
 | **极致空气感** | 移除个人最佳与全服排名容器底色框，实现无边悬浮 | 排行榜/详情 | `LeaderboardPanel.tsx`, `PhoneTabPanel.tsx` |
 | **UI 镜像化** | **确保结算页与历史记录详情页（RecentGameDetails）参数 100% 对齐** | 结算/往绩对齐 | `RecentGameDetails.tsx`, `DesktopScoreLayout.tsx` |
-| **排版对齐** | Tabular-nums 等宽对齐 / 移除背景色 | 纪录明细 | `RecentGameDetails.tsx` |
-| **响应式** | 横屏字号缩至 11px / 移除 HR 分割线 | 移动端结算 | `MobileScoreLayout.tsx` |
+| **仪表盘化** | **Zone 1:品牌荣誉 / Zone 2:核心成就 / Zone 3:数据明细** | 结算系统 | `DesktopScoreLayout.tsx`, `MobileScoreLayout.tsx` |
+| **跨端对齐** | **全端核心分数字号同步 `text-[56px] font-medium`** | 结算系统 | `MobileScoreLayout.tsx`, `DesktopScoreLayout.tsx` |
+| **健壮性** | **倍率 null 检查 (scoreMultiplier || 1).toFixed(2)** | 计分逻辑 | `MobileScoreLayout.tsx`, `RecentGameDetails.tsx` |
 
 ### C. 交互控制面板 (Interactive Controls)
 | 评审维度 | 检查项 | 对应功能 | 核心源代码 (Source Files) |
@@ -103,6 +104,6 @@
 *   **[历史规范与指南](file:///Users/citylivepark/Documents/project/generative-puzzle/docs/archive/legacy-specs/)**: 包含 PRD、架构视角及早期规则定义。
 
 ---
-*上次修订：2026-04-26*  
-*全量结案更新：2026-04-26 (SOP v3.0 - 极致弹窗一致性与安卓大字体物理免疫版)*  
+*上次修订：2026-04-28*  
+*全量结案更新：2026-04-28 (SOP v3.1 - 移动端结算大一统与标准数字审美版)*  
 *文档状态：**Official Standard / Strictly Enforced***

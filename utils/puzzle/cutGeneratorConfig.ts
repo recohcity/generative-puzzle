@@ -38,11 +38,11 @@ export const CUT_GENERATOR_CONFIG = {
   // 重新设计：每个难度都有合理的拼图数量区间
   DIFFICULTY_SETTINGS: {
     1: {
-      targetCuts: 2,  // 2条切割线 → 3-4块拼图（入门）
+      targetCuts: 2,  // 2条切割线 → 2-4块拼图（入门）
       centerProbability: 0.9,
       useCenter: true,
       label: '入门难度',
-      pieceRange: { min: 3, max: 4 },
+      pieceRange: { min: 2, max: 4 },
       baseScore: 500
     },
     2: {

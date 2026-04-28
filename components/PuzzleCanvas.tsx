@@ -269,8 +269,8 @@ export default function PuzzleCanvas() {
     }
 
     if (state.puzzle) {
-      // 获取随机完成消息
-      const completionMessage = getRandomCompletionMessage();
+      // 使用分数种子获取锁定的完成消息，确保与侧边栏一致
+      const completionMessage = getRandomCompletionMessage(state.currentScore);
 
       drawPuzzle(
         ctx,

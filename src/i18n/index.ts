@@ -41,11 +41,13 @@ export function getNestedValue(obj: Record<string, any>, path: string): string {
 }
 
 // 随机选择完成消息
-export function getRandomCompletionMessage(messages: TranslationMessages): string {
+export function getRandomCompletionMessage(messages: TranslationMessages, seed?: number): string {
   const completionMessages = messages.game.hints.completionMessages;
   if (!completionMessages || completionMessages.length === 0) {
     return messages.game.hints.completed; // 回退到默认完成消息
   }
-  const randomIndex = Math.floor(Math.random() * completionMessages.length);
-  return completionMessages[randomIndex];
+  const index = seed !== undefined 
+    ? Math.abs(seed) % completionMessages.length 
+    : Math.floor(Math.random() * completionMessages.length);
+  return completionMessages[index];
 }

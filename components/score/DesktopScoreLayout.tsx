@@ -1,9 +1,10 @@
 import React from 'react';
 import { useTranslation } from '@/contexts/I18nContext';
-import { GameStats, ScoreBreakdown } from '@generative-puzzle/game-core';
-import { Trophy } from 'lucide-react';
-import { getSpeedBonusDetails } from '@generative-puzzle/game-core';
+import { GameStats, ScoreBreakdown, getSpeedBonusDetails } from '@generative-puzzle/game-core';
+import { Trophy, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { calculateStarRating, getBadges } from '@/utils/score/scoreVisualUtils';
+import { getDifficultyMetadata } from '@/utils/difficulty/difficultyMetadata';
 
 import './animations.css';
 
@@ -23,14 +24,17 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
   scoreBreakdown,
   currentScore,
   isNewRecord,
-  onClose,
-  embedded = false,
 }) => {
-  const { t, locale } = useTranslation();
-  
-  // 颜色通过 Tailwind Token (text-brand-peach) 和 CSS 变量 (var(--brand-peach)) 统一管理
+  const { t, locale, getRandomCompletionMessage } = useTranslation();
+  const fmt = (n: number) => String(n);
 
-  const formatScore = (score: number): string => score.toString();
+  // 计算星级和勋章
+  const rank = calculateStarRating(currentScore, gameStats.difficulty?.cutCount || 1);
+  const badges = getBadges(
+    scoreBreakdown?.timeBonus || 0,
+    scoreBreakdown?.rotationEfficiency || 0,
+    gameStats.hintUsageCount || 0
+  );
 
   const getShapeTypeText = (shapeType?: string): string => {
     if (!shapeType) return '';
@@ -40,7 +44,6 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
   const getSpeedBonusText = (duration: number): string => {
     const { difficulty } = gameStats;
     const speedDetails = getSpeedBonusDetails(duration, difficulty?.actualPieces || 0, difficulty?.cutCount || 1);
-    
     if (speedDetails.currentLevel) {
       const map: Record<string, { zh: string; en: string }> = {
         '极速': { zh: '极速', en: 'Extreme' }, '快速': { zh: '快速', en: 'Fast' },
@@ -49,12 +52,8 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
       };
       return map[speedDetails.currentLevel.name]?.[locale === 'en' ? 'en' : 'zh'] || speedDetails.currentLevel.name;
     }
-    return t('score.noReward') || '无奖励';
+    return t('score.noReward') || '无';
   };
-
-  const subtotal = scoreBreakdown
-    ? scoreBreakdown.baseScore + scoreBreakdown.timeBonus + scoreBreakdown.rotationScore + scoreBreakdown.hintScore
-    : 0;
 
   const difficultyLine = (() => {
     const d = gameStats.difficulty;
@@ -66,112 +65,83 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
   })();
 
   const rows = scoreBreakdown ? [
-    { label: t('score.breakdown.base'), sub: difficultyLine, value: formatScore(scoreBreakdown.baseScore), sign: '' },
-    { label: t('score.breakdown.timeBonus'), sub: getSpeedBonusText(gameStats.totalDuration), value: formatScore(scoreBreakdown.timeBonus), sign: '+' },
-    { label: t('score.breakdown.rotationScore'), sub: `${gameStats.totalRotations}/${gameStats.minRotations}`, value: formatScore(Math.abs(scoreBreakdown.rotationScore)), sign: scoreBreakdown.rotationScore >= 0 ? '+' : '-' },
-    { label: t('score.breakdown.hintScore'), sub: `${gameStats.hintUsageCount}/${scoreBreakdown.hintAllowance}`, value: formatScore(Math.abs(scoreBreakdown.hintScore)), sign: scoreBreakdown.hintScore >= 0 ? '+' : '-' },
+    { label: t('score.breakdown.base'), sub: difficultyLine, value: fmt(scoreBreakdown.baseScore), sign: '' },
+    { label: t('score.breakdown.timeBonus'), sub: getSpeedBonusText(gameStats.totalDuration), value: fmt(scoreBreakdown.timeBonus), sign: '+' },
+    { label: t('score.breakdown.rotationScore'), sub: `${gameStats.totalRotations}/${gameStats.minRotations}`, value: fmt(Math.abs(scoreBreakdown.rotationScore)), sign: scoreBreakdown.rotationScore >= 0 ? '+' : '-' },
+    { label: t('score.breakdown.hintScore'), sub: `${gameStats.hintUsageCount}/${scoreBreakdown.hintAllowance}`, value: fmt(Math.abs(scoreBreakdown.hintScore)), sign: scoreBreakdown.hintScore >= 0 ? '+' : '-' },
   ] : [];
 
-  const renderContent = (isModal: boolean) => (
-    <div className={cn("flex flex-col w-full animate-in fade-in duration-500", isModal ? "gap-2" : "gap-1")}>
-      
-      {/* Header Row - Removed transparency from Title and Icon */}
-      <div className="flex items-center justify-between w-full px-1 mb-1.5 flex-shrink-0">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <Trophy className="shrink-0 text-brand-peach" size={16} />
-          <h2 className="text-white/90 font-normal leading-none text-[14px] truncate">
-            {t('stats.currentGameResult')}
-          </h2>
-          {isNewRecord && (
-            <span className="bg-brand-peach/20 text-brand-peach px-1 py-0.5 rounded text-[8px] font-normal border border-brand-peach/30 leading-none shrink-0">
-              NEW
-            </span>
-          )}
-        </div>
-        <div 
-          className="tabular-nums tracking-tighter font-medium leading-none text-xl ml-2 shrink-0 text-brand-peach"
-        >
-          {formatScore(currentScore)}
-        </div>
-      </div>
-
-      {/* Main Score Card — Border Only */}
-      <div className={cn(
-        "w-full border border-white/10 rounded-2xl bg-transparent mb-1",
-        isModal ? "p-6" : "p-3.5 px-3" 
-      )}>
-        <div className="space-y-3">
-          {/* Detail Rows */}
-          <div className="space-y-1.5">
-            {rows.map((row, i) => (
-              <div key={i} className="flex items-baseline justify-between leading-none py-0.5 w-full overflow-hidden">
-                <div className="flex items-baseline gap-1.5 flex-1 min-w-0 pr-1.5 overflow-hidden">
-                  <span className="text-white/70 shrink-0 font-medium text-[12px]">
-                    {row.label}
-                  </span>
-                  <span className="text-white/15 truncate uppercase font-medium text-[10px] hidden sm:inline">
-                    {row.sub}
-                  </span>
-                </div>
-                <span 
-                  className={cn("tabular-nums shrink-0 font-medium text-[13px] text-right", row.sign === '-' ? 'text-red-400' : 'text-brand-peach')}
-                >
-                  {row.sign}{row.value}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          <div className="h-px bg-white/10 w-full opacity-15" />
-
-          {/* Subtotal & Final */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-white/30 uppercase tracking-tight font-medium text-[10px]">
-                {t('score.breakdown.subtotal')}
-              </span>
-              <span className="text-white/40 tabular-nums font-medium text-[12px]">
-                {formatScore(subtotal)}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="text-white/30 uppercase tracking-tight font-medium text-[10px]">
-                {t('score.breakdown.multiplier')}
-              </span>
-              <span className="tabular-nums font-medium text-[12px] text-brand-peach/80">
-                ×{(scoreBreakdown?.difficultyMultiplier || 1).toFixed(2)}
-              </span>
-            </div>
-
-            <div className="border-t border-white/5 flex items-baseline justify-between pt-2.5 mt-1">
-              <span className="text-white/60 uppercase tracking-widest font-medium text-[12px]">
-                {t('score.breakdown.final')}
-              </span>
-              <span 
-                className="tabular-nums tracking-tight font-medium leading-none text-lg text-brand-peach"
-              >
-                {formatScore(currentScore)}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {onClose && isModal && (
-        <button 
-          onClick={onClose} 
-          className="mt-4 w-full h-10 rounded-xl bg-white/5 border border-white/10 text-brand-peach font-bold uppercase tracking-widest hover:bg-white/10 transition-all text-xs"
-        >
-          {t('common.close') || 'Close'}
-        </button>
-      )}
-    </div>
-  );
-
   return (
-    <div className={cn(embedded ? "w-full" : "max-w-lg mx-auto")}>
-      {renderContent(!embedded)}
+    <div className="flex flex-col w-full gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700 py-2 px-2">
+      
+      {/* 荣耀区 - 难度与描述 */}
+      <div className="flex flex-col items-center">
+        <div className="relative flex flex-col items-center">
+          <div className="flex flex-col items-center">
+            <div className="flex items-start gap-1.5">
+              <span className="text-[9px] text-white/30 font-bold mt-1.5 uppercase tracking-widest">
+                {t('score.breakdown.base')}
+              </span>
+              <Trophy className="w-10 h-10 drop-shadow-2xl text-brand-orange" />
+              <span className="text-4xl font-black tracking-tighter drop-shadow-lg text-brand-peach">
+                {t(getDifficultyMetadata(gameStats.difficulty?.level || 1).nameKey)}
+              </span>
+            </div>
+          </div>
+          
+          <p className="mt-2 text-white/40 text-[11px] font-medium tracking-wide max-w-[220px] text-center leading-relaxed">
+            {t(getDifficultyMetadata(gameStats.difficulty?.level || 1).descriptionKey)}
+          </p>
+        </div>
+      </div>
+
+      {/* 核心分数 - 现代无衬线（标准粗细） */}
+      <div className="flex flex-col items-center">
+        <span className="text-[56px] font-sans font-medium tracking-tighter text-brand-peach leading-none drop-shadow-2xl">
+          {fmt(currentScore)}
+        </span>
+      </div>
+
+      {/* 能力成就勋章 - 纯净图标与文字 */}
+      {badges.length > 0 && (
+        <div className="flex justify-center gap-x-8 px-4">
+          {badges.map((badge) => (
+            <div key={badge.id} className={cn("flex flex-col items-center transition-all hover:scale-110", badge.colorClass)}>
+              <span className="text-2xl mb-0.5 filter drop-shadow-md">{badge.icon}</span>
+              <span className="text-[10px] font-black tracking-wider text-white/80 uppercase">{
+                badge.id === 'speedster' || badge.id === 'speed' ? '速度' : 
+                badge.id === 'deadshot' || badge.id === 'accuracy' ? '空间推理' : 
+                '专注力'
+              }</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 计分明细 - 单行极简设计 */}
+      <div className="w-full flex flex-col gap-3 mt-1 px-2">
+        <div className="h-px bg-white/5 w-full" />
+        <div className="flex flex-col gap-2.5">
+          {rows.map((row, i) => (
+            <div key={i} className="flex items-center justify-between group">
+              <div className="flex items-center gap-2">
+                <span className="text-white/60 font-bold text-[12px] tracking-wide">{row.label}</span>
+                <span className="text-white/10 text-[9px] uppercase tracking-tighter">• {row.sub}</span>
+              </div>
+              <span className={cn("tabular-nums font-sans text-[14px] font-bold", row.sign === '-' ? 'text-red-400' : 'text-brand-peach')}>
+                {row.sign}{row.value}
+              </span>
+            </div>
+          ))}
+        </div>
+        
+        <div className="h-px bg-white/5 w-full" />
+        
+        <div className="flex items-center justify-between opacity-40">
+          <span className="text-[10px] uppercase font-bold tracking-widest">{t('score.breakdown.multiplier')}</span>
+          <span className="text-[13px] font-sans font-bold text-brand-peach">×{scoreBreakdown?.difficultyMultiplier.toFixed(2)}</span>
+        </div>
+      </div>
     </div>
   );
 };

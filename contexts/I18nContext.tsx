@@ -77,7 +77,7 @@ interface I18nContextType {
   isLoading: boolean;
   changeLocale: (newLocale: SupportedLocale) => Promise<void>;
   t: (key: string, values?: Record<string, string | number>) => string;
-  getRandomCompletionMessage: () => string;
+  getRandomCompletionMessage: (seed?: number) => string;
 }
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
@@ -129,9 +129,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     return translation;
   };
 
-  const getRandomCompletionMessageFunc = (): string => {
+  const getRandomCompletionMessageFunc = (seed?: number): string => {
     if (!messages || !messages.game) return 'Completed!';
-    return getRandomCompletionMessage(messages);
+    return getRandomCompletionMessage(messages, seed);
   };
 
   return (

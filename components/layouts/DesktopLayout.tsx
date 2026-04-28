@@ -405,7 +405,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
             ...(panelScale <= 0.5 ? { '--panel-scale': 0.4 } : { '--panel-scale': panelScale })
           } as React.CSSProperties}
         >
-          <div className="glass-panel h-full flex flex-col overflow-auto"
+          <div className="glass-panel h-full flex flex-col overflow-y-auto no-scrollbar"
             style={{ padding: panelContentPadding, fontSize: panelScale <= 0.5 ? 16 : 'calc(16px * var(--panel-scale))', gap: panelContentGap }}
           >
             <div className="flex flex-col mb-1 flex-shrink-0">

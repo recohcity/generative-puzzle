@@ -5,11 +5,11 @@
   --overlay-text-color: var(--brand-peach);
   --overlay-font-size: 12px;
   --overlay-font-weight: 500;
-  --overlay-font-family: monospace;
-  --overlay-padding: 4px 12px;
+  --overlay-font-family: ui-sans-serif, system-ui, sans-serif;
+  --overlay-padding: 4px 14px;
   --overlay-border-radius: 9999px;
-  --overlay-backdrop-filter: blur(4px);
-  --overlay-z-index: 10;
+  --overlay-backdrop-filter: blur(8px);
+  --overlay-z-index: 50;
   
   /* 响应式对齐参数 */
   --overlay-top-desktop: 12px;

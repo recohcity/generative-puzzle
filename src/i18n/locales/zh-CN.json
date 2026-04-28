@@ -223,12 +223,10 @@
             "baseMultiplier": "基础",
             "multiplierDetail": "基础×{base} · {cutType}×{cutMult} · {shape}×{shapeMult}",
             "multiplierBreakdown": "= {base} × {cutMult} × {shapeMult}",
-            "final": "最终得分",
             "subtotal": "小计",
             "gameDuration": "游戏时长",
             "gameTime": "游戏时间"
         },
-        "final": "最终分数",
         "timeBonus": "速度奖励",
         "noReward": "无奖励",
         "speedBonus": {
@@ -239,11 +237,17 @@
             "within2min": "2分钟内完成",
             "over2min": "超过2分钟",
             "levelsTitle": "速度奖励等级说明："
+        },
+        "badges": {
+            "speedster": "极速先锋",
+            "deadshot": "精准对齐",
+            "focus": "纯粹焦点"
         }
     },
     "stats": {
         "title": "游戏统计",
         "viewScore": "查看成绩",
+        "score": "成绩",
         "noData": "暂无统计数据",
         "completed": "已完成",
         "duration": "游戏时长",
@@ -253,6 +257,7 @@
         "difficulty": "难度等级",
         "cutType": "切割类型",
         "pieces": "拼图块数",
+        "viewDetailedScore": "查看详细成绩",
         "piecesUnit": "片",
         "device": "设备类型",
         "scoreHistory": "最近一次游戏成绩",
@@ -326,7 +331,19 @@
         "medium": "中等",
         "hard": "困难",
         "extreme": "极难",
-        "levelLabel": "难度{level}"
+        "levelLabel": "难度{level}",
+        "levels": {
+            "zen": "禅",
+            "classic": "经典",
+            "elite": "精英",
+            "legend": "传奇"
+        },
+        "desc": {
+            "zen": "轻松入门，适合冥想与放松",
+            "classic": "标准拼图体验，带有小挑战",
+            "elite": "考验耐心与观察力，进阶选择",
+            "legend": "极致挑战，拼图大师的荣誉"
+        }
     },
     "cutType": {
         "straight": "直线",

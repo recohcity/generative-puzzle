@@ -31,6 +31,7 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { CloudGameRepository } from "@/utils/cloud/CloudGameRepository";
 import { useDeviceDetection } from '@/hooks/useDeviceDetection';
+import { getDifficultyMetadata } from '@/utils/difficulty/difficultyMetadata';
 
 interface PhoneTabPanelProps {
   activeTab: 'shape' | 'puzzle' | 'cut' | 'scatter' | 'controls';
@@ -135,12 +136,10 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
     setIsMounted(true);
   }, []);
 
-  // 游戏完成时自动弹出成绩单遮罩
+  // 游戏完成时不自动弹出，改为面板内展示摘要，手动点击查看详细
   useEffect(() => {
     if (state.isCompleted && state.gameStats) {
-      // 延迟一小段时间弹出，等待完成动画
-      const timer = setTimeout(() => setShowScoreModal(true), 500);
-      return () => clearTimeout(timer);
+      // setShowScoreModal(true); // 🎯 优化：禁用自动弹出
     } else {
       setShowScoreModal(false);
     }
@@ -434,27 +433,62 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
               onPointerDown={(e) => {
                 if (e.target === e.currentTarget) setShowScoreModal(false);
               }}
-              className="fixed inset-0 z-[1000] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-md cursor-pointer"
+              className="fixed inset-0 z-[1000] flex items-center justify-center p-4 sm:p-6 bg-black/20 backdrop-blur-xl cursor-pointer"
             >
               <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                transition={{ duration: 0.3, type: "spring", bounce: 0.3 }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
                 onClick={(e) => e.stopPropagation()}
                 className={cn(
-                  "bg-white/10 backdrop-blur-2xl border border-white/15 shadow-2xl relative flex flex-col outline-none w-full max-h-[85vh] cursor-default",
-                  isLandscape ? "rounded-[2rem] max-w-[500px]" : "rounded-[2.5rem] max-w-[360px]"
+                  "bg-white/10 backdrop-blur-2xl border border-white/15 shadow-2xl relative flex flex-col outline-none w-full max-h-[82vh] cursor-default",
+                  isLandscape ? "rounded-[2rem] max-w-[620px]" : "rounded-[2.5rem] max-w-[360px]"
                 )}
               >
-                <div className={cn("flex flex-col h-full", isLandscape ? "p-4" : "p-5")}>
+                <div className={cn("flex flex-col h-full", isLandscape ? "p-4" : "p-6")}>
+                  {/* 顶部标准图标 (同 Auth 弹窗) - 仅在竖屏显示，横屏由 MobileScoreLayout 内部三栏接管 */}
+                  {!isLandscape && (
+                    <div className="flex flex-col items-center mb-6 shrink-0">
+                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-peach to-brand-orange flex items-center justify-center shadow-xl shadow-brand-orange/20 relative mb-4">
+                        <div className="absolute inset-0 bg-white/20 rounded-2xl blur-sm animate-pulse-slow"></div>
+                        <Trophy className="w-8 h-8 text-brand-dark relative" />
+                      </div>
+                      
+                      {/* 标题区：难度(小) + 禅(大) 顶部齐平 */}
+                      <div className="flex flex-col items-center">
+                        <div className="flex items-start gap-1.5">
+                          <span className="text-[10px] text-white/30 font-bold mt-1.5 uppercase tracking-widest">{t('score.breakdown.base')}</span>
+                          <h2 className={cn("text-5xl font-black tracking-tighter drop-shadow-sm leading-none text-brand-peach")}>
+                            {t(getDifficultyMetadata(state.gameStats!.difficulty.level).nameKey)}
+                          </h2>
+                        </div>
+                        <p className="mt-2 text-white/30 text-[11px] font-medium tracking-wide">
+                          {t(getDifficultyMetadata(state.gameStats!.difficulty.level).descriptionKey)}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex-1 overflow-y-auto min-h-0 custom-scrollbar mb-4 pr-1">
-                    <MobileScoreLayout gameStats={state.gameStats!} currentScore={state.currentScore} scoreBreakdown={state.scoreBreakdown || undefined} isNewRecord={state.isNewRecord} isLandscape={isLandscape} />
+                    <MobileScoreLayout 
+                      gameStats={state.gameStats!} 
+                      currentScore={state.currentScore} 
+                      scoreBreakdown={state.scoreBreakdown || undefined} 
+                      isNewRecord={state.isNewRecord} 
+                      isLandscape={isLandscape}
+                      hideHeader={true}
+                      onRetry={handleRetryCurrent}
+                      onRestart={handleRestart}
+                    />
                   </div>
-                  <div className="flex-shrink-0 flex flex-row gap-3 pt-4 border-t border-white/10">
-                    <RestartButton onClick={handleRetryCurrent} icon="retry" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.retryCurrent')}</RestartButton>
-                    <RestartButton onClick={handleRestart} icon="refresh" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.restartGame')}</RestartButton>
-                  </div>
+
+                  {!isLandscape && (
+                    <div className="flex-shrink-0 flex flex-row gap-3 pt-4 border-t border-white/5">
+                      <RestartButton onClick={handleRetryCurrent} icon="retry" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.retryCurrent')}</RestartButton>
+                      <RestartButton onClick={handleRestart} icon="refresh" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.restartGame')}</RestartButton>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             </motion.div>
@@ -683,19 +717,58 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
             </div>
           </div>
         ) : isGameCompleted ? (
-          /* 游戏结算界面 - 统一固定高度，防止切换Tab时画布跳动 */
-          <div className="flex flex-col justify-start w-full pt-2" style={{ height: isLandscape ? 160 : TAB_BUTTON_HEIGHT + (isUltraSmall ? 134 : 140) - 2 }}>
-            <button 
-              onClick={() => setShowScoreModal(true)} 
-              className="glass-btn-active w-full rounded-2xl font-bold text-brand-peach flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(255,213,171,0.15)] transition-transform active:scale-[0.98]"
-              style={{ height: MOBILE_RESTART_BUTTON_HEIGHT, fontSize: MOBILE_RESTART_FONT_SIZE }}
-            >
-              <Trophy size={MOBILE_RESTART_ICON_SIZE} />
-              {t('stats.viewScore') || '查看成绩'}
-            </button>
-            <div className={cn("flex-shrink-0 flex w-full flex-row gap-2", isLandscape ? "mb-0" : "mb-0")}>
-              <RestartButton onClick={handleRetryCurrent} icon="retry" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.retryCurrent')}</RestartButton>
-              <RestartButton onClick={handleRestart} icon="refresh" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.restartGame')}</RestartButton>
+          /* 游戏结算界面 - 统一横竖屏：单行全量摘要 */
+          <div className="flex flex-col justify-start w-full pt-1" style={{ height: isLandscape ? 160 : TAB_BUTTON_HEIGHT + (isUltraSmall ? 134 : 140) - 2 }}>
+            <div className="flex flex-col gap-4 mt-1.5">
+              <div className="flex items-start justify-between w-full px-1">
+                {/* 左侧：难度荣誉组合 (顶部齐平) */}
+                <div className="flex items-start gap-2">
+                  <span className="text-[10px] text-white/30 font-bold tracking-widest uppercase mt-1.5">
+                    {t('score.breakdown.base')}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Trophy className={cn("w-9 h-9 drop-shadow-xl text-brand-orange")} />
+                    <span className={cn("text-3xl font-black tracking-tighter drop-shadow-md text-brand-peach")}>
+                      {t(getDifficultyMetadata(state.gameStats!.difficulty.level).nameKey)}
+                    </span>
+                  </div>
+                </div>
+                
+                {/* 右侧：分数与标签 (顶部齐平) */}
+                <div className="flex items-start gap-2">
+                  <span className="text-[10px] text-white/30 font-bold tracking-widest uppercase mt-1.5">
+                    {t('stats.score')}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-4xl font-sans font-medium text-brand-peach leading-none tabular-nums drop-shadow-lg">
+                      {state.currentScore}
+                    </span>
+                    {state.isNewRecord && (
+                      <span className="text-[9px] bg-brand-peach text-brand-dark font-black px-1.5 py-0.5 rounded-md uppercase tracking-tighter animate-pulse h-fit">
+                        {t('score.newRecord') || 'NEW'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3 px-1">
+                {/* 标准宽度按钮 - 与下方按钮对齐 */}
+                <div className="w-full">
+                  <button 
+                    onClick={() => setShowScoreModal(true)} 
+                    className="glass-btn-active w-full rounded-2xl font-bold text-brand-dark flex items-center justify-center gap-1.5 shadow-[0_5px_15px_rgba(246,142,95,0.2)] transition-transform active:scale-[0.98] py-3"
+                    style={{ height: MOBILE_RESTART_BUTTON_HEIGHT + 2, fontSize: MOBILE_RESTART_FONT_SIZE + 1 }}
+                  >
+                    <Trophy size={MOBILE_RESTART_ICON_SIZE + 2} className="text-brand-orange" />
+                    {t('stats.viewDetailedScore')}
+                  </button>
+                </div>
+                <div className="flex flex-row gap-2 w-full px-1">
+                  <RestartButton onClick={handleRetryCurrent} icon="retry" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.retryCurrent')}</RestartButton>
+                  <RestartButton onClick={handleRestart} icon="refresh" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.restartGame')}</RestartButton>
+                </div>
+              </div>
             </div>
           </div>
         ) : (

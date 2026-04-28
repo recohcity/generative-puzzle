@@ -38,7 +38,7 @@ import {
 } from "@generative-puzzle/game-core";
 import { calculateDifficultyLevel } from "@/utils/difficulty/DifficultyUtils";
 import { CloudGameRepository } from "@/utils/cloud/CloudGameRepository";
-import { playFinishSound } from "@/utils/rendering/soundEffects";
+import { playFinishSound, playPieceSelectSound } from "@/utils/rendering/soundEffects";
 import { useCloudSync } from "@/hooks/useCloudSync";
 import { useDebugState } from "@/hooks/useDebugState";
 import { usePhysicsBounds } from "@/hooks/usePhysicsBounds";
@@ -954,6 +954,16 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
     console.log("[scatterPuzzle] SCATTER_PUZZLE dispatched");
     // 追踪游戏开启
     GameDataManager.trackGameStart();
+
+    // 🎯 散开后自动选中一块随机拼图，激活提示/旋转按钮，引导用户交互
+    setTimeout(() => {
+      const pieceCount = scatteredPuzzle.length;
+      if (pieceCount > 0) {
+        const randomIndex = Math.floor(Math.random() * pieceCount);
+        dispatch({ type: "SET_SELECTED_PIECE", payload: randomIndex });
+        playPieceSelectSound();
+      }
+    }, 500);
   }, [state.isScattered, state.canvasSize, state.originalShape, dispatch]);
 
 
