@@ -108,11 +108,9 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
           {badges.map((badge) => (
             <div key={badge.id} className={cn("flex flex-col items-center transition-all hover:scale-110", badge.colorClass)}>
               <span className="text-2xl mb-0.5 filter drop-shadow-md">{badge.icon}</span>
-              <span className="text-[10px] font-black tracking-wider text-white/80 uppercase">{
-                badge.id === 'speedster' || badge.id === 'speed' ? '速度' : 
-                badge.id === 'deadshot' || badge.id === 'accuracy' ? '空间推理' : 
-                '专注力'
-              }</span>
+              <span className="text-[10px] font-black tracking-wider text-white/80 uppercase">
+                {t(badge.labelKey)}
+              </span>
             </div>
           ))}
         </div>

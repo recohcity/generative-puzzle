@@ -186,11 +186,9 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
           {badges.map((badge) => (
             <div key={badge.id} className={cn("flex flex-col items-center", badge.colorClass)}>
               <span className="text-3xl mb-0.5 filter drop-shadow-sm">{badge.icon}</span>
-              <span className="text-[10px] font-black tracking-widest uppercase text-white/70">{
-                badge.id === 'speedster' || badge.id === 'speed' ? '速度' : 
-                badge.id === 'deadshot' || badge.id === 'accuracy' ? '空间推理' : 
-                '专注力'
-              }</span>
+              <span className="text-[10px] font-black tracking-widest uppercase text-white/70">
+                {t(badge.labelKey)}
+              </span>
             </div>
           ))}
         </div>
