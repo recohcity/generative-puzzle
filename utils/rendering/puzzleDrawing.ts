@@ -434,7 +434,7 @@ export const drawPuzzle = (
   shapeType: string, // 形状类型 ('polygon' 或 'curve')
   originalShape?: Point[], // 原始形状的顶点数组 (用于显示轮廓或完成状态)
   isScattered: boolean = false, // 游戏是否处于拼图散开的状态
-  completionText?: string // 添加完成文本参数
+  tilt: { rx: number; ry: number } = { rx: 0, ry: 0 } // Tilt status for glaze effect
 ) => {
   // 清除整个画布，准备重新绘制
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -501,70 +501,51 @@ export const drawPuzzle = (
     }
     // --------- END 材质纹理 ---------
 
-    // 绘制完成效果
+    // --------- 4. 绘制全息流光质感 (Holographic Glaze) ---------
+    if (tilt.rx !== 0 || tilt.ry !== 0) {
+      ctx.save();
+      ctx.globalCompositeOperation = "source-atop"; // 仅在已有像素上绘制（即形状内部）
+      
+      const bounds = originalShape.reduce(
+        (acc, point) => ({
+          minX: Math.min(acc.minX, point.x),
+          maxX: Math.max(acc.maxX, point.x),
+          minY: Math.min(acc.minY, point.y),
+          maxY: Math.max(acc.maxY, point.y)
+        }),
+        { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
+      );
+      
+      const cx = (bounds.minX + bounds.maxX) / 2;
+      const cy = (bounds.minY + bounds.maxY) / 2;
+      const radius = Math.max(bounds.maxX - bounds.minX, bounds.maxY - bounds.minY);
+
+      // 计算高光位置偏移（基于倾斜角度的反馈）
+      const highlightX = cx + (tilt.ry / 35) * radius * 0.8;
+      const highlightY = cy + (tilt.rx / 35) * radius * 0.8;
+
+      const glazeGradient = ctx.createRadialGradient(
+        highlightX, highlightY, 0,
+        highlightX, highlightY, radius * 1.5
+      );
+
+      // 流光渐变色（块状高光），调整透明度确保不遮挡材质
+      glazeGradient.addColorStop(0, "rgba(255, 255, 255, 0.3)"); // 中心最亮但保持半透明
+      glazeGradient.addColorStop(0.3, "rgba(255, 255, 255, 0.1)");
+      glazeGradient.addColorStop(0.8, "rgba(255, 255, 255, 0)");
+      glazeGradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+
+      ctx.fillStyle = glazeGradient;
+      ctx.beginPath();
+      // 覆盖整个形状的矩形
+      ctx.rect(bounds.minX, bounds.minY, bounds.maxX - bounds.minX, bounds.maxY - bounds.minY);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // 绘制底部的阴影悬浮效果
     drawCompletionEffect(ctx, originalShape, shapeType);
-
-    // 绘制完成文本 - 使用更精确的字体堆栈和多层渲染技术，增强视觉效果
-    // Calculate bounds for text positioning (re-calculating here for clarity, could pass from above)
-    const bounds = originalShape.reduce(
-      (acc: { minX: number, maxX: number, minY: number, maxY: number }, point: Point) => ({
-        minX: Math.min(acc.minX, point.x),
-        maxX: Math.max(acc.maxX, point.x),
-        minY: Math.min(acc.minY, point.y),
-        maxY: Math.max(acc.maxY, point.y)
-      }),
-      { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
-    );
-
-    const centerX = (bounds.minX + bounds.maxX) / 2; // 形状中心X坐标
-
-    const fontSize = Math.min(36, Math.max(24, ctx.canvas.width / 15)); // 根据画布宽度自适应字体大小，确保在不同屏幕尺寸下都合适
-    ctx.font = `bold ${fontSize}px 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'STHeiti', 'SimHei', 'WenQuanYi Micro Hei', sans-serif`; // 设置字体样式，包含多种中文字体以提高兼容性
-    ctx.textAlign = "center"; // 文本水平居中对齐
-    ctx.textBaseline = "middle"; // 文本垂直居中对齐
-
-    // 文本位置 - 移到形状上方，避免遮挡，并确保不会超出画布顶部
-    const textY = bounds.minY - 40; // 文本基础Y坐标，在形状 minY 上方40像素
-    const finalY = Math.max(50, textY); // 确保文本不会太靠近顶部边缘，最小Y坐标为50
-    const completeText = completionText || "你好犀利吖!"; // 游戏完成时显示的文本内容
-
-    // 多层渲染技术，通过绘制多次叠加不同样式来创建复杂的文本效果
-    // 1. 外发光效果 - 较大模糊，作为文本底层的辉光，使文本看起来更醒目
-    ctx.save(); // Save state before applying text styles
-    ctx.shadowColor = "rgba(255, 140, 0, 0.7)"; // 橙色发光颜色，半透明效果
-    ctx.shadowBlur = 12; // 较大的模糊半径，创建柔和的发光效果
-    ctx.shadowOffsetX = 0; // 水平方向无偏移
-    ctx.shadowOffsetY = 0; // 垂直方向无偏移
-    ctx.fillStyle = "rgba(255, 215, 0, 0.4)"; // 半透明金色作为发光填充色，与橙色阴影叠加产生层次感
-    ctx.fillText(completeText, centerX, finalY); // 绘制带发光的文本
-
-    // 2. 描边阴影 - 增加文本的深度感和立体感，使文本边缘更清晰
-    ctx.shadowColor = "rgba(0, 0, 0, 0.7)"; // 黑色阴影颜色，提供深度
-    ctx.shadowBlur = 3; // 较小的模糊半径，创建清晰的阴影边缘
-    ctx.shadowOffsetX = 2; // 水平偏移
-    ctx.shadowOffsetY = 2; // 垂直偏移
-    ctx.strokeStyle = "#FF7700"; // 亮橙色作为描边颜色，与主体文字颜色形成对比
-    ctx.lineWidth = Math.max(3, fontSize / 12); // 根据字体大小比例设置描边宽度，确保描边粗细适中
-    ctx.strokeText(completeText, centerX, finalY); // 绘制带阴影的描边文本
-
-    // 3. 清除阴影，绘制主体文字，确保主体文字清晰不受阴影影响
-    ctx.shadowColor = "transparent"; // 将阴影颜色设为透明，移除阴影效果
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
-
-    // 4. 渐变填充效果 - 使主体文字具有更丰富的色彩层次和质感
-    const textGradient = ctx.createLinearGradient(
-      centerX, finalY - fontSize / 2, // 渐变起始点 (文本顶部中心)
-      centerX, finalY + fontSize / 2 // 渐变结束点 (文本底部中心)
-    );
-    textGradient.addColorStop(0, "#FFD700"); // 金色顶部，起始颜色
-    textGradient.addColorStop(0.5, "#FFCC00"); // 中间色，黄色
-    textGradient.addColorStop(1, "#FF9500"); // 橙色底部，结束颜色
-    ctx.fillStyle = textGradient; // 应用创建的渐变填充样式
-    ctx.fillText(completeText, centerX, finalY); // 绘制渐变填充的主体文本
-
-    ctx.restore(); // Restore state after applying text styles
 
   } else {
     // 1. 先绘制目标形状（如有）- 修复：不论是否散开都显示目标形状轮廓

@@ -1,5 +1,4 @@
 # 生成式拼图游戏 Changelog
-
 ## [v1.4.13] - 2026-04-28
 
 ### 📱 全平台结算架构深度重塑与视觉统一 (Full-scale Settlement System Overhaul)

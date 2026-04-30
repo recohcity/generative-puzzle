@@ -148,6 +148,51 @@ export default function PuzzleCanvas() {
   const [showDebugElements] = useDebugToggle();
   const [isShaking, setIsShaking] = useState(false);
 
+  // --- 3D Tilt Interaction for Completed Shape ---
+  const [tilt, setTilt] = useState({ rx: 0, ry: 0, active: false });
+  const tiltStateRef = useRef({ active: false, startX: 0, startY: 0 });
+
+  const getClientPos = (e: React.MouseEvent | React.TouchEvent | MouseEvent | TouchEvent) => {
+    if ('touches' in e && e.touches.length > 0) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    if ('clientX' in e) return { x: (e as any).clientX, y: (e as any).clientY };
+    return { x: 0, y: 0 };
+  };
+
+  const onInteractStart = (e: React.MouseEvent | React.TouchEvent) => {
+    if (state.isCompleted) {
+      const pos = getClientPos(e);
+      tiltStateRef.current = { active: true, startX: pos.x, startY: pos.y };
+      setTilt({ rx: 0, ry: 0, active: true });
+      return;
+    }
+    if ('touches' in e) handleTouchStart(e as React.TouchEvent<HTMLCanvasElement>);
+    else handleMouseDown(e as React.MouseEvent<HTMLCanvasElement>);
+  };
+
+  const onInteractMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (state.isCompleted && tiltStateRef.current.active) {
+      const pos = getClientPos(e);
+      const dx = pos.x - tiltStateRef.current.startX;
+      const dy = pos.y - tiltStateRef.current.startY;
+      const ry = Math.max(-35, Math.min(35, dx * 0.15));
+      const rx = Math.max(-35, Math.min(35, -dy * 0.15));
+      setTilt({ rx, ry, active: true });
+      return;
+    }
+    if ('touches' in e) handleTouchMove(e as React.TouchEvent<HTMLCanvasElement>);
+    else handleMouseMove(e as React.MouseEvent<HTMLCanvasElement>);
+  };
+
+  const onInteractEnd = (e: React.MouseEvent | React.TouchEvent) => {
+    if (state.isCompleted && tiltStateRef.current.active) {
+      tiltStateRef.current.active = false;
+      setTilt({ rx: 0, ry: 0, active: false });
+      return;
+    }
+    if ('touches' in e) handleTouchEnd(e as React.TouchEvent<HTMLCanvasElement>);
+    else handleMouseUp();
+  };
+
   // 画布尺寸计算
   const canvasSize = useMemo(() => {
     return state.canvasSize || null;
@@ -189,13 +234,13 @@ export default function PuzzleCanvas() {
   useEffect(() => {
     const handleOrientationChange = (event: CustomEvent) => {
       const { from, to, deviceState } = event.detail;
-      
+
       // 强制触发画布尺寸重新计算
       if (containerRef.current) {
         const rect = containerRef.current.getBoundingClientRect();
         const width = Math.round(rect.width);
         const height = Math.round(rect.height);
-        
+
         // 使用 forceUpdate 确保适配逻辑被执行
         dispatch({
           type: 'UPDATE_CANVAS_SIZE',
@@ -211,7 +256,7 @@ export default function PuzzleCanvas() {
 
     if (typeof window !== 'undefined') {
       window.addEventListener('deviceOrientationChange', handleOrientationChange as EventListener);
-      
+
       return () => {
         window.removeEventListener('deviceOrientationChange', handleOrientationChange as EventListener);
       };
@@ -269,9 +314,6 @@ export default function PuzzleCanvas() {
     }
 
     if (state.puzzle) {
-      // 使用分数种子获取锁定的完成消息，确保与侧边栏一致
-      const completionMessage = getRandomCompletionMessage(state.currentScore);
-
       drawPuzzle(
         ctx,
         state.puzzle,
@@ -280,7 +322,7 @@ export default function PuzzleCanvas() {
         state.shapeType,
         state.originalShape,
         state.isScattered,
-        completionMessage
+        tilt
       );
 
       if (state.showHint && state.selectedPiece !== null && (state.originalPositions as PuzzlePiece[]).length > 0) {
@@ -392,7 +434,8 @@ export default function PuzzleCanvas() {
     canvasRef,
     backgroundCanvasRef,
     getRandomCompletionMessage,
-    t
+    t,
+    tilt
   ]);
 
   return (
@@ -413,24 +456,51 @@ export default function PuzzleCanvas() {
           width: '100%',
           height: '100%',
           position: 'relative',
-          cursor: 'pointer',
+          cursor: state.isCompleted ? (tilt.active ? 'grabbing' : 'grab') : 'pointer',
           touchAction: 'none', // 🔧 关键修复：禁用浏览器默认触摸行为
           userSelect: 'none',
           WebkitUserSelect: 'none',
           MozUserSelect: 'none',
-          msUserSelect: 'none'
+          msUserSelect: 'none',
+          transform: state.isCompleted ? `perspective(1000px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg) scale3d(${tilt.active ? 1.02 * 0.96 : 1}, ${tilt.active ? 0.96 * 0.96 : 1}, 1)` : 'none',
+          transition: tilt.active ? 'transform 0.1s ease-out, filter 0.1s ease-out' : 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.6s ease-out',
+          transformStyle: 'preserve-3d',
+          zIndex: tilt.active ? 10 : 1,
+          filter: state.isCompleted ? `drop-shadow(${tilt.active ? tilt.ry * -0.6 : 0}px ${tilt.active ? 20 + tilt.rx * 0.6 : 0}px ${tilt.active ? 35 : 0}px rgba(0,0,0,${tilt.active ? 0.35 : 0}))` : 'none'
         }}
         width={canvasSize?.width || 0}
         height={canvasSize?.height || 0}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        onMouseDown={onInteractStart}
+        onMouseMove={onInteractMove}
+        onMouseUp={onInteractEnd}
+        onMouseLeave={onInteractEnd}
+        onTouchStart={onInteractStart}
+        onTouchMove={onInteractMove}
+        onTouchEnd={onInteractEnd}
       />
-      
+
+      {/* 完成状态的鼓励文本 (不再随 Canvas 3D 旋转) */}
+      {state.isCompleted && (
+        <div
+          className="absolute w-full pointer-events-none z-50 flex justify-center"
+          style={{ top: 'clamp(60px, 15%, 120px)' }}
+        >
+          <div
+            className="font-black text-center whitespace-nowrap tracking-wider animate-in fade-in slide-in-from-bottom-2 zoom-in-95 duration-700 ease-out"
+            style={{
+              fontFamily: "'Inter', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif",
+              fontSize: 'clamp(24px, min(8vw, 8vh), 42px)',
+              background: 'linear-gradient(135deg, #FFE259 0%, #FFA751 100%)',
+              WebkitBackgroundClip: 'text',
+              color: 'transparent',
+              filter: 'drop-shadow(0px 6px 16px rgba(255, 167, 81, 0.4)) drop-shadow(0px 2px 4px rgba(0,0,0,0.5))'
+            }}
+          >
+            {getRandomCompletionMessage(state.currentScore)}
+          </div>
+        </div>
+      )}
+
       {/* 实时显示组件 - 始终显示 */}
       <GameTimer />
       <LiveScore />
@@ -445,17 +515,17 @@ export default function PuzzleCanvas() {
           <div>Active: {state.isGameActive ? 'Yes' : 'No'}</div>
           <div>Completed: {state.isCompleted ? 'Yes' : 'No'}</div>
           <div>Score: {state.currentScore}</div>
-          <button 
+          <button
             onClick={() => {
               if (state.puzzle) {
                 // 如果游戏未开始，先触发开始（这现在会正确初始化统计和分数）
                 if (!state.isGameActive) {
-                  dispatch({ 
-                    type: 'SCATTER_PUZZLE', 
-                    payload: { leaderboard: [] } 
+                  dispatch({
+                    type: 'SCATTER_PUZZLE',
+                    payload: { leaderboard: [] }
                   });
                 }
-                
+
                 // 延迟一秒设置所有拼图为完成状态，触发 GameContext 的 useEffect 完成检测
                 setTimeout(() => {
                   const allPieceIndices = Array.from({ length: state.puzzle!.length }, (_, i) => i);

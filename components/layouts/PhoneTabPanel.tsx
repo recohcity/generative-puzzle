@@ -719,40 +719,40 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
         ) : isGameCompleted ? (
           /* 游戏结算界面 - 统一横竖屏：单行全量摘要 */
           <div className="flex flex-col justify-start w-full pt-1" style={{ height: isLandscape ? 160 : TAB_BUTTON_HEIGHT + (isUltraSmall ? 134 : 140) - 2 }}>
-            <div className="flex flex-col gap-4 mt-1.5">
-              <div className="flex items-start justify-between w-full px-1">
-                {/* 左侧：难度荣誉组合 (顶部齐平) */}
-                <div className="flex items-start gap-2">
-                  <span className="text-[10px] text-white/30 font-bold tracking-widest uppercase mt-1.5">
+            <div className="flex flex-col gap-1 mt-0 px-2">
+              <div className="flex items-start justify-between w-full">
+                {/* 左侧：难度荣誉组合 */}
+                <div className="flex flex-col items-start gap-0">
+                  <span className="text-[9px] text-white/30 font-bold tracking-widest uppercase">
                     {t('score.breakdown.base')}
                   </span>
-                  <div className="flex items-center gap-2">
-                    <Trophy className={cn("w-9 h-9 drop-shadow-xl text-brand-orange")} />
-                    <span className={cn("text-3xl font-black tracking-tighter drop-shadow-md text-brand-peach")}>
+                  <div className="flex items-center gap-1.5">
+                    <Trophy className={cn("w-6 h-6 drop-shadow-xl text-brand-orange")} />
+                    <span className={cn("text-2xl font-black tracking-tighter drop-shadow-md text-brand-peach leading-none")}>
                       {t(getDifficultyMetadata(state.gameStats!.difficulty.cutCount).nameKey)}
                     </span>
                   </div>
                 </div>
                 
-                {/* 右侧：分数与标签 (顶部齐平) */}
-                <div className="flex items-start gap-2">
-                  <span className="text-[10px] text-white/30 font-bold tracking-widest uppercase mt-1.5">
+                {/* 右侧：分数与标签 */}
+                <div className="flex flex-col items-end gap-0">
+                  <span className="text-[9px] text-white/30 font-bold tracking-widest uppercase">
                     {t('stats.score')}
                   </span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-4xl font-sans font-medium text-brand-peach leading-none tabular-nums drop-shadow-lg">
-                      {state.currentScore}
-                    </span>
+                  <div className="flex items-center gap-1.5">
                     {state.isNewRecord && (
-                      <span className="text-[9px] bg-brand-peach text-brand-dark font-black px-1.5 py-0.5 rounded-md uppercase tracking-tighter animate-pulse h-fit">
+                      <span className="text-[9px] bg-brand-peach text-brand-dark font-black px-1.5 py-0.5 rounded uppercase tracking-tighter animate-pulse h-fit">
                         {t('score.newRecord') || 'NEW'}
                       </span>
                     )}
+                    <span className="text-3xl font-sans font-black text-brand-peach leading-none tabular-nums drop-shadow-lg tracking-tighter">
+                      {state.currentScore}
+                    </span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-3 px-1">
+              <div className="flex flex-col gap-1 w-full">
                 {/* 标准宽度按钮 - 与下方按钮对齐 */}
                 <div className="w-full">
                   <button 
@@ -764,7 +764,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                     {t('stats.viewDetailedScore')}
                   </button>
                 </div>
-                <div className="flex flex-row gap-2 w-full px-1">
+                <div className="flex flex-row gap-2 w-full">
                   <RestartButton onClick={handleRetryCurrent} icon="retry" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.retryCurrent')}</RestartButton>
                   <RestartButton onClick={handleRestart} icon="refresh" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.restartGame')}</RestartButton>
                 </div>
@@ -777,26 +777,26 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
             {(activeTab === 'shape' || activeTab === 'puzzle' || activeTab === 'cut' || activeTab === 'scatter') && (
               <div className={SECTION_CLASS}>
                 {activeTab === 'shape' && (
-                  <div className="flex flex-col items-center">
+                  <div className="flex flex-col items-center w-full">
                     <h2 className={CARD_TITLE_CLASS}>{t('game.shapes.title')}</h2>
                     <ShapeControls goToNextTab={goToNextTab} buttonHeight={SHAPE_BUTTON_HEIGHT} fontSize={MOBILE_SHAPE_BUTTON_FONT_SIZE} />
                   </div>
                 )}
                 {activeTab === 'puzzle' && (
-                  <div className="flex flex-col items-center">
+                  <div className="flex flex-col items-center w-full px-0">
                     <h2 className={CARD_TITLE_CLASS}>{t('game.cutType.title')}</h2>
                     <PuzzleControlsCutType goToNextTab={goToNextTab} buttonHeight={CUT_TYPE_BUTTON_HEIGHT} />
                   </div>
                 )}
                 {activeTab === 'cut' && (
-                  <div className="flex flex-col items-center px-3">
-                    <div className="max-w-[290px] w-full mx-auto">
+                  <div className="flex flex-col items-center px-0 w-full">
+                    <div className="w-full mx-auto">
                       <PuzzleControlsCutCount goToNextTab={goToNextTab} buttonHeight={NUMBER_BUTTON_HEIGHT} actionButtonHeight={ACTION_BUTTON_HEIGHT} />
                     </div>
                   </div>
                 )}
                 {activeTab === 'scatter' && (
-                  <div className="flex flex-col items-center">
+                  <div className="flex flex-col items-center w-full px-0">
                     <h2 className={CARD_TITLE_CLASS}>{t('game.scatter.title')}</h2>
                     <PuzzleControlsScatter goToNextTab={goToNextTab} buttonHeight={ACTION_BUTTON_HEIGHT} />
                   </div>

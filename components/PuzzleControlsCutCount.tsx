@@ -36,7 +36,7 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
   const device = useDeviceDetection();
   const isPhone = device.deviceType === 'phone';
   const isLandscape = device.layoutMode === 'landscape';
-  
+
   // 获取当前难度元数据
   const meta = getDifficultyMetadata(localCutCount || 1);
 
@@ -71,10 +71,10 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
   // 难度选择按钮的样式
   const getDifficultyButtonStyle = (num: number) => {
     return cn(
-        "glass-btn-sheen transition-all duration-300",
-        localCutCount === num ? "glass-btn-active scale-110 z-10" : "glass-btn-inactive",
-        "flex-1 font-medium",
-        !canModifySettings && "opacity-30 pointer-events-none"
+      "glass-btn-sheen transition-all duration-300",
+      localCutCount === num ? "glass-btn-active scale-110 z-10" : "glass-btn-inactive",
+      "flex-1 font-medium",
+      !canModifySettings && "opacity-30 pointer-events-none"
     );
   };
 
@@ -88,56 +88,45 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
       )}
 
       {/* 难度选择可视化 - 交互式滑动条优化 */}
-      <div 
+      <div
         className={cn(
-          "w-full rounded-2xl border border-white/10 transition-all duration-500 mb-2",
-          "bg-white/5 backdrop-blur-sm",
-          isPhone ? "p-3" : "p-5",
+          "w-full rounded-[1.5rem] border border-white/10 transition-all duration-500 overflow-hidden relative",
+          "bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md",
+          isLandscape ? "p-3 pb-3 mb-1.5" : "p-2.5 pb-2.5 mb-1.5",
           !canModifySettings && "opacity-40 pointer-events-none"
         )}
       >
-        {/* 信息行 - 极简显示 */}
-        <div className="flex justify-between items-center mb-3">
-          <div className="flex items-baseline gap-2 overflow-hidden">
-            <h3 className={cn("font-bold text-white tracking-tight leading-none shrink-0", isPhone ? "text-base" : "text-xl")}>
-              {t(meta.nameKey)}
-            </h3>
-            <span className={cn("text-white/40 truncate font-medium", isPhone ? "text-[10px]" : "text-[11px]")}>
-              {t(meta.descriptionKey)}
-            </span>
+        {/* 顶部信息区：一行化设计 */}
+        <div className={cn("flex items-center justify-between gap-2 relative z-10", isLandscape ? "mb-3" : "mb-2")}>
+          {/* 左侧：难度名称 */}
+          <h3 className={cn("font-black tracking-tighter text-white drop-shadow-md leading-none shrink-0", isLandscape ? "text-3xl" : "text-2xl")}>
+            {t(meta.nameKey)}
+          </h3>
+
+          {/* 中间：描述 (支持换行) */}
+          <div className={cn("flex-[2] min-w-0 text-white/40 font-medium tracking-tight leading-[1.1]text-center ", isLandscape ? "text-[12px]" : "text-[12px]")}>
+            {t(meta.descriptionKey)}
           </div>
-          <div className={cn("font-mono font-medium text-brand-peach leading-none shrink-0", isPhone ? "text-xs" : "text-lg")}>
-            {meta.pieceRange} {t('stats.piecesUnit')}
+
+          {/* 右侧：拼图块数 */}
+          <div className={cn("font-black text-brand-peach tracking-tighter leading-none shrink-0 whitespace-nowrap", isLandscape ? "text-[18px]" : "text-[16px]")}>
+            {meta.pieceRange}
           </div>
         </div>
 
-        {/* 交互式滑动条容器 - 精密刻度优化版 */}
-        <div className="relative w-full h-10 flex items-center group px-1">
-          {/* 背景轨道 (含刻度) */}
-          <div className={cn("w-full bg-white/5 rounded-full border border-white/5 relative overflow-hidden", isPhone ? "h-1.5" : "h-2")}>
-            {/* 刻度点 - 增强档位感 */}
-            <div className="absolute inset-0 flex justify-between px-[2px] items-center pointer-events-none opacity-20">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-                <div key={i} className="w-1 h-1 rounded-full bg-white" />
-              ))}
-            </div>
-
-            {/* 进度填充 (严格对齐滑块中心) */}
-            <div 
-              className="h-full transition-all duration-300 ease-out relative rounded-full"
-              style={{ 
-                width: `${((localCutCount || 1) - 1) / 7 * 100}%`,
-                backgroundImage: 'linear-gradient(to right, #2dd4bf, #FFD5AB, #FFB17A, #F68E5F)',
-                backgroundSize: '100% 100%', // 确保渐变始终拉伸填满
-              }}
-            >
-              {/* 动态扫光 */}
-              <div className="absolute inset-0 bg-gradient-to-right from-transparent via-white/10 to-transparent skew-x-12 animate-shimmer" />
-            </div>
+        {/* 交互式滑动条容器 */}
+        <div className={cn("relative w-full flex items-center group", isLandscape ? "h-7 mt-1" : "h-6 mt-0.5")}>
+          {/* 背景轨道 */}
+          <div className={cn("absolute inset-x-0 rounded-full bg-black/20 border border-white/5", isLandscape ? "h-2" : "h-1.5")}>
+            {/* 纯色填充 */}
+            <div
+              className="h-full rounded-full transition-all duration-300 ease-out bg-white/40 shadow-[0_0_10px_rgba(255,255,255,0.2)]"
+              style={{ width: `${((localCutCount || 1) - 1) / 7 * 100}%` }}
+            />
           </div>
 
           {/* 原生 Input 用于交互 (透明隐藏) */}
-          <input 
+          <input
             type="range"
             min="1"
             max="8"
@@ -151,22 +140,25 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
             )}
           />
 
-          {/* 自定义滑块 (Knob) - 拟物精密化设计 */}
-          <div 
-            className={cn(
-              "absolute top-1/2 -translate-y-1/2 pointer-events-none transition-all duration-300 z-10",
-              "flex items-center justify-center rounded-full border-2 border-white/40 shadow-2xl",
-              "bg-gradient-to-br from-brand-peach to-brand-orange text-brand-dark font-bold",
-              isPhone ? "w-7 h-7" : "w-8 h-8"
-            )}
-            style={{ 
-              left: `calc(${((localCutCount || 1) - 1) / 7 * 100}% - ${isPhone ? '14px' : '16px'})`,
-              boxShadow: `0 0 15px rgba(246, 142, 95, 0.4), inset 0 2px 4px rgba(255,255,255,0.3)`
+          {/* 动态滑块与内部数字 */}
+          <div
+            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 pointer-events-none transition-all duration-300 z-10 flex flex-col items-center justify-center"
+            style={{
+              // 精确对齐：确保滑块左边缘在1时对齐最左侧，在8时对齐最右侧
+              left: `calc(${((localCutCount || 1) - 1) / 7 * 100}% + ${isLandscape ? 14 : 12}px - ${(((localCutCount || 1) - 1) / 7) * (isLandscape ? 28 : 24)}px)`
             }}
           >
-            <span className={isPhone ? "text-xs" : "text-sm"} style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.1))' }}>
-              {localCutCount || 1}
-            </span>
+            {/* 调整后：和切割按钮颜色一致的圆形滑块 */}
+            <div className={cn(
+              "flex items-center justify-center rounded-full overflow-hidden relative transition-transform duration-200 group-active:scale-95 font-black",
+              // 复用切割按钮的玻璃态样式，保证颜色一致
+              "glass-btn-active glass-btn-sheen border-2 border-white/30 text-brand-dark shadow-[0_0_15px_rgba(246,142,95,0.5)]",
+              isLandscape ? "w-7 h-7 text-xs" : "w-6 h-6 text-[10px]"
+            )}>
+              <span key={localCutCount} className="animate-in zoom-in-50 duration-200 ease-out leading-none relative z-10">
+                {localCutCount || 1}
+              </span>
+            </div>
           </div>
         </div>
       </div>

@@ -165,7 +165,7 @@
         "tabs": {
             "shape": "Shape",
             "puzzle": "Type",
-            "cut": "Count",
+            "cut": "Cut",
             "scatter": "Scatter",
             "controls": "Controls"
         },
@@ -245,6 +245,8 @@
     "stats": {
         "title": "Game Statistics",
         "viewScore": "View Score",
+        "score": "Score",
+        "viewDetailedScore": "Detailed Score",
         "noData": "No statistics data",
         "completed": "Completed",
         "duration": "Duration",
@@ -329,16 +331,24 @@
         "extreme": "Extreme",
         "levelLabel": "L{level}",
         "levels": {
-            "zen": "Zen",
-            "classic": "Classic",
-            "elite": "Elite",
-            "legend": "Legend"
+            "1": "Awakening",
+            "2": "Trace",
+            "3": "Agile",
+            "4": "Ingenuity",
+            "5": "Breakthrough",
+            "6": "Phantom",
+            "7": "Abyss",
+            "8": "Divine"
         },
         "desc": {
-            "zen": "Relaxing and meditative",
-            "classic": "Balanced challenge",
-            "elite": "Skill and patience",
-            "legend": "Ultimate mastery"
+            "1": "Gentle start, Savor fragments",
+            "2": "Small challenge, Find clues",
+            "3": "More pieces, Trust your gut",
+            "4": "Complex twists, Use your wits",
+            "5": "Break limits, Leave your zone",
+            "6": "Blurred visio, Find order in chaos",
+            "7": "Brutal cuts, Survive the storm",
+            "8": "Total breakdown, Defy the creator"
         }
     },
     "cutType": {

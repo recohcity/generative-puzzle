@@ -321,23 +321,23 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
 
 
   return (
-    <div 
+    <div
       className={cn(state.draggingPiece ? "dragging-active" : "")}
       style={{
-      width: '100%',
-      boxSizing: 'border-box',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-      overflow: 'hidden',
-      paddingTop: TOP_BOTTOM_MARGIN,
-      paddingBottom: TOP_BOTTOM_MARGIN,
-      paddingLeft: actualLeftRightMargin,
-      paddingRight: actualLeftRightMargin,
-      minHeight: '100vh', // 🎯 极致锁定：桌面端垂直居中，确保视觉平衡
-      position: 'relative'
-    }}>
+        width: '100%',
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'hidden',
+        paddingTop: TOP_BOTTOM_MARGIN,
+        paddingBottom: TOP_BOTTOM_MARGIN,
+        paddingLeft: actualLeftRightMargin,
+        paddingRight: actualLeftRightMargin,
+        minHeight: '100vh', // 🎯 极致锁定：桌面端垂直居中，确保视觉平衡
+        position: 'relative'
+      }}>
       <div style={{
         display: 'flex',
         flexDirection: 'row',
@@ -438,8 +438,8 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
               </div>
 
               <div className="mt-2 group">
-                <IdentityChip 
-                  panelScale={panelScale} 
+                <IdentityChip
+                  panelScale={panelScale}
                   isPanelOpen={showLeaderboard}
                   onClose={() => setShowLeaderboard(false)}
                   onClick={() => {
@@ -525,14 +525,14 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                     <RestartButton
                       onClick={handleRetryCurrentGame}
                       icon="retry"
-                      style={{ flex: 1, height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 14 : 'calc(0.95rem * var(--panel-scale))' }}
+                      style={{ flex: 1, height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 12 : 'calc(0.95rem * var(--panel-scale))' }}
                     >
                       {t('game.controls.retryCurrent')}
                     </RestartButton>
                     <RestartButton
                       onClick={handleDesktopResetGame}
                       icon="refresh"
-                      style={{ flex: 1, height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 14 : 'calc(0.95rem * var(--panel-scale))' }}
+                      style={{ flex: 1, height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 12 : 'calc(0.95rem * var(--panel-scale))' }}
                     >
                       {t('game.controls.restartGame')}
                     </RestartButton>
@@ -543,7 +543,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
           </div>
         </div>
       </div>
-      
+
       {/* 🎯 极致锁定：版权信息紧贴游戏面板，缩窄留空，提升视觉聚合感 */}
       {!isFullscreen && (
         <div className="mt-8 flex justify-center z-10 transition-opacity duration-300">
