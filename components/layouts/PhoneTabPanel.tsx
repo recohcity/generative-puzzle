@@ -442,7 +442,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                 transition={{ duration: 0.25, ease: "easeOut" }}
                 onClick={(e) => e.stopPropagation()}
                 className={cn(
-                  "bg-white/10 backdrop-blur-2xl border border-white/15 shadow-2xl relative flex flex-col outline-none w-full max-h-[82vh] cursor-default",
+                  "bg-white/10 backdrop-blur-2xl border border-white/15 shadow-2xl relative flex flex-col outline-none w-full max-h-[85vh] cursor-default",
                   isLandscape ? "rounded-[2rem] max-w-[620px]" : "rounded-[2.5rem] max-w-[360px]"
                 )}
               >
