@@ -19,6 +19,7 @@ interface PhoneLandscapeLayoutProps {
   onTabChange: (tab: 'shape' | 'puzzle' | 'cut' | 'scatter' | 'controls') => void;
   goToNextTab: () => void;
   goToFirstTab: () => void;
+  supportsFullscreen?: boolean;
 }
 
 const PhoneLandscapeLayout: React.FC<PhoneLandscapeLayoutProps> = ({
@@ -30,6 +31,7 @@ const PhoneLandscapeLayout: React.FC<PhoneLandscapeLayoutProps> = ({
   onTabChange,
   goToNextTab,
   goToFirstTab,
+  supportsFullscreen,
 }) => {
   // 使用统一的设备检测和画布管理系统
   const device = useDeviceDetection();
@@ -121,6 +123,7 @@ const PhoneLandscapeLayout: React.FC<PhoneLandscapeLayoutProps> = ({
           isFullscreen={isFullscreen}
           onToggleMusic={onToggleMusic}
           onToggleFullscreen={onToggleFullscreen}
+          supportsFullscreen={supportsFullscreen}
           style={{ height: '100%', width: '100%' }}
           isLandscape={true}
         />

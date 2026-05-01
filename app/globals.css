@@ -72,42 +72,30 @@ h6,
   user-select: none !important;
 }
 
-/* 语言切换按钮固定样式 - 强制覆盖所有状态 */
-.language-button-fixed,
-.language-button-fixed:hover,
-.language-button-fixed:focus,
-.language-button-fixed:active,
-.language-button-fixed:focus-visible,
-.language-button-fixed[data-state="open"],
-.language-button-fixed[aria-expanded="true"] {
-  background-color: var(--brand-deep) !important;
-  color: var(--brand-orange) !important;
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-.language-button-fixed span,
-.language-button-fixed:hover span,
-.language-button-fixed:focus span,
-.language-button-fixed:active span,
-.language-button-fixed:focus-visible span {
-  color: var(--brand-orange) !important;
-}
-
-/* 工具按钮固定样式 - 强制覆盖所有状态 */
+/* 工具按钮统一样式 - 语言切换、音乐、全屏、排行榜 */
 .utility-button-fixed,
 .utility-button-fixed:hover,
 .utility-button-fixed:focus,
 .utility-button-fixed:active,
-.utility-button-fixed:focus-visible,
-.utility-button-fixed[data-state="open"],
-.utility-button-fixed[aria-expanded="true"] {
-  background-color: var(--brand-deep) !important;
-  color: var(--brand-orange) !important;
-  border: none !important;
+.utility-button-fixed:focus-visible {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  color: var(--brand-amber) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
   outline: none !important;
   box-shadow: none !important;
+  transition: all 0.3s ease !important;
+}
+
+.utility-button-fixed:hover {
+  background-color: rgba(255, 255, 255, 0.18) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* active/open状态：背景保持不变，边框高亮，图标继承按钮颜色 */
+.utility-button-fixed[data-state="open"],
+.utility-button-fixed[aria-expanded="true"] {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  border-color: var(--brand-amber) !important;
 }
 
 .utility-button-fixed svg,
@@ -115,8 +103,22 @@ h6,
 .utility-button-fixed:focus svg,
 .utility-button-fixed:active svg,
 .utility-button-fixed:focus-visible svg {
-  color: var(--brand-orange) !important;
-  stroke: var(--brand-orange) !important;
+  color: inherit !important;
+  stroke: currentColor !important;
+  width: 12px !important;
+  height: 12px !important;
+  stroke-width: 2 !important;
+}
+
+.utility-button-fixed span,
+.utility-button-fixed:hover span,
+.utility-button-fixed:focus span,
+.utility-button-fixed:active span,
+.utility-button-fixed:focus-visible span {
+  color: var(--brand-amber) !important;
+  font-size: 11px !important;
+  font-weight: normal !important;
+  line-height: 1 !important;
 }
 
 @layer base {

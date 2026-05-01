@@ -60,6 +60,7 @@ export default function CurveTestOptimized() {
   const device = useDeviceDetection();
   const deviceType = device.deviceType;
   const phoneMode = device.layoutMode as 'portrait' | 'landscape';
+  const supportsFullscreen = device.supportsFullscreen;
 
   // 添加控制面板选项卡状态（仅用于手机模式）
   const [activeTab, setActiveTab] = useState<'shape' | 'puzzle' | 'cut' | 'scatter' | 'controls'>('shape');
@@ -258,15 +259,12 @@ export default function CurveTestOptimized() {
     setIsMusicPlaying(newStatus);
   };
 
-  // 全屏切换函数
+  // 全屏切换函数（仅在 supportsFullscreen=true 时被调用）
   const toggleFullscreen = () => {
     playButtonClickSound();
 
     const newClickCount = fullscreenClickCount + 1;
     setFullscreenClickCount(newClickCount);
-
-    const isIOS = device.isIOS;
-    const isAndroid = device.isAndroid;
 
     const checkFullscreenState = () => {
       return !!(document.fullscreenElement ||
@@ -277,216 +275,54 @@ export default function CurveTestOptimized() {
 
     const actualFullscreenState = checkFullscreenState();
 
+    // 修正状态不一致
     if (isFullscreen !== actualFullscreenState) {
       setIsFullscreen(actualFullscreenState);
       return;
     }
 
+    const gameContainer = gameContainerRef.current;
+    if (!gameContainer) return;
+
     if (!actualFullscreenState) {
-      const gameContainer = gameContainerRef.current;
-      if (!gameContainer) return;
-
-      if (isIOS) {
-        const originalStyles = {
-          position: gameContainer.style.position,
-          top: gameContainer.style.top,
-          left: gameContainer.style.left,
-          width: gameContainer.style.width,
-          height: gameContainer.style.height,
-          zIndex: gameContainer.style.zIndex
-        };
-
-        (gameContainer as any)._originalStyles = originalStyles;
-        gameContainer.style.position = 'fixed';
-        gameContainer.style.top = '0';
-        gameContainer.style.left = '0';
-        gameContainer.style.width = '100vw';
-        gameContainer.style.height = '100vh';
-        gameContainer.style.zIndex = '9999';
-        document.body.style.overflow = 'hidden';
-        window.scrollTo(0, 0);
-        gameContainer.style.paddingTop = 'env(safe-area-inset-top)';
-        gameContainer.style.paddingBottom = 'env(safe-area-inset-bottom)';
-        setIsFullscreen(true);
-
-        try {
-          if (device.screenWidth > device.screenHeight) {
-            if (window.screen.orientation && 'lock' in window.screen.orientation) {
-              (window.screen.orientation as any).lock('landscape').catch(() => {});
-            }
-          }
-        } catch (error) {}
-      } else if (isAndroid) {
-        try {
-          if (device.screenWidth > device.screenHeight) {
-            if (window.screen.orientation && 'lock' in window.screen.orientation) {
-              (window.screen.orientation as any).lock('landscape').catch(() => {});
-            }
-          }
-        } catch (err) {}
-
-        try {
-          if (gameContainer.requestFullscreen) {
-            gameContainer.requestFullscreen();
-          } else if ((gameContainer as any).webkitRequestFullscreen) {
-            (gameContainer as any).webkitRequestFullscreen();
-          } else if ((gameContainer as any).mozRequestFullScreen) {
-            (gameContainer as any).mozRequestFullScreen();
-          } else if ((gameContainer as any).msRequestFullscreen) {
-            (gameContainer as any).msRequestFullscreen();
-          }
-        } catch (error) {
-          const originalStyles = {
-            position: gameContainer.style.position,
-            top: gameContainer.style.top,
-            left: gameContainer.style.left,
-            width: gameContainer.style.width,
-            height: gameContainer.style.height,
-            zIndex: gameContainer.style.zIndex
-          };
-          (gameContainer as any)._originalStyles = originalStyles;
-          gameContainer.style.position = 'fixed';
-          gameContainer.style.top = '0';
-          gameContainer.style.left = '0';
-          gameContainer.style.width = '100vw';
-          gameContainer.style.height = '100vh';
-          gameContainer.style.zIndex = '9999';
-          document.body.style.overflow = 'hidden';
-          setIsFullscreen(true);
+      // 进入全屏 — 统一使用原生 Fullscreen API
+      try {
+        if (gameContainer.requestFullscreen) {
+          gameContainer.requestFullscreen();
+        } else if ((gameContainer as any).webkitRequestFullscreen) {
+          (gameContainer as any).webkitRequestFullscreen();
+        } else if ((gameContainer as any).mozRequestFullScreen) {
+          (gameContainer as any).mozRequestFullScreen();
+        } else if ((gameContainer as any).msRequestFullscreen) {
+          (gameContainer as any).msRequestFullscreen();
         }
-      } else {
-        try {
-          if (gameContainer.requestFullscreen) {
-            gameContainer.requestFullscreen();
-          } else if ((gameContainer as any).webkitRequestFullscreen) {
-            (gameContainer as any).webkitRequestFullscreen();
-          } else if ((gameContainer as any).mozRequestFullScreen) {
-            (gameContainer as any).mozRequestFullScreen();
-          } else if ((gameContainer as any).msRequestFullscreen) {
-            (gameContainer as any).msRequestFullscreen();
-          }
-          setTimeout(() => {
-            try {
-              const isFullscreenNow = checkFullscreenState();
-              if (isFullscreenNow !== isFullscreen) {
-                setIsFullscreen(isFullscreenNow);
-              }
-            } catch (error) {}
-          }, 500);
-        } catch (error) {}
-      }
+        // fullscreenchange 事件会更新 isFullscreen 状态
+      } catch (error) {}
     } else {
-      // 退出全屏
-      if (isIOS) {
-        // 恢复原始样式
-        const gameContainer = gameContainerRef.current;
-        if (gameContainer && (gameContainer as any)._originalStyles) {
-          const originalStyles = (gameContainer as any)._originalStyles;
-          gameContainer.style.position = originalStyles.position;
-          gameContainer.style.top = originalStyles.top;
-          gameContainer.style.left = originalStyles.left;
-          gameContainer.style.width = originalStyles.width;
-          gameContainer.style.height = originalStyles.height;
-          gameContainer.style.zIndex = originalStyles.zIndex;
-          gameContainer.style.paddingTop = '';
-          gameContainer.style.paddingBottom = '';
-          document.body.style.overflow = '';
-
-          // 释放屏幕方向锁定
-          try {
-            if (window.screen.orientation && 'unlock' in window.screen.orientation) {
-              (window.screen.orientation as any).unlock();
-            }
-          } catch (error) {
-            if (typeof window !== "undefined" && (window as any).DEBUG) console.log("释放屏幕方向锁定出错:", error);
-          }
-
-          setIsFullscreen(false);
+      // 退出全屏 — 统一使用原生 API
+      const actuallyInFullscreen = checkFullscreenState();
+      if (!actuallyInFullscreen) {
+        setIsFullscreen(false);
+        return;
+      }
+      try {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if ((document as any).webkitExitFullscreen) {
+          (document as any).webkitExitFullscreen();
+        } else if ((document as any).mozCancelFullScreen) {
+          (document as any).mozCancelFullScreen();
+        } else if ((document as any).msExitFullscreen) {
+          (document as any).msExitFullscreen();
         }
-      } else if (isAndroid) {
-        // 增强Android退出全屏的健壮性
-        const actuallyInFullscreen = checkFullscreenState();
-
-        // 如果实际上不在全屏状态，但状态显示在全屏中，直接更新状态
-        if (!actuallyInFullscreen) {
-          if (typeof window !== "undefined" && (window as any).DEBUG) console.log("检测到状态不一致：UI显示全屏但实际没有全屏");
-          setIsFullscreen(false);
-          return;
-        }
-        // 先尝试标准API退出全屏
-        try {
-          if (document.exitFullscreen) {
-            document.exitFullscreen();
-          } else if ((document as any).webkitExitFullscreen) {
-            (document as any).webkitExitFullscreen();
-          } else if ((document as any).mozCancelFullScreen) {
-            (document as any).mozCancelFullScreen();
-          } else if ((document as any).msExitFullscreen) {
-            (document as any).msExitFullscreen();
-          }
-
-          // 释放屏幕方向锁定
-          try {
-            if (window.screen.orientation && 'unlock' in window.screen.orientation) {
-              (window.screen.orientation as any).unlock();
-            }
-          } catch (error) {
-            if (typeof window !== "undefined" && (window as any).DEBUG) console.log("释放Android屏幕方向锁定出错:", error);
-          }
-        } catch (error) {
-          if (typeof window !== "undefined" && (window as any).DEBUG) console.log("退出全屏出错:", error);
-          // 如果使用了备用方法，恢复原始样式
-          const gameContainer = gameContainerRef.current;
-          if (gameContainer && (gameContainer as any)._originalStyles) {
-            const originalStyles = (gameContainer as any)._originalStyles;
-            gameContainer.style.position = originalStyles.position;
-            gameContainer.style.top = originalStyles.top;
-            gameContainer.style.left = originalStyles.left;
-            gameContainer.style.width = originalStyles.width;
-            gameContainer.style.height = originalStyles.height;
-            gameContainer.style.zIndex = originalStyles.zIndex;
-            document.body.style.overflow = '';
+        // 兜底：500ms 后若 fullscreenchange 未触发则手动同步状态
+        setTimeout(() => {
+          if (!checkFullscreenState() && isFullscreen) {
             setIsFullscreen(false);
           }
-        }
-      } else {
-        // 桌面设备标准退出全屏 - 提高健壮性
-
-        // 检查是否实际上处于全屏状态
-        const actuallyInFullscreen = checkFullscreenState();
-
-        // 如果实际上不在全屏状态，但状态显示在全屏中，直接更新状态
-        if (!actuallyInFullscreen) {
-          if (typeof window !== "undefined" && (window as any).DEBUG) console.log("检测到状态不一致：UI显示全屏但实际没有全屏");
-          setIsFullscreen(false);
-          return;
-        }
-
-        if (typeof window !== "undefined" && (window as any).DEBUG) console.log("桌面设备退出全屏");
-        // 使用简化的退出全屏逻辑
-        try {
-          if (document.exitFullscreen) {
-            document.exitFullscreen();
-          } else if ((document as any).webkitExitFullscreen) {
-            (document as any).webkitExitFullscreen();
-          } else if ((document as any).mozCancelFullScreen) {
-            (document as any).mozCancelFullScreen();
-          } else if ((document as any).msExitFullscreen) {
-            (document as any).msExitFullscreen();
-          }
-
-          // 切换按钮状态 - 如果直接调用没有触发fullscreenchange事件，手动更新状态
-          setTimeout(() => {
-            if (!checkFullscreenState() && isFullscreen) {
-              if (typeof window !== "undefined" && (window as any).DEBUG) console.log("全屏已退出但状态未更新，手动更新");
-              setIsFullscreen(false);
-            }
-          }, 300);
-        } catch (error) {
-          if (typeof window !== "undefined" && (window as any).DEBUG) console.log("退出全屏时出错:", error);
-          // 强制更新状态
-          setIsFullscreen(false);
-        }
+        }, 500);
+      } catch (error) {
+        setIsFullscreen(false);
       }
     }
   };
@@ -519,8 +355,7 @@ export default function CurveTestOptimized() {
     goToFirstTab,
     activeTab,
     onTabChange: handleTabChange,
-    // deviceType and phoneMode are used by GameInterface to pick the layout,
-    // but individual layouts might not need them if their structure is fixed.
+    supportsFullscreen,
   };
 
   let layoutToRender;

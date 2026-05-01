@@ -19,6 +19,8 @@ export interface DeviceDetectionState extends DeviceState {
   layoutMode: 'portrait' | 'landscape' | 'desktop';
   forceRotation?: boolean;
   forceReason?: string;
+  /** 运行时检测：当前浏览器是否真正支持 Fullscreen API（微信/iOS Safari 等受限环境返回 false） */
+  supportsFullscreen: boolean;
 }
 
 /**
@@ -32,6 +34,17 @@ export function useDeviceDetection(): DeviceDetectionState {
   const [deviceState, setDeviceState] = useState<DeviceDetectionState>(() => {
     const state = deviceManager.getState();
     const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+    const isWeChat = /MicroMessenger/i.test(ua) || /wxwork/i.test(ua);
+    const isIOS = state.isIOS;
+    // 检测 Fullscreen API 真实可用性：
+    // 微信内置浏览器禁止全屏；iOS Safari 虽有 webkitRequestFullscreen 但行为异常导致布局错乱
+    const supportsFullscreen = typeof window !== 'undefined'
+      ? !isWeChat && !isIOS && (
+          typeof document.exitFullscreen === 'function' ||
+          typeof (document as any).webkitExitFullscreen === 'function' ||
+          typeof (document as any).mozCancelFullScreen === 'function'
+        )
+      : false;
     
     return {
       ...state,
@@ -39,7 +52,8 @@ export function useDeviceDetection(): DeviceDetectionState {
       isTouchDevice: typeof window !== 'undefined' ? ('ontouchstart' in window || navigator.maxTouchPoints > 0) : false,
       isIPad: /iPad/i.test(ua) || (state.isIOS && state.screenWidth >= 768) || 
               (typeof window !== 'undefined' && 'ontouchend' in document && /Macintosh/i.test(ua)),
-      isWeChat: /MicroMessenger/i.test(ua) || /wxwork/i.test(ua)
+      isWeChat,
+      supportsFullscreen,
     };
   });
 
@@ -47,6 +61,12 @@ export function useDeviceDetection(): DeviceDetectionState {
     const updateInternalState = (newState: DeviceState) => {
       const ua = navigator.userAgent;
       const isPortrait = newState.screenHeight > newState.screenWidth;
+      const isWeChat = /MicroMessenger/i.test(ua) || /wxwork/i.test(ua);
+      const supportsFullscreen = !isWeChat && !newState.isIOS && (
+        typeof document.exitFullscreen === 'function' ||
+        typeof (document as any).webkitExitFullscreen === 'function' ||
+        typeof (document as any).mozCancelFullScreen === 'function'
+      );
       
       const enrichedState: DeviceDetectionState = {
         ...newState,
@@ -55,7 +75,8 @@ export function useDeviceDetection(): DeviceDetectionState {
         isTouchDevice: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
         isIPad: /iPad/i.test(ua) || (newState.isIOS && newState.screenWidth >= 768) || 
                 ('ontouchend' in document && /Macintosh/i.test(ua)),
-        isWeChat: /MicroMessenger/i.test(ua) || /wxwork/i.test(ua)
+        isWeChat,
+        supportsFullscreen,
       };
 
       setDeviceState(enrichedState);

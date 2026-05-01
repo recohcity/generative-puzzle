@@ -18,6 +18,8 @@ interface GlobalUtilityButtonsProps {
   onToggleUser?: () => void;
   isLoggedIn?: boolean;
   isUserPanelOpen?: boolean;
+  /** 当前浏览器是否真正支持 Fullscreen API，不支持时隐藏全屏按钮 */
+  supportsFullscreen?: boolean;
 }
 
 const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
@@ -30,6 +32,7 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
   onToggleUser,
   isLoggedIn = false,
   isUserPanelOpen = false,
+  supportsFullscreen = true,
 }) => {
   const { t } = useTranslation();
   const buttonClass = `rounded-full border-none shadow-none cursor-pointer utility-button-fixed`;
@@ -88,10 +91,10 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
             playButtonClickSound();
             onToggleLeaderboard();
           }}
-          className={cn(buttonClass, isLeaderboardOpen ? "glass-btn-active" : "glass-btn-inactive")}
+          className={cn(buttonClass, "glass-btn-inactive")}
           style={{
             ...buttonStyle,
-            backgroundColor: isLeaderboardOpen ? undefined : 'rgba(255, 255, 255, 0.05)',
+            backgroundColor: 'rgba(255, 255, 255, 0.05)',
             color: isLeaderboardOpen ? 'var(--brand-dark)' : 'var(--brand-amber)',
           }}
           data-testid="toggle-leaderboard-button"
@@ -122,27 +125,29 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
           <VolumeX width={iconSize} height={iconSize} strokeWidth={2} style={{ pointerEvents: 'none' }} />
         )}
       </button>
-      <button
-        onClick={() => {
-          playButtonClickSound();
-          onToggleFullscreen();
-        }}
-        className={cn(buttonClass, "glass-btn-inactive")}
-        style={{
-          ...buttonStyle,
-          backgroundColor: 'rgba(255, 255, 255, 0.05)',
-          color: 'var(--brand-amber)',
-        }}
-        data-testid="toggle-fullscreen-button"
-        aria-label={isFullscreen ? t('game.fullscreen.exit') : t('game.fullscreen.enter')}
-        title={isFullscreen ? t('game.fullscreen.exit') : t('game.fullscreen.enter')}
-      >
-        {isFullscreen ? (
-          <Minimize width={iconSize} height={iconSize} strokeWidth={2} style={{ pointerEvents: 'none' }} />
-        ) : (
-          <Maximize width={iconSize} height={iconSize} strokeWidth={2} style={{ pointerEvents: 'none' }} />
-        )}
-      </button>
+      {supportsFullscreen && (
+        <button
+          onClick={() => {
+            playButtonClickSound();
+            onToggleFullscreen();
+          }}
+          className={cn(buttonClass, "glass-btn-inactive")}
+          style={{
+            ...buttonStyle,
+            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+            color: 'var(--brand-amber)',
+          }}
+          data-testid="toggle-fullscreen-button"
+          aria-label={isFullscreen ? t('game.fullscreen.exit') : t('game.fullscreen.enter')}
+          title={isFullscreen ? t('game.fullscreen.exit') : t('game.fullscreen.enter')}
+        >
+          {isFullscreen ? (
+            <Minimize width={iconSize} height={iconSize} strokeWidth={2} style={{ pointerEvents: 'none' }} />
+          ) : (
+            <Maximize width={iconSize} height={iconSize} strokeWidth={2} style={{ pointerEvents: 'none' }} />
+          )}
+        </button>
+      )}
     </div>
   );
 };
