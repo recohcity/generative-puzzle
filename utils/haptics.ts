@@ -1,4 +1,4 @@
-export type HapticType = 'collide' | 'success';
+export type HapticType = 'collide' | 'success' | 'light';
 
 /**
  * 触发移动端触觉反馈（震动）
@@ -19,6 +19,10 @@ export const triggerHaptic = (type: HapticType) => {
         case 'success':
           // 放置正确：清晰的两段式震动 (模拟清脆的“咔哒”落位)
           window.navigator.vibrate([20, 30, 20]); 
+          break;
+        case 'light':
+          // 交互反馈：极短促震动 (模拟微小触碰)
+          window.navigator.vibrate(10);
           break;
       }
     } catch (e) {

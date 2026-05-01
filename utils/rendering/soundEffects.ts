@@ -44,7 +44,7 @@ export const initBackgroundMusic = () => {
   if (backgroundMusic === null) {
     backgroundMusic = new Audio('/bgm.mp3');
     backgroundMusic.loop = true;
-    backgroundMusic.volume = 0.5;
+    backgroundMusic.volume = 0.3; // 从 0.5 降至 0.3，为交互音效留出空间
     backgroundMusic.preload = 'metadata'; // 优化：移动端改为流式加载，避免全量下载
     // @ts-ignore
     backgroundMusic.playsInline = true;
@@ -427,6 +427,70 @@ export const playScatterSound = async (): Promise<void> => {
     console.error('Error playing scatter sound:', error);
   }
 };
+// Play sound when interacting with the completed shape
+export const playCompleteInteractionSound = async (): Promise<void> => {
+  soundPlayedForTest('completeInteraction');
+  const audioContext = createAudioContext();
+  if (!audioContext) return;
+
+  try {
+    await ensureAudioContextRunning(audioContext);
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    // 交互音效：使用 sine 波形创造清脆、晶莹剔透的感觉
+    oscillator.type = 'sine';
+    // 高频起步，快速下滑
+    oscillator.frequency.setValueAtTime(1500, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(1000, audioContext.currentTime + 0.1);
+
+    // 提高音量至 0.4
+    gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.2);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.15);
+  } catch (error) {
+    console.error('Error playing complete interaction sound:', error);
+  }
+};
+
+// Play a subtle sound during 3D tilt interaction of the completed shape
+export const playCompleteTiltSound = async (intensity: number): Promise<void> => {
+  const audioContext = createAudioContext();
+  if (!audioContext) return;
+
+  try {
+    await ensureAudioContextRunning(audioContext);
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    // 倾斜动态音效：使用 sine 波形创造清脆的听感，更容易从背景音乐中识别
+    oscillator.type = 'sine';
+    
+    // 频率随倾斜强度微调，营造一种“阻尼”感
+    // 强度通常在 0-1 之间，对应 400Hz - 800Hz 的频率范围
+    const baseFreq = 400 + (intensity * 400);
+    oscillator.frequency.setValueAtTime(baseFreq, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(baseFreq * 0.6, audioContext.currentTime + 0.04);
+
+    // 大幅提高音量至 0.5，并使用稍长的 60ms 持续时间以增强感知
+    gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.06);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.06);
+  } catch (error) {
+    // 忽略高频交互下的可能的并发错误
+  }
+};
+
 // 播放拼图完成音效（独立音频文件）
 export const playFinishSound = async (): Promise<void> => {
   soundPlayedForTest('finish');

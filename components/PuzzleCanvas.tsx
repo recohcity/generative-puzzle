@@ -3,7 +3,7 @@
 import type React from "react"
 import { useEffect, useRef, useState, useMemo, useCallback } from "react"
 import { useGame } from "@/contexts/GameContext"
-import { playPieceSelectSound, playPieceSnapSound, playFinishSound, playRotateSound } from "@/utils/rendering/soundEffects"
+import { playPieceSelectSound, playPieceSnapSound, playFinishSound, playRotateSound, playCompleteInteractionSound, playCompleteTiltSound } from "@/utils/rendering/soundEffects"
 import { useTranslation } from '@/contexts/I18nContext'
 
 import {
@@ -20,6 +20,7 @@ import { useDebugToggle } from '@/hooks/useDebugToggle';
 import GameTimer from '@/components/GameTimer';
 import LiveScore from '@/components/LiveScore';
 import ScoreDisplay from '@/components/score/ScoreDisplay';
+import { triggerHaptic } from "@/utils/haptics";
 
 // 画布尺寸边界常量
 const MIN_CANVAS_WIDTH = 400;
@@ -151,6 +152,7 @@ export default function PuzzleCanvas() {
   // --- 3D Tilt Interaction for Completed Shape ---
   const [tilt, setTilt] = useState({ rx: 0, ry: 0, active: false });
   const tiltStateRef = useRef({ active: false, startX: 0, startY: 0 });
+  const lastTiltAudioRef = useRef({ rx: 0, ry: 0 });
 
   const getClientPos = (e: React.MouseEvent | React.TouchEvent | MouseEvent | TouchEvent) => {
     if ('touches' in e && e.touches.length > 0) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -163,6 +165,8 @@ export default function PuzzleCanvas() {
       const pos = getClientPos(e);
       tiltStateRef.current = { active: true, startX: pos.x, startY: pos.y };
       setTilt({ rx: 0, ry: 0, active: true });
+      playCompleteInteractionSound();
+      triggerHaptic('light');
       return;
     }
     if ('touches' in e) handleTouchStart(e as React.TouchEvent<HTMLCanvasElement>);
@@ -177,6 +181,15 @@ export default function PuzzleCanvas() {
       const ry = Math.max(-35, Math.min(35, dx * 0.15));
       const rx = Math.max(-35, Math.min(35, -dy * 0.15));
       setTilt({ rx, ry, active: true });
+
+      // 🔊 动态音效触发逻辑：当倾斜角度变化超过 1 度时播放微弱反馈
+      const drx = Math.abs(rx - lastTiltAudioRef.current.rx);
+      const dry = Math.abs(ry - lastTiltAudioRef.current.ry);
+      if (drx > 1 || dry > 1) {
+        const intensity = Math.min(1, (Math.abs(rx) + Math.abs(ry)) / 70);
+        playCompleteTiltSound(intensity);
+        lastTiltAudioRef.current = { rx, ry };
+      }
       return;
     }
     if ('touches' in e) handleTouchMove(e as React.TouchEvent<HTMLCanvasElement>);
