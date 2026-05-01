@@ -1,4 +1,29 @@
 # 生成式拼图游戏 Changelog
+## [v1.4.15] - 2026-05-01
+
+### 📱 移动端全屏架构重构与响应式交互固化 (Mobile Fullscreen Refactor & Responsive Polish)
+
+本版本解决了移动端全屏模式在特定浏览器（微信、iOS Safari、Arc）下的布局错乱问题，并进一步优化了小屏设备的垂直空间分配。
+
+#### 1. 移动端全屏控制机制重构 (Fullscreen Support Detection)
+- **运行时支持检测**: 引入了 `supportsFullscreen` 检测逻辑。在微信、iOS Safari 等不支持或支持不完整的浏览器环境中，全屏按钮将自动隐藏，彻底避免了用户误触导致的布局崩溃。
+- **废弃伪全屏逻辑**: 彻底移除了原先针对 iOS 的 `position: fixed` 模拟全屏方案（该方案曾导致画布下移且无法恢复布局）。现在系统统一采用原生 API，在受限环境下优先保证布局稳定性。
+- **状态兜底机制**: 增强了全屏状态切换时的手动状态同步逻辑，通过 500ms 的超时监控确保 UI 状态与浏览器全屏状态始终保持一致。
+
+#### 2. 移动端 UI 垂直空间极致压缩 (Vertical Space Optimization)
+- **响应式间距优化**: 针对小屏手机进一步压缩了 `PhoneTabPanel` 中的内边距与 Tab 切换按钮高度，确保控制面板在各种屏幕比例下均不发生垂直溢出。
+- **布局间隙微调**: 将画布与底部面板的间距收窄至 `2px` 的极致状态，为画布保留更多的视觉像素。
+
+#### 3. 游戏难度逻辑精密化 (Game Difficulty Refinement)
+- **Level 1 随机性增强**: 修正了难度 Level 1 的碎片生成逻辑，现已支持 2-4 片范围的随机生成，提升了入门级游戏的趣味性。
+- **配置与文档对齐**: 更新了 `cutGeneratorConfig.ts` 与 `game-rules-unified.md`，确保代码实现与文档规范的绝对统一。
+
+#### 4. 构建稳定性与代码质量 (Build & Type Stability)
+- **全量类型修复**: 修复了结算系统重构后遗留的 TypeScript 类型错误，确保 `npx tsc` 零错误通过。
+- **环境变量注入**: 在版权信息区域动态注入 `APP_VERSION`，方便在生产环境快速校验版本状态。
+
+---
+
 ## [v1.4.13] - 2026-04-28
 
 ### 📱 全平台结算架构深度重塑与视觉统一 (Full-scale Settlement System Overhaul)
