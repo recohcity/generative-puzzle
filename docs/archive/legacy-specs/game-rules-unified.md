@@ -7,10 +7,10 @@
 
 ## 📋 文档状态
 
-**版本**: v3.4 (基于实际测试优化的速度奖励版)  
-**最后更新**: 2025/12/28  
-**状态**: ✅ 与代码实现完全一致  
-**基准代码**: `packages/game-core/src/score/ScoreCalculator.ts` + `packages/game-core/src/puzzle/cutGeneratorConfig.ts` + `packages/game-core/src/puzzle/graph/NetworkCutter.ts`
+**版本**: v4.0 (2026 移动端全屏与响应式专项优化版)  
+**最后更新**: 2026/05/01  
+**状态**: ✅ 与项目 v1.4.15 代码实现完全一致  
+**基准代码**: `packages/game-core/src/utils/score/ScoreCalculator.ts` + `utils/puzzle/cutGeneratorConfig.ts` + `hooks/useDeviceDetection.ts`
 
 > **权威性声明**：本文档为游戏唯一权威规则说明，与代码实现完全一致。所有游戏逻辑、分数计算、难度设计均以此文档和对应代码为准。
 >
@@ -18,9 +18,12 @@
 >
 > **v1.3.77 更新说明 (Monorepo)**: 计算内核已整体无损迁移至 `@generative-puzzle/game-core` 独立包，断绝与 `React/DOM` 状态的牵连。
 >
-> **v3.3 更新说明**：引入动态速度奖励系统，基于难度级别和拼图数量计算合理的时间阈值和奖励分数，让每个难度都有机会获得速度加成奖励。
->
-> **v3.4 更新说明**：基于实际测试数据（难度1，4片，极限完成时间约22秒）优化速度奖励阈值，调整每片平均时间和阈值倍数，使其更符合实际游戏体验。极速阈值从0.3倍基础时间调整为1.0倍基础时间，确保玩家可以达成速度奖励。
+> **v4.0 更新说明 (v1.4.15)**：
+> 1. **移动端全屏机制重构**：引入运行时全屏能力检测（SupportsFullscreen）。针对微信内浏览器、iOS Safari 及 Arc Mobile 等不支持原生 API 或易引发布局错乱的环境，自动隐藏全屏切换按钮，确保 UI 稳定性，彻底废弃不稳定的 `position: fixed` 伪全屏逻辑。
+> 2. **入门难度优化**：难度 Level 1 的碎片范围从 3-4 片优化为 **2-4 片**，提升了入门关卡的随机性。
+> 3. **感官反馈增强**：正式确立 Android 震动与 iOS 音效补偿机制。碰撞触发行程 15ms 震动/音效，吸附触发节奏感震动/音效。
+> 4. **结算 UI 仪表盘化 (v1.4.13)**：结算系统重构为“仪表盘”架构，强制对齐跨端字号（56px 核心分数）与视觉分区。
+> 5. **数值美学固化**：全站数值采用 `font-sans` 中无斜线数字 `0` 的平滑字体规范，核心字重锁定为 `medium (500)`。
 
 ## ⚖️ v3.2 平衡优化摘要
 
@@ -85,7 +88,7 @@
 
 | 难度级别 | targetCuts | pieceRange | 难度分类 | 基础分数 | 难度系数 |
 |---------|------------|------------|---------|---------|---------|
-| 1       | 2条        | 3-4片      | 入门     | 500     | 1.0     |
+| 1       | 2条        | 2-4片      | 入门     | 500     | 1.0     |
 | 2       | 3条        | 4-6片      | 简单     | 800     | 1.2     |
 | 3       | 4条        | 5-8片      | 初级     | 1200    | 1.5     |
 | 4       | 6条        | 7-12片     | 中级     | 1800    | 1.8     |
@@ -109,7 +112,7 @@
 ```typescript
 // 来自 cutGeneratorConfig.ts 的实际配置
 const DIFFICULTY_SETTINGS = {
-  1: { targetCuts: 2,  pieceRange: { min: 3, max: 4 },   baseScore: 500,  label: '入门难度' },
+  1: { targetCuts: 2,  pieceRange: { min: 2, max: 4 },   baseScore: 500,  label: '入门难度' },
   2: { targetCuts: 3,  pieceRange: { min: 4, max: 6 },   baseScore: 800,  label: '简单难度' },
   3: { targetCuts: 4,  pieceRange: { min: 5, max: 8 },   baseScore: 1200, label: '初级难度' },
   4: { targetCuts: 6,  pieceRange: { min: 7, max: 12 },  baseScore: 1800, label: '中级难度' },
@@ -517,39 +520,32 @@ rotation = Math.floor(Math.random() * 13) * 15;
 rotation = Math.floor(Math.random() * 24) * 15;
 ```
 
-## 📱 设备适配策略
+### 全屏控制策略 (Fullscreen Strategy - v4.0)
 
-### 设备检测机制
+为了保证跨设备布局的绝对稳定性，系统采用了“全屏能力探测”机制：
 
-```typescript
-const getDeviceMultiplier = (): number => {
-  const userAgent = navigator.userAgent;
-  const screenWidth = window.innerWidth;
-  
-  // 检测移动设备（与useDeviceDetection保持一致）
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
-  const isIOS = /iPad|iPhone|iPod/.test(userAgent);
-  const isTouchDevice = 'ontouchstart' in window;
-  
-  // iPad检测
-  const isIPad = /iPad/i.test(userAgent) || 
-    (isIOS && screenWidth >= 768) ||
-    (isTouchDevice && screenWidth >= 768 && screenWidth <= 1366);
-  
-  // 移动设备检测（排除iPad）
-  const isMobileDevice = isMobile && !isIPad;
-  
-  return isMobileDevice ? 1.1 : 1.0;
-};
-```
+1. **白名单支持**: 仅在检测到浏览器具有完整的 `document.exitFullscreen` 或对应前缀 API 时显示全屏按钮。
+2. **黑名单限制**: 
+   - **微信浏览器**: 强制隐藏全屏按钮（因微信内核对全屏 API 的拦截会导致 `fixed` 定位失效）。
+   - **iOS 设备**: 强制隐藏全屏按钮（iOS Safari 的全屏实现会破坏安全区管理，导致容器整体下移）。
+3. **技术实现**: 废弃所有通过手动修改 DOM 样式实现的“伪全屏”代码，完全依赖原生 API 驱动，不具备能力的环境优先保全 UI 完整性。
 
-### 移动设备（竖屏）优化
+### 感官反馈规范 (Sensory Feedback)
 
-1. **画布尺寸**：强制正方形画布，限制最大尺寸
-2. **拼图分布**：更紧凑的网格系统，增大安全边距
-3. **拼图缩放**：自动缩小过大拼图，最大缩放到80%
-4. **旋转简化**：使用90度倍数，减少视觉混乱
-5. **边界约束**：更严格的边界检查
+| 交互场景 | Android (Haptic) | iOS (Audio Fallback) |
+|---------|------------------|----------------------|
+| 碰撞画布边缘 | 15ms 短震 | 300Hz 三角波碰撞音 |
+| 成功吸附 | `[20, 30, 20]` 节奏震动 | 连续高频点射音 |
+| UI 按钮点击 | 10ms 微震 | 交互点击音效 |
+
+### 结算 UI 仪表盘化规范 (v1.4.13)
+
+1. **核心分数**: 统一使用 `text-[56px] font-medium` 展示。
+2. **数字美学**: 必须使用 `font-sans` 以确保数字 `0` 没有中划线/斜线，保持现代感。
+3. **分区布局**:
+   - **左区/顶区**: 勋章墙与成就摘要。
+   - **中区**: 核心分数与星级评定。
+   - **右区/底区**: 详细扣分项分解。
 
 ## 📈 实时分数显示
 
@@ -699,34 +695,28 @@ interface ScoreBreakdown {
   - 📊 时间调整：每片平均时间优化（难度1-2：3→5秒，难度3-4：5→7秒，难度5-6：8→10秒，难度7-8：15→18秒）
   - 🎯 阈值倍数：速度奖励阈值倍数优化（极速1.0倍，快速1.3倍，良好1.6倍，标准2.0倍，一般2.5倍）
   - ✅ 可达成性：极速奖励现在可以达成，例如难度1（4片）极速阈值20秒，接近22秒极限
+- **v4.0.0** (2026/05/01): **移动端全屏重构与规则大一统版**
+  - 🔧 修复：彻底重构全屏控制，隐藏不支持原生 API 端的按钮，解决微信/iOS 布局错乱问题
+  - 🧩 难度：Level 1 入门难度碎片范围调整为 2-4 片
+  - 🔊 反馈：确立移动端触感（震动）与听感（iOS 碰撞音）双轨反馈标准
+  - 🎨 UI：同步 v1.4.13 结算仪表盘架构、无斜线数字美学及 medium 字重规范
 
 ## 🔗 技术实现参考
 
 ### 核心文件
-- `utils/score/ScoreCalculator.ts` - 分数计算引擎（包含形状系数和切割类型系数）
-- `utils/score/RotationEfficiencyCalculator.ts` - 旋转效率计算
+- `packages/game-core/src/utils/score/ScoreCalculator.ts` - 分数计算引擎
+- `packages/game-core/src/utils/score/RotationEfficiencyCalculator.ts` - 旋转效率计算
 - `utils/puzzle/cutGeneratorConfig.ts` - 难度配置系统
-- `utils/puzzle/cutGeneratorController.ts` - 直线/斜线切割生成控制器
-- `utils/puzzle/graph/NetworkCutter.ts` - 曲线切割生成引擎（v3.2修复）
-- `utils/puzzle/ScatterPuzzle.ts` - 拼图分布系统
-- `contexts/GameContext.tsx` - 游戏状态管理
-
-### UI组件
-- `components/ShapeControls.tsx` - 形状选择组件
-- `components/score/ScoreDisplay.tsx` - 分数显示组件
-- `components/score/MobileScoreLayout.tsx` - 移动端分数布局
-
-### 相关 Hooks
-- `useDeviceDetection` - 设备检测
-- `useGameStats` - 游戏统计
-- `useScoreCalculation` - 分数计算
+- `utils/puzzle/graph/NetworkCutter.ts` - 曲线切割生成引擎
+- `hooks/useDeviceDetection.ts` - 设备与能力探测系统 (v4.0)
 
 ---
 
-**文档版本**: v3.4  
+**文档版本**: v4.0  
 **创建日期**: 2025/09/09  
-**最新更新**: 2025/12/28 (基于实际测试优化的速度奖励版)  
-**基准代码**: utils/score/ScoreCalculator.ts + utils/puzzle/cutGeneratorConfig.ts + utils/puzzle/graph/NetworkCutter.ts  
+**最新更新**: 2026/05/01 (2026 移动端全屏与响应式专项优化版)  
+**基准代码**: packages/game-core/src/utils/score/ScoreCalculator.ts + utils/puzzle/cutGeneratorConfig.ts + hooks/useDeviceDetection.ts  
 **一致性状态**: ✅ 完全一致  
 **权威性**: 🔒 唯一权威规则文档  
 **维护原则**: 代码先行，文档跟随，保持同步更新
+

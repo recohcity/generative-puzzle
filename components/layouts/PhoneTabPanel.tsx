@@ -44,6 +44,8 @@ interface PhoneTabPanelProps {
   onToggleFullscreen: () => void;
   style?: React.CSSProperties;
   isLandscape?: boolean;
+  /** 当前浏览器是否真正支持 Fullscreen API */
+  supportsFullscreen?: boolean;
 }
 
 // 主标题样式（横竖屏统一字号）
@@ -90,15 +92,16 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
   onToggleMusic,
   onToggleFullscreen,
   style,
-  isLandscape = false
+  isLandscape = false,
+  supportsFullscreen = true,
 }) => {
   const { state, rotatePiece, showHintOutline, resetGame, retryCurrentGame, trackHintUsage, trackRotation } = useGame();
   const { t } = useTranslation();
   const { user, signOut } = useAuth();
   const device = useDeviceDetection();
 
-  // 🎯 极限小屏适配逻辑 (Extreme small screen adaptation)
-  const isUltraSmall = device.screenWidth < 360;
+  // 🎯 极限高度/宽度适配逻辑 (Extreme small/short screen adaptation)
+  const isUltraSmall = device.screenWidth < 375 || device.screenHeight < 720;
   
   const TAB_BUTTON_HEIGHT = isUltraSmall ? 28 : TAB_BUTTON_HEIGHT_BASE;
   const TAB_BUTTON_FONT_SIZE = isUltraSmall ? 10 : TAB_BUTTON_FONT_SIZE_BASE;
@@ -321,6 +324,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
             onToggleUser={handleToggleUserPanel}
             isLoggedIn={!!user}
             isUserPanelOpen={showUserPanel || (!user && showLeaderboard)}
+            supportsFullscreen={supportsFullscreen}
           />
         </div>
       </div>
@@ -349,13 +353,20 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                 transition={{ duration: 0.1 }}
                 onClick={(e) => e.stopPropagation()}
                 className={cn(
-                  "bg-white/10 backdrop-blur-2xl border border-white/15 rounded-[2.5rem] p-4 shadow-2xl relative overflow-hidden flex flex-col outline-none cursor-default transition-all duration-300",
+                  "bg-white/10 backdrop-blur-2xl border border-white/15 rounded-[2.5rem] p-4 shadow-2xl relative flex flex-col outline-none cursor-default transition-all duration-300",
                   isLandscape
                     ? "w-[540px] max-w-[90vw] h-[310px]"
                     : "w-full max-w-[340px] h-[450px]"
                 )}
               >
-                <div className="bg-transparent rounded-[2.5rem] shrink-0 h-full">
+                <button
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleToggleLeaderboard(); }}
+                  className="absolute top-4 right-4 p-1.5 text-white/50 hover:text-white/80 transition-colors cursor-pointer z-50"
+                  aria-label="Close"
+                >
+                  <X size={24} strokeWidth={1.5} />
+                </button>
+                <div className="flex-1 overflow-hidden rounded-[2rem]">
                   <VirtualAuthWidget onAuthSuccess={() => setShowLeaderboard(false)} isLandscape={isLandscape} />
                 </div>
               </motion.div>
@@ -385,8 +396,15 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.1 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-white/10 backdrop-blur-2xl border border-white/15 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden flex flex-col items-center gap-6 outline-none cursor-default w-full max-w-[300px]"
+                className="bg-white/10 backdrop-blur-2xl border border-white/15 rounded-[2.5rem] p-8 shadow-2xl relative flex flex-col items-center gap-6 outline-none cursor-default w-full max-w-[300px]"
               >
+                <button
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowUserPanel(false); }}
+                  className="absolute top-4 right-4 p-1.5 text-white/50 hover:text-white/80 transition-colors cursor-pointer z-50"
+                  aria-label="Close"
+                >
+                  <X size={24} strokeWidth={1.5} />
+                </button>
 
                 {/* 用户头像 */}
                 <div className="flex justify-center mb-1">
@@ -446,6 +464,13 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                   isLandscape ? "rounded-[2rem] max-w-[620px]" : "rounded-[2.5rem] max-w-[360px]"
                 )}
               >
+                <button
+                  onClick={() => setShowScoreModal(false)}
+                  className="absolute top-4 right-4 p-1.5 text-white/50 hover:text-white/80 transition-colors cursor-pointer z-10"
+                  aria-label="Close"
+                >
+                  <X size={24} strokeWidth={1.5} />
+                </button>
                 <div className={cn("flex flex-col h-full", isLandscape ? "p-4" : "p-6")}>
                   {/* 顶部标准图标 (同 Auth 弹窗) - 仅在竖屏显示，横屏由 MobileScoreLayout 内部三栏接管 */}
                   {!isLandscape && (
@@ -535,8 +560,8 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
         {showLeaderboard && user ? (
           /* 已登录状态：在面板内显示成绩榜单 (精准复刻桌面版 parity 设计) */
           <div 
-            className="animate-in fade-in slide-in-from-bottom-2 duration-300 flex flex-col pt-0"
-            style={{ height: isLandscape ? 160 : TAB_BUTTON_HEIGHT + (isUltraSmall ? 134 : 140) - 2 }}
+            className="animate-in fade-in slide-in-from-bottom-2 duration-300 flex flex-col pt-0 flex-1 min-h-0"
+            style={{ height: isLandscape ? 'auto' : TAB_BUTTON_HEIGHT + (isUltraSmall ? 128 : 140) - 2 }}
           >
             <div className={cn("rounded-2xl flex flex-col flex-1 min-h-0 relative overflow-x-hidden", isLandscape ? "p-1" : "pt-0.5 pb-1 px-2")}>
               {/* 顶部标签切换器 + 关闭按钮 (极度紧凑布局) */}
@@ -718,7 +743,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
           </div>
         ) : isGameCompleted ? (
           /* 游戏结算界面 - 统一横竖屏：单行全量摘要 */
-          <div className="flex flex-col justify-start w-full pt-1" style={{ height: isLandscape ? 160 : TAB_BUTTON_HEIGHT + (isUltraSmall ? 134 : 140) - 2 }}>
+          <div className="flex flex-col justify-start w-full pt-1 flex-1 min-h-0" style={{ height: isLandscape ? 'auto' : TAB_BUTTON_HEIGHT + (isUltraSmall ? 128 : 140) - 2 }}>
             <div className="flex flex-col gap-1 mt-0 px-2">
               <div className="flex items-start justify-between w-full">
                 {/* 左侧：难度荣誉组合 */}
@@ -773,7 +798,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
           </div>
         ) : (
           /* 游戏控制面板内容 - 统一固定高度，防止切换Tab时画布跳动 */
-          <div className="flex flex-col justify-start w-full pt-2" style={{ height: isLandscape ? 160 : TAB_BUTTON_HEIGHT + (isUltraSmall ? 134 : 140) - 2 }}>
+          <div className="flex flex-col justify-start w-full pt-2 flex-1 min-h-0" style={{ height: isLandscape ? 'auto' : TAB_BUTTON_HEIGHT + (isUltraSmall ? 128 : 140) - 2 }}>
             {(activeTab === 'shape' || activeTab === 'puzzle' || activeTab === 'cut' || activeTab === 'scatter') && (
               <div className={SECTION_CLASS}>
                 {activeTab === 'shape' && (

@@ -1,3 +1,5 @@
+import { type DeviceLayoutInfo, type iPhoneDetectionResult } from '../src/config/deviceConfig';
+
 /**
  * 画布适配统一参数配置
  * 根据 step1_canvas_adaptation_plan.md 规范定义所有适配相关的常量
@@ -26,11 +28,11 @@ export const DESKTOP_ADAPTATION = {
 export const MOBILE_ADAPTATION = {
     // 竖屏模式边距
     PORTRAIT: {
-        CANVAS_MARGIN: 10,             // 画布上下左右边距（增加以适应iPhone 16 Pro）
+        CANVAS_MARGIN: 4,              // 极致回收：大幅减少画布边距
         PANEL_MARGIN: 10,              // 面板边距
-        SAFE_AREA_TOP: 10,             // 顶部安全区（避免与状态栏重叠）
+        SAFE_AREA_TOP: 4,              // 极致回收：大幅减少顶部预留
         SAFE_AREA_BOTTOM: 30,          // 底部安全区（增加以适应iPhone 16 Pro的底部安全区）
-        PANEL_HEIGHT: 180,             // 面板固定高度（为iPhone 16 Pro优化）
+        PANEL_HEIGHT: 240,             // 增加至 240px 以匹配 PhoneTabPanel 实际物理高度 (含标题、Tab、内容、页脚)
     },
 
     // 横屏模式边距
@@ -76,7 +78,7 @@ export function calculateDesktopCanvasSize(windowWidth: number, windowHeight: nu
     // 画布尺寸取两者的最小值，确保不会超出任何一个维度
     let canvasSize = Math.min(availableHeight, availableWidth);
 
-    // 应用最小值和最大值限制
+    // 应用最小值 and 最大值限制
     canvasSize = Math.max(MIN_CANVAS_SIZE, Math.min(canvasSize, MAX_CANVAS_SIZE));
 
     // 计算实际需要的左右边距（确保居中且不小于最小安全边距）
@@ -113,15 +115,29 @@ export function calculateDesktopCanvasSize(windowWidth: number, windowHeight: nu
  * 计算移动端竖屏画布尺寸
  * 针对iPhone 16全系列优化
  */
-export function calculateMobilePortraitCanvasSize(windowWidth: number, windowHeight: number, panelHeight?: number, iPhone16Detection?: { detected: boolean; model: string | null; orientation: string | null; exact: boolean }) {
+export const calculateMobilePortraitCanvasSize = (
+    windowWidth: number,
+    windowHeight: number,
+    panelHeight?: number,
+    iPhone16Detection?: iPhoneDetectionResult,
+    browserInfo?: { isSafari: boolean, isChrome: boolean, isWeChat: boolean }
+): DeviceLayoutInfo & { 
+    canvasSize: number, 
+    canvasMargin: number, 
+    panelHeight: number, 
+    panelBottomPadding: number,
+    safeAreaTop: number,
+    safeAreaBottom: number,
+    debug: any
+} => {
     const { CANVAS_MARGIN, SAFE_AREA_TOP, SAFE_AREA_BOTTOM, PANEL_HEIGHT } = MOBILE_ADAPTATION.PORTRAIT;
     const { MIN_CANVAS_SIZE, MAX_CANVAS_SIZE } = MOBILE_ADAPTATION;
 
     // 🚀 iPhone 17 系列检测 (最新标准)
-    const iPhone17Result = detectiPhone17Series(windowWidth, windowHeight);
+    const iPhone17Result: iPhoneDetectionResult = detectiPhone17Series(windowWidth, windowHeight);
 
     // 使用传入的iPhone 16检测结果，或者使用DeviceManager检测
-    const iPhone16Result = iPhone16Detection || (() => {
+    const iPhone16Result: iPhoneDetectionResult = iPhone16Detection || (() => {
         // 如果没有传入检测结果，使用DeviceManager进行检测
         if (typeof window !== 'undefined') {
             try {
@@ -131,8 +147,9 @@ export function calculateMobilePortraitCanvasSize(windowWidth: number, windowHei
                 return {
                     detected: layoutInfo.iPhoneModel !== undefined,
                     model: layoutInfo.iPhoneModel || null,
-                    orientation: layoutInfo.layoutMode === 'desktop' ? null : layoutInfo.layoutMode,
-                    exact: layoutInfo.iPhoneExact || false
+                    orientation: (layoutInfo.layoutMode === 'desktop' ? null : layoutInfo.layoutMode) as 'portrait' | 'landscape' | null,
+                    exact: layoutInfo.iPhoneExact || false,
+                    generation: layoutInfo.generation as 16 | 17 | null
                 };
             } catch (error) {
                 // 如果DeviceManager不可用，使用本地检测作为回退
@@ -142,12 +159,23 @@ export function calculateMobilePortraitCanvasSize(windowWidth: number, windowHei
         return detectiPhone16Series(windowWidth, windowHeight);
     })();
 
+    // 确定基础检测结果（优先 17，其次 16）
+    const baseDetection = iPhone17Result.detected ? iPhone17Result : iPhone16Result;
+
     // 使用传入的面板高度，如果没有则使用默认值
     const actualPanelHeight = panelHeight || PANEL_HEIGHT;
 
     // 计算可用空间
     const availableWidth = windowWidth - CANVAS_MARGIN * 2;
-    const availableHeight = windowHeight - actualPanelHeight - CANVAS_MARGIN - SAFE_AREA_TOP - SAFE_AREA_BOTTOM;
+
+    // 🎯 2026 浏览器定向适配冗余
+    let browserSafetyOffset = 20; // 默认冗余
+    if (browserInfo?.isSafari) browserSafetyOffset = 30; // 配合顶置布局，大幅减少冗余
+    if (browserInfo?.isChrome) browserSafetyOffset = 50; // 配合顶置布局，适当放宽
+    if (browserInfo?.isWeChat) browserSafetyOffset = 32;  // 增加底部留白感，避免紧贴边缘
+
+    // 🎯 优化：在可用高度中额外减去浏览器定向冗余，以抵消动态工具栏和顶部 padding 的挤压
+    const availableHeight = windowHeight - actualPanelHeight - CANVAS_MARGIN - SAFE_AREA_TOP - SAFE_AREA_BOTTOM - browserSafetyOffset;
 
     let canvasSize: number;
     let maxCanvasSize: number = MAX_CANVAS_SIZE;
@@ -238,12 +266,21 @@ export function calculateMobilePortraitCanvasSize(windowWidth: number, windowHei
         maxCanvasSize = MAX_CANVAS_SIZE;
     }
 
-    // 应用最小值和最大值限制
+    // 应用最小值 and 最大值限制
     canvasSize = Math.max(MIN_CANVAS_SIZE, Math.min(canvasSize, maxCanvasSize));
 
     return {
+        // 展开基础检测信息
+        deviceType: 'phone',
+        layoutMode: 'portrait',
+        iPhoneModel: baseDetection.model,
+        iPhoneExact: baseDetection.exact,
+        generation: baseDetection.generation,
+        
         canvasSize,
         canvasMargin: CANVAS_MARGIN,
+        panelHeight: actualPanelHeight,
+        panelBottomPadding: browserSafetyOffset,
         safeAreaTop: SAFE_AREA_TOP,
         safeAreaBottom: SAFE_AREA_BOTTOM,
         // 调试信息
@@ -268,15 +305,20 @@ export function calculateMobilePortraitCanvasSize(windowWidth: number, windowHei
  * 针对iPhone 16全系列横屏优化
  * 重点：充分利用屏幕空间，让画布尽可能大
  */
-export function calculateMobileLandscapeCanvasSize(windowWidth: number, windowHeight: number, iPhone16Detection?: { detected: boolean; model: string | null; orientation: string | null; exact: boolean }) {
+export function calculateMobileLandscapeCanvasSize(
+    windowWidth: number, 
+    windowHeight: number, 
+    iPhone16Detection?: iPhoneDetectionResult,
+    browserInfo?: { isSafari: boolean, isChrome: boolean, isWeChat: boolean }
+) {
     const { CANVAS_MARGIN, SAFE_AREA_TOP, MIN_PANEL_WIDTH, MAX_PANEL_WIDTH } = MOBILE_ADAPTATION.LANDSCAPE;
     const { MIN_CANVAS_SIZE, MAX_CANVAS_SIZE } = MOBILE_ADAPTATION;
 
     // 🚀 iPhone 17 系列检测 (最新标准)
-    const iPhone17Result = detectiPhone17Series(windowWidth, windowHeight);
+    const iPhone17Result: iPhoneDetectionResult = detectiPhone17Series(windowWidth, windowHeight);
 
     // 使用传入的iPhone 16检测结果，或者使用DeviceManager检测
-    const iPhone16Result = iPhone16Detection || (() => {
+    const iPhone16Result: iPhoneDetectionResult = iPhone16Detection || (() => {
         // 如果没有传入检测结果，使用DeviceManager进行检测
         if (typeof window !== 'undefined') {
             try {
@@ -286,8 +328,9 @@ export function calculateMobileLandscapeCanvasSize(windowWidth: number, windowHe
                 return {
                     detected: layoutInfo.iPhoneModel !== undefined,
                     model: layoutInfo.iPhoneModel || null,
-                    orientation: layoutInfo.layoutMode === 'desktop' ? null : layoutInfo.layoutMode,
-                    exact: layoutInfo.iPhoneExact || false
+                    orientation: (layoutInfo.layoutMode === 'desktop' ? null : layoutInfo.layoutMode) as 'portrait' | 'landscape' | null,
+                    exact: layoutInfo.iPhoneExact || false,
+                    generation: layoutInfo.generation as 16 | 17 | null
                 };
             } catch (error) {
                 // 如果DeviceManager不可用，使用本地检测作为回退
@@ -298,8 +341,16 @@ export function calculateMobileLandscapeCanvasSize(windowWidth: number, windowHe
     })();
 
     // 计算可用高度（这通常是限制因素）
-    // 💡 针对浏览器横屏进行极限优化：预留 24px 以适配 4px 顶部+4px 底部 padding 以及可能的边框/舍入误差
-    const availableHeight = windowHeight - 24;
+    let browserSafetyOffset = 32; // 默认横屏安全边距
+    if (browserInfo?.isWeChat) browserSafetyOffset = 32; // 微信横屏下增加底部间距，避免紧贴屏幕边缘
+    
+    const availableHeight = windowHeight - browserSafetyOffset;
+
+    // 🎯 2026 移动全能力探测优化：在横屏模式下增加宽度安全冗余，
+    // 用于抵消 notch (刘海)、home indicator 以及侧边工具栏对 windowWidth 的占用。
+    // 微信横屏下增加至 80px 以应对更复杂的侧边挤压
+    const widthOffset = browserInfo?.isWeChat ? 80 : 60;
+    const safeWindowWidth = windowWidth - widthOffset;
 
     let panelWidth: number = MIN_PANEL_WIDTH;
     let canvasSize: number;
@@ -307,7 +358,7 @@ export function calculateMobileLandscapeCanvasSize(windowWidth: number, windowHe
 
     // 🚀 iPhone 17系列横屏特殊优化 (2025最新标准)
     if (iPhone17Result.detected && iPhone17Result.orientation === 'landscape') {
-        const width = Math.max(windowWidth, windowHeight);
+        const width = Math.max(safeWindowWidth, windowHeight);
 
         // 针对不同 iPhone 17 机型分配最优化面板宽度 (适配 English 标题)
         if (iPhone17Result.model === 'iPhone 17 Pro Max') {
@@ -322,15 +373,15 @@ export function calculateMobileLandscapeCanvasSize(windowWidth: number, windowHe
             maxCanvasSize = 460;
         }
 
-        const availableWidth = windowWidth - panelWidth - CANVAS_MARGIN * 3;
+        const availableWidth = safeWindowWidth - panelWidth - CANVAS_MARGIN * 3;
         canvasSize = Math.min(availableHeight, availableWidth);
         canvasSize = Math.min(canvasSize, maxCanvasSize);
 
     }
     // iPhone 16系列特殊优化
     else if (iPhone16Result.detected && iPhone16Result.orientation === 'landscape') {
-        // 根据不同iPhone 16机型优化面板宽度和画布尺寸
-        // 增加面板宽度以确保英文标题和按钮之间有安全间距
+        // 根据不同iPhone 16机型优化面板宽度 and 画布尺寸
+        // 增加面板宽度以确保英文标题 and 按钮之间有安全间距
         switch (iPhone16Result.model) {
             case 'iPhone 16e': // 844×390
                 panelWidth = 320;
@@ -357,7 +408,7 @@ export function calculateMobileLandscapeCanvasSize(windowWidth: number, windowHe
                 maxCanvasSize = 340;
         }
 
-        const availableWidth = windowWidth - panelWidth - CANVAS_MARGIN * 2;
+        const availableWidth = safeWindowWidth - panelWidth - CANVAS_MARGIN * 2;
         canvasSize = Math.min(availableHeight, availableWidth);
         canvasSize = Math.min(canvasSize, maxCanvasSize);
 
@@ -365,31 +416,32 @@ export function calculateMobileLandscapeCanvasSize(windowWidth: number, windowHe
         // 其他高分辨率手机横屏模式（如 iPhone, Android 旗舰）
         // 核心理念：横屏空间宽裕，优先保证右侧面板宽度以容纳英文，剩余空间全给画布
 
-        // 统一增加横屏面板宽度，确保英文 Tab 和标题完美显示
-        if (windowWidth >= 950) {
+        // 统一增加横屏面板宽度，确保英文 Tab and 标题完美显示
+        if (safeWindowWidth >= 950) {
             panelWidth = 380; // 增加到最高 380
             maxCanvasSize = 500;
-        } else if (windowWidth >= 850) {
+        } else if (safeWindowWidth >= 850) {
             panelWidth = 360;
             maxCanvasSize = 450;
-        } else if (windowWidth >= 750) {
+        } else if (safeWindowWidth >= 750) {
             panelWidth = 350;
             maxCanvasSize = 420;
         } else {
             // 小屏横屏 (650-750)
-            panelWidth = 340; // 即使是小屏横屏，也保证至少 340px 宽度给面板
+            // 针对微信小屏横屏，适度减小面板宽度上限
+            panelWidth = browserInfo?.isWeChat ? 320 : 340; 
             maxCanvasSize = 400;
         }
 
         // 计算画布可用的剩余宽度
-        const availableWidth = windowWidth - panelWidth - CANVAS_MARGIN * 3; // 增加一个边距间隔
+        const availableWidth = safeWindowWidth - panelWidth - CANVAS_MARGIN * 3; // 增加一个边距间隔
         canvasSize = Math.min(availableHeight, availableWidth);
         canvasSize = Math.min(canvasSize, maxCanvasSize);
 
     } else {
         // 标准设备或竖屏设备 - 使用更合理的默认面板宽度
         // 不再使用 MIN_PANEL_WIDTH (240)，而是根据屏幕宽度计算
-        const availableWidth = windowWidth - CANVAS_MARGIN * 2;
+        const availableWidth = safeWindowWidth - CANVAS_MARGIN * 2;
 
         // 根据可用宽度动态计算面板宽度
         if (availableWidth >= 600) {
@@ -404,7 +456,7 @@ export function calculateMobileLandscapeCanvasSize(windowWidth: number, windowHe
         maxCanvasSize = MAX_CANVAS_SIZE;
     }
 
-    // 应用最小值和最大值限制
+    // 应用最小值 and 最大值限制
     canvasSize = Math.max(MIN_CANVAS_SIZE, Math.min(canvasSize, maxCanvasSize));
     panelWidth = Math.max(MIN_PANEL_WIDTH, Math.min(panelWidth, MAX_PANEL_WIDTH));
 
@@ -428,14 +480,38 @@ export function calculateMobileLandscapeCanvasSize(windowWidth: number, windowHe
     };
 }
 
-// ==================== iPhone 16 系列检测 ====================
-// iPhone 16 detection logic moved to DeviceManager.ts for unified detection
+// ==================== iPhone 检测辅助函数 ====================
+
+/**
+ * 精准检测 iPhone 17 系列 (2025 最新标准)
+ * 基于您提供的屏幕分辨率 and 3x 逻辑缩放比例
+ */
+function detectiPhone17Series(windowWidth: number, windowHeight: number): iPhoneDetectionResult {
+    const width = Math.min(windowWidth, windowHeight);
+    const height = Math.max(windowWidth, windowHeight);
+    const orientation = windowWidth > windowHeight ? 'landscape' : 'portrait';
+
+    // iPhone 17 / 17 Pro: 402x874 (与 16 Pro 相似)
+    if (width === 402 && height === 874) {
+        return { detected: true, model: 'iPhone 17/Pro', orientation, exact: true, generation: 17 };
+    }
+    // iPhone 17 Air: 420x912
+    if (width === 420 && height === 912) {
+        return { detected: true, model: 'iPhone 17 Air', orientation, exact: true, generation: 17 };
+    }
+    // iPhone 17 Pro Max: 440x956
+    if (width === 440 && height === 956) {
+        return { detected: true, model: 'iPhone 17 Pro Max', orientation, exact: true, generation: 17 };
+    }
+
+    return { detected: false, model: null, orientation: null, exact: false, generation: null };
+}
 
 /**
  * @deprecated Use DeviceManager.getInstance().getDeviceLayoutMode() instead
  * This function is kept for backward compatibility only
  */
-function detectiPhone16Series(windowWidth: number, windowHeight: number) {
+function detectiPhone16Series(windowWidth: number, windowHeight: number): iPhoneDetectionResult {
     // Try to use DeviceManager for detection
     if (typeof window !== 'undefined') {
         try {
@@ -445,11 +521,12 @@ function detectiPhone16Series(windowWidth: number, windowHeight: number) {
             return {
                 detected: layoutInfo.iPhoneModel !== undefined,
                 model: layoutInfo.iPhoneModel || null,
-                orientation: layoutInfo.layoutMode === 'desktop' ? null : layoutInfo.layoutMode,
-                exact: layoutInfo.iPhoneExact || false
+                orientation: (layoutInfo.layoutMode === 'desktop' ? null : layoutInfo.layoutMode) as 'portrait' | 'landscape' | null,
+                exact: layoutInfo.iPhoneExact || false,
+                generation: layoutInfo.generation as 16 | 17 | null
             };
         } catch (error) {
-            console.warn('DeviceLayoutManager not available, iPhone detection disabled');
+            // console.warn('DeviceLayoutManager not available');
         }
     }
 
@@ -458,33 +535,9 @@ function detectiPhone16Series(windowWidth: number, windowHeight: number) {
         detected: false,
         model: null,
         orientation: null,
-        exact: false
+        exact: false,
+        generation: null
     };
-}
-
-/**
- * 精准检测 iPhone 17 系列 (2025 最新标准)
- * 基于您提供的屏幕分辨率和 3x 逻辑缩放比例
- */
-function detectiPhone17Series(windowWidth: number, windowHeight: number) {
-    const width = Math.min(windowWidth, windowHeight);
-    const height = Math.max(windowWidth, windowHeight);
-    const orientation = windowWidth > windowHeight ? 'landscape' : 'portrait';
-
-    // iPhone 17 / 17 Pro: 402x874 (与 16 Pro 相似)
-    if (width === 402 && height === 874) {
-        return { detected: true, model: 'iPhone 17/Pro', orientation, exact: true };
-    }
-    // iPhone 17 Air: 420x912
-    if (width === 420 && height === 912) {
-        return { detected: true, model: 'iPhone 17 Air', orientation, exact: true };
-    }
-    // iPhone 17 Pro Max: 440x956
-    if (width === 440 && height === 956) {
-        return { detected: true, model: 'iPhone 17 Pro Max', orientation, exact: true };
-    }
-
-    return { detected: false, model: null, orientation: null, exact: false };
 }
 
 // ==================== 类型导出 ====================

@@ -50,6 +50,11 @@ export class DeviceManager {
     const isIOS = isIPhone || isIPad;
     const isMobileUserAgent = USER_AGENT_PATTERNS.MOBILE.test(ua);
 
+    // 浏览器特定识别
+    const isChrome = USER_AGENT_PATTERNS.CHROME.test(ua);
+    const isSafari = USER_AGENT_PATTERNS.SAFARI.test(ua) && !isChrome;
+    const isWeChat = USER_AGENT_PATTERNS.WECHAT.test(ua);
+
     // Screen dimension analysis
     const isPortrait = screenHeight > screenWidth;
     const aspectRatio = Math.max(screenWidth, screenHeight) / Math.min(screenWidth, screenHeight);
@@ -64,6 +69,12 @@ export class DeviceManager {
     const layoutManager = DeviceLayoutManager.getInstance();
     const layoutInfo = layoutManager.getDeviceLayoutMode(screenWidth, screenHeight);
 
+    // 🎯 2026 移动全能力适配：对于 Safari 和 Chrome 这种有动态工具栏的浏览器，
+    // 在竖屏模式下需要更加保守的高度策略。
+    const finalScreenHeight = (window.visualViewport && layoutInfo.layoutMode === 'portrait') 
+        ? window.visualViewport.height 
+        : screenHeight;
+
     return {
       isMobile: layoutInfo.deviceType === 'phone',
       isTablet: layoutInfo.deviceType === 'tablet',
@@ -71,8 +82,11 @@ export class DeviceManager {
       isPortrait,
       isAndroid,
       isIOS,
+      isSafari,
+      isChrome,
+      isWeChat,
       screenWidth,
-      screenHeight,
+      screenHeight: finalScreenHeight, // 使用 visualViewport 高度以抵御动态工具栏
       userAgent: ua,
       deviceType: layoutInfo.deviceType,
       layoutMode: layoutInfo.layoutMode,
@@ -96,6 +110,9 @@ export class DeviceManager {
       isPortrait: false,
       isAndroid: false,
       isIOS: false,
+      isSafari: false,
+      isChrome: false,
+      isWeChat: false,
       screenWidth: 1280,
       screenHeight: 720,
       userAgent: '',

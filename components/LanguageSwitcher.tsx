@@ -145,7 +145,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
           disabled={isLoading}
           variant="ghost"
           size="icon"
-          className={cn("rounded-full border-none shadow-none cursor-pointer language-button-fixed glass-btn-inactive")}
+          className={cn("rounded-full border-none shadow-none cursor-pointer utility-button-fixed")}
             style={{
               width: buttonSizePx,
               height: buttonSizePx,
@@ -174,11 +174,13 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
           <span
             className="text-zoom-lock"
             style={{
-              fontSize: '13px',
+              fontSize: '11px',
               fontWeight: 'normal',
               fontFamily: 'system-ui, sans-serif',
               color: 'inherit',
               pointerEvents: 'none',
+              lineHeight: 1,
+              letterSpacing: '-0.5px',
             }}
             suppressHydrationWarning
           >

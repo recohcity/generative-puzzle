@@ -72,42 +72,30 @@ h6,
   user-select: none !important;
 }
 
-/* 语言切换按钮固定样式 - 强制覆盖所有状态 */
-.language-button-fixed,
-.language-button-fixed:hover,
-.language-button-fixed:focus,
-.language-button-fixed:active,
-.language-button-fixed:focus-visible,
-.language-button-fixed[data-state="open"],
-.language-button-fixed[aria-expanded="true"] {
-  background-color: var(--brand-deep) !important;
-  color: var(--brand-orange) !important;
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-.language-button-fixed span,
-.language-button-fixed:hover span,
-.language-button-fixed:focus span,
-.language-button-fixed:active span,
-.language-button-fixed:focus-visible span {
-  color: var(--brand-orange) !important;
-}
-
-/* 工具按钮固定样式 - 强制覆盖所有状态 */
+/* 工具按钮统一样式 - 语言切换、音乐、全屏、排行榜 */
 .utility-button-fixed,
 .utility-button-fixed:hover,
 .utility-button-fixed:focus,
 .utility-button-fixed:active,
-.utility-button-fixed:focus-visible,
-.utility-button-fixed[data-state="open"],
-.utility-button-fixed[aria-expanded="true"] {
-  background-color: var(--brand-deep) !important;
-  color: var(--brand-orange) !important;
-  border: none !important;
+.utility-button-fixed:focus-visible {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  color: var(--brand-amber) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
   outline: none !important;
   box-shadow: none !important;
+  transition: all 0.3s ease !important;
+}
+
+.utility-button-fixed:hover {
+  background-color: rgba(255, 255, 255, 0.18) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* active/open状态：背景保持不变，边框高亮，图标继承按钮颜色 */
+.utility-button-fixed[data-state="open"],
+.utility-button-fixed[aria-expanded="true"] {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  border-color: var(--brand-amber) !important;
 }
 
 .utility-button-fixed svg,
@@ -115,8 +103,22 @@ h6,
 .utility-button-fixed:focus svg,
 .utility-button-fixed:active svg,
 .utility-button-fixed:focus-visible svg {
-  color: var(--brand-orange) !important;
-  stroke: var(--brand-orange) !important;
+  color: inherit !important;
+  stroke: currentColor !important;
+  width: 12px !important;
+  height: 12px !important;
+  stroke-width: 2 !important;
+}
+
+.utility-button-fixed span,
+.utility-button-fixed:hover span,
+.utility-button-fixed:focus span,
+.utility-button-fixed:active span,
+.utility-button-fixed:focus-visible span {
+  color: var(--brand-amber) !important;
+  font-size: 11px !important;
+  font-weight: normal !important;
+  line-height: 1 !important;
 }
 
 @layer base {
@@ -216,6 +218,8 @@ h6,
   bottom: 0;
   width: 100%;
   height: 100%;
+  /* 使用 dvh 确保在移动端浏览器（非全屏）下高度准确 */
+  height: 100dvh;
   /* 修改触摸行为设置以允许按钮点击 */
   touch-action: pan-x pan-y;
   /* 允许基本的偏移触摸操作，但阻止其他手势 */
@@ -224,6 +228,12 @@ h6,
   user-select: none;
   -webkit-touch-callout: none;
   /* 禁止长按链接弹出菜单 */
+
+  /* 🎯 2026 移动全能力探测：利用安全区变量预防刘海屏/底部指示器遮挡 */
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* 特定地禁止canvas触摸事件的滚动行为，但允许按钮正常工作 */
@@ -414,14 +424,14 @@ div[class*="rounded"] {
   /* 竖屏模式下的布局调整 */
   @media (orientation: portrait) {
 
-    /* 增加主控制面板的最小高度 */
+    /* 移除强制的 50dvh，改为最小物理高度以适配内容，防止垂直挤压画布 */
     .order-2 {
-      min-height: 50vh !important;
+      min-height: 240px !important;
     }
 
     /* 确保画布容器有足够高度 */
     .order-1 {
-      min-height: 45vh !important;
+      min-height: 45dvh !important;
     }
   }
 
@@ -558,7 +568,7 @@ div[class*="rounded"] {
   :fullscreen .flex-col>div,
   :-webkit-full-screen .flex-col>div,
   :-moz-full-screen .flex-col>div {
-    height: calc(100vh - 32px) !important;
+    height: calc(100dvh - 32px) !important;
   }
 
   :fullscreen .flex-col>div:first-child,

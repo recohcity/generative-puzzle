@@ -76,6 +76,9 @@ export const USER_AGENT_PATTERNS = {
   IPHONE: /iPhone/i,
   IPAD: /iPad/i,
   MACINTOSH_TOUCH: /Macintosh/i, // Used with touch detection for iPad
+  CHROME: /Chrome|CriOS/i,
+  SAFARI: /Safari/i,
+  WECHAT: /MicroMessenger/i,
 } as const;
 
 // Device type definitions
@@ -91,6 +94,9 @@ export interface DeviceState {
   isPortrait: boolean;
   isAndroid: boolean;
   isIOS: boolean;
+  isSafari: boolean;
+  isChrome: boolean;
+  isWeChat: boolean;
   screenWidth: number;
   screenHeight: number;
   userAgent: string;

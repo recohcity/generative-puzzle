@@ -1,4 +1,26 @@
 # 生成式拼图游戏 Changelog
+## [v1.4.16] - 2026-05-01
+
+### 📱 移动端主流浏览器（Chrome/Safari/微信）极致适配优化
+
+本版本通过对移动端主流浏览器的深度探测与定向布局修复，实现了全平台一致的“极致置顶”与“视觉绝对居中”体验。
+
+#### 1. 移动端“极致置顶”布局策略 (Extreme Up-shift Layout)
+- **垂直空间回收**: 在所有移动端浏览器（Chrome, Safari, WeChat）中强制归零根容器的 `paddingTop` 并移除 `my-auto` 居中对齐，回收了被浏览器地址栏浪费的垂直空间，确保游戏内容从视口顶端开始。
+- **微信专项置顶**: 针对微信浏览器自带顶栏的特性，实施了“左右对称置顶”策略。在横屏模式下，强制左侧画布与右侧面板同步使用 `flex-start` 靠顶对齐，高度基准线像素级对齐。
+
+#### 2. 浏览器特定溢出防御 (Browser-specific Overflow Defense)
+- **动态底边距缓冲区**: 引入 `panelBottomPadding` 机制，针对 Chrome、Safari、微信等不同浏览器动态注入 25px-50px 的底部安全补丁，有效抵御了浏览器动态导航栏对操作按钮的遮挡。
+- **微信横屏防溢出**: 针对微信横屏下复杂的侧边挤压，将宽度冗余从 60px 提升至 80px，并压缩面板宽度上限至 320px，彻底解决了右侧面板被裁切的问题。
+
+#### 3. Safari 视觉绝对居中修正 (Safari Landscape Centering)
+- **对称安全区平衡**: 利用 `max(env(safe-area-inset-left), env(safe-area-inset-right), 12px)` 逻辑，在 Safari 横屏刘海环境下强制两侧边距对称，解决了由于单侧刘海导致的布局整体右移问题。
+
+#### 4. UI 规范与审计体系闭环 (Documentation & SOP)
+- **法典同步**: 更新了 `UI_SPECIFICATION.md` 与 `OPTIMIZATION_SOP.md`，将上述浏览器定向适配参数正式列入项目标准，确立了“极致置顶 + 底部岛屿防御”的移动端 UI 开发基本法。
+
+---
+
 ## [v1.4.15] - 2026-05-01
 
 ### 📱 移动端全屏架构重构与响应式交互固化 (Mobile Fullscreen Refactor & Responsive Polish)
