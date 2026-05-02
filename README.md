@@ -1,15 +1,5 @@
 # 🧩 Generative Puzzle (生成式拼图)
 
-![Version](https://img.shields.io/badge/version-1.4.19-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-
-A modern, high-performance generative puzzle game built with Next.js and Web Audio API.
-
-## Core Features
-- **Extreme Mobile Adaptation**: Specialized layouts for Safari, Chrome, and WeChat browsers.
-- **Rich Interaction**: 3D tilt effects, multi-touch rotation, and haptic feedback.
-- **Crystal Clear Audio**: High-frequency synthesized sound effects for every interaction.
-
 <div align="center">
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/recohcity/generative-puzzle)
@@ -34,7 +24,7 @@ A modern, high-performance generative puzzle game built with Next.js and Web Aud
 
 - **生产环境框架**: 基于 **Next.js 15** 和 **React 19** 构建骨架。
 - **云端与数据底座**: 完美集成 **Supabase** (Auth & Database)，提供多端云存档和全服竞技看板。通过 PostgreSQL RPC (`SECURITY DEFINER`) 实现原生服务器级别的权限校验。
-- **UI / UX 跨端全能力适配**: 最新的 **v1.4.16** 版本引入了 **移动端主流浏览器（Chrome/Safari/微信）的“极致置顶”布局策略**。通过对不同浏览器渲染特性的深度指纹探测，实现了高度一致的“置顶对齐 + 底部岛屿防御”架构。这不仅解决了 iPhone 刘海屏导致的 Safari 左右不对称问题，也彻底根治了微信横屏下的溢出隐患，配合标准无斜线数字美学，确立了项目级的视觉工业标准。
+- **UI / UX 跨端全能力适配**: 最新的 **v1.4.19** 版本引入了 **移动端主流浏览器（Chrome/Safari/微信）的“极致置顶”布局策略**。通过对不同浏览器渲染特性的深度指纹探测，实现了高度一致的“置顶对齐 + 底部岛屿防御”架构。这不仅解决了 iPhone 刘海屏导致的 Safari 左右不对称问题，也彻底根治了微信横屏下的溢出隐患，配合标准无斜线数字美学，确立了项目级的视觉工业标准。
 
 ---
 
