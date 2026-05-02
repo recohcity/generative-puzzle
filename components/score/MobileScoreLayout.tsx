@@ -45,10 +45,33 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
   );
 
   const getShape = (s?: string) => { try { return s ? t(`game.shapes.names.${s}`) : ''; } catch { return s || ''; } };
+
+  const getSpeedLevelText = (duration: number): string => {
+    const { difficulty } = gameStats;
+    const speedDetails = getSpeedBonusDetails(duration, difficulty?.actualPieces || 0, difficulty?.cutCount || 1);
+    if (speedDetails.currentLevel) {
+      const map: Record<string, { zh: string; en: string }> = {
+        '极速': { zh: '极速', en: 'Extreme' }, '快速': { zh: '快速', en: 'Fast' },
+        '良好': { zh: '良好', en: 'Good' }, '标准': { zh: '标准', en: 'Normal' },
+        '一般': { zh: '一般', en: 'Slow' }, '慢': { zh: '慢', en: 'Too Slow' },
+      };
+      return map[speedDetails.currentLevel.name]?.[locale === 'en' ? 'en' : 'zh'] || speedDetails.currentLevel.name;
+    }
+    return t('score.noReward') || '无';
+  };
+  
+  const difficultyLine = (() => {
+    const d = gameStats.difficulty;
+    const parts = [t('difficulty.levelLabel', { level: d.cutCount })];
+    const shape = getShape(d.shapeType);
+    if (shape) parts.push(shape);
+    parts.push(`${d.actualPieces}${t('stats.piecesUnit') || '片'}`);
+    return parts.join(' · ');
+  })();
   
   const rows = scoreBreakdown ? [
-    { label: t('score.breakdown.base'), sub: `${gameStats.difficulty.cutCount}`, value: fmt(scoreBreakdown.baseScore), sign: '' },
-    { label: t('score.breakdown.timeBonus'), sub: `${Math.floor(gameStats.totalDuration / 1000)}s`, value: fmt(scoreBreakdown.timeBonus), sign: '+' },
+    { label: t('score.breakdown.base'), sub: difficultyLine, value: fmt(scoreBreakdown.baseScore), sign: '' },
+    { label: t('score.breakdown.timeBonus'), sub: `用时 ${gameStats.totalDuration}s · ${getSpeedLevelText(gameStats.totalDuration)}`, value: fmt(scoreBreakdown.timeBonus), sign: '+' },
     { label: t('score.breakdown.rotationScore'), sub: `${gameStats.totalRotations}/${gameStats.minRotations}`, value: fmt(Math.abs(scoreBreakdown.rotationScore)), sign: scoreBreakdown.rotationScore >= 0 ? '+' : '-' },
     { label: t('score.breakdown.hintScore'), sub: `${gameStats.hintUsageCount}/${scoreBreakdown.hintAllowance}`, value: fmt(Math.abs(scoreBreakdown.hintScore)), sign: scoreBreakdown.hintScore >= 0 ? '+' : '-' },
   ] : [];
@@ -114,7 +137,7 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
                 <div key={i} className="flex justify-between items-center group">
                   <div className="flex items-center gap-2">
                     <span className="text-[12px] text-white/60 font-bold tracking-wide">{row.label}</span>
-                    <span className="text-[9px] text-white/15">• {row.sub}</span>
+                    <span className="text-[10px] text-white/70 font-medium tracking-tight">• {row.sub}</span>
                   </div>
                   <span className={cn("text-[13px] font-sans font-bold", row.sign === '-' ? 'text-red-400' : 'text-brand-peach')}>
                     {row.sign}{row.value}
@@ -178,6 +201,11 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
         <span className="text-[56px] font-sans font-medium tracking-tighter text-brand-peach leading-none tabular-nums drop-shadow-lg">
           {fmt(currentScore)}
         </span>
+        {isNewRecord && (
+          <span className="mt-2 px-2 py-0.5 bg-brand-peach text-brand-dark text-[10px] font-black rounded-md shadow-lg shadow-brand-peach/40 uppercase">
+            {t('game.hints.newRecord')}
+          </span>
+        )}
       </div>
 
       {/* 能力成就勋章 - 紧凑呈现 (Unified) */}
@@ -202,7 +230,7 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
             <div key={i} className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-white/60 font-bold text-[12px] tracking-wide">{row.label}</span>
-                <span className="text-white/10 text-[9px] uppercase tracking-tighter">• {row.sub}</span>
+                <span className="text-white/70 text-[10px] font-medium tracking-tight">• {row.sub}</span>
               </div>
               <span className={cn("text-[13px] font-sans font-bold", row.sign === '-' ? 'text-red-400' : 'text-brand-peach')}>
                 {row.sign}{row.value}

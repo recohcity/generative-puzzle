@@ -1,6 +1,6 @@
 # 🧩 Generative Puzzle (生成式拼图)
 
-![Version](https://img.shields.io/badge/version-1.4.17-blue)
+![Version](https://img.shields.io/badge/version-1.4.18-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 A modern, high-performance generative puzzle game built with Next.js and Web Audio API.
@@ -18,7 +18,7 @@ A modern, high-performance generative puzzle game built with Next.js and Web Aud
 [![Vercel Speed Insights](https://img.shields.io/badge/Speed--Insights-Optimized-blueviolet)](https://vercel.com/speed-insights)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-15.5-black.svg)](https://nextjs.org/)
-[![Version](https://img.shields.io/badge/version-1.4.17-orange.svg)]()
+[![Version](https://img.shields.io/badge/version-1.4.18-orange.svg)]()
 
 **基于 Next.js 15 和 React 19 构建的极致前端全栈拼图引擎**
 

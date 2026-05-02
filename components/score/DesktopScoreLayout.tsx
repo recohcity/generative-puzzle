@@ -66,7 +66,7 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
 
   const rows = scoreBreakdown ? [
     { label: t('score.breakdown.base'), sub: difficultyLine, value: fmt(scoreBreakdown.baseScore), sign: '' },
-    { label: t('score.breakdown.timeBonus'), sub: getSpeedBonusText(gameStats.totalDuration), value: fmt(scoreBreakdown.timeBonus), sign: '+' },
+    { label: t('score.breakdown.timeBonus'), sub: `用时 ${gameStats.totalDuration}s · ${getSpeedBonusText(gameStats.totalDuration)}`, value: fmt(scoreBreakdown.timeBonus), sign: '+' },
     { label: t('score.breakdown.rotationScore'), sub: `${gameStats.totalRotations}/${gameStats.minRotations}`, value: fmt(Math.abs(scoreBreakdown.rotationScore)), sign: scoreBreakdown.rotationScore >= 0 ? '+' : '-' },
     { label: t('score.breakdown.hintScore'), sub: `${gameStats.hintUsageCount}/${scoreBreakdown.hintAllowance}`, value: fmt(Math.abs(scoreBreakdown.hintScore)), sign: scoreBreakdown.hintScore >= 0 ? '+' : '-' },
   ] : [];
@@ -100,6 +100,11 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
         <span className="text-[56px] font-sans font-medium tracking-tighter text-brand-peach leading-none drop-shadow-2xl">
           {fmt(currentScore)}
         </span>
+        {isNewRecord && (
+          <span className="mt-2 px-2 py-0.5 bg-brand-peach text-brand-dark text-[10px] font-black rounded-md shadow-lg shadow-brand-peach/40 uppercase">
+            {t('game.hints.newRecord')}
+          </span>
+        )}
       </div>
 
       {/* 能力成就勋章 - 纯净图标与文字 */}
@@ -124,7 +129,7 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
             <div key={i} className="flex items-center justify-between group">
               <div className="flex items-center gap-2">
                 <span className="text-white/60 font-bold text-[12px] tracking-wide">{row.label}</span>
-                <span className="text-white/10 text-[9px] uppercase tracking-tighter">• {row.sub}</span>
+                <span className="text-white/70 text-[10px] font-medium tracking-tight">• {row.sub}</span>
               </div>
               <span className={cn("tabular-nums font-sans text-[14px] font-bold", row.sign === '-' ? 'text-red-400' : 'text-brand-peach')}>
                 {row.sign}{row.value}
