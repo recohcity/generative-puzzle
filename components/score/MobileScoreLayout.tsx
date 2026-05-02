@@ -71,7 +71,7 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
   
   const rows = scoreBreakdown ? [
     { label: t('score.breakdown.base'), sub: difficultyLine, value: fmt(scoreBreakdown.baseScore), sign: '' },
-    { label: t('score.breakdown.timeBonus'), sub: `用时 ${gameStats.totalDuration}s · ${getSpeedLevelText(gameStats.totalDuration)}`, value: fmt(scoreBreakdown.timeBonus), sign: '+' },
+    { label: t('score.breakdown.timeBonus'), sub: `${t('score.breakdown.timeSpent')} ${gameStats.totalDuration}s · ${getSpeedLevelText(gameStats.totalDuration)}`, value: fmt(scoreBreakdown.timeBonus), sign: '+' },
     { label: t('score.breakdown.rotationScore'), sub: `${gameStats.totalRotations}/${gameStats.minRotations}`, value: fmt(Math.abs(scoreBreakdown.rotationScore)), sign: scoreBreakdown.rotationScore >= 0 ? '+' : '-' },
     { label: t('score.breakdown.hintScore'), sub: `${gameStats.hintUsageCount}/${scoreBreakdown.hintAllowance}`, value: fmt(Math.abs(scoreBreakdown.hintScore)), sign: scoreBreakdown.hintScore >= 0 ? '+' : '-' },
   ] : [];

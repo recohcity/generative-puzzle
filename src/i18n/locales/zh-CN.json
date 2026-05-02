@@ -225,7 +225,8 @@
             "multiplierBreakdown": "= {base} × {cutMult} × {shapeMult}",
             "subtotal": "小计",
             "gameDuration": "游戏时长",
-            "gameTime": "游戏时间"
+            "gameTime": "游戏时间",
+            "timeSpent": "用时"
         },
         "timeBonus": "速度奖励",
         "noReward": "无奖励",

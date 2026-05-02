@@ -99,18 +99,19 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
         {/* 顶部信息区：一行化设计 */}
         <div className={cn("flex items-center justify-between gap-2 relative z-10", isLandscape ? "mb-3" : "mb-2")}>
           {/* 左侧：难度名称 */}
-          <h3 className={cn("font-black tracking-tighter text-white drop-shadow-md leading-none shrink-0", isLandscape ? "text-3xl" : "text-2xl")}>
+          <h3 className={cn("font-black tracking-tighter text-white drop-shadow-md leading-none shrink-0", isLandscape ? "text-2xl" : "text-xl")}>
             {t(meta.nameKey)}
           </h3>
 
           {/* 中间：描述 (支持换行) */}
-          <div className={cn("flex-[2] min-w-0 text-white/40 font-medium tracking-tight leading-[1.1]text-center ", isLandscape ? "text-[12px]" : "text-[12px]")}>
+          <div className={cn("flex-[2] min-w-0 text-white/40 font-medium tracking-tight leading-[1.1] text-left px-1", isLandscape ? "text-[11px]" : "text-[11px]")}>
             {t(meta.descriptionKey)}
           </div>
 
           {/* 右侧：拼图块数 */}
-          <div className={cn("font-black text-brand-peach tracking-tighter leading-none shrink-0 whitespace-nowrap", isLandscape ? "text-[18px]" : "text-[16px]")}>
-            {meta.pieceRange}
+          <div className={cn("font-black text-brand-peach tracking-tighter leading-none shrink-0 whitespace-nowrap flex items-baseline gap-0.5", isLandscape ? "text-[18px]" : "text-[16px]")}>
+            <span>{meta.pieceRange}</span>
+            <span className="text-[10px] opacity-60 ml-0.5 font-bold uppercase">{t('stats.piecesUnit')}</span>
           </div>
         </div>
 

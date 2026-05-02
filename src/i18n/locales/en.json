@@ -223,7 +223,8 @@
             "multiplierBreakdown": "= {base} × {cutMult} × {shapeMult}",
             "subtotal": "Subtotal",
             "gameDuration": "Game Duration",
-            "gameTime": "Game Time"
+            "gameTime": "Game Time",
+            "timeSpent": "Time"
         },
         "timeBonus": "Speed Bonus",
         "noReward": "No Reward",
