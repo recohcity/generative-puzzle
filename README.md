@@ -5,10 +5,10 @@
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/recohcity/generative-puzzle)
 [![Live Demo](https://img.shields.io/badge/🚀-Live_Demo-brightgreen)](https://www.citylivepark.com) 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Vercel Speed Insights](https://img.shields.io/badge/Speed--Insights-Optimized-blueviolet)](https://vercel.com/speed-insights)
+[![Vercel Speed Insights](https://img.shields.io/badge/Speed--Insights-Optimized-blueviolet)](https://vercel.com/recohcitys-projects/generative-puzzle/speed-insights)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-15.5-black.svg)](https://nextjs.org/)
-[![Version](https://img.shields.io/badge/version-1.4.19-orange.svg)]()
+[![Version](https://img.shields.io/badge/version-1.4.20-orange.svg)]()
 
 **基于 Next.js 15 和 React 19 构建的极致前端全栈拼图引擎**
 
@@ -24,7 +24,7 @@
 
 - **生产环境框架**: 基于 **Next.js 15** 和 **React 19** 构建骨架。
 - **云端与数据底座**: 完美集成 **Supabase** (Auth & Database)，提供多端云存档和全服竞技看板。通过 PostgreSQL RPC (`SECURITY DEFINER`) 实现原生服务器级别的权限校验。
-- **UI / UX 跨端全能力适配**: 最新的 **v1.4.19** 版本引入了 **移动端主流浏览器（Chrome/Safari/微信）的“极致置顶”布局策略**。通过对不同浏览器渲染特性的深度指纹探测，实现了高度一致的“置顶对齐 + 底部岛屿防御”架构。这不仅解决了 iPhone 刘海屏导致的 Safari 左右不对称问题，也彻底根治了微信横屏下的溢出隐患，配合标准无斜线数字美学，确立了项目级的视觉工业标准。
+- **UI / UX 跨端全能力适配**: 最新的 **v1.4.20** 版本完成了结算面板小标题的全端规范统一，并新增了拼图拖拽松开后的复原音效，构建了完整的触觉-听觉反馈闭环。先前版本还引入了移动端主流浏览器（Chrome/Safari/微信）的“极致置顶”布局策略，通过深度指纹探测实现高度一致的“置顶对齐 + 底部岛屿防御”架构，配合标准无斜线数字美学，确立了项目级的视觉工业标准。
 
 ---
 
