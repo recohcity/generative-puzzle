@@ -226,7 +226,8 @@
             "subtotal": "小计",
             "gameDuration": "游戏时长",
             "gameTime": "游戏时间",
-            "timeSpent": "用时"
+            "timeSpent": "用时",
+            "final": "最终得分"
         },
         "timeBonus": "速度奖励",
         "noReward": "无奖励",

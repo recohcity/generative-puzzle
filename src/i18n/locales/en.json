@@ -224,7 +224,8 @@
             "subtotal": "Subtotal",
             "gameDuration": "Game Duration",
             "gameTime": "Game Time",
-            "timeSpent": "Time"
+            "timeSpent": "Time",
+            "final": "Final Score"
         },
         "timeBonus": "Speed Bonus",
         "noReward": "No Reward",
