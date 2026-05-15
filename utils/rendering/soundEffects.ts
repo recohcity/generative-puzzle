@@ -14,8 +14,22 @@ let scatterAudioElement: HTMLAudioElement | null = null;
 // This function will be exposed to Playwright's Node.js context.
 // When called from the browser, it notifies the test.
 export const soundPlayedForTest = (soundName: string) => {
-  if (typeof window !== 'undefined' && (window as any).__SOUND_PLAY_LISTENER__) {
-    (window as any).__SOUND_PLAY_LISTENER__({ soundName });
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  const listener = (window as any).__SOUND_PLAY_LISTENER__;
+  if (typeof listener !== 'function') {
+    return;
+  }
+
+  try {
+    Promise.resolve(listener({ soundName })).catch(() => {
+      // Test/browser-extension listeners are external to the game; never surface
+      // their transport failures as player-facing console errors.
+    });
+  } catch {
+    // Ignore synchronous listener failures for the same reason.
   }
 };
 
@@ -488,6 +502,37 @@ export const playCompleteTiltSound = async (intensity: number): Promise<void> =>
     oscillator.stop(audioContext.currentTime + 0.06);
   } catch (error) {
     // 忽略高频交互下的可能的并发错误
+  }
+};
+
+// Play sound when the completed shape springs back after release
+export const playCompleteRestoreSound = async (): Promise<void> => {
+  soundPlayedForTest('completeRestore');
+  const audioContext = createAudioContext();
+  if (!audioContext) return;
+
+  try {
+    await ensureAudioContextRunning(audioContext);
+
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    // 回弹音效：短促上扬后快速收束，和拖拽中的连续反馈区分开
+    oscillator.type = 'triangle';
+    oscillator.frequency.setValueAtTime(520, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(780, audioContext.currentTime + 0.05);
+    oscillator.frequency.exponentialRampToValueAtTime(420, audioContext.currentTime + 0.16);
+
+    gainNode.gain.setValueAtTime(0.38, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.18);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.18);
+  } catch (error) {
+    console.error('Error playing complete restore sound:', error);
   }
 };
 

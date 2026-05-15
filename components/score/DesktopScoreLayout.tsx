@@ -124,6 +124,9 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
       {/* 计分明细 - 单行极简设计 */}
       <div className="w-full flex flex-col gap-3 mt-1 px-2">
         <div className="h-px bg-white/5 w-full" />
+        <span className="text-[11px] font-bold text-white/30 uppercase tracking-[0.2em]">
+          {t('score.breakdown.title')}
+        </span>
         <div className="flex flex-col gap-2.5">
           {rows.map((row, i) => (
             <div key={i} className="flex items-center justify-between group">
@@ -141,7 +144,7 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
         <div className="h-px bg-white/5 w-full" />
         
         <div className="flex items-center justify-between opacity-40">
-          <span className="text-[10px] uppercase font-bold tracking-widest">{t('score.breakdown.multiplier')}</span>
+          <span className="text-[11px] uppercase font-bold tracking-[0.2em]">{t('score.breakdown.multiplier')}</span>
           <span className="text-[13px] font-sans font-bold text-brand-peach">×{scoreBreakdown?.difficultyMultiplier.toFixed(2)}</span>
         </div>
       </div>

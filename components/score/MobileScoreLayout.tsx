@@ -145,7 +145,7 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
                 </div>
               ))}
               <div className="pt-1.5 mt-1 border-t border-white/5 flex justify-between items-center opacity-40">
-                <span className="text-[9px] font-bold uppercase tracking-widest">{t('score.breakdown.multiplier')}</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.2em]">{t('score.breakdown.multiplier')}</span>
                 <span className="text-[13px] font-sans font-bold text-brand-amber">×{(gameStats.difficultyMultiplier || 1).toFixed(2)}</span>
               </div>
             </div>
@@ -225,6 +225,9 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
       {/* 计分明细 - 单行专业排版 (Unified Style) */}
       <div className="w-full flex flex-col gap-4 mt-2 px-1">
         <div className="h-px bg-white/5 w-full" />
+        <span className="text-[11px] font-bold text-white/30 uppercase tracking-[0.2em]">
+          {t('score.breakdown.title')}
+        </span>
         <div className="flex flex-col gap-3">
           {rows.map((row, i) => (
             <div key={i} className="flex items-center justify-between">
@@ -242,7 +245,7 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
         <div className="h-px bg-white/5 w-full mt-1" />
         
         <div className="flex items-center justify-between opacity-30">
-          <span className="text-[9px] uppercase font-bold tracking-widest">{t('score.breakdown.multiplier')}</span>
+          <span className="text-[11px] uppercase font-bold tracking-[0.2em]">{t('score.breakdown.multiplier')}</span>
           <span className="text-[13px] font-sans font-bold text-brand-peach">×{(scoreBreakdown?.difficultyMultiplier || 1).toFixed(2)}</span>
         </div>
       </div>

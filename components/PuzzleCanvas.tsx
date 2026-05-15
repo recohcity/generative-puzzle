@@ -3,7 +3,7 @@
 import type React from "react"
 import { useEffect, useRef, useState, useMemo, useCallback } from "react"
 import { useGame } from "@/contexts/GameContext"
-import { playPieceSelectSound, playPieceSnapSound, playFinishSound, playRotateSound, playCompleteInteractionSound, playCompleteTiltSound } from "@/utils/rendering/soundEffects"
+import { playPieceSelectSound, playPieceSnapSound, playFinishSound, playRotateSound, playCompleteInteractionSound, playCompleteTiltSound, playCompleteRestoreSound } from "@/utils/rendering/soundEffects"
 import { useTranslation } from '@/contexts/I18nContext'
 
 import {
@@ -199,7 +199,9 @@ export default function PuzzleCanvas() {
   const onInteractEnd = (e: React.MouseEvent | React.TouchEvent) => {
     if (state.isCompleted && tiltStateRef.current.active) {
       tiltStateRef.current.active = false;
+      lastTiltAudioRef.current = { rx: 0, ry: 0 };
       setTilt({ rx: 0, ry: 0, active: false });
+      playCompleteRestoreSound();
       return;
     }
     if ('touches' in e) handleTouchEnd(e as React.TouchEvent<HTMLCanvasElement>);
