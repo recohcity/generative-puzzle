@@ -451,7 +451,11 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
               onPointerDown={(e) => {
                 if (e.target === e.currentTarget) setShowScoreModal(false);
               }}
-              className="fixed inset-0 z-[1000] flex items-center justify-center p-4 sm:p-6 bg-black/20 backdrop-blur-xl cursor-pointer"
+              className="fixed inset-0 z-[1000] flex items-center justify-center px-3 bg-black/20 backdrop-blur-xl cursor-pointer"
+              style={{
+                paddingTop: 'calc(12px + env(safe-area-inset-top, 0px))',
+                paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',
+              }}
             >
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -460,7 +464,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                 transition={{ duration: 0.25, ease: "easeOut" }}
                 onClick={(e) => e.stopPropagation()}
                 className={cn(
-                  "bg-white/10 backdrop-blur-2xl border border-white/15 shadow-2xl relative flex flex-col outline-none w-full max-h-[85vh] cursor-default",
+                  "bg-white/10 backdrop-blur-2xl border border-white/15 shadow-2xl relative flex flex-col outline-none w-full max-h-full cursor-default",
                   isLandscape ? "rounded-[2rem] max-w-[620px]" : "rounded-[2.5rem] max-w-[360px]"
                 )}
               >
@@ -471,20 +475,20 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                 >
                   <X size={24} strokeWidth={1.5} />
                 </button>
-                <div className={cn("flex flex-col h-full", isLandscape ? "p-4" : "p-6")}>
+                <div className={cn("flex flex-col h-full", isLandscape ? "p-4" : "px-5 pt-4 pb-4")}>
                   {/* 顶部标准图标 (同 Auth 弹窗) - 仅在竖屏显示，横屏由 MobileScoreLayout 内部三栏接管 */}
                   {!isLandscape && (
-                    <div className="flex flex-col items-center mb-6 shrink-0">
-                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-peach to-brand-orange flex items-center justify-center shadow-xl shadow-brand-orange/20 relative mb-4">
+                    <div className="flex flex-col items-center mb-3 shrink-0">
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-peach to-brand-orange flex items-center justify-center shadow-xl shadow-brand-orange/20 relative mb-2">
                         <div className="absolute inset-0 bg-white/20 rounded-2xl blur-sm animate-pulse-slow"></div>
-                        <Trophy className="w-8 h-8 text-brand-dark relative" />
+                        <Trophy className="w-7 h-7 text-brand-dark relative" />
                       </div>
                       
                       {/* 标题区：难度(小) + 禅(大) 顶部齐平 */}
                       <div className="flex flex-col items-center">
                         <div className="flex items-start gap-1.5">
                           <span className="text-[10px] text-white/30 font-bold mt-1.5 uppercase tracking-widest">{t('score.breakdown.base')}</span>
-                          <h2 className={cn("text-5xl font-black tracking-tighter drop-shadow-sm leading-none text-brand-peach")}>
+                          <h2 className={cn("text-4xl font-black tracking-tighter drop-shadow-sm leading-none text-brand-peach")}>
                             {t(getDifficultyMetadata(state.gameStats!.difficulty.cutCount).nameKey)}
                           </h2>
                         </div>
@@ -495,7 +499,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                     </div>
                   )}
 
-                  <div className="flex-1 overflow-y-auto min-h-0 custom-scrollbar mb-4 pr-1">
+                  <div className="flex-1 overflow-y-auto min-h-0 custom-scrollbar mb-2 pr-1">
                     <MobileScoreLayout 
                       gameStats={state.gameStats!} 
                       currentScore={state.currentScore} 
@@ -509,7 +513,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                   </div>
 
                   {!isLandscape && (
-                    <div className="flex-shrink-0 flex flex-row gap-3 pt-4 border-t border-white/5">
+                    <div className="flex-shrink-0 flex flex-row gap-3 pt-3 border-t border-white/5">
                       <RestartButton onClick={handleRetryCurrent} icon="retry" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.retryCurrent')}</RestartButton>
                       <RestartButton onClick={handleRestart} icon="refresh" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.restartGame')}</RestartButton>
                     </div>

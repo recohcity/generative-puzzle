@@ -174,7 +174,7 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
   }
 
   return (
-    <div className={cn("flex flex-col items-center w-full gap-5 animate-in fade-in slide-in-from-bottom-4 duration-700", hideHeader ? "py-0" : "py-2")}>
+    <div className={cn("flex flex-col items-center w-full animate-in fade-in slide-in-from-bottom-4 duration-700", hideHeader ? "py-0 gap-3" : "py-2 gap-5")}>
       {/* 荣耀区 - 难度与描述 (Desktop Parity) */}
       {!hideHeader && (
         <div className="flex flex-col items-center">
