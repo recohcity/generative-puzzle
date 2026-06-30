@@ -166,6 +166,17 @@ h6,
     --brand-dark-rgb: 35, 32, 53;
   }
 
+  /* 锁死高度基准，确保在 iOS PWA 下 fixed 元素及背景能完美铺满物理视口且加载时不闪黑屏 */
+  html, body {
+    height: 100%;
+    height: 100dvh;
+    margin: 0;
+    padding: 0;
+    background: #1E1A2A; /* 匹配主题的深紫色底色 */
+    background-image: linear-gradient(to bottom right, #4c1d95, #1e3a8a); /* 匹配紫到蓝的渐变，与游戏主背景完全一致 */
+    background-attachment: fixed;
+  }
+
   /* 安卓字体缩放终极防御：锁死 rem 基准值，禁止系统篡改根字号 */
   html {
     font-size: 16px !important;
@@ -218,7 +229,7 @@ h6,
   bottom: 0;
   width: 100%;
   height: 100%;
-  /* 使用 dvh 确保在移动端浏览器（非全屏）下高度准确 */
+  /* 使用 dvh 确保在移动端浏览器（非全屏）下高度准确，与 window.innerHeight 保持一致 */
   height: 100dvh;
   /* 修改触摸行为设置以允许按钮点击 */
   touch-action: pan-x pan-y;
@@ -229,11 +240,8 @@ h6,
   -webkit-touch-callout: none;
   /* 禁止长按链接弹出菜单 */
 
-  /* 🎯 2026 移动全能力探测：利用安全区变量预防刘海屏/底部指示器遮挡 */
-  padding-left: env(safe-area-inset-left, 0px);
-  padding-right: env(safe-area-inset-right, 0px);
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  /* 🎯 2026 移动全能力探测：利用安全区变量预防刘海屏/底部指示器遮挡 - 已移至各个布局组件内部处理 */
+  padding: 0;
 }
 
 /* 特定地禁止canvas触摸事件的滚动行为，但允许按钮正常工作 */

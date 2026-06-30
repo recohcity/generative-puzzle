@@ -77,8 +77,10 @@ const PhonePortraitLayout: React.FC<PhonePortraitLayoutProps> = ({
         // 🎯 极致置顶：在所有移动端浏览器（WeChat, Safari, Chrome）中彻底归零顶部 padding
         // 由浏览器地址栏或系统顶栏自然占位，确保内容从视口最顶端开始，回收垂直空间
         paddingTop: isTabletPortrait ? 40 : 0,
-        // 使用 CSS 原生安全区变量适配安卓系统导航栏，避免硬编码导致溢出
+        // 使用 CSS 原生安全区变量适配系统安全区，避免边缘内容/刘海屏被遮挡
         paddingBottom: 'env(safe-area-inset-bottom, 8px)',
+        paddingLeft: 'env(safe-area-inset-left, 0px)',
+        paddingRight: 'env(safe-area-inset-right, 0px)',
       }}
     >
       {/* 🎯 极致布局：移除 my-auto，强制置顶显示，彻底消除顶部留空过大的问题 */}

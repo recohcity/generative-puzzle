@@ -1,4 +1,22 @@
 # 生成式拼图游戏 Changelog
+## [v1.4.22] - 2026-07-01
+
+### 🍎 iPad PWA 启动视口校准与底部黑色遮挡深度修复 (iPad PWA Viewport Calibration & Bottom Black Bar Fix)
+
+本版本专注于修复 iPad/iOS 设备上通过 PWA（添加到主屏幕）方式启动游戏时，横屏和竖屏底部出现黑色条遮挡，以及屏幕旋转后黑边才消失的 iOS WebKit 兼容性顽疾。
+
+- **启动期视口重测与重排校准**:
+  - 在 [page.tsx](file:///Users/citylivepark/Documents/project/generative-puzzle/app/page.tsx) 挂载的最早阶段，引入了视口元数据（Viewport Meta）切换策略。启动时临时锁定视口为禁止缩放以强制 iOS WebKit 重新计算视口尺寸，300ms 后自动放开为正常的多倍缩放视口。这能让视口在开屏加载（LoadingScreen）期间即完成精准对齐。
+  - 在 [useDeviceDetection.ts](file:///Users/citylivepark/Documents/project/generative-puzzle/hooks/useDeviceDetection.ts) 中对 PWA standalone 模式引入了延时 DOM 重排（Reflow）触发器和全局 `resize` 事件模拟，确保即使在 WebKit 拒绝派发原生 resize 事件时，也能主动重绘游戏界面。
+- **布局高度继承与比例修正**:
+  - **高度链重构**: 将 `GameInterface` 容器的 `min-h-dvh` 修改为 `min-h-full`，同时将 `DesktopLayout` 的最小高度从 `100dvh` 改为继承父级的 `100%`，确保所有组件在高度上紧密咬合，消除视口单位偏差造成的溢出裁剪。
+  - **iPad 安全区高度补偿**: 在 PWA 横屏桌面模式下，于计算尺寸前主动扣除 44px 的状态栏及底部 Home 指示条预留高度，防止画布及右侧面板计算高度过大。
+  - **独立布局安全区改造**: 移除了全局 `.no-scroll-container` 冗余的 safe-area padding 以避免布局双重缩进，改由各终端布局（横屏、竖屏、平板桌面）自主在行内样式管理安全区 padding。为 `PhonePortraitLayout` 补齐了左右两侧的 `env(safe-area-inset)` 保护。
+- **主题背景色视觉融合与抗闪烁**:
+  - 在 [globals.css](file:///Users/citylivepark/Documents/project/generative-puzzle/app/globals.css) 中，为全局 `html` & `body` 直接配置了与拼图主界面一致的紫蓝渐变背景色（`linear-gradient(to bottom right, #4c1d95, #1e3a8a)`）并锁定 `100dvh` 高度基准。即使系统出现极其细微的像素级测量抖动或闪烁，过渡也完全自然无感。
+
+---
+
 ## [v1.4.21] - 2026-06-29
 
 ### 📱 移动端结算弹窗视口与安全区适配优化 (Mobile Score Modal Layout & Viewport Polish)

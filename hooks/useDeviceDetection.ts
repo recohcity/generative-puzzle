@@ -136,6 +136,37 @@ export function useDeviceDetection(): DeviceDetectionState {
       window.visualViewport.addEventListener('resize', handleResize);
     }
 
+    // 🎯 iOS PWA standalone 启动与渲染稳定性修复：
+    // PWA 在启动或特定状态改变时，iOS WebKit 常常不会主动触发 resize 事件更新 window.innerHeight。
+    // 我们通过在多个关键时间点强制对 documentElement 进行微小的样式扰动并读取 offsetHeight，
+    // 强行触发浏览器的 Layout 重排（Reflow），随后派发 resize 事件并重测状态，
+    // 这与登录/登出弹窗开启关闭时强刷 body 样式的效果一致，能完美消除底部黑边。
+    const isPWAStandalone = typeof window !== 'undefined' && 
+      (!!(window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches);
+    const pwaTimers: NodeJS.Timeout[] = [];
+    if (isPWAStandalone) {
+      [150, 400, 800, 1200].forEach(delay => {
+        pwaTimers.push(setTimeout(() => {
+          try {
+            const doc = document.documentElement;
+            const originalHeight = doc.style.height;
+            // 微调高度以强制触发重排
+            doc.style.height = '99.9%';
+            const _ = doc.offsetHeight; // 强制 Reflow
+            doc.style.height = originalHeight;
+            
+            // 派发全局 resize 事件以通知所有相关的监听器
+            window.dispatchEvent(new Event('resize'));
+            
+            // 强制更新 DeviceManager 状态并触发 React 渲染
+            deviceManager.forceUpdateState();
+          } catch (e) {
+            console.error('Failed to trigger PWA reflow:', e);
+          }
+        }, delay));
+      });
+    }
+
     return () => {
       unsubscribe();
       window.removeEventListener('resize', handleResize);
@@ -143,6 +174,8 @@ export function useDeviceDetection(): DeviceDetectionState {
       if (window.visualViewport && !isAndroid) {
         window.visualViewport.removeEventListener('resize', handleResize);
       }
+      // 清理 PWA 延迟重测量 timers
+      pwaTimers.forEach(t => clearTimeout(t));
     };
   }, [deviceState.isPortrait]);
 

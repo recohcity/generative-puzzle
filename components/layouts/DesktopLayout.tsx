@@ -254,7 +254,13 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   // 使用统一设备检测系统获取屏幕尺寸
   const device = useDeviceDetection();
   const windowWidth = device.screenWidth;
-  const windowHeight = device.screenHeight;
+  
+  // 🎯 iPad PWA/iOS 全屏安全高度调整：如果是 PWA 独立模式下的 iPad/iOS，
+  // 必须扣除系统状态栏及底部指示条占用高度（共约 44px），防止布局内容溢出视口被裁剪
+  const isPWA = typeof window !== 'undefined' && 
+    (!!(window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches);
+  const verticalSafeAreaOffset = (device.isIPad || device.isIOS) && isPWA ? 44 : 0;
+  const windowHeight = Math.max(320, device.screenHeight - verticalSafeAreaOffset);
 
   // 使用统一计算函数（现在返回计算好的边距）
   const calculationResult = calculateDesktopCanvasSize(windowWidth, windowHeight);
@@ -331,11 +337,13 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
         justifyContent: 'center',
         alignItems: 'center',
         overflow: 'hidden',
-        paddingTop: TOP_BOTTOM_MARGIN,
-        paddingBottom: TOP_BOTTOM_MARGIN,
-        paddingLeft: actualLeftRightMargin,
-        paddingRight: actualLeftRightMargin,
-        minHeight: '100vh', // 🎯 极致锁定：桌面端垂直居中，确保视觉平衡
+        // 🎯 iPad PWA 全屏安全区修复：在固定边距之上叠加 safe-area-inset，
+        // 防止 home indicator 区域产生黑色遮挡（viewport-fit=cover 已设置）
+        paddingTop: `calc(${TOP_BOTTOM_MARGIN}px + env(safe-area-inset-top, 0px))`,
+        paddingBottom: `calc(${TOP_BOTTOM_MARGIN}px + env(safe-area-inset-bottom, 0px))`,
+        paddingLeft: `calc(${actualLeftRightMargin}px + env(safe-area-inset-left, 0px))`,
+        paddingRight: `calc(${actualLeftRightMargin}px + env(safe-area-inset-right, 0px))`,
+        minHeight: '100%', // 继承父容器高度，避免与 .no-scroll-container 产生高度差导致溢出裁剪
         position: 'relative'
       }}>
       <div style={{

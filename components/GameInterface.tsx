@@ -377,7 +377,7 @@ export default function CurveTestOptimized() {
     <GameProvider>
       <div
         ref={gameContainerRef}
-        className="min-h-dvh w-full relative overflow-hidden"
+        className="min-h-full w-full relative overflow-hidden"
         style={{
           // 移除默认的padding和flex居中，让子布局完全控制
           padding: 0,
