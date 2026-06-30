@@ -706,6 +706,14 @@ svg {
     @apply glass-btn-base bg-brand-orange/20 border-brand-orange/40 text-brand-peach shadow-lg shadow-brand-orange/10;
   }
 
+  /* Repeatable Cut State — shown after first cut, before scatter */
+  .glass-btn-recut {
+    @apply glass-btn-base text-white;
+    background: linear-gradient(135deg, #3B9AE1 0%, #27C9A8 100%);
+    border-color: rgba(39, 201, 168, 0.5);
+    box-shadow: 0 3px 8px rgba(39, 201, 168, 0.25);
+  }
+
   /* Hover Overlay Effect (Subtle sheen) — overflow-hidden 仅在此处，不在 base 上 */
   .glass-btn-sheen {
     @apply relative;

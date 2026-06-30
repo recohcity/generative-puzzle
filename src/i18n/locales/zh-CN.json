@@ -132,6 +132,7 @@
                 "hard": "极难"
             },
             "button": "切割形状",
+            "recutButton": "再次切割",
             "hints": {
                 "selectCutType": "请先选择切割类型",
                 "selectCount": "请选择难度级别"

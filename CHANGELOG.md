@@ -1,4 +1,19 @@
 # 生成式拼图游戏 Changelog
+## [v1.4.23] - 2026-07-01
+
+### 🎨 优化游戏按钮状态展示与交互一致性 (Optimize Game Button States & Hover Consistency)
+
+本版本专注于优化游戏控制按钮的多态设计，解决用户在点击“切割形状”按钮后，对可重复切割状态不明确的体验痛点，同时规范了全局按钮的悬停及缩放交互。
+
+- **切割形状按钮新增“可重复切割”状态**:
+  - **三态视觉区分**: 保留原有的“禁用状态”（透明度）与“首次可用状态”（橙色）。当形状被切割生成但未散开时（即已切割至少一次），按钮视觉状态转换至新增的“可重复切割状态”（采用青蓝色渐变，搭配独立的青色微发光投影 `0 3px 8px rgba(39, 201, 168, 0.25)`），同时文案动态更新为“再次切割”或“Re-cut Shape”，向用户明确传达“可以多次切割”的玩法规则。
+- **全平台 hover/悬停光晕样式统一**:
+  - 移除了再次切割按钮独立的 hover 渐变与过大发光动画，统一通过 `.glass-btn-sheen` 伪元素遮罩机制实现温和、一致的 hover 扫光反馈。
+- **散开拼图按钮 hover 缩放动画对齐**:
+  - 将 [PuzzleControlsScatter.tsx](file:///Users/citylivepark/Documents/project/generative-puzzle/components/PuzzleControlsScatter.tsx) 内的 `<Button>` 统一重构为原生 HTML `<button>` 元素，移除了额外的 hover 缩放动画（`hover:scale-105`），字重同步调整为 `normal`，与控制面板内的其它核心交互按钮在悬浮行为上达成一致。
+
+---
+
 ## [v1.4.22] - 2026-07-01
 
 ### 🍎 iPad PWA 启动视口校准与底部黑色遮挡深度修复 (iPad PWA Viewport Calibration & Bottom Black Bar Fix)

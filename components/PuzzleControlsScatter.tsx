@@ -1,6 +1,6 @@
 "use client"
 import { useGame } from "@/contexts/GameContext"
-import { Button } from "@/components/ui/button"
+
 import { ScatterChart } from "lucide-react"
 import { playButtonClickSound, playScatterSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
@@ -46,7 +46,7 @@ export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 40 }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0', width: '100%' }}>
-      <Button
+      <button
         onClick={handleScatterPuzzle}
         disabled={!isPuzzleGenerated || state.isScattered}
         className={cn(
@@ -61,14 +61,17 @@ export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 40 }
           height: buttonHeight,
           padding: '0 16px',
           lineHeight: '18px',
-          fontWeight: 'normal'
+          fontWeight: 'normal',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}
       >
         <ScatterChart style={{ width: '18px', height: '18px', marginRight: '8px', flexShrink: 0 }} strokeWidth={2.5} />
         <span style={{ fontSize: '14px' }}>
           {state.isScattered ? t('game.scatter.completed') : t('game.scatter.button')}
         </span>
-      </Button>
+      </button>
 
       <div className="text-premium-label mt-2 text-center opacity-80 min-h-[16px] text-xs">
         {state.isScattered ? t('game.hints.gameInProgress') : " "}

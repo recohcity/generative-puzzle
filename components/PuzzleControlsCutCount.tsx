@@ -48,6 +48,8 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
   const canModifySettings = isShapeGenerated && !state.isScattered && hasCutType
   // 检查是否有选择次数
   const hasSelectedCount = localCutCount !== null
+  // 检查是否已切割过一次（puzzle 存在且未散开）→ 可重复切割状态
+  const isPuzzleAlreadyCut = state.puzzle !== null && !state.isScattered
 
   const handleCutCountChange = (value: number) => {
     if (!canModifySettings) return
@@ -169,8 +171,13 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
         onClick={handleGeneratePuzzle}
         disabled={!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType}
         className={cn(
-          "glass-btn-active glass-btn-sheen w-full group overflow-hidden relative",
-          (!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType) && "opacity-30 pointer-events-none"
+          "glass-btn-sheen w-full group overflow-hidden relative",
+          // 三态：禁用 / 首次可用（橙） / 可重复切割（青）
+          (!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType)
+            ? "glass-btn-active opacity-30 pointer-events-none"
+            : isPuzzleAlreadyCut
+              ? "glass-btn-recut"
+              : "glass-btn-active"
         )}
         data-testid="generate-puzzle-button"
         style={{
@@ -180,14 +187,19 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
           height: actionButtonHeight,
           padding: '0 16px',
           lineHeight: '18px',
-          fontWeight: '600',
+          fontWeight: 'normal',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center'
         }}
       >
         <PuzzleIcon className="mr-2 group-hover:rotate-12 transition-transform duration-300" style={{ width: '18px', height: '18px' }} strokeWidth={2.5} />
-        <span style={{ fontSize: '14px' }}>{t('game.cutCount.button')}</span>
+        <span style={{ fontSize: '14px' }}>
+          {isPuzzleAlreadyCut && !(!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType)
+            ? t('game.cutCount.recutButton')
+            : t('game.cutCount.button')
+          }
+        </span>
       </button>
 
       {/* 提示信息 */}

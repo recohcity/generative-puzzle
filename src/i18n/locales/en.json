@@ -131,6 +131,7 @@
                 "hard": "Extreme"
             },
             "button": "Cut Shape",
+            "recutButton": "Re-cut Shape",
             "hints": {
                 "selectCutType": "Please select cut type first",
                 "selectCount": "Please select difficulty level"
