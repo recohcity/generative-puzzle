@@ -61,9 +61,10 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
       {/* 用户状态按钮：灰=游客，金=已登录 */}
       {onToggleUser && (
         <button
-          onClick={() => {
+          onClick={(e) => {
             playButtonClickSound();
             onToggleUser();
+            e.currentTarget.blur();
           }}
           className={cn(buttonClass, isUserPanelOpen ? "glass-btn-active" : "glass-btn-inactive")}
           style={{

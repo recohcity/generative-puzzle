@@ -12,6 +12,7 @@
         "login": "Login Now",
         "logout": "Logout",
         "logoutConfirm": "Are you sure you want to log out?",
+        "backToGame": "Return to Game",
         "logoutDescription": "Are you sure you want to log out? Your records are safely saved.",
         "registerButton": "Register",
         "loginButton": "Login",
@@ -22,6 +23,8 @@
         "loading": "Loading...",
         "syncing": "Syncing...",
         "title": "Account Login",
+        "enterGame": "Enter Game",
+        "unifiedHint": "Remember your nickname and PIN to see your history and global ranking anywhere.",
         "emailPlaceholder": "your@email.com",
         "signIn": "Send Magic Link",
         "signOut": "Sign Out",
@@ -48,7 +51,7 @@
         },
         "inputs": {
             "nickname": "Nickname",
-            "nicknamePlaceholder": "Tom (2-8 chars)",
+            "nicknamePlaceholder": "Nickname (2-8 chars)",
             "pin": "Enter any 4-digit PIN",
             "pinPlaceholder": "••••"
         },

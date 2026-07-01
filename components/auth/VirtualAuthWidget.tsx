@@ -49,49 +49,35 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
     return true;
   };
 
-  const handleRegister = async () => {
+  const handleAuth = async () => {
     if (!validateInput()) return;
     setLoading(true);
     
-    const { data: existing, error: lookupError } = await VirtualAuthService.lookupAccounts(nickname.trim(), pin);
+    const { data: accounts, error: lookupError } = await VirtualAuthService.lookupAccounts(nickname.trim(), pin);
+    
     if (lookupError) {
       setError(t('auth.error.lookupFail', { error: lookupError }));
       setLoading(false);
       return;
     }
 
-    if (existing && existing.length > 0) {
-      setError(t('auth.error.exists', { nickname }));
+    if (accounts && accounts.length > 0) {
+      if (accounts.length === 1) {
+        await executeLogin(accounts[0].virtual_email);
+      } else {
+        setCollisionList(accounts);
+        setMode("collision_select");
+        setLoading(false);
+      }
+    } else {
+      const { success, error: authError } = await VirtualAuthService.register(nickname.trim(), pin);
       setLoading(false);
-      return;
-    }
 
-    const { success, error: authError } = await VirtualAuthService.register(nickname.trim(), pin);
-    setLoading(false);
-
-    if (!success) {
-      setError(authError || t('auth.error.fail'));
-    } else {
-      handleSuccess();
-    }
-  };
-
-  const handleRecover = async () => {
-    if (!validateInput()) return;
-    setLoading(true);
-
-    const { data: accounts, error: lookupError } = await VirtualAuthService.lookupAccounts(nickname.trim(), pin);
-    setLoading(false);
-
-    if (lookupError) {
-      setError(t('auth.error.recoverFail', { error: lookupError }));
-    } else if (!accounts || accounts.length === 0) {
-      setError(t('auth.error.notFound'));
-    } else if (accounts.length === 1) {
-      await executeLogin(accounts[0].virtual_email);
-    } else {
-      setCollisionList(accounts);
-      setMode("collision_select");
+      if (!success) {
+        setError(authError || t('auth.error.fail'));
+      } else {
+        handleSuccess();
+      }
     }
   };
 
@@ -140,11 +126,7 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      if (mode === 'register') {
-        handleRegister();
-      } else if (mode === 'recover') {
-        handleRecover();
-      }
+      handleAuth();
     }
   };
 
@@ -395,36 +377,17 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
 
           <div className="mt-1 flex gap-2">
             <button
-                onClick={mode === 'register' ? handleRegister : () => { setError(null); setMode('register'); }}
+                onClick={handleAuth}
                 disabled={loading}
                 className={cn(
                   "flex-1 h-10 rounded-xl font-normal text-[14px] transition-all",
-                  mode === 'register' 
-                    ? "bg-gradient-to-r from-brand-peach to-brand-orange text-brand-dark shadow-lg shadow-brand-orange/20" 
-                    : "bg-white/5 text-brand-peach/60 border border-white/10 hover:bg-white/10"
+                  "bg-gradient-to-r from-brand-peach to-brand-orange text-brand-dark shadow-lg shadow-brand-orange/20"
                 )}
             >
-              {loading && mode === 'register' ? (
+              {loading ? (
                 <RotateCw className="w-3.5 h-3.5 animate-spin mx-auto" />
               ) : (
-                <span>{t('auth.registerButton')}</span>
-              )}
-            </button>
-
-            <button 
-                onClick={mode === 'recover' ? handleRecover : () => { setError(null); setMode('recover'); }}
-                disabled={loading}
-                className={cn(
-                  "flex-1 h-10 rounded-xl font-normal text-[14px] transition-all",
-                  mode === 'recover' 
-                    ? "bg-gradient-to-r from-brand-peach to-brand-orange text-brand-dark shadow-lg shadow-brand-orange/20" 
-                    : "bg-white/5 text-brand-peach/60 border border-white/10 hover:bg-white/10"
-                )}
-            >
-              {loading && mode === 'recover' ? (
-                <RotateCw className="w-3.5 h-3.5 animate-spin mx-auto" />
-              ) : (
-                <span>{t('auth.loginButton')}</span>
+                <span>{t('auth.enterGame')}</span>
               )}
             </button>
           </div>
@@ -440,12 +403,12 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
           <div className="flex justify-center mb-1">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-peach to-brand-orange flex items-center justify-center shadow-xl shadow-brand-orange/20 relative">
                   <div className="absolute inset-0 bg-white/20 rounded-2xl blur-sm animate-pulse-slow"></div>
-                  {mode === 'register' ? <User className="w-6 h-6 text-brand-dark relative" /> : <RotateCw className="w-6 h-6 text-brand-dark relative" />}
+                  <User className="w-6 h-6 text-brand-dark relative" />
               </div>
           </div>
 
           <h2 className="text-sm font-bold text-center text-brand-amber tracking-tight uppercase">
-            {mode === 'register' ? t('auth.modes.register.title') : t('auth.modes.recover.title')}
+            {t('auth.modes.register.title')}
           </h2>
 
           <div className="h-[34px] my-1 flex items-center w-full">
@@ -494,47 +457,25 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
             <div className="space-y-2 pt-1">
               <div className="flex gap-3">
                 <button
-                    onClick={mode === 'register' ? handleRegister : () => { setError(null); setMode('register'); }}
+                    onClick={handleAuth}
                     disabled={loading}
                     style={{ WebkitTapHighlightColor: 'transparent' }}
                     className={cn(
                       "flex-1 h-11 rounded-xl font-normal text-[14px] transition-all outline-none select-none",
-                      mode === 'register' 
-                        ? "bg-gradient-to-r from-brand-peach to-brand-orange text-brand-dark shadow-lg shadow-brand-orange/20" 
-                        : "bg-white/5 text-brand-peach/60 border border-white/10 hover:bg-white/10"
+                      "bg-gradient-to-r from-brand-peach to-brand-orange text-brand-dark shadow-lg shadow-brand-orange/20"
                     )}
                 >
-                  {loading && mode === 'register' ? (
+                  {loading ? (
                     <RotateCw className="w-4 h-4 animate-spin mx-auto" />
                   ) : (
-                    <span>{t('auth.registerButton')}</span>
-                  )}
-                </button>
-
-                <button
-                    onClick={mode === 'recover' ? handleRecover : () => { setError(null); setMode('recover'); }}
-                    disabled={loading}
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
-                    className={cn(
-                      "flex-1 h-11 rounded-xl font-normal text-[14px] transition-all outline-none select-none",
-                      mode === 'recover' 
-                        ? "bg-gradient-to-r from-brand-peach to-brand-orange text-brand-dark shadow-lg shadow-brand-orange/20" 
-                        : "bg-white/5 text-brand-peach/60 border border-white/10 hover:bg-white/10"
-                    )}
-                >
-                  {loading && mode === 'recover' ? (
-                    <RotateCw className="w-4 h-4 animate-spin mx-auto" />
-                  ) : (
-                    <span>{t('auth.loginButton')}</span>
+                    <span>{t('auth.enterGame')}</span>
                   )}
                 </button>
               </div>
 
               <div className="h-[28px] flex items-center justify-center">
                 <p className="text-[10px] text-brand-peach/40 text-center px-2 leading-relaxed italic">
-                  {mode === 'register' 
-                    ? t('auth.modes.register.hint')
-                    : t('auth.modes.recover.hint')}
+                  {t('auth.unifiedHint')}
                 </p>
               </div>
             </div>

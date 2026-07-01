@@ -11,7 +11,8 @@ import ActionButtons from "@/components/ActionButtons";
 import RestartButton from "@/components/RestartButton";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, X, LogOut, User } from "lucide-react";
+import { VirtualAuthService, PlayerProfile } from "@/utils/cloud/VirtualAuthService";
 import { useGame } from "@/contexts/GameContext";
 import { playButtonClickSound } from "@/utils/rendering/soundEffects";
 
@@ -25,6 +26,18 @@ import RecentGameDetails from '@/components/RecentGameDetails';
 import { GameDataManager } from '@/utils/data/GameDataManager';
 import { getSpeedBonusDescription, getSpeedBonusDetails } from '@generative-puzzle/game-core';
 import IdentityChip from '@/components/auth/IdentityChip';
+import { useAuth } from '@/contexts/AuthContext';
+import VirtualAuthWidget from "@/components/auth/VirtualAuthWidget";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface DesktopLayoutProps {
   isMusicPlaying: boolean;
@@ -49,13 +62,25 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   // 从GameContext获取state和resetGame函数，以及翻译函数
   const { state, resetGame, retryCurrentGame } = useGame();
   const { t, locale } = useTranslation();
+  const { user, signOut } = useAuth();
 
   // 个人最佳成绩显示状态
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showLoginPanel, setShowLoginPanel] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [showRecentGameDetails, setShowRecentGameDetails] = useState(false);
   const [selectedGameRecord, setSelectedGameRecord] = useState<any>(null);
   const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
   const [historyData, setHistoryData] = useState<any[]>([]);
+  const [profile, setProfile] = useState<Omit<PlayerProfile, 'virtual_email'> | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      VirtualAuthService.getCurrentProfile().then(p => setProfile(p));
+    } else {
+      setProfile(null);
+    }
+  }, [user]);
 
   // 计算拼图完成进度
   const totalPieces = (state.puzzle ?? []).length;
@@ -101,6 +126,23 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   const handleRetryCurrentGame = () => {
     playButtonClickSound();
     retryCurrentGame();
+  };
+
+  const handleToggleUser = () => {
+    if (!user) {
+      setShowLoginPanel(prev => !prev);
+      setShowLeaderboard(false);
+      setShowRecentGameDetails(false);
+    } else {
+      setShowLogoutDialog(true);
+    }
+  };
+
+  const executeLogout = async () => {
+    await signOut();
+    setShowLogoutDialog(false);
+    setShowLoginPanel(false);
+    setShowLeaderboard(false);
   };
 
   // 获取形状显示名称
@@ -254,10 +296,10 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   // 使用统一设备检测系统获取屏幕尺寸
   const device = useDeviceDetection();
   const windowWidth = device.screenWidth;
-  
+
   // 🎯 iPad PWA/iOS 全屏安全高度调整：如果是 PWA 独立模式下的 iPad/iOS，
   // 必须扣除系统状态栏及底部指示条占用高度（共约 44px），防止布局内容溢出视口被裁剪
-  const isPWA = typeof window !== 'undefined' && 
+  const isPWA = typeof window !== 'undefined' &&
     (!!(window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches);
   const verticalSafeAreaOffset = (device.isIPad || device.isIOS) && isPWA ? 44 : 0;
   const windowHeight = Math.max(320, device.screenHeight - verticalSafeAreaOffset);
@@ -439,24 +481,31 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                       setLeaderboardData(data);
                       setHistoryData(history);
                       setShowLeaderboard(true);
+                      setShowLoginPanel(false);
+                      setShowRecentGameDetails(false);
                     }
                   }}
                   isLeaderboardOpen={showLeaderboard}
+                  onToggleUser={handleToggleUser}
+                  isLoggedIn={!!user}
+                  isUserPanelOpen={showLoginPanel}
                 />
               </div>
 
               <div className="mt-2 group">
                 <IdentityChip
                   panelScale={panelScale}
-                  isPanelOpen={showLeaderboard}
-                  onClose={() => setShowLeaderboard(false)}
+                  isPanelOpen={showLeaderboard || showLoginPanel || showRecentGameDetails}
+                  onClose={() => {
+                    setShowLeaderboard(false);
+                    setShowLoginPanel(false);
+                    setShowRecentGameDetails(false);
+                  }}
                   onClick={() => {
-                    if (!showLeaderboard) {
-                      const data = GameDataManager.getLeaderboard();
-                      const history = GameDataManager.getGameHistory();
-                      setLeaderboardData(data);
-                      setHistoryData(history);
-                      setShowLeaderboard(true);
+                    if (!user) {
+                      setShowLoginPanel(true);
+                      setShowLeaderboard(false);
+                      setShowRecentGameDetails(false);
                     }
                   }}
                 />
@@ -492,6 +541,11 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                     setShowRecentGameDetails(true);
                   }}
                 />
+              ) : (showLoginPanel && !user) ? (
+                // 未登录时的登录界面
+                <div className="flex flex-col h-full justify-center">
+                  <VirtualAuthWidget onAuthSuccess={() => setShowLoginPanel(false)} />
+                </div>
               ) : state.isCompleted && state.gameStats ? (
                 // 游戏完成时 - 使用统一组件 (SOP Refined)
                 <div className="flex flex-col h-full">
@@ -560,6 +614,48 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
           </div>
         </div>
       )}
+
+      {/* 登出确认弹窗 */}
+      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <AlertDialogContent className="bg-white/10 backdrop-blur-2xl border border-white/15 !rounded-[1.5rem] p-8 shadow-2xl relative flex flex-col items-center gap-6 outline-none cursor-default w-full max-w-[300px] text-white select-none">
+          <AlertDialogTitle className="sr-only">{t('auth.logout')}</AlertDialogTitle>
+          <AlertDialogDescription className="sr-only">{t('auth.logoutConfirm')}</AlertDialogDescription>
+          <button
+            onClick={() => setShowLogoutDialog(false)}
+            className="absolute top-4 right-4 p-1.5 text-white/50 hover:text-white/80 transition-colors cursor-pointer z-50 border-none bg-transparent outline-none"
+            aria-label="Close"
+          >
+            <X size={24} strokeWidth={1.5} />
+          </button>
+
+          {/* 用户头像 */}
+          <div className="flex justify-center mb-1">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-peach to-brand-orange flex items-center justify-center shadow-xl shadow-brand-orange/20 relative">
+              <div className="absolute inset-0 bg-white/20 rounded-2xl blur-sm animate-pulse-slow"></div>
+              <User className="w-6 h-6 text-brand-dark relative" />
+            </div>
+          </div>
+
+          {/* 昵称 */}
+          <div className="text-center">
+            <div className="text-sm font-bold text-center text-brand-amber tracking-tight uppercase mb-1">
+              {profile?.nickname || t('auth.loading')}
+            </div>
+            <div className="flex items-center justify-center gap-1.5 mt-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_5px_rgba(74,222,128,0.5)]" />
+              <span className="text-white/50 text-xs">{t('auth.loggedIn') || '已登录'}</span>
+            </div>
+          </div>
+
+          {/* 退出按钮 */}
+          <button
+            onClick={executeLogout}
+            className="w-full py-3 rounded-2xl bg-white/10 border border-white/15 text-white/80 font-medium text-sm hover:bg-red-500/20 hover:border-red-400/30 hover:text-red-300 transition-all cursor-pointer outline-none"
+          >
+            {t('auth.logout') || '退出登录'}
+          </button>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

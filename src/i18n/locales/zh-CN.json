@@ -12,6 +12,7 @@
         "login": "立即登录",
         "logout": "退出",
         "logoutConfirm": "确定要退出当前账号吗？",
+        "backToGame": "返回游戏",
         "logoutDescription": "确定要退出当前账号吗？这不会删除您的记录。",
         "registerButton": "注册",
         "loginButton": "登录",
@@ -22,6 +23,8 @@
         "loading": "加载中...",
         "syncing": "同步中...",
         "title": "账户登录",
+        "enterGame": "进入游戏",
+        "unifiedHint": "记住昵称和密码,随时随地看到你的历史成绩和全球排名。",
         "emailPlaceholder": "your@email.com",
         "signIn": "发送魔法链接",
         "signOut": "登出账户",
@@ -48,7 +51,7 @@
         },
         "inputs": {
             "nickname": "游戏昵称",
-            "nicknamePlaceholder": "Tom (2-8字符)",
+            "nicknamePlaceholder": "昵称（2-8 字符）",
             "pin": "输入任意4位数字",
             "pinPlaceholder": "••••"
         },
