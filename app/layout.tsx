@@ -14,7 +14,7 @@ const inter = Inter({
   display: 'swap',
   adjustFontFallback: true,
   variable: '--font-inter',
-  preload: false,
+  preload: true,
 })
 
 export const metadata: Metadata = {
@@ -92,6 +92,14 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* 移动端背景图预加载 — 使图片请求与 HTML 解析并行，消除 LCP 等待 LoadingScreen 结束的问题 */}
+        <link
+          rel="preload"
+          as="image"
+          href="/bg-mobile-portrait.webp"
+          type="image/webp"
+          media="(max-width: 1024px)"
+        />
         {/* 微信专属：禁止调整本页面字体大小 */}
         <meta name="wap-font-scale" content="no" />
       </head>

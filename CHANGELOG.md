@@ -1,4 +1,22 @@
 # 生成式拼图游戏 Changelog
+## [v1.4.26] - 2026-07-01
+
+### ⚡️ 移动端关键渲染性能与 LCP 指标深度优化 (Mobile Web Vital LCP & FCP Optimization)
+
+针对移动端性能统计中 Largest Contentful Paint (LCP) 指标偏高 (6.36s) 导致体验评级不佳的问题，进行了资源加载链的深度重构，使渲染管线并行化，缩短关键路径耗时。
+
+- **移动端背景图预加载 (Fix 1 — LCP Optimization)**:
+  - 在 [layout.tsx](file:///Users/citylivepark/Documents/project/generative-puzzle/app/layout.tsx) 的 `<head>` 区域为移动端核心背景图 `bg-mobile-portrait.webp` 添加了带有媒体查询限幅的 `<link rel="preload">` 指令（`media="(max-width: 1024px)"`）。
+  - 该改动使浏览器在解析首个 HTML 报文时，即可与 JS 并行下载背景图片，彻底解除了此前“必须等待 LoadingScreen 结束、GameInterface 组件挂载后才发起图片请求”的串行阻塞，LCP 耗时预期缩短 2s 以上。
+- **Inter 字体预加载与闪烁优化 (Fix 2 — FCP Optimization)**:
+  - 调整 `layout.tsx` 中 Inter 域的配置，将 `preload: false` 修正为 `preload: true`。
+  - 缩短了字体文件网络请求时序，结合 `adjustFontFallback` 选项降低了首屏文本渲染等待时间 (FCP) 并消除视觉抖动。
+- **Loading 阶段人机工程时间校准 (Fix 3 — User Perception Optimization)**:
+  - 将 [LoadingScreen.tsx](file:///Users/citylivepark/Documents/project/generative-puzzle/components/loading/LoadingScreen.tsx) 的最短展示阈值 `MIN_LOADING_TIME` 从 `900ms` 下调至 `600ms`。
+  - 在保障资源完全加载的前提下，最大程度减少了人为锁死带来的 LCP 和首屏交互阻碍。
+
+---
+
 ## [v1.4.25] - 2026-07-01
 
 ### 🎯 游戏完成后按钮样式强化，提升操作引导 (Post-Game Button Visual Enhancement)

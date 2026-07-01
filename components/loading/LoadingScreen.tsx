@@ -11,7 +11,7 @@ export default function LoadingScreen({ onLoadComplete }: LoadingScreenProps) {
   const [displayProgress, setDisplayProgress] = useState(1);
   const [resourceLoaded, setResourceLoaded] = useState(false);
   const loadingCompleted = useRef<boolean>(false);
-  const MIN_LOADING_TIME = 900; // 最短展示 0.9 秒
+  const MIN_LOADING_TIME = 600; // 最短展示 0.6 秒（原 0.9s，降低对 LCP 的叠加延迟）
   const startTime = useRef<number>(Date.now());
   const [done, setDone] = useState(false);
 

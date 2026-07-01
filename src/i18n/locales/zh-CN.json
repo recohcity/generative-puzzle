@@ -189,12 +189,12 @@
             "all": "全部",
             "tabs": {
                 "personal": "个人最佳",
-                "global": "全服排名"
+                "global": "全球排名"
             },
             "loadingGlobal": "正在获取全球排名...",
             "globalRank": "全球排名",
             "anonymous": "匿名玩家",
-            "empty": "暂无全服排名数据",
+            "empty": "暂无全球排名数据",
             "refresh": "刷新",
             "sessionsUnit": "局"
         },
