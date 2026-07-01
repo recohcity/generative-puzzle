@@ -1,4 +1,23 @@
 # 生成式拼图游戏 Changelog
+## [v1.4.25] - 2026-07-01
+
+### 🎯 游戏完成后按钮样式强化，提升操作引导 (Post-Game Button Visual Enhancement)
+
+针对游戏完成后"重玩本局"与"重开游戏"按钮过于低调、用户容易忽略的体验痛点，在游戏结算界面对两个按钮进行视觉强化，引导用户挑战更高成绩。
+
+- **`RestartButton` 组件新增 `variant` 视觉变体**:
+  - 新增 `variant` 属性，支持三种样式：`'default'`（透明，游戏进行中）、`'recut'`（青蓝渐变，同"再次切割"按钮）、`'active'`（橙色渐变，同"散开拼图"按钮）。通过 `VARIANT_CLASS_MAP` 映射至对应的 `glass-btn-*` CSS 类，保持与现有设计系统的一致性。
+- **游戏完成后按钮样式升级**:
+  - **"重玩本局"按钮**: 游戏完成后从透明样式（`glass-btn-inactive`）升级为青蓝渐变样式（`glass-btn-recut`），与"再次切割"按钮视觉一致，强化"挑战新成绩"的行动号召。
+  - **"重开游戏"按钮**: 游戏完成后从透明样式升级为橙色渐变样式（`glass-btn-active`），与"散开拼图"按钮视觉一致，强化可点击状态的视觉感知。
+  - **游戏进行中保持不变**: 控制面板区域的按钮在游戏进行中仍保持透明样式，避免过度引导用户随意重玩重开。
+- **全端同步生效**:
+  - 桌面端（[DesktopLayout.tsx](file:///Users/citylivepark/Documents/project/generative-puzzle/components/layouts/DesktopLayout.tsx)）游戏完成区域按钮已适配。
+  - 移动竖屏（[PhoneTabPanel.tsx](file:///Users/citylivepark/Documents/project/generative-puzzle/components/layouts/PhoneTabPanel.tsx)）得分弹窗与内联完成视图按钮已适配。
+  - 移动横屏（[MobileScoreLayout.tsx](file:///Users/citylivepark/Documents/project/generative-puzzle/components/score/MobileScoreLayout.tsx)）内联得分按钮已从自定义样式统一迁移至 `glass-btn-recut` / `glass-btn-active`。
+
+---
+
 ## [v1.4.24] - 2026-07-01
 
 ### 🔐 极简用户身份验证与桌面端入口全面重构 (Unified Auth Flow & Desktop Login Overhaul)

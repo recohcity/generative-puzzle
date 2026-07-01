@@ -1,6 +1,6 @@
 {
   "name": "generative-puzzle",
-  "version": "1.4.24",
+  "version": "1.4.25",
   "type": "module",
   "private": true,
   "workspaces": [

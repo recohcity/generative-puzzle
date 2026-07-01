@@ -155,14 +155,14 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
           <div className="flex flex-row gap-2 mt-4">
             <button 
               onClick={onRetry}
-              className="flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/70 font-bold text-[10px] hover:bg-white/10 transition-all active:scale-[0.98]"
+              className="glass-btn-recut flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl font-bold text-[10px] transition-all active:scale-[0.98]"
             >
               <RefreshCw size={12} className="rotate-180" />
               {t('game.controls.retryCurrent')}
             </button>
             <button 
               onClick={onRestart}
-              className="flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl bg-brand-peach/10 border border-brand-peach/20 text-brand-peach font-bold text-[10px] hover:bg-brand-peach/20 transition-all active:scale-[0.98]"
+              className="glass-btn-active flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl font-bold text-[10px] transition-all active:scale-[0.98]"
             >
               <RefreshCw size={12} />
               {t('game.controls.restartGame')}

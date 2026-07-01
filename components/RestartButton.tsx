@@ -13,11 +13,18 @@ interface RestartButtonProps {
   height?: number | string;
   children?: React.ReactNode;
   icon?: 'refresh' | 'retry'; // 新增：图标类型
+  variant?: 'default' | 'recut' | 'active'; // 视觉变体：default=透明, recut=青蓝(再次切割), active=橙色(散开拼图)
 }
 
 const DEFAULT_HEIGHT = 40;
 const DEFAULT_FONT_SIZE = 14;
 const DEFAULT_ICON_SIZE = 18;
+
+const VARIANT_CLASS_MAP = {
+  default: 'glass-btn-inactive',
+  recut: 'glass-btn-recut',
+  active: 'glass-btn-active',
+} as const;
 
 const RestartButton: React.FC<RestartButtonProps> = ({
   onClick,
@@ -29,6 +36,7 @@ const RestartButton: React.FC<RestartButtonProps> = ({
   height = DEFAULT_HEIGHT,
   children,
   icon = 'refresh', // 默认使用 refresh 图标
+  variant = 'default',
 }) => {
   const { t } = useTranslation();
   const defaultText = children || t('game.controls.restart');
@@ -36,12 +44,15 @@ const RestartButton: React.FC<RestartButtonProps> = ({
   // 根据 icon prop 选择图标
   const IconComponent = icon === 'retry' ? RotateCcw : RefreshCw;
 
+  // 根据 variant 选择图标颜色
+  const iconColor = variant === 'recut' ? '#ffffff' : variant === 'active' ? 'currentColor' : 'var(--brand-peach)';
+
   return (
     <button
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "glass-btn-inactive glass-btn-sheen w-full",
+        `${VARIANT_CLASS_MAP[variant]} glass-btn-sheen w-full`,
         disabled && "opacity-30 pointer-events-none",
         className
       )}
@@ -66,7 +77,7 @@ const RestartButton: React.FC<RestartButtonProps> = ({
         style={{
           width: iconSize,
           height: iconSize,
-          color: "var(--brand-peach)",
+          color: iconColor,
           flexShrink: 0,
           lineHeight: 1,
         }}

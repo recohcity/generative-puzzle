@@ -514,8 +514,8 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
 
                   {!isLandscape && (
                     <div className="flex-shrink-0 flex flex-row gap-3 pt-3 border-t border-white/5">
-                      <RestartButton onClick={handleRetryCurrent} icon="retry" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.retryCurrent')}</RestartButton>
-                      <RestartButton onClick={handleRestart} icon="refresh" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.restartGame')}</RestartButton>
+                      <RestartButton onClick={handleRetryCurrent} icon="retry" variant="recut" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.retryCurrent')}</RestartButton>
+                      <RestartButton onClick={handleRestart} icon="refresh" variant="active" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.restartGame')}</RestartButton>
                     </div>
                   )}
                 </div>
@@ -794,8 +794,8 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                   </button>
                 </div>
                 <div className="flex flex-row gap-2 w-full">
-                  <RestartButton onClick={handleRetryCurrent} icon="retry" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.retryCurrent')}</RestartButton>
-                  <RestartButton onClick={handleRestart} icon="refresh" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.restartGame')}</RestartButton>
+                  <RestartButton onClick={handleRetryCurrent} icon="retry" variant="recut" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.retryCurrent')}</RestartButton>
+                  <RestartButton onClick={handleRestart} icon="refresh" variant="active" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }} fontSize={MOBILE_RESTART_FONT_SIZE} iconSize={MOBILE_RESTART_ICON_SIZE}>{t('game.controls.restartGame')}</RestartButton>
                 </div>
               </div>
             </div>

@@ -557,6 +557,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                     <RestartButton
                       onClick={handleRetryCurrentGame}
                       icon="retry"
+                      variant="recut"
                       style={{ height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 14 : "calc(0.95rem * var(--panel-scale))" }}
                     >
                       {t("game.controls.retryCurrent")}
@@ -564,6 +565,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                     <RestartButton
                       onClick={handleDesktopResetGame}
                       icon="refresh"
+                      variant="active"
                       style={{ height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 14 : "calc(0.95rem * var(--panel-scale))" }}
                     >
                       {t("game.controls.restartGame")}
