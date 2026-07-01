@@ -33,11 +33,11 @@
         "description": "使用 Magic Link 登录后，游戏记录会自动写入云端并用于多端一致。",
         "modes": {
             "register": {
-                "title": "设定您的个人信息",
+                "title": "填写您的个人信息",
                 "description": "",
                 "hint": "请记住你的昵称和4位数字，方便找回历史成绩。",
                 "button": "注册/登录",
-                "loading": "正在设定..."
+                "loading": "正在填写..."
             },
             "recover": {
                 "title": "找回历史成绩",

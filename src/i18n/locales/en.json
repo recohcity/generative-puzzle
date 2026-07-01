@@ -33,7 +33,7 @@
         "description": "After signing in with a Magic Link, your game records will be automatically synced to the cloud.",
         "modes": {
             "register": {
-                "title": "Set Your Profile",
+                "title": "Enter Your Profile",
                 "description": "",
                 "hint": "Please remember your nickname and 4-digit PIN to recover your records.",
                 "button": "Register/Login",
