@@ -270,6 +270,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
   };
 
   const handleRestart = () => {
+    playButtonClickSound();
     const isGameInProgress = state.isGameActive && state.puzzle && state.isScattered && !state.isCompleted;
     if (isGameInProgress) {
       setShowRestartDialog(true);
@@ -279,6 +280,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
   };
 
   const executeRestart = () => {
+    playButtonClickSound();
     setShowRestartDialog(false);
     resetGame();
     if (goToFirstTab) goToFirstTab();
