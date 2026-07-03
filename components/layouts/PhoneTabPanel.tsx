@@ -695,8 +695,8 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                         <div className="space-y-0.5">
                           {uniqueGlobalData.slice(0, 3).map((record: any, index: number) => {
                             const r = record as any;
-                            const difficultyKey = record.difficulty?.difficultyLevel;
-                            const difficultyLabel = difficultyKey ? t(`difficulty.${difficultyKey}`) : '';
+                             const cutCount = record.difficulty?.cutCount;
+                             const difficultyLabel = cutCount ? t(`difficulty.levels.${cutCount}`) : '';
                             const playerName = r.nickname || r.displayName || t('game.leaderboard.anonymous');
                             const sessions = r.sessionsCount ?? 0;
                             const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : null;

@@ -5,6 +5,7 @@ import { playButtonClickSound } from "@/utils/rendering/soundEffects";
 import { useTranslation } from '@/contexts/I18nContext';
 import { GameRecord } from '@generative-puzzle/game-core';
 import { getSpeedBonusDetails } from '@generative-puzzle/game-core';
+import { getSpeedTierLabel } from '@/utils/score/speedTierLabels';
 import { cn } from "@/lib/utils";
 
 interface GameRecordDetailsProps {
@@ -13,7 +14,7 @@ interface GameRecordDetailsProps {
 }
 
 const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({ record, onBack }) => {
-  const { t, locale } = useTranslation();
+  const { t } = useTranslation();
   
   // 颜色通过 Tailwind Token (text-brand-peach) 统一管理
 
@@ -28,16 +29,14 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({ record, onBack })
     const pieceCount = record.difficulty?.actualPieces || 0;
     const difficultyLevel = record.difficulty?.cutCount || 1;
     const speedDetails = getSpeedBonusDetails(record.totalDuration, pieceCount, difficultyLevel);
-    
-    if (speedDetails.currentLevel) {
-      const map: Record<string, { zh: string; en: string }> = {
-        '极速': { zh: '极速', en: 'Extreme' }, '快速': { zh: '快速', en: 'Fast' },
-        '良好': { zh: '良好', en: 'Good' }, '标准': { zh: '标准', en: 'Normal' },
-        '一般': { zh: '一般', en: 'Slow' }, '慢': { zh: '慢', en: 'Too Slow' },
-      };
-      return map[speedDetails.currentLevel.name]?.[locale === 'en' ? 'en' : 'zh'] || speedDetails.currentLevel.name;
-    }
-    return t('score.noReward') || '无奖励';
+
+    const timeSpentLabel = t('score.breakdown.timeSpent');
+    const timeValue = `${record.totalDuration}s`;
+    const tierLabel = speedDetails.currentLevel
+      ? getSpeedTierLabel(speedDetails.currentLevel.name, t)
+      : (t('score.noReward') || '无奖励');
+
+    return `${timeSpentLabel} ${timeValue} · ${tierLabel}`;
   };
 
   const subtotal = (record.scoreBreakdown?.baseScore || 0) +
@@ -45,9 +44,18 @@ const GameRecordDetails: React.FC<GameRecordDetailsProps> = ({ record, onBack })
     (record.scoreBreakdown?.rotationScore || 0) +
     (record.scoreBreakdown?.hintScore || 0);
 
+  const getShapeDisplayName = (shapeType?: string): string => {
+    if (!shapeType) return '';
+    try { return t(`game.shapes.names.${shapeType}`); } catch { return shapeType; }
+  };
+
   const levelText = t('difficulty.levelLabel', { level: record.difficulty.cutCount });
+  const shapeName = getShapeDisplayName(record.difficulty?.shapeType);
   const piecesPart = `${record.difficulty?.actualPieces || 0}${t('stats.piecesUnit') || '片'}`;
-  const difficultyString = `${levelText} · ${piecesPart}`;
+  const parts = [levelText];
+  if (shapeName) parts.push(shapeName);
+  parts.push(piecesPart);
+  const difficultyString = parts.join(' · ');
 
   const rows = [
     { label: t('score.breakdown.base'), sub: difficultyString, value: (record.scoreBreakdown?.baseScore || 0) },

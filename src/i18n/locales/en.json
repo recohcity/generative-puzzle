@@ -234,12 +234,13 @@
         "timeBonus": "Speed Bonus",
         "noReward": "No Reward",
         "speedBonus": {
-            "within10s": "Within 10s",
-            "within30s": "Within 30s",
-            "within1min": "Within 1min",
-            "within1min30s": "Within 1min30s",
-            "within2min": "Within 2min",
-            "over2min": "Over 2min",
+            "tierSupreme": "Lightspeed",
+            "tierExcellent": "Extreme",
+            "tierFast": "Fast",
+            "tierGood": "Good",
+            "tierNormal": "Normal",
+            "tierSlow": "Slow",
+            "tierTooSlow": "Too Slow",
             "levelsTitle": "Speed Bonus Levels:"
         },
         "badges": {

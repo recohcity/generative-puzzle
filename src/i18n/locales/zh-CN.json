@@ -236,12 +236,13 @@
         "timeBonus": "速度奖励",
         "noReward": "无奖励",
         "speedBonus": {
-            "within10s": "10秒内完成",
-            "within30s": "30秒内完成",
-            "within1min": "1分钟内完成",
-            "within1min30s": "1分30秒内完成",
-            "within2min": "2分钟内完成",
-            "over2min": "超过2分钟",
+            "tierSupreme": "光速",
+            "tierExcellent": "极速",
+            "tierFast": "快速",
+            "tierGood": "良好",
+            "tierNormal": "标准",
+            "tierSlow": "一般",
+            "tierTooSlow": "慢",
             "levelsTitle": "速度奖励等级说明："
         },
         "badges": {

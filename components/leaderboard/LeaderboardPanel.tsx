@@ -106,6 +106,17 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
     return parts.join(' · ');
   };
 
+  const getDifficultyWithPieces = (difficulty: any): string => {
+    const shapeName = getShapeDisplayName(difficulty?.shapeType);
+    const difficultyLevel = getDifficultyText(difficulty);
+    const piecesText = `${difficulty?.actualPieces || 0}${t('stats.piecesUnit')}`;
+
+    const parts = [difficultyLevel];
+    if (shapeName) parts.push(shapeName);
+    parts.push(piecesText);
+    return parts.join(' · ');
+  };
+
   const filteredLeaderboard = useMemo(() => {
     // 个人最佳 UI 层暴力去重：防止历史同步产生的脏数据回流
     const uniqueMap = new Map<string, GameRecord>();
@@ -292,10 +303,6 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                     >
                       {/* Top 5 个人最佳成绩 */}
                       <div className="rounded-2xl p-2.5">
-                        <h2 className="text-brand-peach/60 mb-2.5 text-[14px] flex items-center gap-2 font-normal">
-                          <Trophy className="w-3.5 h-3.5 opacity-40" />
-                          {t('leaderboard.title')}
-                        </h2>
                         {filteredLeaderboard.length === 0 ? (
                           <div className="text-center text-brand-peach opacity-40 py-8">
                             <Trophy className="w-8 h-8 mx-auto mb-2 opacity-20" />
@@ -333,12 +340,12 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                       </div>
                       {/* 最近游戏历史 */}
                       <div className="rounded-2xl p-2.5">
-                        <h2 className="text-brand-peach/60 mb-2.5 text-[14px] flex items-center gap-2 font-normal">
-                          <History className="w-3.5 h-3.5 opacity-40" />
+                        <h2 className="text-white/90 mb-2.5 text-[14px] flex items-center gap-2 font-normal">
+                          <History className="w-3.5 h-3.5" />
                           {t('stats.scoreHistory')}
                         </h2>
                         {sortedHistory.length === 0 ? (
-                          <div className="text-center text-brand-peach opacity-40 py-6">
+                          <div className="text-center text-white/40 py-6">
                             <div style={{ fontSize: baseFontSize }}>{t('stats.noData')}</div>
                           </div>
                         ) : (
@@ -346,22 +353,21 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                             {sortedHistory.map((record, index) => (
                               <div
                                 key={`recent-${record.timestamp}-${index}`}
-                                className="group flex items-center justify-between px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 hover:border-brand-peach/50 hover:bg-white/[0.10] cursor-pointer transition-all text-[11px]"
+                                className="group flex items-center justify-between px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 hover:border-brand-peach/50 hover:bg-white/[0.10] cursor-pointer transition-all"
                                 onClick={() => showRecentGameDetails(record)}
                               >
                                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                                  <div className="text-white/40 group-hover:text-brand-peach transition-colors shrink-0">
+                                  <div className="text-brand-peach/70 group-hover:text-brand-peach transition-colors shrink-0">
                                     <History className="w-3.5 h-3.5" />
                                   </div>
                                   <div className="flex items-center gap-2 overflow-hidden flex-1">
-                                    <div className="text-base font-medium shrink-0 drop-shadow-md" style={{ color: 'var(--brand-peach)' }}>{formatScore(record.finalScore)}</div>
-                                    <div className="text-brand-peach/30 flex items-center gap-2 text-[10px] whitespace-nowrap">
-                                      <span className="flex items-center gap-1 font-medium"><Trophy className="w-2.5 h-2.5" /> {formatTime(record.totalDuration)}</span>
-                                      <span className="flex items-center gap-1 font-medium"><RotateCw className="w-2.5 h-2.5" /> {record.totalRotations}</span>
-                                    </div>
+                                    <div className="text-[13px] font-medium shrink-0 tabular-nums" style={{ color: 'var(--brand-peach)' }}>{formatScore(record.finalScore)}</div>
+                                    <span className="text-[11px] text-white/70 font-medium truncate">{getDifficultyWithPieces(record.difficulty)}</span>
+                                    <span className="text-[11px] text-white/50 flex items-center gap-1 shrink-0"><Trophy className="w-2.5 h-2.5" /> {formatTime(record.totalDuration)}</span>
+                                    <span className="text-[11px] text-white/50 flex items-center gap-1 shrink-0"><RotateCw className="w-2.5 h-2.5" /> {record.totalRotations}</span>
                                   </div>
                                 </div>
-                                <div className="text-brand-peach/20 text-[10px] shrink-0 ml-1.5 font-mono">
+                                <div className="text-[10px] text-white/40 shrink-0 ml-1.5 font-mono">
                                   {new Date(record.timestamp).toLocaleDateString()}
                                 </div>
                               </div>
@@ -379,11 +385,6 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                       className="min-h-[300px] flex flex-col"
                     >
                       <div className="rounded-2xl p-2.5 flex-1 flex flex-col no-scrollbar">
-                        <h2 className="text-brand-peach/60 font-normal mb-2.5 text-[14px] flex items-center gap-2">
-                          <Globe className="w-3.5 h-3.5 opacity-40" />
-                          {t('game.leaderboard.tabs.global')}
-                        </h2>
-
                         {isGlobalLoading ? (
                           <div className="flex-1 flex flex-col items-center justify-center py-20 gap-3">
                             <div className="relative">
@@ -401,8 +402,8 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
                           <div className="space-y-2.5">
                             {uniqueGlobalData.slice(0, 5).map((record, index) => {
                               const r = record as any;
-                              const difficultyKey = record.difficulty?.difficultyLevel;
-                              const difficultyLabel = difficultyKey ? t(`difficulty.${difficultyKey}`) : '';
+                               const cutCount = record.difficulty?.cutCount;
+                               const difficultyLabel = cutCount ? t(`difficulty.levels.${cutCount}`) : '';
                               const playerName = r.nickname || r.displayName || t('game.leaderboard.anonymous');
                               const sessions = r.sessionsCount ?? 0;
                               return (

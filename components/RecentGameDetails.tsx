@@ -4,6 +4,7 @@ import { ArrowLeft, Trophy } from "lucide-react";
 import { playButtonClickSound } from "@/utils/rendering/soundEffects";
 import { useTranslation } from '@/contexts/I18nContext';
 import { getSpeedBonusDetails } from '@generative-puzzle/game-core';
+import { getSpeedTierLabel } from '@/utils/score/speedTierLabels';
 import { cn } from "@/lib/utils";
 
 interface StoredGameRecord {
@@ -30,7 +31,7 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
   record,
   onBack
 }) => {
-  const { t, locale } = useTranslation();
+  const { t } = useTranslation();
 
   // 颜色通过 Tailwind Token (text-brand-peach) 统一管理
 
@@ -39,10 +40,19 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
     onBack();
   };
 
+  const getShapeDisplayName = (shapeType?: string): string => {
+    if (!shapeType) return '';
+    try { return t(`game.shapes.names.${shapeType}`); } catch { return shapeType; }
+  };
+
   const getDifficultyText = (record: any): string => {
     const levelText = t('difficulty.levelLabel', { level: record.difficulty.cutCount });
+    const shapeName = getShapeDisplayName(record.difficulty?.shapeType);
     const pieceCount = record.difficulty?.actualPieces || 0;
-    return `${levelText} · ${pieceCount}${t('stats.piecesUnit')}`;
+    const parts = [levelText];
+    if (shapeName) parts.push(shapeName);
+    parts.push(`${pieceCount}${t('stats.piecesUnit')}`);
+    return parts.join(' · ');
   };
 
   const getSpeedBonusText = (duration: number): string => {
@@ -50,19 +60,14 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
     const pieceCount = difficulty?.actualPieces || 0;
     const difficultyLevel = difficulty?.cutCount || 1;
     const speedDetails = getSpeedBonusDetails(duration, pieceCount, difficultyLevel);
-    
-    if (speedDetails.currentLevel) {
-      const levelNameMap: Record<string, { zh: string; en: string }> = {
-        '极速': { zh: '极速', en: 'Extreme' },
-        '快速': { zh: '快速', en: 'Fast' },
-        '良好': { zh: '良好', en: 'Good' },
-        '标准': { zh: '标准', en: 'Normal' },
-        '一般': { zh: '一般', en: 'Slow' },
-        '慢': { zh: '慢', en: 'Too Slow' }
-      };
-      return levelNameMap[speedDetails.currentLevel.name]?.[locale === 'en' ? 'en' : 'zh'] || speedDetails.currentLevel.name;
-    }
-    return t('score.noReward') || '无';
+
+    const timeSpentLabel = t('score.breakdown.timeSpent');
+    const timeValue = `${duration}s`;
+    const tierLabel = speedDetails.currentLevel
+      ? getSpeedTierLabel(speedDetails.currentLevel.name, t)
+      : (t('score.noReward') || '无');
+
+    return `${timeSpentLabel} ${timeValue} · ${tierLabel}`;
   };
 
   const rows = [
@@ -102,7 +107,7 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
               <div key={i} className="flex items-baseline justify-between leading-none py-0.5 w-full overflow-hidden">
                 <div className="flex items-baseline gap-1.5 flex-1 min-w-0 pr-1.5 overflow-hidden">
                   <span className="text-white/70 shrink-0 font-medium text-[12px]">{row.label}</span>
-                  <span className="text-white/15 truncate uppercase font-medium text-[10px] hidden sm:inline">{row.sub}</span>
+                  <span className="text-white/70 truncate uppercase font-medium text-[10px] hidden sm:inline">{row.sub}</span>
                 </div>
                 <span className={cn("tabular-nums shrink-0 font-medium text-[13px] text-right", row.sign === '-' ? 'text-red-400' : 'text-brand-peach')}>
                   {row.sign}{row.value}
@@ -116,19 +121,19 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
           {/* 结算与系数 */}
           <div className="space-y-1.5">
              <div className="flex items-center justify-between">
-                <span className="text-white/30 uppercase tracking-tight font-medium text-[10px]">{t('score.breakdown.subtotal')}</span>
-                <span className="text-white/40 tabular-nums font-medium text-[12px]">{subtotal}</span>
+                <span className="text-white/50 uppercase tracking-tight font-medium text-[10px]">{t('score.breakdown.subtotal')}</span>
+                <span className="text-white/70 tabular-nums font-medium text-[12px]">{subtotal}</span>
              </div>
 
              <div className="flex items-center justify-between">
-                <span className="text-white/30 uppercase tracking-tight font-medium text-[10px]">{t('score.breakdown.multiplier')}</span>
+                 <span className="text-white/50 uppercase tracking-tight font-medium text-[10px]">{t('score.breakdown.multiplier')}</span>
                 <span className="tabular-nums font-medium text-[12px] text-brand-peach/80">
                   ×{(record.scoreBreakdown?.difficultyMultiplier || 1).toFixed(2)}
                 </span>
-             </div>
+              </div>
 
-             <div className="border-t border-white/5 flex items-baseline justify-between pt-2.5 mt-1">
-                <span className="text-white/60 uppercase tracking-widest font-medium text-[12px]">{t('score.breakdown.final')}</span>
+              <div className="border-t border-white/5 flex items-baseline justify-between pt-2.5 mt-1">
+                 <span className="text-white/80 uppercase tracking-widest font-medium text-[12px]">{t('score.breakdown.final')}</span>
                 <span className="tabular-nums tracking-tight leading-none font-medium text-lg text-brand-peach">
                   {record.finalScore}
                 </span>

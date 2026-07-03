@@ -25,6 +25,7 @@ import LeaderboardPanel from '@/components/leaderboard/LeaderboardPanel';
 import RecentGameDetails from '@/components/RecentGameDetails';
 import { GameDataManager } from '@/utils/data/GameDataManager';
 import { getSpeedBonusDescription, getSpeedBonusDetails } from '@generative-puzzle/game-core';
+import { getSpeedTierLabel } from '@/utils/score/speedTierLabels';
 import IdentityChip from '@/components/auth/IdentityChip';
 import { useAuth } from '@/contexts/AuthContext';
 import VirtualAuthWidget from "@/components/auth/VirtualAuthWidget";
@@ -249,16 +250,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
 
     // 根据当前等级生成描述文本
     if (speedDetails.currentLevel) {
-      const levelNameMap: Record<string, { zh: string; en: string }> = {
-        '极速': { zh: '极速', en: 'Extreme' },
-        '快速': { zh: '快速', en: 'Fast' },
-        '良好': { zh: '良好', en: 'Good' },
-        '标准': { zh: '标准', en: 'Normal' },
-        '一般': { zh: '一般', en: 'Slow' },
-        '慢': { zh: '慢', en: 'Too Slow' }
-      };
-
-      const levelName = levelNameMap[speedDetails.currentLevel.name]?.[locale === 'en' ? 'en' : 'zh'] || speedDetails.currentLevel.name;
+      const levelName = getSpeedTierLabel(speedDetails.currentLevel.name, t);
 
       // 如果是慢等级（无奖励），显示"超出X秒"
       if (speedDetails.currentLevel.name === '慢') {
@@ -281,8 +273,8 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
     const slowThreshold = Math.round(baseTime * 1.5);
     const timeStr = formatTimeStr(slowThreshold);
     return locale === 'en'
-      ? `Too Slow (exceeded ${timeStr})`
-      : `慢（超出${timeStr}）`;
+      ? `${getSpeedTierLabel('慢', t)} (exceeded ${timeStr})`
+      : `${getSpeedTierLabel('慢', t)}（超出${timeStr}）`;
   };
 
   // 新增：桌面端控制按钮和重置按钮高度常量

@@ -1,4 +1,38 @@
 # 生成式拼图游戏 Changelog
+## [v1.4.27] - 2026-07-03
+
+### 🏆 速度奖励新增"光速"等级与榜单/详情 UI 全面对齐 (New Speed Tier & Leaderboard/Detail Parity)
+
+本版本聚焦于速度奖励体系的扩展、榜单与成绩详情 UI 的显示一致性，以及难度描述体系的全面统一。
+
+#### 1. 速度奖励新增"光速"等级 (New "Lightspeed" Speed Tier)
+- **光速阈值**: 新增最高速度等级，达成条件为 `≤0.8×基础时间`，奖励 `+1000分 × 难度倍数`。
+- **计分内核**: `ScoreCalculator.ts` 阈值数组首位新增光速（0.8x 基础时间），`baseBonuses` 新增 `supreme: 1000`。
+- **全端标签同步**: 5 处 UI 组件（`DesktopScoreLayout`、`MobileScoreLayout`、`RecentGameDetails`、`GameRecordDetails`、`DesktopLayout`）均新增 `'光速': 'Lightspeed'` 双语映射。
+- **规则文档同步**: `game-rules-unified.md` 更新速度等级表、3 组示例计算及挑战目标，速度等级总数由 6 个升至 7 个。
+
+#### 2. 速度标签国际化迁移 (Speed Tier Labels → i18n)
+- **硬编码清零**: 将 5 个组件中重复的内联 `Record<string, {zh, en}>` 速度等级映射全部移除。
+- **i18n 键规范**: 在 `zh-CN.json` 与 `en.json` 中新增 `score.speedBonus.tierSupreme` / `tierExcellent` / `tierFast` / `tierGood` / `tierNormal` / `tierSlow` / `tierTooSlow` 键值，替换已废弃的 `within10s` 等死键。
+- **共享工具**: 新建 `utils/score/speedTierLabels.ts`，导出 `getSpeedTierLabel(tierName, t)` 统一查询入口。
+
+#### 3. 全球排名难度显示修正 (Global Leaderboard Difficulty Labels)
+- **从旧体系迁移**: 全球排名中难度显示从 `difficultyLevel`（"简单"/"中等" → `difficulty.easy`）改为基于 `cutCount` 的新主题化名称（`difficulty.levels.N` → 启蒙/寻迹/灵动等）。
+- **桌面端与移动端同步**: `LeaderboardPanel.tsx` 与 `PhoneTabPanel.tsx` 均已修正。
+
+#### 4. 最近游戏成绩与详情 UI 对齐 (Recent Game & Detail Display Parity)
+- **形状信息补全**: "最近游戏历史"列表项（`LeaderboardPanel`）与详情面板（`RecentGameDetails`、`GameRecordDetails`）的难度描述从 `"难度1 · 4片"` 补全为 `"难度1 · 多边形 · 4片"`，与完成结算页格式一致。
+- **透明度修复**: 
+  - 列表项中分数、时间、旋转数、日期的文字透明度从 `text-brand-peach/30` ~ `/20` 统一提升至 `text-white/70` ~ `/40`，确保可读性。
+  - 详情面板 `RecentGameDetails` 中子文本从 `text-white/15` → `text-white/70`，小计/系数标签从 `text-white/30` → `text-white/50`。
+- **布局精简**: 移除个人最佳/全球排名 Tab 下方与 Tab 按钮文字重复的 `<h2>` 标题。
+
+#### 5. 规则文档同步 (Documentation Sync)
+- `game-rules-unified.md` 难度分类列标签统一为：启蒙/寻迹/灵动/巧思/破界/幻影/渊薮/神工。
+- 代码配置块中 `label` 字段同步更新。
+
+---
+
 ## [v1.4.26] - 2026-07-01
 
 ### ⚡️ 移动端关键渲染性能与 LCP 指标深度优化 (Mobile Web Vital LCP & FCP Optimization)

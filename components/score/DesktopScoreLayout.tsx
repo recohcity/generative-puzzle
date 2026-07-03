@@ -4,6 +4,7 @@ import { GameStats, ScoreBreakdown, getSpeedBonusDetails } from '@generative-puz
 import { Trophy, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { calculateStarRating, getBadges } from '@/utils/score/scoreVisualUtils';
+import { getSpeedTierLabel } from '@/utils/score/speedTierLabels';
 import { getDifficultyMetadata } from '@/utils/difficulty/difficultyMetadata';
 
 import './animations.css';
@@ -25,7 +26,7 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
   currentScore,
   isNewRecord,
 }) => {
-  const { t, locale, getRandomCompletionMessage } = useTranslation();
+  const { t, getRandomCompletionMessage } = useTranslation();
   const fmt = (n: number) => String(n);
 
   // 计算星级和勋章
@@ -45,12 +46,7 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
     const { difficulty } = gameStats;
     const speedDetails = getSpeedBonusDetails(duration, difficulty?.actualPieces || 0, difficulty?.cutCount || 1);
     if (speedDetails.currentLevel) {
-      const map: Record<string, { zh: string; en: string }> = {
-        '极速': { zh: '极速', en: 'Extreme' }, '快速': { zh: '快速', en: 'Fast' },
-        '良好': { zh: '良好', en: 'Good' }, '标准': { zh: '标准', en: 'Normal' },
-        '一般': { zh: '一般', en: 'Slow' }, '慢': { zh: '慢', en: 'Too Slow' },
-      };
-      return map[speedDetails.currentLevel.name]?.[locale === 'en' ? 'en' : 'zh'] || speedDetails.currentLevel.name;
+      return getSpeedTierLabel(speedDetails.currentLevel.name, t);
     }
     return t('score.noReward') || '无';
   };

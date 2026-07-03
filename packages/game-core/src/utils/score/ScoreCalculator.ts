@@ -111,6 +111,7 @@ const calculateDynamicTimeBonusThresholds = (
 
   // 基础奖励分数（乘以难度倍数）
   const baseBonuses = {
+    supreme: 1000,   // 光速（0.8倍基础时间）
     excellent: 600,  // 极速（1.0倍基础时间，基于实际测试优化）
     fast: 400,       // 快速（1.3倍基础时间）
     good: 300,       // 良好（1.6倍基础时间）
@@ -121,6 +122,11 @@ const calculateDynamicTimeBonusThresholds = (
   // 优化后的阈值倍数（基于实际测试数据：难度1，4片，极限22秒）
   // 基础时间 = 4 × 5 = 20秒，极速阈值 = 20 × 1.0 = 20秒（接近22秒极限）
   return [
+    {
+      maxTime: Math.round(baseTime * 0.8),
+      bonus: Math.round(baseBonuses.supreme * bonusMultiplier),
+      description: `光速（少于${Math.round(baseTime * 0.8)}秒内）`
+    },
     {
       maxTime: Math.round(baseTime * 1.0),
       bonus: Math.round(baseBonuses.excellent * bonusMultiplier),
@@ -637,7 +643,7 @@ export const getSpeedBonusDetails = (
   const slowThreshold = Math.round(baseTime * 1.5);
   
   // 等级名称映射（移除"完成"字样）
-  const levelNames = ['极速', '快速', '良好', '标准', '一般'];
+  const levelNames = ['光速', '极速', '快速', '良好', '标准', '一般'];
   
   // 找到当前等级
   let currentLevelIndex = -1;

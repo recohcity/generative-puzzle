@@ -8,7 +8,7 @@
 [![Vercel Speed Insights](https://img.shields.io/badge/Speed--Insights-Optimized-blueviolet)](https://vercel.com/recohcitys-projects/generative-puzzle/speed-insights)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-15.5-black.svg)](https://nextjs.org/)
-[![Version](https://img.shields.io/badge/version-1.4.26-orange.svg)]()
+[![Version](https://img.shields.io/badge/version-1.4.27-orange.svg)]()
 
 **基于 Next.js 15 和 React 19 构建的极致前端全栈拼图引擎**
 
@@ -24,11 +24,11 @@
 
 - **生产环境框架**: 基于 **Next.js 15** 和 **React 19** 构建骨架。
 - **云端与数据底座**: 完美集成 **Supabase** (Auth & Database)，提供多端云存档和全服竞技看板。通过 PostgreSQL RPC (`SECURITY DEFINER`) 实现原生服务器级别的权限校验。
-- **UI / UX 跨端全能力适配**: 最新的 **v1.4.20** 版本完成了结算面板小标题的全端规范统一，并新增了拼图拖拽松开后的复原音效，构建了完整的触觉-听觉反馈闭环。先前版本还引入了移动端主流浏览器（Chrome/Safari/微信）的“极致置顶”布局策略，通过深度指纹探测实现高度一致的“置顶对齐 + 底部岛屿防御”架构，配合标准无斜线数字美学，确立了项目级的视觉工业标准。
+- **UI / UX 跨端全能力适配**: 建立了一套覆盖桌面端、移动竖屏、移动横屏、iPad 四模态的统一适配体系，核心标准包括：**Design Tokens 单一真相源**（`brand-peach` 全局语义化色彩）、**玻璃拟态组件规范**（`glass-btn-*` 按钮体系 + `backdrop-blur` 深度分层）、**动态视口安全区**（`dvh` + `env(safe-area-inset)` 自适应刘海/底栏）、**多浏览器差异化布局**（Chrome/Safari/微信定向间距与溢出防护）、**安卓大字体物理防御**（SVG 渲染 + CSS `transform` 逆向缩放）、**标准无斜线数字美学**（`font-sans` 全站数值字体 + Inter/CJK 融合字体栈）、以及 **Android 触觉 + iOS 音效补偿**双轨感官反馈。全端组件通过 `useTranslation` 实现 100% i18n 覆盖，确保中英文界面零硬编码。
 
 ---
 
-## ✨ 杀手级特性系统
+## ✨ 系统特性
 
 ### ☁️ 全服数据流与云同步 (Cloud System)
 - **无感跨设备存档**：基于抽象好的 `useCloudSync` 机制自动上传玩家解谜进度（包括难度评定、完赛时间与游戏统计）。
@@ -45,7 +45,7 @@
 
 ---
 
-## 🎮 人机交互与体验打磨
+## 🎮 人机交互与体验
 
 - **硬核触控优化手势识别**：不仅支持 PC 的快捷键映射，移动端更专门重制了多点触控（Mutli-touch）。玩家可直接靠双指甚至多指进行拼图（Two-finger rotating）、并具有边界回弹震荡动画（Bouncing animation）反馈系统。
 - **音频系统与磁吸定位**：拖拽拼图接近目标吻合卡槽位时，散发出真实的“咔嗒”音效并启用阈值自动吸附（Magnetic Snap）；附带环境音乐渐入渐变音箱。
