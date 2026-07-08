@@ -604,7 +604,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
       {!isFullscreen && (
         <div className="mt-8 flex justify-center z-10 transition-opacity duration-300">
           <div className="text-white/40 text-[10px] text-center leading-relaxed font-medium">
-            recoh AI project 2026 | generative puzzle V{process.env.APP_VERSION || '1.3.51'}
+            recoh AI project 2025-2026 | generative puzzle V{process.env.APP_VERSION || '1.3.51'}
           </div>
         </div>
       )}

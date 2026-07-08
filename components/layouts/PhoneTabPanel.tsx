@@ -102,7 +102,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
 
   // 🎯 极限高度/宽度适配逻辑 (Extreme small/short screen adaptation)
   const isUltraSmall = device.screenWidth < 375 || device.screenHeight < 720;
-  
+
   const TAB_BUTTON_HEIGHT = isUltraSmall ? 28 : TAB_BUTTON_HEIGHT_BASE;
   const TAB_BUTTON_FONT_SIZE = isUltraSmall ? 10 : TAB_BUTTON_FONT_SIZE_BASE;
   const TAB_BUTTON_FONT_SIZE_LANDSCAPE = isUltraSmall ? 10 : TAB_BUTTON_FONT_SIZE_LANDSCAPE_BASE;
@@ -201,7 +201,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
 
   const uniqueGlobalData = useMemo(() => {
     if (!globalLeaderboard.length) return [];
-    
+
     return Array.from(
       globalLeaderboard.reduce((map, record) => {
         const key = record.id || (record as any).nickname || (record as any).userId;
@@ -225,7 +225,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
       setActiveLeaderboardTab('personal');
     }
     setShowLeaderboard(!showLeaderboard);
-    
+
     // 强制重置视口缩放 (Force viewport reset)
     setTimeout(() => {
       const viewport = document.querySelector('meta[name="viewport"]');
@@ -298,11 +298,11 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
     <div
       className={cn(
         PANEL_CLASS_BASE,
-        isLandscape 
-          ? PANEL_PADDING_LANDSCAPE 
+        isLandscape
+          ? PANEL_PADDING_LANDSCAPE
           : (isGameCompleted ? "p-2 pt-1" : PANEL_PADDING_PORTRAIT),
-        isLandscape 
-          ? "gap-1" 
+        isLandscape
+          ? "gap-1"
           : (isGameCompleted ? "gap-0.5" : "gap-2")
       )}
       style={style}
@@ -485,7 +485,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                         <div className="absolute inset-0 bg-white/20 rounded-2xl blur-sm animate-pulse-slow"></div>
                         <Trophy className="w-7 h-7 text-brand-dark relative" />
                       </div>
-                      
+
                       {/* 标题区：难度(小) + 禅(大) 顶部齐平 */}
                       <div className="flex flex-col items-center">
                         <div className="flex items-start gap-1.5">
@@ -502,11 +502,11 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                   )}
 
                   <div className="flex-1 overflow-y-auto min-h-0 custom-scrollbar mb-2 pr-1">
-                    <MobileScoreLayout 
-                      gameStats={state.gameStats!} 
-                      currentScore={state.currentScore} 
-                      scoreBreakdown={state.scoreBreakdown || undefined} 
-                      isNewRecord={state.isNewRecord} 
+                    <MobileScoreLayout
+                      gameStats={state.gameStats!}
+                      currentScore={state.currentScore}
+                      scoreBreakdown={state.scoreBreakdown || undefined}
+                      isNewRecord={state.isNewRecord}
                       isLandscape={isLandscape}
                       hideHeader={true}
                       onRetry={handleRetryCurrent}
@@ -535,22 +535,22 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
             {(['shape', 'puzzle', 'cut', 'scatter', 'controls'] as const).map((tab, idx, arr) => (
               <React.Fragment key={tab}>
                 {idx > 0 && (
-                  <div 
+                  <div
                     className={cn(
                       "w-[1px] h-full shrink-0 bg-white/10 transition-opacity duration-300",
                       (activeTab === tab || activeTab === arr[idx - 1]) ? "opacity-0" : "opacity-100"
-                    )} 
+                    )}
                   />
                 )}
-                <button 
+                <button
                   className={cn(
-                    TAB_BUTTON_CLASS, 
+                    TAB_BUTTON_CLASS,
                     "focus:outline-none border-none",
-                    activeTab === tab 
-                      ? 'bg-gradient-to-br from-brand-peach to-brand-orange text-brand-dark shadow-[0_2px_10px_rgba(246,142,95,0.2)] active:brightness-95 z-10' 
+                    activeTab === tab
+                      ? 'bg-gradient-to-br from-brand-peach to-brand-orange text-brand-dark shadow-[0_2px_10px_rgba(246,142,95,0.2)] active:brightness-95 z-10'
                       : 'text-brand-peach/60 active:bg-white/5'
-                  )} 
-                  onClick={() => onTabChange(tab)} 
+                  )}
+                  onClick={() => onTabChange(tab)}
                   style={{ fontSize: isLandscape ? TAB_BUTTON_FONT_SIZE_LANDSCAPE : TAB_BUTTON_FONT_SIZE }}
                 >
                   {getTabLabel(tab)}
@@ -565,7 +565,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
       <div style={{ paddingLeft: CONTENT_HORIZONTAL_PADDING, paddingRight: CONTENT_HORIZONTAL_PADDING, width: '100%', marginTop: (isGameCompleted || showLeaderboard) ? 0 : 0, flex: 1, overflow: 'hidden' }} className="no-scrollbar">
         {showLeaderboard && user ? (
           /* 已登录状态：在面板内显示成绩榜单 (精准复刻桌面版 parity 设计) */
-          <div 
+          <div
             className="animate-in fade-in slide-in-from-bottom-2 duration-300 flex flex-col pt-0 flex-1 min-h-0"
             style={{ height: isLandscape ? 'auto' : TAB_BUTTON_HEIGHT + (isUltraSmall ? 128 : 140) - 2 }}
           >
@@ -632,46 +632,46 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                     >
                       {/* 个人最佳容器 */}
                       <div className="space-y-0.5">
-                          {leaderboardData.length > 0 ? (
-                            leaderboardData.slice(0, 3).map((record, index) => {
-                              const isTop3 = index < 3;
-                              const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : null;
-                              const subtitle = [
-                                `${Math.floor(record.totalDuration / 60).toString().padStart(2, '0')}:${(record.totalDuration % 60).toString().padStart(2, '0')}`,
-                                t('difficulty.levelLabel', { level: record.difficulty?.cutCount || 1 }),
-                                t(`game.shapes.names.${record.difficulty?.shapeType}`),
-                                `${record.difficulty?.actualPieces || 0}${t('stats.piecesUnit')}`
-                              ].filter(Boolean).join(' · ');
+                        {leaderboardData.length > 0 ? (
+                          leaderboardData.slice(0, 3).map((record, index) => {
+                            const isTop3 = index < 3;
+                            const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : null;
+                            const subtitle = [
+                              `${Math.floor(record.totalDuration / 60).toString().padStart(2, '0')}:${(record.totalDuration % 60).toString().padStart(2, '0')}`,
+                              t('difficulty.levelLabel', { level: record.difficulty?.cutCount || 1 }),
+                              t(`game.shapes.names.${record.difficulty?.shapeType}`),
+                              `${record.difficulty?.actualPieces || 0}${t('stats.piecesUnit')}`
+                            ].filter(Boolean).join(' · ');
 
-                              return (
-                                <div key={record.id || record.timestamp} className={cn(
-                                  "flex items-center gap-2.5 px-2.5 bg-white/[0.06] rounded-xl border border-white/10 hover:border-brand-peach/40 hover:bg-white/[0.10] transition-all active:scale-[0.98]",
-                                  "py-1"
+                            return (
+                              <div key={record.id || record.timestamp} className={cn(
+                                "flex items-center gap-2.5 px-2.5 bg-white/[0.06] rounded-xl border border-white/10 hover:border-brand-peach/40 hover:bg-white/[0.10] transition-all active:scale-[0.98]",
+                                "py-1"
+                              )}>
+                                <div className={cn(
+                                  "flex items-center justify-center shrink-0 font-medium rounded-lg transition-all",
+                                  "w-6 h-6",
+                                  isTop3 ? "text-xl bg-transparent" : "bg-white/10 text-brand-peach/70 text-xs"
                                 )}>
-                                  <div className={cn(
-                                    "flex items-center justify-center shrink-0 font-medium rounded-lg transition-all",
-                                    "w-6 h-6",
-                                    isTop3 ? "text-xl bg-transparent" : "bg-white/10 text-brand-peach/70 text-xs"
-                                  )}>
-                                    {medal || index + 1}
+                                  {medal || index + 1}
+                                </div>
+                                <div className="flex-1 min-w-0 flex items-center justify-between gap-1 overflow-hidden">
+                                  <div className="text-[10px] text-brand-peach/40 font-medium truncate">
+                                    {subtitle}
                                   </div>
-                                  <div className="flex-1 min-w-0 flex items-center justify-between gap-1 overflow-hidden">
-                                    <div className="text-[10px] text-brand-peach/40 font-medium truncate">
-                                      {subtitle}
-                                    </div>
-                                    <div className="text-[15px] font-medium tabular-nums tracking-tighter shrink-0" style={{ color: 'var(--brand-peach)' }}>
-                                      {record.finalScore?.toString()}
-                                    </div>
+                                  <div className="text-[15px] font-medium tabular-nums tracking-tighter shrink-0" style={{ color: 'var(--brand-peach)' }}>
+                                    {record.finalScore?.toString()}
                                   </div>
                                 </div>
-                              );
-                            })
-                          ) : (
-                            <div className="h-20 flex items-center justify-center">
-                              <p className="text-[10px] text-white/20 uppercase font-bold">{t('leaderboard.empty')}</p>
-                            </div>
-                          )}
-                        </div>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <div className="h-20 flex items-center justify-center">
+                            <p className="text-[10px] text-white/20 uppercase font-bold">{t('leaderboard.empty')}</p>
+                          </div>
+                        )}
+                      </div>
                     </motion.div>
                   ) : (
                     <motion.div
@@ -695,8 +695,8 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                         <div className="space-y-0.5">
                           {uniqueGlobalData.slice(0, 3).map((record: any, index: number) => {
                             const r = record as any;
-                             const cutCount = record.difficulty?.cutCount;
-                             const difficultyLabel = cutCount ? t(`difficulty.levels.${cutCount}`) : '';
+                            const cutCount = record.difficulty?.cutCount;
+                            const difficultyLabel = cutCount ? t(`difficulty.levels.${cutCount}`) : '';
                             const playerName = r.nickname || r.displayName || t('game.leaderboard.anonymous');
                             const sessions = r.sessionsCount ?? 0;
                             const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : null;
@@ -728,7 +728,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                                       </span>
                                     )}
                                   </div>
-                                  
+
                                   <div className="flex items-center gap-1.5 shrink-0">
                                     <div className="text-[15px] font-medium tabular-nums tracking-tighter" style={{ color: 'var(--brand-peach)' }}>
                                       {record.finalScore?.toString()}
@@ -764,7 +764,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                     </span>
                   </div>
                 </div>
-                
+
                 {/* 右侧：分数与标签 */}
                 <div className="flex flex-col items-end gap-0">
                   <span className="text-[9px] text-white/30 font-bold tracking-widest uppercase">
@@ -786,8 +786,8 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
               <div className="flex flex-col gap-1 w-full">
                 {/* 标准宽度按钮 - 与下方按钮对齐 */}
                 <div className="w-full">
-                  <button 
-                    onClick={() => setShowScoreModal(true)} 
+                  <button
+                    onClick={() => setShowScoreModal(true)}
                     className="glass-btn-active w-full rounded-2xl font-bold text-brand-dark flex items-center justify-center gap-1.5 shadow-[0_5px_15px_rgba(246,142,95,0.2)] transition-transform active:scale-[0.98] py-3"
                     style={{ height: MOBILE_RESTART_BUTTON_HEIGHT + 2, fontSize: MOBILE_RESTART_FONT_SIZE + 1 }}
                   >
@@ -868,7 +868,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                     <Button style={{ height: MOBILE_CONTROL_BUTTON_HEIGHT, flex: 1 }} className="glass-btn-active p-0" onClick={handleRotateLeft} disabled={isRotateDisabled}><RotateCcw style={{ width: 18, height: 18 }} /></Button>
                     <Button style={{ height: MOBILE_CONTROL_BUTTON_HEIGHT, flex: 1 }} className="glass-btn-active p-0" onClick={handleRotateRight} disabled={isRotateDisabled}><RotateCw style={{ width: 18, height: 18 }} /></Button>
                   </div>
-                  
+
                   <div className="flex flex-row gap-2 w-full">
                     <RestartButton onClick={handleRetryCurrent} icon="retry" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }}>{t('game.controls.retryCurrent')}</RestartButton>
                     <RestartButton onClick={handleRestart} icon="refresh" height={MOBILE_RESTART_BUTTON_HEIGHT} style={{ flex: 1 }}>{t('game.controls.restartGame')}</RestartButton>
@@ -879,10 +879,10 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
           </div>
         )}
       </div>
-      
+
       <div className="mt-auto pt-1 pb-2">
         <div className="text-white text-[10px] text-center opacity-40">
-          recoh AI project 2026 | generative puzzle V{process.env.APP_VERSION || '1.3.51'}
+          recoh AI project 2025-2026 | generative puzzle V{process.env.APP_VERSION || '1.3.51'}
         </div>
       </div>
 
@@ -905,7 +905,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
             <AlertDialogCancel className="bg-white/5 border-white/10 hover:bg-white/10 hover:text-white text-white/70 transition-all rounded-xl">
               {t('common.cancel')}
             </AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={executeRestart}
               className="bg-gradient-to-r from-brand-peach to-brand-orange text-brand-dark font-medium transition-all shadow-lg shadow-brand-orange/20 rounded-xl hover:brightness-110"
             >

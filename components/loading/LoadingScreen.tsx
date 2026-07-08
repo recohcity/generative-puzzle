@@ -89,7 +89,7 @@ export default function LoadingScreen({ onLoadComplete }: LoadingScreenProps) {
               Puzzle
             </text>
           </svg>
-          
+
           {/* 桌面端：单行排版 SVG */}
           <svg viewBox="0 0 500 70" className="hidden md:block w-full max-w-[500px] h-auto text-brand-amber filter drop-shadow-lg">
             <text x="50%" y="55" textAnchor="middle" fill="currentColor" fontSize="60" fontWeight="900" fontFamily="ui-sans-serif, system-ui, sans-serif" letterSpacing="-1">
@@ -100,12 +100,12 @@ export default function LoadingScreen({ onLoadComplete }: LoadingScreenProps) {
         <div className="w-80 h-3 bg-white/10 rounded-full overflow-hidden border border-white/20">
           <div
             className="h-full transition-[width] ease-out"
-            style={{ 
-              width: `${done ? 100 : displayProgress}%`, 
+            style={{
+              width: `${done ? 100 : displayProgress}%`,
               backgroundColor: 'var(--brand-peach)',
-              willChange: 'width', 
+              willChange: 'width',
               transitionDuration: done ? '300ms' : '150ms', // 匹配刷新频率
-              transform: 'translateZ(0)' 
+              transform: 'translateZ(0)'
             }}
           />
         </div>
@@ -117,7 +117,7 @@ export default function LoadingScreen({ onLoadComplete }: LoadingScreenProps) {
       {/* 版权信息 */}
       <div className="absolute bottom-6 left-0 right-0 flex justify-center">
         <div className="text-white text-xs text-center leading-relaxed">
-          <div>recoh AI project 2026 | V{process.env.APP_VERSION || '1.3.51'} | <a href="https://beian.miit.gov.cn" target="_blank" rel="noopener noreferrer" className="text-white hover:text-white/80 transition-colors">粤ICP备18028701号</a></div>
+          <div>recoh AI project 2025-2026 | V{process.env.APP_VERSION || '1.3.51'} | <a href="https://beian.miit.gov.cn" target="_blank" rel="noopener noreferrer" className="text-white hover:text-white/80 transition-colors">粤ICP备18028701号</a></div>
         </div>
       </div>
     </div>
