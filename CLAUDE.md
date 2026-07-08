@@ -1,5 +1,9 @@
 # CLAUDE.md — Generative Puzzle
 
+DO NOT send optional commentary in the response.
+DO NOT send optional commentary in the code.
+DO NOT send optional commentary in the markdown. 
+
 > AI 编码行为准则。融合 Andrej Karpathy 的 LLM 编码反模式洞察、第一性原理思维方法论，以及本项目的领域特定约束。
 
 **权衡声明：** 本准则倾向于谨慎而非速度。对于琐碎任务（明显的单行修复、简单的拼写纠正），请自行判断——并非每个变更都需要完整的流程严谨性。

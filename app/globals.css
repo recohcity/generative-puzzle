@@ -121,6 +121,23 @@ h6,
   line-height: 1 !important;
 }
 
+/* 访客（未登录）按钮特定中性外观样式，覆盖 .utility-button-fixed */
+.utility-button-fixed.user-btn-guest,
+.utility-button-fixed.user-btn-guest:hover,
+.utility-button-fixed.user-btn-guest:focus,
+.utility-button-fixed.user-btn-guest:active,
+.utility-button-fixed.user-btn-guest:focus-visible {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.utility-button-fixed.user-btn-guest:hover {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
 @layer base {
   :root {
     --background: 222.2 84% 4.9%;

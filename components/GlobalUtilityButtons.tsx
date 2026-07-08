@@ -66,16 +66,8 @@ const GlobalUtilityButtons: React.FC<GlobalUtilityButtonsProps> = ({
             onToggleUser();
             e.currentTarget.blur();
           }}
-          className={cn(buttonClass, isUserPanelOpen ? "glass-btn-active" : "glass-btn-inactive")}
-          style={{
-            ...buttonStyle,
-            backgroundColor: isUserPanelOpen ? undefined : 'rgba(255, 255, 255, 0.05)',
-            color: isUserPanelOpen
-              ? 'var(--brand-dark)'
-              : isLoggedIn
-                ? 'var(--brand-amber)'
-                : 'rgba(255,255,255,0.35)',
-          }}
+          className={cn(buttonClass, isLoggedIn ? "user-btn-logged" : "user-btn-guest")}
+          style={buttonStyle}
           data-testid="toggle-user-button"
           aria-label={isLoggedIn ? t('auth.userPanel') || '用户' : t('auth.login') || '登录'}
           title={isLoggedIn ? t('auth.userPanel') || '用户' : t('auth.login') || '登录'}

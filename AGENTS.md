@@ -1,5 +1,9 @@
 # Generative Puzzle — Agent Rules
 
+DO NOT send optional commentary in the response.
+DO NOT send optional commentary in the code.
+DO NOT send optional commentary in the markdown.    
+
 > **Primary specification: `CLAUDE.md`**
 > All coding standards, architecture constraints, high-risk file rules, mobile adaptation requirements, performance baselines, and GameContext state machine rules are defined in [`CLAUDE.md`](./CLAUDE.md). This file inherits all of them. Read `CLAUDE.md` before starting any task in this project.
 
