@@ -57,10 +57,11 @@ jobs:
             let body = "";
             
             if (match && match[1]) {
-              const block = match[1].trim();
+              let block = match[1].trim();
               const titleMatch = block.match(/^###\s+(.+)$/m);
               if (titleMatch) {
                 name = `${tag} ${titleMatch[1].trim()}`;
+                block = block.replace(/^###\s+.+$/m, "").trim();
               }
               body = block;
             }
