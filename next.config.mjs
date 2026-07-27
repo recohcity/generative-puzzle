@@ -13,6 +13,8 @@ const packageJson = JSON.parse(readFileSync(join(process.cwd(), 'package.json'),
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // 显式指定 workspace 根路径，消除多 package-lock.json 引起的推断警告
+  outputFileTracingRoot: join(process.cwd()),
   // ✅ 遵循监督指令：启用构建时质量检查
   eslint: {
     ignoreDuringBuilds: false,  // 构建时执行ESLint检查

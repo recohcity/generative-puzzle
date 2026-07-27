@@ -1,4 +1,18 @@
 # 生成式拼图游戏 Changelog
+## [v1.4.29] - 2026-07-27
+
+### 📱 移动端会员登录密码框软键盘唤起修复与构建警告消除 (Mobile Login Password Input Keyboard Fix & Build Warning Fix)
+
+本版本修复了移动端各浏览器下会员登录界面中密码框无法唤起软键盘的问题，并消除了 Next.js 多 lockfile 导致的根目录推断构建警告。
+
+- **移动端软键盘唤起修复**:
+  - 修复 `VirtualAuthWidget` 组件中密码/PIN 输入框在 `onFocus` 时触发动态 `readonly` 切换及 `setTimeout` 聚焦逻辑导致移动端浏览器（iOS Safari、Android Chrome、微信内置浏览器等）拦截软键盘唤起的问题。
+  - 移除破坏移动端强交互上下文的 `readonly` 逻辑，补充规范的 `autoComplete="current-password"` 属性。
+- **Next.js 构建根目录警告消除**:
+  - 在 `next.config.mjs` 中添加 `outputFileTracingRoot: join(process.cwd())` 配置，明确指定 Workspace 根路径，消除系统多 lockfile 环境下的 Next.js 根目录推断警告。
+
+---
+
 ## [v1.4.28] - 2026-07-08
 
 ### 👤 优化用户状态按钮与图标显示一致性 (Optimize User Status Button & Icon Display Consistency)
