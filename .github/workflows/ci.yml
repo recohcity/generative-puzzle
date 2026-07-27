@@ -5,7 +5,6 @@ on:
     branches: [ main ]
     tags:
       - 'v*.*.*'
-      - 'test*.*.*'
   pull_request:
     branches: [ main ]
 
@@ -39,8 +38,8 @@ jobs:
         run: npm run build
         env:
           # Prevent failure due to missing backend envs during build (Bail-out safely)
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}"
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: "${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}"
 
       - name: Create Release when tag pushed
         if: startsWith(github.ref, 'refs/tags/v')
