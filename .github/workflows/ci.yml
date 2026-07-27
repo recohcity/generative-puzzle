@@ -41,8 +41,42 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}"
           NEXT_PUBLIC_SUPABASE_ANON_KEY: "${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}"
 
+      - name: Extract Release Notes from CHANGELOG.md
+        if: startsWith(github.ref, 'refs/tags/v')
+        id: changelog
+        run: |
+          node -e '
+            const fs = require("fs");
+            const tag = process.env.TAG_NAME.replace(/^refs\/tags\//, "");
+            const content = fs.readFileSync("CHANGELOG.md", "utf8");
+            const escapedTag = tag.replace(/\./g, "\\.");
+            const regex = new RegExp(`## \\[\\s*${escapedTag}\\s*\\][^\\n]*\\n+([\\s\\S]*?)(?=\\n## \\[|\\n---|$)`);
+            const match = content.match(regex);
+            
+            let name = tag;
+            let body = "";
+            
+            if (match && match[1]) {
+              const block = match[1].trim();
+              const titleMatch = block.match(/^###\s+(.+)$/m);
+              if (titleMatch) {
+                name = `${tag} ${titleMatch[1].trim()}`;
+              }
+              body = block;
+            }
+            
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `release_name=${name}\n`);
+            const delimiter = "EOF_" + Math.random().toString(36).substring(2);
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `release_body<<${delimiter}\n${body}\n${delimiter}\n`);
+          '
+        env:
+          TAG_NAME: ${{ github.ref }}
+
       - name: Create Release when tag pushed
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          generate_release_notes: true
+          name: ${{ steps.changelog.outputs.release_name }}
+          body: ${{ steps.changelog.outputs.release_body }}
+          generate_release_notes: false
+
