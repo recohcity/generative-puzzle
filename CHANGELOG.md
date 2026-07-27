@@ -1,4 +1,23 @@
 # 生成式拼图游戏 Changelog
+
+## [v1.4.30] - 2026-07-28
+
+### 🛡️ Supabase 数据库安全治理与权限规范 (Supabase Security Hardening & RPC Revocation)
+
+本版本针对 Supabase Security Advisor 检查出的合规缺陷进行了全面修复与安全加固。
+
+- **Security Definer View 修复**:
+  - 针对 `public.leaderboards` 视图显式配置 `security_invoker = true`，确保查询视图时严格继承调用者的 RLS 行级安全策略，消除高危安全隐患。
+- **Search Path 防注入加固**:
+  - 规范了所有数据库自定义函数与 PL/pgSQL 触发器的 `search_path` 参数（显式锁定为 `public, pg_temp`），杜绝 search_path 篡改与注入风险。
+- **敏感/内部 RPC 权限回收**:
+  - 对内部数据库触发器函数（如 `trg_refresh_leaderboard_after_delete`、`trg_refresh_leaderboard_after_game_session_insert`）剥离 `PUBLIC`、`anon` 及 `authenticated` 的直接 RPC 执行权限，仅保留数据库内部触发调用规则。
+  - 对管理员级清理函数（如 `admin_clear_user_data`、`admin_delete_user_completely`）严格收口至 `service_role`。
+- **安全脚本归档**:
+  - 新增补丁脚本 [docs/supabase-security-fix.sql](file:///Users/citylivepark/Documents/project/generative-puzzle/docs/supabase-security-fix.sql)，便于多环境部署与安全配置复现。
+
+---
+
 ## [v1.4.29] - 2026-07-27
 
 ### 📱 移动端会员登录密码框软键盘唤起修复与构建警告消除 (Mobile Login Password Input Keyboard Fix & Build Warning Fix)
