@@ -567,11 +567,28 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
           /* 已登录状态：在面板内显示成绩榜单 (精准复刻桌面版 parity 设计) */
           <div
             className="animate-in fade-in slide-in-from-bottom-2 duration-300 flex flex-col pt-0 flex-1 min-h-0"
-            style={{ height: isLandscape ? 'auto' : TAB_BUTTON_HEIGHT + (isUltraSmall ? 128 : 140) - 2 }}
+            style={{ height: isLandscape ? 'auto' : TAB_BUTTON_HEIGHT + (isUltraSmall ? 172 : 184) - 2 }}
           >
-            <div className={cn("rounded-2xl flex flex-col flex-1 min-h-0 relative overflow-x-hidden", isLandscape ? "p-1" : "pt-0.5 pb-1 px-2")}>
-              {/* 顶部标签切换器 + 关闭按钮 (极度紧凑布局) */}
-              <div className="flex items-center justify-between mb-1 shrink-0 px-0.5 h-7">
+            <div className={cn("rounded-2xl flex flex-col flex-1 min-h-0 relative overflow-x-hidden", isLandscape ? "p-1" : "pt-0.5 pb-0.5 px-2")}>
+              {/* 用户身份行：用户名 + 在线状态 + 返回游戏按钮 (桌面端 parity) */}
+              <div className="flex items-center justify-between mb-0.5 shrink-0 px-0.5 h-7">
+                <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                  <User className="w-3.5 h-3.5 shrink-0 text-brand-peach" />
+                  <span className="text-[12px] text-brand-peach font-medium truncate opacity-90">
+                    {userProfile?.nickname || t('auth.loading')}
+                  </span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_5px_rgba(74,222,128,0.5)] shrink-0" />
+                </div>
+                <button
+                  onClick={() => { playButtonClickSound(); handleToggleLeaderboard(); }}
+                  className="px-2 h-7 rounded-lg text-[11px] font-bold transition-all glass-btn-active whitespace-nowrap flex items-center gap-1 shrink-0"
+                >
+                  <span>{t('auth.backToGame')}</span>
+                </button>
+              </div>
+
+              {/* 标签切换器 + 刷新按钮 */}
+              <div className="flex items-center justify-between mb-0.5 shrink-0 px-0.5 h-7">
                 <div className="flex gap-1.5 shrink-0">
                   <button
                     onClick={() => {
@@ -602,7 +619,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                 </div>
 
                 <div className="flex items-center gap-1 h-7">
-                  {activeLeaderboardTab === 'global' ? (
+                  {activeLeaderboardTab === 'global' && (
                     <button
                       onClick={fetchGlobalData}
                       disabled={isGlobalLoading}
@@ -614,8 +631,6 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                         <RotateCw className="w-3.5 h-3.5" />
                       )}
                     </button>
-                  ) : (
-                    <div className="w-7 h-7" />
                   )}
                 </div>
               </div>
@@ -646,7 +661,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                             return (
                               <div key={record.id || record.timestamp} className={cn(
                                 "flex items-center gap-2.5 px-2.5 bg-white/[0.06] rounded-xl border border-white/10 hover:border-brand-peach/40 hover:bg-white/[0.10] transition-all active:scale-[0.98]",
-                                "py-1"
+                                "py-0.5"
                               )}>
                                 <div className={cn(
                                   "flex items-center justify-center shrink-0 font-medium rounded-lg transition-all",
@@ -705,7 +720,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                                 key={`global-${record.id || index}`}
                                 className={cn(
                                   "flex items-center gap-2.5 px-2.5 bg-white/[0.06] rounded-xl border border-white/10 hover:border-brand-peach/40 hover:bg-white/[0.10] transition-all active:scale-[0.98] overflow-hidden",
-                                  "py-1"
+                                  "py-0.5"
                                 )}
                               >
                                 {/* Rank — same as personal tab */}

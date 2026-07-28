@@ -187,15 +187,15 @@
             "close": "Close",
             "all": "All",
             "tabs": {
-                "personal": "Personal Best",
-                "global": "Global Ranking"
+                "personal": "My Best",
+                "global": "Leaderboard"
             },
-            "loadingGlobal": "Fetching global ranking...",
-            "globalRank": "Global Rank",
+            "loadingGlobal": "Fetching leaderboard...",
+            "globalRank": "Leaderboard",
             "anonymous": "Anonymous Player",
             "empty": "No ranking data",
             "refresh": "Refresh",
-            "sessionsUnit": " games"
+            "sessionsUnit": "games"
         },
         "difficulty": {
             "easy": "Easy",

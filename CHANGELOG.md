@@ -1,5 +1,22 @@
 # 生成式拼图游戏 Changelog
 
+## [v1.4.31] - 2026-07-28
+
+### 📱 移动端榜单交互优化与显式返回路径 (Mobile Leaderboard UX & Direct Return Path)
+
+本版本优化了移动端榜单界面的交互体验，参照桌面端补充了显式的「返回游戏」入口与用户身份信息，并提升了多浏览器兼容性。
+
+- **显式返回游戏路径 (Direct Return to Game)**:
+  - 移动端榜单视图（[PhoneTabPanel.tsx](file:///Users/citylivepark/Documents/project/generative-puzzle/components/layouts/PhoneTabPanel.tsx)）新增显式高亮的「返回游戏」（`Return to Game`）按钮，解决用户通过奖杯按钮进入榜单后缺乏明显返回入口的问题。
+- **桌面端设计对齐 (Desktop Parity Design)**:
+  - 榜单面板顶部新增移动端用户身份行，展示用户头像图标、用户昵称及绿色在线状态指示点，保持两端设计契合与状态透明。
+- **国际化文案精简 (i18n Localization Optimization)**:
+  - 优化 [en.json](file:///Users/citylivepark/Documents/project/generative-puzzle/src/i18n/locales/en.json) 中的英文榜单标签，将 "Personal Best" / "Global Ranking" 调整为更加自然直观的 "My Best" / "Leaderboard"。
+- **多移动端浏览器适配与紧凑行距 (Multi-Browser Spacing Tuning)**:
+  - 针对 iOS Safari、Android Chrome、Arc、微信内置浏览器底部工具栏高度差异，精细化缩窄榜单列表项内边距（`py-0.5`）与行间距（`mb-0.5`），确保 Top 3 榜单记录在所有移动端浏览器中均可无滚动条完整展示。
+
+---
+
 ## [v1.4.30] - 2026-07-28
 
 ### 🛡️ Supabase 数据库安全治理与权限规范 (Supabase Security Hardening & RPC Revocation)
