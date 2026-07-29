@@ -139,7 +139,7 @@ export default function RootLayout({
             }
           })();
         `}} />
-        {process.env.VERCEL && <SpeedInsights />}
+        <SpeedInsights />
       </body>
     </html>
   )
