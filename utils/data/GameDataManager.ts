@@ -19,9 +19,15 @@ export class GameDataManager {
 
   private static migrateGameRecord(record: any): GameRecord {
     const cutTypeValue = record.difficulty?.cutType || 'straight';
+    const CUT_TYPE_MAP: Record<string, CutType> = {
+      'straight': CutType.Straight,
+      'diagonal': CutType.Diagonal,
+      'curve': CutType.Curve,
+      'mosaic-random': CutType.MosaicRandom,
+    };
     const difficulty: DifficultyConfig = {
       difficultyLevel: (record.difficulty?.difficultyLevel || 'medium') as DifficultyLevel,
-      cutType: cutTypeValue === 'straight' ? CutType.Straight : CutType.Diagonal,
+      cutType: CUT_TYPE_MAP[cutTypeValue] ?? CutType.Straight,
       cutCount: record.difficulty?.cutCount || 2,
       actualPieces: record.difficulty?.actualPieces || 4,
       shapeType: record.difficulty?.shapeType || record.shapeType || undefined

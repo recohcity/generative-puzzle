@@ -1,5 +1,19 @@
 # 生成式拼图游戏 Changelog
 
+## [v1.5.2] - 2026-07-30
+
+### 🔧 橔局标签切割类型误显修复 (Leaderboard CutType Display Fix)
+
+修复榋单中所有非直线模式（曲线、马赛克碎裂）均被误显为「斜线」的关键错误。
+
+- **切割类型映射表修复 (CutType Mapping Fix)**:
+  - 定位根因：`GameDataManager.ts` 的 `migrateGameRecord` 方法中存在一个只有 2 路的硬编码分支判断：`cutTypeValue === 'straight' ? CutType.Straight : CutType.Diagonal`。导致所有非 `straight` 值（包括 `curve` 和 `mosaic-random`）均被强制映射为 `CutType.Diagonal`。
+  - 修复：替换为完整的 4 路映射表，确保 `straight` / `diagonal` / `curve` / `mosaic-random` 均能正确还原为对应的 `CutType` 枚举实例，未识别类型默认回退为 `CutType.Straight`。
+- **云端数据无需修改**:
+  - Supabase `game_sessions.metadata.cutType` 字段已正确存储原始字符串（如 `"mosaic-random"`），仅本地读取时 `migrate` 函数误转。修复上线后，已存入的历史记录拉取时将自动显示正确的模式标签，无需数据库修度。
+
+---
+
 ## [v1.5.1] - 2026-07-30
 
 ### 🧩 新增马赛克随机碎裂切割模式 (MosaicRandom Cut Mode)
@@ -7,17 +21,17 @@
 本版本推出了全新的切割模式 —— **`CutType.MosaicRandom`（马赛克随机碎裂）**，采用 Voronoi 晶格多边形剖分算法，为玩家带来全新的彩色玻璃/马赛克花窗拼图体验与更具挑战性的旋转匹配机制。
 
 - **马赛克 Voronoi 晶格切分引擎 (Voronoi Mosaic Subdivision Engine)**:
-  - 新增 [MosaicGenerator.ts](file:///Users/citylivepark/Documents/project/generative-puzzle/utils/puzzle/MosaicGenerator.ts)，基于泊松盘采样 (Poisson Disc Sampling) 与 Sutherland-Hodgman 多边形半平面裁剪算法，实现高鲁棒性马赛克晶格碎块生成。
+  - 新增 MosaicGenerator.ts，基于泊松盘采样 (Poisson Disc Sampling) 与 Sutherland-Hodgman 多边形半平面裁剪算法，实现高鲁棒性马赛克晶格碎块生成。
   - 无缝兼容 Polygon（多边形）、Cloud（云朵形）、Jagged（锯齿形）全部 3 种形状类型。在非多边形形状下对轮廓进行高精度离散化，实现无缝密铺与边缘精准拟合。
 - **直折边渲染与全形状无缝密铺 (Straight Edge Rendering for All Shapes)**:
-  - 优化 Canvas 绘制引擎 [puzzleDrawing.ts](file:///Users/citylivepark/Documents/project/generative-puzzle/utils/rendering/puzzleDrawing.ts) 与离屏纹理缓存 [TextureCache.ts](file:///Users/citylivepark/Documents/project/generative-puzzle/utils/rendering/TextureCache.ts)，在马赛克碎裂模式下强制以多边形直折边（`lineTo`）绘制碎片，彻底解决云朵形与锯齿形下碎片扭曲为贝塞尔弧线并产生暗色镂空缝隙的问题。
+  - 优化 Canvas 绘制引擎 puzzleDrawing.ts 与离屏纹理缓存 TextureCache.ts，在马赛克碎裂模式下强制以多边形直折边（`lineTo`）绘制碎片，彻底解决云朵形与锯齿形下碎片扭曲为贝塞尔弧线并产生暗色镂空缝隙的问题。
 - **差异化难度得分乘数 (Differentiated Difficulty Multiplier)**:
-  - 在计分引擎 [ScoreCalculator.ts](file:///Users/citylivepark/Documents/project/generative-puzzle/packages/game-core/src/utils/score/ScoreCalculator.ts) 中配置 `CutType.MosaicRandom` 难度系数为 `1.35x`，与 Straight (1.0x)、Diagonal (1.15x)、Curve (1.25x) 形成阶梯化得分差异，精准反映非规则咬合多边形的认知与匹配难度。
+  - 在计分引擎 ScoreCalculator.ts 中配置 `CutType.MosaicRandom` 难度系数为 `1.35x`，与 Straight (1.0x)、Diagonal (1.15x)、Curve (1.25x) 形成阶梯化得分差异，精准反映非规则咬合多边形的认知与匹配难度。
 - **离屏纹理缓存安全与防错位 (Texture Cache Safety & Anti-Shift Protection)**:
-  - 在 [GameContext.tsx](file:///Users/citylivepark/Documents/project/generative-puzzle/contexts/GameContext.tsx) `generatePuzzle` 流程中注入 `textureCache.clear()`，并在缓存 Key 中绑定碎片几何特征签名，彻底消除连续重新切割或切换模式时复用旧位图导致置顶错位的问题。
+  - 在 GameContext.tsx `generatePuzzle` 流程中注入 `textureCache.clear()`，并在缓存 Key 中绑定碎片几何特征签名，彻底消除连续重新切割或切换模式时复用旧位图导致置顶错位的问题。
 - **UI 与多语言国际化 (UI Controls & i18n)**:
-  - 更新 [PuzzleControlsCutType.tsx](file:///Users/citylivepark/Documents/project/generative-puzzle/components/PuzzleControlsCutType.tsx) 适配 4 列切割选择按钮，新增「碎裂」（`Mosaic`）选项。
-  - 同步更新 [zh-CN.json](file:///Users/citylivepark/Documents/project/generative-puzzle/src/i18n/locales/zh-CN.json) 与 [en.json](file:///Users/citylivepark/Documents/project/generative-puzzle/src/i18n/locales/en.json) 国际化文案。
+  - 更新 PuzzleControlsCutType.tsx 适配 4 列切割选择按钮，新增「碎裂」（`Mosaic`）选项。
+  - 同步更新 zh-CN.json 与 en.json 国际化文案。
 
 ---
 
@@ -28,11 +42,11 @@
 本版本优化了移动端榜单界面的交互体验，参照桌面端补充了显式的「返回游戏」入口与用户身份信息，并提升了多浏览器兼容性。
 
 - **显式返回游戏路径 (Direct Return to Game)**:
-  - 移动端榜单视图（[PhoneTabPanel.tsx](file:///Users/citylivepark/Documents/project/generative-puzzle/components/layouts/PhoneTabPanel.tsx)）新增显式高亮的「返回游戏」（`Return to Game`）按钮，解决用户通过奖杯按钮进入榜单后缺乏明显返回入口的问题。
+  - 移动端榜单视图（PhoneTabPanel.tsx）新增显式高亮的「返回游戏」（`Return to Game`）按钮，解决用户通过奖杯按钮进入榜单后缺乏明显返回入口的问题。
 - **桌面端设计对齐 (Desktop Parity Design)**:
   - 榜单面板顶部新增移动端用户身份行，展示用户头像图标、用户昵称及绿色在线状态指示点，保持两端设计契合与状态透明。
 - **国际化文案精简 (i18n Localization Optimization)**:
-  - 优化 [en.json](file:///Users/citylivepark/Documents/project/generative-puzzle/src/i18n/locales/en.json) 中的英文榜单标签，将 "Personal Best" / "Global Ranking" 调整为更加自然直观的 "My Best" / "Leaderboard"。
+  - 优化 en.json 中的英文榜单标签，将 "Personal Best" / "Global Ranking" 调整为更加自然直观的 "My Best" / "Leaderboard"。
 - **多移动端浏览器适配与紧凑行距 (Multi-Browser Spacing Tuning)**:
   - 针对 iOS Safari、Android Chrome、Arc、微信内置浏览器底部工具栏高度差异，精细化缩窄榜单列表项内边距（`py-0.5`）与行间距（`mb-0.5`），确保 Top 3 榜单记录在所有移动端浏览器中均可无滚动条完整展示。
 
@@ -52,7 +66,7 @@
   - 对内部数据库触发器函数（如 `trg_refresh_leaderboard_after_delete`、`trg_refresh_leaderboard_after_game_session_insert`）剥离 `PUBLIC`、`anon` 及 `authenticated` 的直接 RPC 执行权限，仅保留数据库内部触发调用规则。
   - 对管理员级清理函数（如 `admin_clear_user_data`、`admin_delete_user_completely`）严格收口至 `service_role`。
 - **安全脚本归档**:
-  - 新增补丁脚本 [docs/supabase-security-fix.sql](file:///Users/citylivepark/Documents/project/generative-puzzle/docs/supabase-security-fix.sql)，便于多环境部署与安全配置复现。
+  - 新增补丁脚本 docs/supabase-security-fix.sql，便于多环境部署与安全配置复现。
 
 ---
 
@@ -127,13 +141,13 @@
 针对移动端性能统计中 Largest Contentful Paint (LCP) 指标偏高 (6.36s) 导致体验评级不佳的问题，进行了资源加载链的深度重构，使渲染管线并行化，缩短关键路径耗时。
 
 - **移动端背景图预加载 (Fix 1 — LCP Optimization)**:
-  - 在 [layout.tsx](file:///Users/citylivepark/Documents/project/generative-puzzle/app/layout.tsx) 的 `<head>` 区域为移动端核心背景图 `bg-mobile-portrait.webp` 添加了带有媒体查询限幅的 `<link rel="preload">` 指令（`media="(max-width: 1024px)"`）。
+  - 在 layout.tsx 的 `<head>` 区域为移动端核心背景图 `bg-mobile-portrait.webp` 添加了带有媒体查询限幅的 `<link rel="preload">` 指令（`media="(max-width: 1024px)"`）。
   - 该改动使浏览器在解析首个 HTML 报文时，即可与 JS 并行下载背景图片，彻底解除了此前“必须等待 LoadingScreen 结束、GameInterface 组件挂载后才发起图片请求”的串行阻塞，LCP 耗时预期缩短 2s 以上。
 - **Inter 字体预加载与闪烁优化 (Fix 2 — FCP Optimization)**:
   - 调整 `layout.tsx` 中 Inter 域的配置，将 `preload: false` 修正为 `preload: true`。
   - 缩短了字体文件网络请求时序，结合 `adjustFontFallback` 选项降低了首屏文本渲染等待时间 (FCP) 并消除视觉抖动。
 - **Loading 阶段人机工程时间校准 (Fix 3 — User Perception Optimization)**:
-  - 将 [LoadingScreen.tsx](file:///Users/citylivepark/Documents/project/generative-puzzle/components/loading/LoadingScreen.tsx) 的最短展示阈值 `MIN_LOADING_TIME` 从 `900ms` 下调至 `600ms`。
+  - 将 LoadingScreen.tsx 的最短展示阈值 `MIN_LOADING_TIME` 从 `900ms` 下调至 `600ms`。
   - 在保障资源完全加载的前提下，最大程度减少了人为锁死带来的 LCP 和首屏交互阻碍。
 
 ---
@@ -151,9 +165,9 @@
   - **"重开游戏"按钮**: 游戏完成后从透明样式升级为橙色渐变样式（`glass-btn-active`），与"散开拼图"按钮视觉一致，强化可点击状态的视觉感知。
   - **游戏进行中保持不变**: 控制面板区域的按钮在游戏进行中仍保持透明样式，避免过度引导用户随意重玩重开。
 - **全端同步生效**:
-  - 桌面端（[DesktopLayout.tsx](file:///Users/citylivepark/Documents/project/generative-puzzle/components/layouts/DesktopLayout.tsx)）游戏完成区域按钮已适配。
-  - 移动竖屏（[PhoneTabPanel.tsx](file:///Users/citylivepark/Documents/project/generative-puzzle/components/layouts/PhoneTabPanel.tsx)）得分弹窗与内联完成视图按钮已适配。
-  - 移动横屏（[MobileScoreLayout.tsx](file:///Users/citylivepark/Documents/project/generative-puzzle/components/score/MobileScoreLayout.tsx)）内联得分按钮已从自定义样式统一迁移至 `glass-btn-recut` / `glass-btn-active`。
+  - 桌面端（DesktopLayout.tsx）游戏完成区域按钮已适配。
+  - 移动竖屏（PhoneTabPanel.tsx）得分弹窗与内联完成视图按钮已适配。
+  - 移动横屏（MobileScoreLayout.tsx）内联得分按钮已从自定义样式统一迁移至 `glass-btn-recut` / `glass-btn-active`。
 
 ---
 
@@ -188,7 +202,7 @@
 - **全平台 hover/悬停光晕样式统一**:
   - 移除了再次切割按钮独立的 hover 渐变与过大发光动画，统一通过 `.glass-btn-sheen` 伪元素遮罩机制实现温和、一致的 hover 扫光反馈。
 - **散开拼图按钮 hover 缩放动画对齐**:
-  - 将 [PuzzleControlsScatter.tsx](file:///Users/citylivepark/Documents/project/generative-puzzle/components/PuzzleControlsScatter.tsx) 内的 `<Button>` 统一重构为原生 HTML `<button>` 元素，移除了额外的 hover 缩放动画（`hover:scale-105`），字重同步调整为 `normal`，与控制面板内的其它核心交互按钮在悬浮行为上达成一致。
+  - 将 PuzzleControlsScatter.tsx 内的 `<Button>` 统一重构为原生 HTML `<button>` 元素，移除了额外的 hover 缩放动画（`hover:scale-105`），字重同步调整为 `normal`，与控制面板内的其它核心交互按钮在悬浮行为上达成一致。
 
 ---
 
@@ -199,14 +213,14 @@
 本版本专注于修复 iPad/iOS 设备上通过 PWA（添加到主屏幕）方式启动游戏时，横屏和竖屏底部出现黑色条遮挡，以及屏幕旋转后黑边才消失的 iOS WebKit 兼容性顽疾。
 
 - **启动期视口重测与重排校准**:
-  - 在 [page.tsx](file:///Users/citylivepark/Documents/project/generative-puzzle/app/page.tsx) 挂载的最早阶段，引入了视口元数据（Viewport Meta）切换策略。启动时临时锁定视口为禁止缩放以强制 iOS WebKit 重新计算视口尺寸，300ms 后自动放开为正常的多倍缩放视口。这能让视口在开屏加载（LoadingScreen）期间即完成精准对齐。
-  - 在 [useDeviceDetection.ts](file:///Users/citylivepark/Documents/project/generative-puzzle/hooks/useDeviceDetection.ts) 中对 PWA standalone 模式引入了延时 DOM 重排（Reflow）触发器和全局 `resize` 事件模拟，确保即使在 WebKit 拒绝派发原生 resize 事件时，也能主动重绘游戏界面。
+  - 在 page.tsx 挂载的最早阶段，引入了视口元数据（Viewport Meta）切换策略。启动时临时锁定视口为禁止缩放以强制 iOS WebKit 重新计算视口尺寸，300ms 后自动放开为正常的多倍缩放视口。这能让视口在开屏加载（LoadingScreen）期间即完成精准对齐。
+  - 在 useDeviceDetection.ts 中对 PWA standalone 模式引入了延时 DOM 重排（Reflow）触发器和全局 `resize` 事件模拟，确保即使在 WebKit 拒绝派发原生 resize 事件时，也能主动重绘游戏界面。
 - **布局高度继承与比例修正**:
   - **高度链重构**: 将 `GameInterface` 容器的 `min-h-dvh` 修改为 `min-h-full`，同时将 `DesktopLayout` 的最小高度从 `100dvh` 改为继承父级的 `100%`，确保所有组件在高度上紧密咬合，消除视口单位偏差造成的溢出裁剪。
   - **iPad 安全区高度补偿**: 在 PWA 横屏桌面模式下，于计算尺寸前主动扣除 44px 的状态栏及底部 Home 指示条预留高度，防止画布及右侧面板计算高度过大。
   - **独立布局安全区改造**: 移除了全局 `.no-scroll-container` 冗余的 safe-area padding 以避免布局双重缩进，改由各终端布局（横屏、竖屏、平板桌面）自主在行内样式管理安全区 padding。为 `PhonePortraitLayout` 补齐了左右两侧的 `env(safe-area-inset)` 保护。
 - **主题背景色视觉融合与抗闪烁**:
-  - 在 [globals.css](file:///Users/citylivepark/Documents/project/generative-puzzle/app/globals.css) 中，为全局 `html` & `body` 直接配置了与拼图主界面一致的紫蓝渐变背景色（`linear-gradient(to bottom right, #4c1d95, #1e3a8a)`）并锁定 `100dvh` 高度基准。即使系统出现极其细微的像素级测量抖动或闪烁，过渡也完全自然无感。
+  - 在 globals.css 中，为全局 `html` & `body` 直接配置了与拼图主界面一致的紫蓝渐变背景色（`linear-gradient(to bottom right, #4c1d95, #1e3a8a)`）并锁定 `100dvh` 高度基准。即使系统出现极其细微的像素级测量抖动或闪烁，过渡也完全自然无感。
 
 ---
 
