@@ -196,6 +196,7 @@ export enum CutType {
   Straight = "straight",
   Diagonal = "diagonal",
   Curve = "curve",
+  MosaicRandom = "mosaic-random",
 }
 
 import React from 'react';

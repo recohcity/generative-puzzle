@@ -337,13 +337,14 @@ export default function PuzzleCanvas() {
         state.shapeType,
         state.originalShape,
         state.isScattered,
-        tilt
+        tilt,
+        state.cutType || undefined
       );
 
       if (state.showHint && state.selectedPiece !== null && (state.originalPositions as PuzzlePiece[]).length > 0) {
         const hintPiece = state.originalPositions[state.selectedPiece];
         if (hintPiece) {
-          drawHintOutline(ctx, hintPiece, state.shapeType);
+          drawHintOutline(ctx, hintPiece, state.shapeType, state.cutType || undefined);
         }
       }
 
@@ -436,6 +437,7 @@ export default function PuzzleCanvas() {
     state.completedPieces,
     state.selectedPiece,
     state.shapeType,
+    state.cutType,
     state.originalShape,
     state.isScattered,
     state.isCompleted,

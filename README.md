@@ -8,7 +8,7 @@
 [![Vercel Speed Insights](https://img.shields.io/badge/Speed--Insights-Optimized-blueviolet)](https://vercel.com/recohcitys-projects/generative-puzzle/speed-insights)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-15.5-black.svg)](https://nextjs.org/)
-[![Version](https://img.shields.io/badge/version-1.4.31-orange.svg)]()
+[![Version](https://img.shields.io/badge/version-1.5.1-orange.svg)]()
 
 **基于 Next.js 15 和 React 19 构建的极致前端全栈拼图引擎**
 
@@ -40,7 +40,8 @@
 - 完全剥离逻辑算法和渲染引擎（Canvas GPU），使得未来的 React Native / 客户端多端跨全平台迁移成本趋近于零。
 
 ### 📐 随机多态智能切割模型
-- **三模拼图切割**: 同时支援三种动态解算生成：基础直线（Line）、斜向切割（Diagonal）、以及高级仿真曲线连结（Bezier Jigsaw Curve）。
+- **四模拼图切割**: 同时支援四种动态解算生成：基础直线（Straight Line）、斜向切割（Diagonal）、高级仿真曲线连结（Bezier Jigsaw Curve）、以及全新的 **马赛克随机碎裂（Mosaic Random / Voronoi 晶格剖分）**。
+- **马赛克 Voronoi 切割引擎**: 基于泊松盘采样 (Poisson Disc Sampling) 与 Sutherland-Hodgman 多边形半平面裁剪算法，完美兼容多边形、云朵形、锯齿形全形状切割，生成宛如彩色玻璃花窗般的随机咬合多边形碎面，搭配 1.35x 专属难度得分系数。
 - **千变万化，唯一解题**: 巧妙利用动态加密的随机生成种子保证：即便选择相同的切片刀数，每一局所切割出的每片多边形的边缘走向、中心质心坐标在全球范围内都是毫不重复的唯一解。
 
 ---

@@ -3,6 +3,7 @@ import { generateCuts } from "@/utils/puzzle/cutGenerators"
 import { splitPolygon } from "@/utils/puzzle/puzzleUtils"
 import { applyExtraCutsWithRetry } from "@/utils/puzzle/puzzleCompensation"
 import { NetworkCutter } from "@/utils/puzzle/graph/NetworkCutter"
+import { MosaicGenerator } from "@/utils/puzzle/MosaicGenerator"
 
 export class PuzzleGenerator {
   /**
@@ -23,7 +24,7 @@ export class PuzzleGenerator {
    */
   static generatePuzzle(
     shape: Point[],
-    cutType: "straight" | "diagonal" | "curve",
+    cutType: "straight" | "diagonal" | "curve" | "mosaic-random",
     cutCount: number,
     shapeType?: string,
   ): { pieces: PuzzlePiece[]; originalPositions: PuzzlePiece[] } {
@@ -32,8 +33,12 @@ export class PuzzleGenerator {
     // 用于存储直线/斜线模式下的切割线，如果使用曲线模式则为空
     let usedCuts: any[] = [];
 
+    // 🆕 马赛克碎裂模式：Voronoi 剖分引擎
+    if (cutType === "mosaic-random") {
+      console.log("[PuzzleGenerator] 使用马赛克碎裂生成器...");
+      splitPieces = MosaicGenerator.generate(shape, cutCount, shapeType);
     // 🆕 混合架构入口：如果是曲线，使用图网络切割引擎
-    if (cutType === "curve") {
+    } else if (cutType === "curve") {
       console.log("[PuzzleGenerator] 使用图网络进行曲线切割...");
       const result = NetworkCutter.generate(shape, cutCount, shapeType);
       splitPieces = result;

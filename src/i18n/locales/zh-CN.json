@@ -126,7 +126,9 @@
             "title": "选择切割类型",
             "straight": "直线",
             "diagonal": "斜线",
-            "curve": "曲线"
+            "curve": "曲线",
+            "mosaicRandom": "碎裂",
+            "mosaic-random": "碎裂"
         },
         "cutCount": {
             "title": "选择难度",
@@ -363,7 +365,9 @@
     "cutType": {
         "straight": "直线",
         "diagonal": "斜线",
-        "curve": "曲线"
+        "curve": "曲线",
+        "mosaicRandom": "碎裂",
+        "mosaic-random": "碎裂"
     },
     "rotation": {
         "label": "旋转",

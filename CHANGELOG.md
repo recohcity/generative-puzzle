@@ -1,5 +1,26 @@
 # 生成式拼图游戏 Changelog
 
+## [v1.5.1] - 2026-07-30
+
+### 🧩 新增马赛克随机碎裂切割模式 (MosaicRandom Cut Mode)
+
+本版本推出了全新的切割模式 —— **`CutType.MosaicRandom`（马赛克随机碎裂）**，采用 Voronoi 晶格多边形剖分算法，为玩家带来全新的彩色玻璃/马赛克花窗拼图体验与更具挑战性的旋转匹配机制。
+
+- **马赛克 Voronoi 晶格切分引擎 (Voronoi Mosaic Subdivision Engine)**:
+  - 新增 [MosaicGenerator.ts](file:///Users/citylivepark/Documents/project/generative-puzzle/utils/puzzle/MosaicGenerator.ts)，基于泊松盘采样 (Poisson Disc Sampling) 与 Sutherland-Hodgman 多边形半平面裁剪算法，实现高鲁棒性马赛克晶格碎块生成。
+  - 无缝兼容 Polygon（多边形）、Cloud（云朵形）、Jagged（锯齿形）全部 3 种形状类型。在非多边形形状下对轮廓进行高精度离散化，实现无缝密铺与边缘精准拟合。
+- **直折边渲染与全形状无缝密铺 (Straight Edge Rendering for All Shapes)**:
+  - 优化 Canvas 绘制引擎 [puzzleDrawing.ts](file:///Users/citylivepark/Documents/project/generative-puzzle/utils/rendering/puzzleDrawing.ts) 与离屏纹理缓存 [TextureCache.ts](file:///Users/citylivepark/Documents/project/generative-puzzle/utils/rendering/TextureCache.ts)，在马赛克碎裂模式下强制以多边形直折边（`lineTo`）绘制碎片，彻底解决云朵形与锯齿形下碎片扭曲为贝塞尔弧线并产生暗色镂空缝隙的问题。
+- **差异化难度得分乘数 (Differentiated Difficulty Multiplier)**:
+  - 在计分引擎 [ScoreCalculator.ts](file:///Users/citylivepark/Documents/project/generative-puzzle/packages/game-core/src/utils/score/ScoreCalculator.ts) 中配置 `CutType.MosaicRandom` 难度系数为 `1.35x`，与 Straight (1.0x)、Diagonal (1.15x)、Curve (1.25x) 形成阶梯化得分差异，精准反映非规则咬合多边形的认知与匹配难度。
+- **离屏纹理缓存安全与防错位 (Texture Cache Safety & Anti-Shift Protection)**:
+  - 在 [GameContext.tsx](file:///Users/citylivepark/Documents/project/generative-puzzle/contexts/GameContext.tsx) `generatePuzzle` 流程中注入 `textureCache.clear()`，并在缓存 Key 中绑定碎片几何特征签名，彻底消除连续重新切割或切换模式时复用旧位图导致置顶错位的问题。
+- **UI 与多语言国际化 (UI Controls & i18n)**:
+  - 更新 [PuzzleControlsCutType.tsx](file:///Users/citylivepark/Documents/project/generative-puzzle/components/PuzzleControlsCutType.tsx) 适配 4 列切割选择按钮，新增「碎裂」（`Mosaic`）选项。
+  - 同步更新 [zh-CN.json](file:///Users/citylivepark/Documents/project/generative-puzzle/src/i18n/locales/zh-CN.json) 与 [en.json](file:///Users/citylivepark/Documents/project/generative-puzzle/src/i18n/locales/en.json) 国际化文案。
+
+---
+
 ## [v1.4.31] - 2026-07-28
 
 ### 📱 移动端榜单交互优化与显式返回路径 (Mobile Leaderboard UX & Direct Return Path)

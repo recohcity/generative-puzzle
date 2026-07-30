@@ -90,7 +90,7 @@ export function usePuzzleInteractions({
 
         // 绘制所有拼图块 (除了闪光的)
         if (state.puzzle) {
-          drawPuzzle(ctx, state.puzzle, state.completedPieces, null, shapeType, originalShape, state.isScattered);
+          drawPuzzle(ctx, state.puzzle, state.completedPieces, null, shapeType, originalShape, state.isScattered, undefined, state.cutType || undefined);
         }
 
         // 绘制闪光效果

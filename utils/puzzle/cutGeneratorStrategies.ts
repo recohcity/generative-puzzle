@@ -24,7 +24,7 @@ export interface CutGenerationStrategy {
 // 简单难度策略
 export class SimpleCutStrategy implements CutGenerationStrategy {
   generateCut(bounds: Bounds, existingCuts: CutLine[], shape: Point[], type: CutType): CutLine | null {
-    if (type === 'curve') return null; // 不支持曲线
+    if (type === 'curve' || type === 'mosaic-random') return null; // 不支持曲线和马赛克模式
     return generateCenterCutLine(shape, type === "straight", type);
   }
 }
@@ -32,7 +32,7 @@ export class SimpleCutStrategy implements CutGenerationStrategy {
 // 中等难度策略 - 增加相交概率
 export class MediumCutStrategy implements CutGenerationStrategy {
   generateCut(bounds: Bounds, existingCuts: CutLine[], shape: Point[], type: CutType): CutLine | null {
-    if (type === 'curve') return null;
+    if (type === 'curve' || type === 'mosaic-random') return null;
     // 🔧 修复：中等难度增加相交概率，确保更多随机性
     if (existingCuts.length > 1 && Math.random() < 0.7) { // 从50%提升到70%
       return this.generateSlightlyIntersectingCut(bounds, existingCuts, type);
@@ -98,7 +98,7 @@ export class MediumCutStrategy implements CutGenerationStrategy {
 // 高难度策略 - 强制切割线相交以产生更多片段
 export class HardCutStrategy implements CutGenerationStrategy {
   generateCut(bounds: Bounds, existingCuts: CutLine[], shape: Point[], type: CutType): CutLine | null {
-    if (type === 'curve') return null;
+    if (type === 'curve' || type === 'mosaic-random') return null;
     // 🔧 修复：高难度策略强制让切割线相交以产生随机数量的片段
     if (existingCuts.length > 0) {
       // 高难度：100%概率尝试相交切割，确保随机性

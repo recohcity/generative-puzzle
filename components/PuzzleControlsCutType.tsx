@@ -80,7 +80,7 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 40 }
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr 1fr',
+          gridTemplateColumns: '1fr 1fr 1fr 1fr',
           gap: 'calc(var(--panel-scale, 1) * 8px)',
           width: '100%'
         }}
@@ -89,6 +89,7 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 40 }
           { id: 'straight', type: CutType.Straight, label: t('game.cutType.straight') },
           { id: 'diagonal', type: CutType.Diagonal, label: t('game.cutType.diagonal') },
           { id: 'curve', type: CutType.Curve, label: t('game.cutType.curve') },
+          { id: 'mosaic-random', type: CutType.MosaicRandom, label: t('game.cutType.mosaicRandom') },
         ].map((item) => (
           <button
             key={item.id}

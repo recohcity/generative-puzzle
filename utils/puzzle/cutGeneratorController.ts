@@ -66,8 +66,8 @@ export class CutGeneratorController {
       throw new Error("难度级别必须在1-8之间");
     }
 
-    if (type !== "straight" && type !== "diagonal" && type !== "curve" as any) {
-      throw new Error("切割类型必须是 'straight', 'diagonal' 或 'curve'");
+    if (type !== "straight" && type !== "diagonal" && type !== "curve" && type !== "mosaic-random") {
+      throw new Error("切割类型必须是 'straight', 'diagonal', 'curve' 或 'mosaic-random'");
     }
   }
 

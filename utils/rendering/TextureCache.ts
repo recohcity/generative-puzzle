@@ -57,15 +57,16 @@ class TextureCache {
     points: Point[],
     color: string,
     shapeType: string,
-    isCompleted: boolean
+    isCompleted: boolean,
+    cutType?: string
   ): CachedPiece {
-    // 缓存键排除绝对位置，保证拖动时能命中
-    const cacheKey = `${index}_${color}_${isCompleted}_${shapeType}`;
-    const hit = this.cache.get(cacheKey);
-    if (hit) return hit;
-
     // 计算当前碎片的本地包围盒
     const bounds = this.calculateLocalBounds(points);
+    const pointsSig = points.length > 0 ? `${Math.round(points[0].x)},${Math.round(points[0].y)}` : '';
+    // 缓存键包含几何特征 signature，避免不同切割状态复用旧位图
+    const cacheKey = `${index}_${color}_${isCompleted}_${shapeType}_${cutType || ''}_${points.length}_${Math.round(bounds.width)}_${Math.round(bounds.height)}_${pointsSig}`;
+    const hit = this.cache.get(cacheKey);
+    if (hit) return hit;
     const padding = 2; // 留出一点边距防止切边抗锯齿问题
     const width = Math.ceil(bounds.width + padding * 2);
     const height = Math.ceil(bounds.height + padding * 2);
@@ -89,7 +90,7 @@ class TextureCache {
     ctx.translate(-bounds.minX + padding, -bounds.minY + padding);
 
     // 绘制主体形状
-    this.drawPath(ctx, points, shapeType);
+    this.drawPath(ctx, points, shapeType, cutType);
     ctx.fillStyle = color;
     ctx.fill();
 
@@ -99,7 +100,7 @@ class TextureCache {
     ctx.stroke();
 
     // 叠加纹理
-    this.applyTexture(ctx, points, shapeType);
+    this.applyTexture(ctx, points, shapeType, cutType);
 
     const cached: CachedPiece = {
       canvas,
@@ -124,31 +125,33 @@ class TextureCache {
     return { minX, minY, maxX, maxY, width: maxX - minX, height: maxY - minY };
   }
 
-  private drawPath(ctx: any, points: Point[], shapeType: string) {
+  private drawPath(ctx: any, points: Point[], shapeType: string, cutType?: string) {
     if (points.length === 0) return;
 
     ctx.beginPath();
     ctx.moveTo(points[0].x, points[0].y);
+
+    const isCurvedShape = shapeType !== "polygon" && cutType !== "mosaic-random";
 
     for (let i = 1; i < points.length; i++) {
       const prev = points[i - 1];
       const current = points[i];
       const next = points[(i + 1) % points.length];
 
-      if (shapeType !== "polygon" && current.isOriginal !== false) {
-        // 对于曲线形状和锯齿形状，使用二次贝塞尔曲线
+      if (isCurvedShape && current.isOriginal !== false) {
+        // 对于曲线形状和锯齿形状（非马赛克），使用二次贝塞尔曲线
         const nextMidX = (current.x + next.x) / 2;
         const nextMidY = (current.y + next.y) / 2;
         ctx.quadraticCurveTo(current.x, current.y, nextMidX, nextMidY);
       } else {
-        // 对于多边形和切割线，使用直线
+        // 对于多边形、马赛克模式和切割线，使用直线
         ctx.lineTo(current.x, current.y);
       }
     }
     ctx.closePath();
   }
 
-  private applyTexture(ctx: any, points: Point[], shapeType: string) {
+  private applyTexture(ctx: any, points: Point[], shapeType: string, cutType?: string) {
     if (!this.textureImg || !this.textureImg.complete) return;
 
     if (!this.texturePattern) {
@@ -160,7 +163,7 @@ class TextureCache {
       ctx.globalAlpha = 0.28;
       ctx.globalCompositeOperation = 'multiply';
       ctx.fillStyle = this.texturePattern;
-      this.drawPath(ctx, points, shapeType);
+      this.drawPath(ctx, points, shapeType, cutType);
       ctx.fill();
       ctx.restore();
     }

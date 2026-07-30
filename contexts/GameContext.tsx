@@ -13,6 +13,7 @@ import type { ReactNode } from "react";
 import { ScatterPuzzle } from "@/utils/puzzle/ScatterPuzzle";
 import { ShapeService } from "@/utils/shape/ShapeService";
 import { PuzzleGenerator } from "@/utils/puzzle/PuzzleGenerator";
+import { textureCache } from "@/utils/rendering/TextureCache";
 import { calculateCenter } from "@generative-puzzle/game-core";
 import { GameDataManager } from "@/utils/data/GameDataManager";
 import {
@@ -892,6 +893,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
   const generatePuzzle = useCallback(() => {
     if (!state.originalShape) return;
 
+    textureCache.clear();
     const cutTypeString = state.cutType || "straight";
     const { pieces, originalPositions } = PuzzleGenerator.generatePuzzle(
       state.originalShape,

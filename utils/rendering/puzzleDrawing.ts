@@ -95,7 +95,8 @@ export const drawPiece = (
   isCompleted: boolean, // 拼图片段是否已完成并吸附到目标位置
   isSelected: boolean, // 拼图片段当前是否被用户选中/拖动
   shapeType: string, // 形状类型 ('polygon' 或 'curve')
-  isScattered: boolean = false // 游戏是否处于拼图散开的状态
+  isScattered: boolean = false, // 游戏是否处于拼图散开的状态
+  cutType?: string // 切割类型 ('straight', 'diagonal', 'curve', 'mosaic-random')
 ) => {
   // 计算中心点用于旋转
   const center = calculateCenter(piece.points);
@@ -120,8 +121,9 @@ export const drawPiece = (
       const current = piece.points[i];
       const next = piece.points[(i + 1) % piece.points.length];
 
-      if (shapeType !== "polygon" && current.isOriginal !== false) {
-        // 对于曲线形状和锯齿形状，使用二次贝塞尔曲线保持平滑
+      const isCurvedShape = shapeType !== "polygon" && cutType !== "mosaic-random";
+      if (isCurvedShape && current.isOriginal !== false) {
+        // 对于曲线形状和锯齿形状（非马赛克），使用二次贝塞尔曲线保持平滑
         const midX = (prev.x + current.x) / 2;
         const midY = (prev.y + current.y) / 2;
         const nextMidX = (current.x + next.x) / 2;
@@ -129,7 +131,7 @@ export const drawPiece = (
 
         ctx.quadraticCurveTo(current.x, current.y, nextMidX, nextMidY);
       } else {
-        // 对于多边形和切割线，使用直线
+        // 对于多边形、马赛克模式和切割线，使用直线
         ctx.lineTo(current.x, current.y);
       }
     }
@@ -159,8 +161,9 @@ export const drawPiece = (
     const current = piece.points[i];
     const next = piece.points[(i + 1) % piece.points.length];
 
-    if (shapeType !== "polygon" && current.isOriginal !== false) {
-      // 对于曲线形状和锯齿形状，使用二次贝塞尔曲线
+    const isCurvedShape = shapeType !== "polygon" && cutType !== "mosaic-random";
+    if (isCurvedShape && current.isOriginal !== false) {
+      // 对于曲线形状和锯齿形状（非马赛克），使用二次贝塞尔曲线
       const midX = (prev.x + current.x) / 2;
       const midY = (prev.y + current.y) / 2;
       const nextMidX = (current.x + next.x) / 2;
@@ -168,7 +171,7 @@ export const drawPiece = (
 
       ctx.quadraticCurveTo(current.x, current.y, nextMidX, nextMidY);
     } else {
-      // 对于多边形和切割线，使用直线
+      // 对于多边形、马赛克模式和切割线，使用直线
       ctx.lineTo(current.x, current.y);
     }
   }
@@ -190,7 +193,8 @@ export const drawPiece = (
       piece.points, 
       currentFillColor, 
       shapeType, 
-      isCompleted
+      isCompleted,
+      cutType
     );
 
     let minX = Infinity;
@@ -239,7 +243,8 @@ export const drawPiece = (
 export const drawHintOutline = (
   ctx: CanvasRenderingContext2D,
   piece: PuzzlePiece, // Changed to take the puzzle piece object
-  shapeType?: string // 🔧 添加形状类型参数，确保提示轮廓与拼图形状一致
+  shapeType?: string, // 🔧 添加形状类型参数，确保提示轮廓与拼图形状一致
+  cutType?: string
 ) => {
   if (!piece) return;
 
@@ -255,7 +260,10 @@ export const drawHintOutline = (
 
   ctx.beginPath(); // Add beginPath here to ensure new path
 
-  if (shapeType === "polygon") {
+  const isCurvedShape = shapeType !== "polygon" && cutType !== "mosaic-random";
+  const hasCutPoints = piece.points.some(p => p.isOriginal === false);
+
+  if (!isCurvedShape || hasCutPoints) {
     ctx.moveTo(piece.points[0].x, piece.points[0].y);
     for (let i = 1; i < piece.points.length; i++) {
       ctx.lineTo(piece.points[i].x, piece.points[i].y);
@@ -265,27 +273,14 @@ export const drawHintOutline = (
     const last = piece.points[piece.points.length - 1];
     const first = piece.points[0];
 
-    // 如果这些点包含切割产生的点 (isOriginal === false)，它们是离散化的直线段
-    // 只有全是原始点时才应用平滑。但为了保险，我们检查每个点的性质。
-    // 在 NetworkCutter 中，离散化后的形状点 isOriginal 通常为 true。
-    const hasCutPoints = piece.points.some(p => p.isOriginal === false);
-
-    if (hasCutPoints) {
-      // 包含切割点，直接连线 (因为它已经是由 cutter 处理过的多边形)
-      ctx.moveTo(piece.points[0].x, piece.points[0].y);
-      for (let i = 1; i < piece.points.length; i++) {
-        ctx.lineTo(piece.points[i].x, piece.points[i].y);
-      }
-    } else {
-      // 全是原始点，应用二次贝塞尔平滑
-      ctx.moveTo((last.x + first.x) / 2, (last.y + first.y) / 2);
-      for (let i = 0; i < piece.points.length; i++) {
-        const p1 = piece.points[i];
-        const p2 = piece.points[(i + 1) % piece.points.length];
-        const midX = (p1.x + p2.x) / 2;
-        const midY = (p1.y + p2.y) / 2;
-        ctx.quadraticCurveTo(p1.x, p1.y, midX, midY);
-      }
+    // 全是原始点，应用二次贝塞尔平滑
+    ctx.moveTo((last.x + first.x) / 2, (last.y + first.y) / 2);
+    for (let i = 0; i < piece.points.length; i++) {
+      const p1 = piece.points[i];
+      const p2 = piece.points[(i + 1) % piece.points.length];
+      const midX = (p1.x + p2.x) / 2;
+      const midY = (p1.y + p2.y) / 2;
+      ctx.quadraticCurveTo(p1.x, p1.y, midX, midY);
     }
   }
 
@@ -434,7 +429,8 @@ export const drawPuzzle = (
   shapeType: string, // 形状类型 ('polygon' 或 'curve')
   originalShape?: Point[], // 原始形状的顶点数组 (用于显示轮廓或完成状态)
   isScattered: boolean = false, // 游戏是否处于拼图散开的状态
-  tilt: { rx: number; ry: number } = { rx: 0, ry: 0 } // Tilt status for glaze effect
+  tilt: { rx: number; ry: number } = { rx: 0, ry: 0 }, // Tilt status for glaze effect
+  cutType?: string
 ) => {
   // 清除整个画布，准备重新绘制
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -480,7 +476,8 @@ export const drawPuzzle = (
         originalShape, 
         fillColor, 
         shapeType, 
-        true
+        true,
+        cutType
       );
 
       if (cachedFull.valid) {
@@ -587,7 +584,7 @@ export const drawPuzzle = (
 
     completedPiecesWithIndex
       .forEach(({ piece, originalIndex }) => {
-        drawPiece(ctx, piece, originalIndex, true, false, shapeType, isScattered);
+        drawPiece(ctx, piece, originalIndex, true, false, shapeType, isScattered, cutType);
       });
 
     // 3. 最后绘制所有未完成拼图（未选中的先，选中的最后）
@@ -598,11 +595,11 @@ export const drawPuzzle = (
     uncompletedPiecesWithIndex
       .filter(({ originalIndex }) => selectedPiece === null || originalIndex !== selectedPiece)
       .forEach(({ piece, originalIndex }) => {
-        drawPiece(ctx, piece, originalIndex, false, false, shapeType, isScattered);
+        drawPiece(ctx, piece, originalIndex, false, false, shapeType, isScattered, cutType);
       });
     if (selectedPiece !== null && !completedPieces.includes(selectedPiece)) {
       const piece = pieces[selectedPiece];
-      drawPiece(ctx, piece, selectedPiece, false, true, shapeType, isScattered);
+      drawPiece(ctx, piece, selectedPiece, false, true, shapeType, isScattered, cutType);
     }
   }
 };

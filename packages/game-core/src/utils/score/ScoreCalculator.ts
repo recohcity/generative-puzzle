@@ -261,6 +261,7 @@ const CUT_TYPE_MULTIPLIERS: Record<string, number> = {
   [CutType.Straight]: 1.0,   // 直线：标准难度
   [CutType.Diagonal]: 1.15,  // 斜线：增加15%难度
   [CutType.Curve]: 1.25,     // 曲线：增加25%难度（从1.5降低）
+  [CutType.MosaicRandom]: 1.35, // 马赛克碎裂：增加35%难度
 };
 
 /**

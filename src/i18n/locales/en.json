@@ -125,7 +125,9 @@
             "title": "Select Cut Type",
             "straight": "Straight",
             "diagonal": "Diagonal",
-            "curve": "Curve"
+            "curve": "Curve",
+            "mosaicRandom": "Mosaic",
+            "mosaic-random": "Mosaic"
         },
         "cutCount": {
             "title": "Select Difficulty",
@@ -361,7 +363,9 @@
     "cutType": {
         "straight": "Straight",
         "diagonal": "Diagonal",
-        "curve": "Curve"
+        "curve": "Curve",
+        "mosaicRandom": "Mosaic",
+        "mosaic-random": "Mosaic"
     },
     "rotation": {
         "label": "Rotation",
