@@ -361,6 +361,7 @@
         }
     },
     "cutType": {
+        "suffix": " Cut",
         "straight": "Straight",
         "diagonal": "Diagonal",
         "curve": "Curve",

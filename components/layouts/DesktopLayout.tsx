@@ -160,7 +160,10 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   const getCutTypeDisplayName = (cutType?: string): string => {
     if (!cutType) return '';
     try {
-      return t(`cutType.${cutType}`);
+      const name = t(`cutType.${cutType}`);
+      const suffix = t('cutType.suffix') || '切割';
+      if (!name) return '';
+      return name.endsWith(suffix) ? name : `${name}${suffix}`;
     } catch {
       return cutType;
     }

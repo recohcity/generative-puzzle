@@ -56,11 +56,25 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
     return t('score.noReward') || '无';
   };
   
+  const getCutTypeDisplayName = (cutType?: string): string => {
+    if (!cutType) return '';
+    try {
+      const name = t(`cutType.${cutType}`);
+      const suffix = t('cutType.suffix') || '切割';
+      if (!name) return '';
+      return name.endsWith(suffix) ? name : `${name}${suffix}`;
+    } catch {
+      return cutType;
+    }
+  };
+
   const difficultyLine = (() => {
     const d = gameStats.difficulty;
     const parts = [t('difficulty.levelLabel', { level: d.cutCount })];
     const shape = getShape(d.shapeType);
     if (shape) parts.push(shape);
+    const cutTypeStr = getCutTypeDisplayName(d.cutType);
+    if (cutTypeStr) parts.push(cutTypeStr);
     parts.push(`${d.actualPieces}${t('stats.piecesUnit') || '片'}`);
     return parts.join(' · ');
   })();

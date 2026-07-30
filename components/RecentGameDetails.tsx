@@ -45,12 +45,26 @@ const RecentGameDetails: React.FC<RecentGameDetailsProps> = ({
     try { return t(`game.shapes.names.${shapeType}`); } catch { return shapeType; }
   };
 
+  const getCutTypeDisplayName = (cutType?: string): string => {
+    if (!cutType) return '';
+    try {
+      const name = t(`cutType.${cutType}`);
+      const suffix = t('cutType.suffix') || '切割';
+      if (!name) return '';
+      return name.endsWith(suffix) ? name : `${name}${suffix}`;
+    } catch {
+      return cutType;
+    }
+  };
+
   const getDifficultyText = (record: any): string => {
     const levelText = t('difficulty.levelLabel', { level: record.difficulty.cutCount });
     const shapeName = getShapeDisplayName(record.difficulty?.shapeType);
+    const cutTypeName = getCutTypeDisplayName(record.difficulty?.cutType);
     const pieceCount = record.difficulty?.actualPieces || 0;
     const parts = [levelText];
     if (shapeName) parts.push(shapeName);
+    if (cutTypeName) parts.push(cutTypeName);
     parts.push(`${pieceCount}${t('stats.piecesUnit')}`);
     return parts.join(' · ');
   };

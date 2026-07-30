@@ -2,15 +2,14 @@
 
 ## [v1.5.2] - 2026-07-30
 
-### 🔧 橔局标签切割类型误显修复 (Leaderboard CutType Display Fix)
+### 🔧 成绩面板与榜单切割类型补全与映射修复 (Score Breakdown & CutType Display Fix)
 
-修复榋单中所有非直线模式（曲线、马赛克碎裂）均被误显为「斜线」的关键错误。
-
-- **切割类型映射表修复 (CutType Mapping Fix)**:
-  - 定位根因：`GameDataManager.ts` 的 `migrateGameRecord` 方法中存在一个只有 2 路的硬编码分支判断：`cutTypeValue === 'straight' ? CutType.Straight : CutType.Diagonal`。导致所有非 `straight` 值（包括 `curve` 和 `mosaic-random`）均被强制映射为 `CutType.Diagonal`。
-  - 修复：替换为完整的 4 路映射表，确保 `straight` / `diagonal` / `curve` / `mosaic-random` 均能正确还原为对应的 `CutType` 枚举实例，未识别类型默认回退为 `CutType.Straight`。
-- **云端数据无需修改**:
-  - Supabase `game_sessions.metadata.cutType` 字段已正确存储原始字符串（如 `"mosaic-random"`），仅本地读取时 `migrate` 函数误转。修复上线后，已存入的历史记录拉取时将自动显示正确的模式标签，无需数据库修度。
+- **全局成绩面板补全切割类型 (Complete CutType in Score Details)**:
+  - 补充游戏完成时的详细成绩面板（`MobileScoreLayout` / `DesktopScoreLayout`）、最近一次游戏成绩面板（`RecentGameDetails` / `GameRecordDetails`）以及移动端个人最佳记录（`PhoneTabPanel`）的难度描述信息，补齐切割类型（如 `直线切割`、`斜线切割`、`曲线切割`、`碎裂切割`），例如显示为 `难度4 · 锯齿形 · 碎裂切割 · 5片`。
+  - 在 i18n 资源文件（[zh-CN.json](file:///Users/citylivepark/Documents/project/generative-puzzle/src/i18n/locales/zh-CN.json) / [en.json](file:///Users/citylivepark/Documents/project/generative-puzzle/src/i18n/locales/en.json)）中配置 `cutType.suffix` 组合逻辑。
+- **榜单标签切割类型误显修复 (Leaderboard CutType Mapping Fix)**:
+  - 定位根因：[GameDataManager.ts](file:///Users/citylivepark/Documents/project/generative-puzzle/utils/data/GameDataManager.ts) 的 `migrateGameRecord` 方法中存在一个只有 2 路的硬编码分支判断 `cutTypeValue === 'straight' ? CutType.Straight : CutType.Diagonal`，导致 `curve` 和 `mosaic-random` 均被误映射为 `CutType.Diagonal`（斜线）。
+  - 修复：替换为完整的 4 路 `CUT_TYPE_MAP` 映射表，彻底消除非直线模式被误显为「斜线」的问题。
 
 ---
 

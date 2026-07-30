@@ -651,10 +651,19 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                           leaderboardData.slice(0, 3).map((record, index) => {
                             const isTop3 = index < 3;
                             const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : null;
+                            const getCutTypeStr = (ct?: string) => {
+                              if (!ct) return '';
+                              try {
+                                const name = t(`cutType.${ct}`);
+                                const suffix = t('cutType.suffix') || '切割';
+                                return name ? (name.endsWith(suffix) ? name : `${name}${suffix}`) : '';
+                              } catch { return ct; }
+                            };
                             const subtitle = [
                               `${Math.floor(record.totalDuration / 60).toString().padStart(2, '0')}:${(record.totalDuration % 60).toString().padStart(2, '0')}`,
                               t('difficulty.levelLabel', { level: record.difficulty?.cutCount || 1 }),
                               t(`game.shapes.names.${record.difficulty?.shapeType}`),
+                              getCutTypeStr(record.difficulty?.cutType),
                               `${record.difficulty?.actualPieces || 0}${t('stats.piecesUnit')}`
                             ].filter(Boolean).join(' · ');
 

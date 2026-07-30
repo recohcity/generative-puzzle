@@ -158,7 +158,10 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
   const getCutTypeDisplayName = (cutType?: string): string => {
     if (!cutType) return '';
     try {
-      return t(`cutType.${cutType}`);
+      const name = t(`cutType.${cutType}`);
+      const suffix = t('cutType.suffix') || '切割';
+      if (!name) return '';
+      return name.endsWith(suffix) ? name : `${name}${suffix}`;
     } catch {
       return cutType;
     }

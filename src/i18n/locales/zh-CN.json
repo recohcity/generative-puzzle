@@ -363,6 +363,7 @@
         }
     },
     "cutType": {
+        "suffix": "切割",
         "straight": "直线",
         "diagonal": "斜线",
         "curve": "曲线",
