@@ -2,51 +2,62 @@
 
 import LoadingScreen from "@/components/loading/LoadingScreen";
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { GameDataManager } from "@/utils/data/GameDataManager";
 
 const GameInterfaceComponent = dynamic(() => import("@/components/GameInterface"), { ssr: false });
 
 export default function HomePage() {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isGameReady, setIsGameReady] = useState(false);
 
   useEffect(() => {
     // 追踪访客进入
     GameDataManager.trackVisitor();
 
-    // 🎯 iOS PWA 视口校准：在应用启动的最早时刻，通过切换 viewport meta 标签参数
-    // 强迫 iOS WebKit 重新计算视口几何尺寸。这复制了登录成功时消除黑边的确切机制：
-    // 先临时锁死缩放（maximum-scale=1, user-scalable=no），迫使 iOS 重新测量，
-    // 300ms 后恢复正常参数。在 LoadingScreen 阶段即完成，GameInterface 挂载时视口已正确。
+    // iOS PWA 启动时固定 viewport-fit 和缩放参数，避免首屏布局使用错误的视口尺寸。
     if (typeof window !== 'undefined') {
       const isPWA = !!(window.navigator as any).standalone ||
-        window.matchMedia('(display-mode: standalone)').matches;
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.matchMedia('(display-mode: minimal-ui)').matches ||
+        window.matchMedia('(display-mode: fullscreen)').matches;
+      const isChromeBrowser = /Chrome|CriOS/i.test(window.navigator.userAgent) && !isPWA;
+      const root = document.documentElement;
+
+      root.classList.toggle('chrome-browser', isChromeBrowser);
+
+      const visualViewport = isChromeBrowser ? window.visualViewport : null;
+      const syncChromeViewport = () => {
+        if (!visualViewport) return;
+        root.style.setProperty('--chrome-viewport-height', `${Math.round(visualViewport.height)}px`);
+      };
+
+      syncChromeViewport();
+      visualViewport?.addEventListener('resize', syncChromeViewport);
+
+      document.documentElement.classList.toggle('pwa-standalone', isPWA);
       if (isPWA) {
         const viewportMeta = document.querySelector('meta[name="viewport"]');
         if (viewportMeta) {
-          // Step 1: 临时切换为严格模式 → 触发 iOS 视口重算
+          // 🎯 锁定全屏铺满：保持 viewport-fit=cover 且禁止缩放，防止 iOS WebKit PWA 退出全景模式产生底部黑边
           viewportMeta.setAttribute('content',
             'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
-          // Step 2: 恢复正常参数
-          setTimeout(() => {
-            viewportMeta.setAttribute('content',
-              'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover');
-          }, 300);
         }
       }
+
+      return () => {
+        visualViewport?.removeEventListener('resize', syncChromeViewport);
+        root.classList.remove('chrome-browser');
+        root.style.removeProperty('--chrome-viewport-height');
+      };
     }
   }, []);
 
-  const handleLoadComplete = () => setIsLoading(false);
+  const handleGameReady = useCallback(() => setIsGameReady(true), []);
 
   return (
     <main className="flex flex-col items-center justify-start min-h-full no-scroll-container game-root">
-      {isLoading ? (
-        <LoadingScreen onLoadComplete={handleLoadComplete} />
-      ) : (
-        <GameInterfaceComponent />
-      )}
+      <GameInterfaceComponent onReady={handleGameReady} />
+      {!isGameReady && <LoadingScreen onLoadComplete={() => undefined} />}
     </main>
   );
 }
-

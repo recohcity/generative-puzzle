@@ -168,14 +168,12 @@ export const calculateMobilePortraitCanvasSize = (
     // 计算可用空间
     const availableWidth = windowWidth - CANVAS_MARGIN * 2;
 
-    // 🎯 2026 浏览器定向适配冗余
-    let browserSafetyOffset = 20; // 默认冗余
-    if (browserInfo?.isSafari) browserSafetyOffset = 30; // 配合顶置布局，大幅减少冗余
-    if (browserInfo?.isChrome) browserSafetyOffset = 50; // 配合顶置布局，适当放宽
-    if (browserInfo?.isWeChat) browserSafetyOffset = 32;  // 增加底部留白感，避免紧贴边缘
-
-    // 🎯 优化：在可用高度中额外减去浏览器定向冗余，以抵消动态工具栏和顶部 padding 的挤压
-    const availableHeight = windowHeight - actualPanelHeight - CANVAS_MARGIN - SAFE_AREA_TOP - SAFE_AREA_BOTTOM - browserSafetyOffset;
+    // 🎯 动态适应实际可见高度，按当前视口真实尺寸计算可用空间
+    let browserSafetyOffset = 10;
+    if (browserInfo?.isChrome) {
+        browserSafetyOffset = 36; // 针对 iOS Chrome 顶/底工具栏的专属安全冗余，防止 UI 溢出和重叠
+    }
+    const availableHeight = windowHeight - actualPanelHeight - CANVAS_MARGIN * 2 - SAFE_AREA_TOP - SAFE_AREA_BOTTOM - browserSafetyOffset;
 
     let canvasSize: number;
     let maxCanvasSize: number = MAX_CANVAS_SIZE;

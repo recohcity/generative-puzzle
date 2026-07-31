@@ -40,8 +40,8 @@ export class DeviceManager {
     }
 
     const ua = navigator.userAgent;
-    const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
 
     // User agent detection - 优先使用用户代理检测
     const isAndroid = USER_AGENT_PATTERNS.ANDROID.test(ua);
@@ -54,6 +54,11 @@ export class DeviceManager {
     const isChrome = USER_AGENT_PATTERNS.CHROME.test(ua);
     const isSafari = USER_AGENT_PATTERNS.SAFARI.test(ua) && !isChrome;
     const isWeChat = USER_AGENT_PATTERNS.WECHAT.test(ua);
+    const isStandalonePWA = !!(window.navigator as any).standalone ||
+      window.matchMedia('(display-mode: standalone)').matches;
+    const useChromeViewport = isChrome && !isStandalonePWA && !!window.visualViewport;
+    const screenWidth = useChromeViewport ? Math.round(window.visualViewport!.width) : windowWidth;
+    const screenHeight = useChromeViewport ? Math.round(window.visualViewport!.height) : windowHeight;
 
     // Screen dimension analysis
     const isPortrait = screenHeight > screenWidth;
@@ -69,12 +74,6 @@ export class DeviceManager {
     const layoutManager = DeviceLayoutManager.getInstance();
     const layoutInfo = layoutManager.getDeviceLayoutMode(screenWidth, screenHeight);
 
-    // 🎯 2026 移动全能力适配：对于 Safari 和 Chrome 这种有动态工具栏的浏览器，
-    // 在竖屏模式下需要更加保守的高度策略。
-    const finalScreenHeight = (window.visualViewport && layoutInfo.layoutMode === 'portrait') 
-        ? window.visualViewport.height 
-        : screenHeight;
-
     return {
       isMobile: layoutInfo.deviceType === 'phone',
       isTablet: layoutInfo.deviceType === 'tablet',
@@ -86,7 +85,7 @@ export class DeviceManager {
       isChrome,
       isWeChat,
       screenWidth,
-      screenHeight: finalScreenHeight, // 使用 visualViewport 高度以抵御动态工具栏
+      screenHeight,
       userAgent: ua,
       deviceType: layoutInfo.deviceType,
       layoutMode: layoutInfo.layoutMode,

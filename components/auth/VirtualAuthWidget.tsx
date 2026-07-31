@@ -94,25 +94,11 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
     }
   };
 
-  const handleSuccess = async () => {
-    try {
-      await CloudGameRepository.syncOfflineSessions();
-    } catch (e) {
+  const handleSuccess = () => {
+    onAuthSuccess?.();
+    void CloudGameRepository.syncOfflineSessions().catch((e) => {
       console.warn("[VirtualAuthWidget] 同步离线成绩失败:", e);
-    }
-    
-    if (onAuthSuccess) {
-      // 强制重置视口缩放，防止输入法弹出导致的残留缩放
-      const viewport = document.querySelector('meta[name="viewport"]');
-      if (viewport) {
-        // 先临时禁用缩放并重置，然后再恢复允许缩放以平衡无障碍需求（同时保留 viewport-fit=cover）
-        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
-        setTimeout(() => {
-          viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover');
-        }, 300);
-      }
-      onAuthSuccess();
-    }
+    });
   };
 
   const handleSignOut = async () => {

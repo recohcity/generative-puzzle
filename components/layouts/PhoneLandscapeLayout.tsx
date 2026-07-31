@@ -69,9 +69,7 @@ const PhoneLandscapeLayout: React.FC<PhoneLandscapeLayoutProps> = ({
       style={{
       display: 'flex',
       flexDirection: 'row',
-      height: '100dvh', // 使用 dynamic viewport height，精准适配移动工具栏
       width: '100%', // 使用 100% 代替 vw 以获得更稳健的 WebView 兼容性
-      maxWidth: '100vw',
       margin: '0 auto', // 🎯 极致对齐：强制居中
       // 🎯 微信专项优化：横屏下强制靠顶对齐，解决顶部留空过多问题；其他浏览器维持垂直居中
       alignItems: device.isWeChat ? 'flex-start' : 'center', 

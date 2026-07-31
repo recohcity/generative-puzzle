@@ -150,10 +150,10 @@ export function useDeviceDetection(): DeviceDetectionState {
           try {
             const doc = document.documentElement;
             const originalHeight = doc.style.height;
-            // 微调高度以强制触发重排
-            doc.style.height = '99.9%';
-            const _ = doc.offsetHeight; // 强制 Reflow
+            doc.style.height = 'calc(100dvh + 1px)';
+            void doc.offsetHeight;
             doc.style.height = originalHeight;
+            void doc.offsetHeight;
             
             // 派发全局 resize 事件以通知所有相关的监听器
             window.dispatchEvent(new Event('resize'));

@@ -14,7 +14,7 @@ import PuzzleControlsGamepad from "@/components/PuzzleControlsGamepad"
 import ActionButtons from "@/components/ActionButtons"
 import { Button } from "@/components/ui/button"
 import { Volume2, VolumeX, Maximize, Minimize, RefreshCw } from "lucide-react"
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react"
 import {
   initBackgroundMusic,
   toggleBackgroundMusic,
@@ -42,7 +42,11 @@ import { cn } from "@/lib/utils";
 // 使用统一的设备检测系统
 import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 
-export default function CurveTestOptimized() {
+export default function CurveTestOptimized({ onReady }: { onReady?: () => void }) {
+  useLayoutEffect(() => {
+    onReady?.();
+  }, [onReady]);
+
   // --- Remove useGame hook call from top level --- 
   // const gameContext = useGame(); 
   // const resetGame = gameContext.resetGame; 
@@ -386,7 +390,7 @@ export default function CurveTestOptimized() {
       >
 
         {/* 🎯 极致锁定：使用 fixed 定位确保背景强制铺满视口，不受任何布局偏移影响 */}
-        <div className="fixed inset-0 w-full h-full -z-10 pointer-events-none">
+        <div className="game-background-layer fixed inset-0 w-full h-full -z-10 pointer-events-none">
           {(deviceType === 'desktop' && !device.isIPad) ? (
             <BubbleBackground interactive className="w-full h-full" />
           ) : (

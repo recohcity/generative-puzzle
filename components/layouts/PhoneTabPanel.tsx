@@ -225,17 +225,6 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
       setActiveLeaderboardTab('personal');
     }
     setShowLeaderboard(!showLeaderboard);
-
-    // 强制重置视口缩放 (Force viewport reset)
-    setTimeout(() => {
-      const viewport = document.querySelector('meta[name="viewport"]');
-      if (viewport) {
-        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
-        setTimeout(() => {
-          viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes');
-        }, 300);
-      }
-    }, 100);
   };
 
 
@@ -346,7 +335,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                   handleToggleLeaderboard();
                 }
               }}
-              className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/20 backdrop-blur-3xl cursor-pointer"
+              className="modal-backdrop-viewport fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/20 backdrop-blur-3xl cursor-pointer"
             >
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -390,7 +379,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
               onPointerDown={(e) => {
                 if (e.target === e.currentTarget) setShowUserPanel(false);
               }}
-              className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/20 backdrop-blur-3xl cursor-pointer"
+              className="modal-backdrop-viewport fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/20 backdrop-blur-3xl cursor-pointer"
             >
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -453,7 +442,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
               onPointerDown={(e) => {
                 if (e.target === e.currentTarget) setShowScoreModal(false);
               }}
-              className="fixed inset-0 z-[1000] flex items-center justify-center px-3 bg-black/20 backdrop-blur-xl cursor-pointer"
+              className="modal-backdrop-viewport fixed inset-0 z-[1000] flex items-center justify-center px-3 bg-black/20 backdrop-blur-xl cursor-pointer"
               style={{
                 paddingTop: 'calc(12px + env(safe-area-inset-top, 0px))',
                 paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',

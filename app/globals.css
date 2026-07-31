@@ -183,15 +183,22 @@ h6,
     --brand-dark-rgb: 35, 32, 53;
   }
 
-  /* 锁死高度基准，确保在 iOS PWA 下 fixed 元素及背景能完美铺满物理视口且加载时不闪黑屏 */
+  /* iOS PWA 画布底色修复：html background-color 是 WebKit 渲染"画布"的唯一可靠方式。
+     不使用 position:fixed 否则画布背景绘制失效导致 safe-area 外露黑色 */
+  html {
+    background-color: #2D1B69;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
   html, body {
-    height: 100%;
+    width: 100%;
+    height: 100vh;
     height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
     margin: 0;
     padding: 0;
-    background: #1E1A2A; /* 匹配主题的深紫色底色 */
-    background-image: linear-gradient(to bottom right, #4c1d95, #1e3a8a); /* 匹配紫到蓝的渐变，与游戏主背景完全一致 */
-    background-attachment: fixed;
   }
 
   /* 安卓字体缩放终极防御：锁死 rem 基准值，禁止系统篡改根字号 */
@@ -217,6 +224,7 @@ h6,
 
   body {
     @apply bg-background text-foreground antialiased;
+    background-color: #2D1B69;
     font-family: var(--font-inter), 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
   }
 
@@ -245,9 +253,10 @@ h6,
   right: 0;
   bottom: 0;
   width: 100%;
-  height: 100%;
-  /* 使用 dvh 确保在移动端浏览器（非全屏）下高度准确，与 window.innerHeight 保持一致 */
+  height: 100vh;
   height: 100dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
   /* 修改触摸行为设置以允许按钮点击 */
   touch-action: pan-x pan-y;
   /* 允许基本的偏移触摸操作，但阻止其他手势 */
@@ -259,6 +268,90 @@ h6,
 
   /* 🎯 2026 移动全能力探测：利用安全区变量预防刘海屏/底部指示器遮挡 - 已移至各个布局组件内部处理 */
   padding: 0;
+}
+
+.game-background-layer {
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+}
+
+.modal-backdrop-viewport {
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+}
+
+@media (display-mode: standalone) {
+  html,
+  body {
+    height: 100vh;
+    height: 100lvh;
+    min-height: 100vh;
+    min-height: 100lvh;
+  }
+
+  .no-scroll-container {
+    width: 100vw;
+    width: 100lvw;
+    height: 100vh;
+    height: 100lvh;
+    min-height: 100vh;
+    min-height: 100lvh;
+  }
+
+  .game-background-layer,
+  .modal-backdrop-viewport {
+    width: 100vw !important;
+    width: 100lvw !important;
+    height: 100vh !important;
+    height: 100lvh !important;
+  }
+}
+
+html.pwa-standalone,
+html.pwa-standalone body {
+  height: 100vh;
+  height: 100lvh;
+  min-height: 100vh;
+  min-height: 100lvh;
+}
+
+html.pwa-standalone .no-scroll-container {
+  width: 100vw;
+  width: 100lvw;
+  height: 100vh;
+  height: 100lvh;
+  min-height: 100vh;
+  min-height: 100lvh;
+}
+
+html.pwa-standalone .game-background-layer,
+html.pwa-standalone .modal-backdrop-viewport {
+  width: 100vw !important;
+  width: 100lvw !important;
+  height: 100vh !important;
+  height: 100lvh !important;
+}
+
+html.chrome-browser .no-scroll-container {
+  width: 100vw;
+  width: 100lvw;
+  height: var(--chrome-viewport-height, 100dvh);
+  min-height: var(--chrome-viewport-height, 100dvh);
+}
+
+html.chrome-browser .game-background-layer,
+html.chrome-browser .modal-backdrop-viewport {
+  width: 100vw !important;
+  width: 100lvw !important;
+  height: var(--chrome-viewport-height, 100dvh) !important;
+}
+
+@media (orientation: portrait) {
+  html.chrome-browser .no-scroll-container {
+    justify-content: safe center;
+  }
 }
 
 /* 特定地禁止canvas触摸事件的滚动行为，但允许按钮正常工作 */
