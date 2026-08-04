@@ -3,12 +3,12 @@
 <div align="center">
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/recohcity/generative-puzzle)
-[![Live Demo](https://img.shields.io/badge/🚀-Live_Demo-brightgreen)](https://www.citylivepark.com) 
+[[![Live Demo](https://img.shields.io/badge/🚀-Live_Demo-brightgreen)](https://www.citylivepark.com) 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Vercel Speed Insights](https://img.shields.io/badge/Speed--Insights-Optimized-blueviolet)](https://vercel.com/recohcitys-projects/generative-puzzle/speed-insights)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-15.5-black.svg)](https://nextjs.org/)
-[![Version](https://img.shields.io/badge/version-1.5.3-orange.svg)]()
+[![Version](https://img.shields.io/badge/version-1.5.4-orange.svg)]()
 
 **基于 Next.js 15 和 React 19 构建的极致前端全栈拼图引擎**
 

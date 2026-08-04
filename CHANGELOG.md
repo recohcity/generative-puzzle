@@ -1,5 +1,18 @@
 # 生成式拼图游戏 Changelog
 
+## [v1.5.4] - 2026-08-04
+
+### 🎨 程序生成背景图与 GitNexus 代码智能恢复 (Programmatic Background & GitNexus Intelligence Restoration)
+
+- **外部应用背景图改为程序生成 (Programmatic Background Generation)**:
+  - 将背景组件 [ResponsiveBackground.tsx] 的静态外部图片资源（`bg-mobile-portrait.webp`）替换为纯 CSS 渐变多重叠加 (`radial-gradient` / `linear-gradient`) 动态生成背景。
+  - 移除 [layout.tsx] 中针对外部背景图片的 `preload` 预加载指令，消除了额外的网络请求开销与静态资源包体积，显著提升首屏加载性能。
+- **恢复 GitNexus 代码智能可用 (Restored GitNexus Code Intelligence)**:
+  - 恢复并同步 GitNexus 相关 Skill 指令集与项目规范配置（[AGENTS.md] / [CLAUDE.md]）。
+  - 重新启用代码影响分析 (Impact Analysis) 与变更检测 (Detect Changes) 工具链，确保后续功能迭代与代码重构的高鲁棒性与安全性。
+
+---
+
 ## [v1.5.3] - 2026-07-31
 
 ### 🍎 PWA 全屏视口与登录交互适配修复 (PWA Fullscreen Viewport & Login Interaction Fixes)
@@ -26,9 +39,9 @@
 
 - **全局成绩面板补全切割类型 (Complete CutType in Score Details)**:
   - 补充游戏完成时的详细成绩面板（`MobileScoreLayout` / `DesktopScoreLayout`）、最近一次游戏成绩面板（`RecentGameDetails` / `GameRecordDetails`）以及移动端个人最佳记录（`PhoneTabPanel`）的难度描述信息，补齐切割类型（如 `直线切割`、`斜线切割`、`曲线切割`、`碎裂切割`），例如显示为 `难度4 · 锯齿形 · 碎裂切割 · 5片`。
-  - 在 i18n 资源文件（[zh-CN.json](file:///Users/citylivepark/Documents/project/generative-puzzle/src/i18n/locales/zh-CN.json) / [en.json](file:///Users/citylivepark/Documents/project/generative-puzzle/src/i18n/locales/en.json)）中配置 `cutType.suffix` 组合逻辑。
+  - 在 i18n 资源文件（[zh-CN.json] / [en.json]）中配置 `cutType.suffix` 组合逻辑。
 - **榜单标签切割类型误显修复 (Leaderboard CutType Mapping Fix)**:
-  - 定位根因：[GameDataManager.ts](file:///Users/citylivepark/Documents/project/generative-puzzle/utils/data/GameDataManager.ts) 的 `migrateGameRecord` 方法中存在一个只有 2 路的硬编码分支判断 `cutTypeValue === 'straight' ? CutType.Straight : CutType.Diagonal`，导致 `curve` 和 `mosaic-random` 均被误映射为 `CutType.Diagonal`（斜线）。
+  - 定位根因：[GameDataManager.ts] 的 `migrateGameRecord` 方法中存在一个只有 2 路的硬编码分支判断 `cutTypeValue === 'straight' ? CutType.Straight : CutType.Diagonal`，导致 `curve` 和 `mosaic-random` 均被误映射为 `CutType.Diagonal`（斜线）。
   - 修复：替换为完整的 4 路 `CUT_TYPE_MAP` 映射表，彻底消除非直线模式被误显为「斜线」的问题。
 
 ---
