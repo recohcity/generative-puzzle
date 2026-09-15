@@ -1,5 +1,21 @@
 # 生成式拼图游戏 Changelog
 
+## [v1.5.5] - 2026-09-15
+
+### 🧩 新增"凹凸"切割类型与切割按钮多语言整体适配 (Concavo-Convex Cut Type & Unified Button Text Adaptation)
+
+- **新增第五种切割类型「凹凸」(Concavo-Convex)**:
+  - 在「马赛克碎裂」基础上实现全新生成管线：碎裂切割 → 共享边索引 → 内部边替换曲边 → 凸凹咬合。
+  - 新增核心算法文件 [ConcavoConvexGenerator.ts]：通过端点哈希（SNAP=1e-6）建立共享边索引，仅对相邻碎片共用的内部边（count=2）做曲边替换；控制点沿边中垂线随机偏移（边长 10%~25%），以二次贝塞尔曲线 14 段等距采样生成凹凸咬合边，去掉端点后插入点列；相邻碎片一方正序一方逆序共用同一条曲线，几何上天然配对，无需重新校验面积。
+  - 全链路接入：CutType 枚举、难度系数表（1.4x，高于碎裂 1.35x）、PuzzleGenerator 分发、切割生成器类型/策略/控制器、存档迁移映射（GameDataManager）、渲染层曲边判定（puzzleDrawing / TextureCache）与 i18n 中英文资源。
+  - 几何验证：120 轮（3 形状 × 8 难度 × 5 随机种子）零失败，共享边缝合率 1.0000，面积守恒与马赛克基线完全一致。
+- **切割类型按钮多语言 / 多端字体整体适配 (Unified Button Text Adaptation)**:
+  - 切割类型选择区新增第 5 个按钮（Straight / Diagonal / Curve / Mosaic / Concave），网格布局改为 `auto-fit` 自适应列宽。
+  - 5 个按钮统一字号适配：以最长标签为基准，文字宽度接近列宽（≥80%）时整体缩放全部按钮，保证 5 个按钮字号一致，不单独缩放单个按钮；中文、桌面/iPad 列宽充足时保持默认字号。
+  - 主动触发机制：挂载测量、ResizeObserver（横竖屏旋转/窗口变化）、`document.fonts.ready`（字体加载完成）多路触发重测，修复英文移动端按钮文字贴边/接近溢出问题。
+
+---
+
 ## [v1.5.4] - 2026-08-04
 
 ### 🎨 程序生成背景图与 GitNexus 代码智能恢复 (Programmatic Background & GitNexus Intelligence Restoration)

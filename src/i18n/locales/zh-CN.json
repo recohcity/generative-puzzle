@@ -128,7 +128,9 @@
             "diagonal": "斜线",
             "curve": "曲线",
             "mosaicRandom": "碎裂",
-            "mosaic-random": "碎裂"
+            "mosaic-random": "碎裂",
+            "concavoConvex": "凹凸",
+            "concavo-convex": "凹凸"
         },
         "cutCount": {
             "title": "选择难度",
@@ -368,7 +370,9 @@
         "diagonal": "斜线",
         "curve": "曲线",
         "mosaicRandom": "碎裂",
-        "mosaic-random": "碎裂"
+        "mosaic-random": "碎裂",
+        "concavoConvex": "凹凸",
+        "concavo-convex": "凹凸"
     },
     "rotation": {
         "label": "旋转",

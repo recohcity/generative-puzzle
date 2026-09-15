@@ -127,7 +127,9 @@
             "diagonal": "Diagonal",
             "curve": "Curve",
             "mosaicRandom": "Mosaic",
-            "mosaic-random": "Mosaic"
+            "mosaic-random": "Mosaic",
+            "concavoConvex": "Concave",
+            "concavo-convex": "Concave"
         },
         "cutCount": {
             "title": "Select Difficulty",
@@ -366,7 +368,9 @@
         "diagonal": "Diagonal",
         "curve": "Curve",
         "mosaicRandom": "Mosaic",
-        "mosaic-random": "Mosaic"
+        "mosaic-random": "Mosaic",
+        "concavoConvex": "Concave",
+        "concavo-convex": "Concave"
     },
     "rotation": {
         "label": "Rotation",

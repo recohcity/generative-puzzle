@@ -131,7 +131,7 @@ class TextureCache {
     ctx.beginPath();
     ctx.moveTo(points[0].x, points[0].y);
 
-    const isCurvedShape = shapeType !== "polygon" && cutType !== "mosaic-random";
+    const isCurvedShape = shapeType !== "polygon" && cutType !== "mosaic-random" && cutType !== "concavo-convex";
 
     for (let i = 1; i < points.length; i++) {
       const prev = points[i - 1];

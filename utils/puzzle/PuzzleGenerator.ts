@@ -4,6 +4,7 @@ import { splitPolygon } from "@/utils/puzzle/puzzleUtils"
 import { applyExtraCutsWithRetry } from "@/utils/puzzle/puzzleCompensation"
 import { NetworkCutter } from "@/utils/puzzle/graph/NetworkCutter"
 import { MosaicGenerator } from "@/utils/puzzle/MosaicGenerator"
+import { ConcavoConvexGenerator } from "@/utils/puzzle/ConcavoConvexGenerator"
 
 export class PuzzleGenerator {
   /**
@@ -24,7 +25,7 @@ export class PuzzleGenerator {
    */
   static generatePuzzle(
     shape: Point[],
-    cutType: "straight" | "diagonal" | "curve" | "mosaic-random",
+    cutType: "straight" | "diagonal" | "curve" | "mosaic-random" | "concavo-convex",
     cutCount: number,
     shapeType?: string,
   ): { pieces: PuzzlePiece[]; originalPositions: PuzzlePiece[] } {
@@ -37,6 +38,10 @@ export class PuzzleGenerator {
     if (cutType === "mosaic-random") {
       console.log("[PuzzleGenerator] 使用马赛克碎裂生成器...");
       splitPieces = MosaicGenerator.generate(shape, cutCount, shapeType);
+    // 🆕 凹凸咬合模式：马赛克碎裂 + 内部共享边替换贝塞尔曲边（切割后处理）
+    } else if (cutType === "concavo-convex") {
+      console.log("[PuzzleGenerator] 使用凹凸咬合生成器（马赛克碎裂 + 曲边替换）...");
+      splitPieces = ConcavoConvexGenerator.generate(shape, cutCount, shapeType);
     // 🆕 混合架构入口：如果是曲线，使用图网络切割引擎
     } else if (cutType === "curve") {
       console.log("[PuzzleGenerator] 使用图网络进行曲线切割...");

@@ -2,7 +2,7 @@
 import { useGame } from "@/contexts/GameContext"
 import { CutType } from "@generative-puzzle/game-core"
 import { playButtonClickSound } from "@/utils/rendering/soundEffects"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useDeviceDetection } from "@/hooks/useDeviceDetection"
 import { useTranslation } from '@/contexts/I18nContext'
 import { cn } from "@/lib/utils"
@@ -14,9 +14,51 @@ interface PuzzleControlsCutTypeProps {
 
 export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 40 }: PuzzleControlsCutTypeProps) {
   const { state, dispatch } = useGame()
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   // 添加本地状态，初始值为空字符串，表示未选择
   const [localCutType, setLocalCutType] = useState<string>("")
+  // 按钮文字统一缩放系数：5 个按钮整体适配（以最长标签为基准），多端/多语言自适应
+  const [scale, setScale] = useState(1)
+  const gridRef = useRef<HTMLDivElement>(null)
+
+  // 语言切换时重置缩放，避免缩放残留到另一种语言
+  useEffect(() => {
+    setScale(1);
+  }, [locale]);
+
+  // 统一溢出适配：测量所有按钮，取最长文字宽度与最小可用列宽，
+  // 只要最长文字接近列宽（≥90%）就整体缩小全部按钮，保证 5 个按钮字号一致
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+    const measure = () => {
+      const btns = Array.from(grid.querySelectorAll<HTMLButtonElement>("button"));
+      if (btns.length === 0) return;
+      let maxNeed = 0;
+      let minAvail = Infinity;
+      for (const btn of btns) {
+        maxNeed = Math.max(maxNeed, btn.scrollWidth);
+        minAvail = Math.min(minAvail, btn.clientWidth);
+      }
+      if (maxNeed > 0 && minAvail > 0) {
+        if (maxNeed > minAvail * 0.8) {
+          setScale(Math.max(0.72, (minAvail / maxNeed) * 0.94));
+        } else {
+          setScale(1);
+        }
+      }
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(grid);
+    if (typeof document !== "undefined" && typeof document.fonts?.ready?.then === "function") {
+      document.fonts.ready.then(measure).catch(() => undefined);
+    }
+    return () => {
+      ro.disconnect();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locale, localCutType, state.isScattered, state.originalShape.length]);
 
   // 同步全局状态到本地状态，但仅当本地状态为空且全局状态有值时才同步
   useEffect(() => {
@@ -78,9 +120,10 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 40 }
         </div>
       )}
       <div
+        ref={gridRef}
         style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr 1fr 1fr',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(60px, 1fr))',
           gap: 'calc(var(--panel-scale, 1) * 8px)',
           width: '100%'
         }}
@@ -90,6 +133,7 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 40 }
           { id: 'diagonal', type: CutType.Diagonal, label: t('game.cutType.diagonal') },
           { id: 'curve', type: CutType.Curve, label: t('game.cutType.curve') },
           { id: 'mosaic-random', type: CutType.MosaicRandom, label: t('game.cutType.mosaicRandom') },
+          { id: 'concavo-convex', type: CutType.ConcavoConvex, label: t('game.cutType.concavoConvex') },
         ].map((item) => (
           <button
             key={item.id}
@@ -103,13 +147,16 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 40 }
             )}
             style={{
               height: buttonHeight,
-              fontSize: 'calc(var(--panel-scale, 1) * 14px)',
-              lineHeight: 'calc(var(--panel-scale, 1) * 20px)',
+              fontSize: `calc(var(--panel-scale, 1) * 14px * ${scale})`,
+              lineHeight: `calc(var(--panel-scale, 1) * 20px * ${scale})`,
               borderRadius: 'calc(var(--panel-scale, 1) * 14px)',
               width: '100%',
+              minWidth: 0,
               outline: 'none',
               padding: 0,
               fontWeight: 'normal',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
             }}
           >
             {item.label}

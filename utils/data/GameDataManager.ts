@@ -24,6 +24,7 @@ export class GameDataManager {
       'diagonal': CutType.Diagonal,
       'curve': CutType.Curve,
       'mosaic-random': CutType.MosaicRandom,
+      'concavo-convex': CutType.ConcavoConvex,
     };
     const difficulty: DifficultyConfig = {
       difficultyLevel: (record.difficulty?.difficultyLevel || 'medium') as DifficultyLevel,

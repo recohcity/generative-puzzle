@@ -19,7 +19,7 @@ export type CutLine = {
   type: CutType;
 };
 
-export type CutType = "straight" | "diagonal" | "curve" | "mosaic-random";
+export type CutType = "straight" | "diagonal" | "curve" | "mosaic-random" | "concavo-convex";
 
 export interface CutGenerationContext {
   bounds: Bounds;
