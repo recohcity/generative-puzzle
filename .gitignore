@@ -107,3 +107,6 @@ Desktop.ini
 # AI Agent working directories
 .agent/
 .gitnexus
+
+# Local demos (test environment, not for publish)
+demos/

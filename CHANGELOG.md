@@ -1,5 +1,17 @@
 # 生成式拼图游戏 Changelog
 
+## [v1.5.7] - 2026-09-17
+
+### 🧩 可复用资产沉淀：几何核心独立 + 一键 Demo + 多端适配规范
+
+- **几何核心独立模块**：增量顺序切割器迁入 `packages/game-core/src/utils/geometry/IncrementalCutter.ts`（无框架纯 TS，单一事实来源），业务层 re-export 兼容、调用方零改动；新增 `verify_incremental_cutter.ts` 自测（4 形态 × 2 形状 × 5 种子 × 4 刀数 = 160 局：片数不变量、面积守恒 ~1e-14、成功率 100%）。
+- **一键 Demo 生成器** `generate_demo.ts`：`--level 1-8 --out` 参数化；esbuild 现场打包 `PuzzleGenerator` 切割引擎（**覆盖全部 10 种切割方式**）内联，生成**单文件自包含 HTML**——同一不规则云朵形状上并排展示 10 种切割结果（5×2 网格、标注类型与片数），难度滑条统一控制、纯检视比对、无拖拽交互。
+- **多端适配规范** `references/adaptive-ui.md`：设备分型（desktop/mobile-portrait/mobile-landscape/ipad）、`--panel-scale` 缩放体系、移动端信息取舍、几何层 × 端能力联动（碎片可拾取下限随端变化）、三端验证清单。
+- **专属 Skill 重构**：SKILL.md 扩展为「扩展规范 + 可复用资产」双部分——新增几何核心使用指引、Demo 生成器与自测用法、多端适配规范入口，新项目可从几何核心快速生成可玩 DEMO。
+- **Demo 整合**：本地演示统一为 `demos/demo.html`（10 种切割可玩 Demo，旧预览/数据文件归档至 `demos/_archive/`）；`demos/` 加入 `.gitignore` 并从版本库移除（纠正 v1.5.5/v1.5.6 误上传）。
+
+---
+
 ## [v1.5.6] - 2026-09-17
 
 ### ✂️ 增量顺序切割架构与 10 种切割方式支持 (Incremental Sequential Cutting Architecture & 10 Cut Types Support)
