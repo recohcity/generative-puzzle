@@ -87,7 +87,7 @@ export const applyExtraCutsWithRetry = (params: {
   const maxRetryCount = isHighDifficulty ? 5 : 3;
   let retryCount = 0;
 
-  while (splitPieces.length < cuts.length && retryCount < maxRetryCount) {
+  while (splitPieces.length <= cuts.length && retryCount < maxRetryCount) {
     retryCount++;
     const bounds = computeBounds(shape);
     const neededExtraCuts = Math.max(0, Math.min(3, cuts.length - splitPieces.length + 1));
@@ -109,5 +109,42 @@ export const applyExtraCutsWithRetry = (params: {
   }
 
   return splitPieces;
+};
+
+/**
+ * 硬保障：随机补偿后片数仍低于难度下限时，追加确定性贯穿线（固定角度穿过形状中心）。
+ * 凸形状下中心贯穿线必切穿（每线 +1 片）；凹形状下换角度重试，无效线丢弃。
+ * 保证直线/斜线模式的最终片数 ≥ 档位文案下限。
+ */
+export const ensureMinPieces = (params: {
+  shape: Point[];
+  cuts: Cut[];
+  cutType: CutType;
+  splitPolygon: (shape: Point[], cuts: Cut[]) => Point[][];
+  pieces: Point[][];
+  minPieces: number;
+}): Point[][] => {
+  const { shape, cuts, cutType, splitPolygon } = params;
+  let pieces = params.pieces;
+  const b = computeBounds(shape);
+  // 固定角度序列：垂直 / 水平 / 两对角 / 30° / 60°，穿过形状中心
+  const fixedAngles = [Math.PI / 2, 0, Math.PI / 4, (3 * Math.PI) / 4, Math.PI / 6, Math.PI / 3];
+  let idx = 0;
+  while (pieces.length < params.minPieces && idx < fixedAngles.length) {
+    const ang = fixedAngles[idx++];
+    const dx = Math.cos(ang), dy = Math.sin(ang);
+    const ext = b.diagonal;
+    const line: Cut = {
+      x1: b.centerX - dx * ext, y1: b.centerY - dy * ext,
+      x2: b.centerX + dx * ext, y2: b.centerY + dy * ext,
+      type: cutType,
+    };
+    const next = splitPolygon(shape, [...cuts, line]);
+    if (next.length > pieces.length) {
+      pieces = next;
+      cuts.push(line);
+    }
+  }
+  return pieces;
 };
 

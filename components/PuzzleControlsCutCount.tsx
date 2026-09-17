@@ -1,7 +1,6 @@
 "use client"
 import { useGame } from "@/contexts/GameContext"
-import { PuzzleIcon } from "lucide-react"
-import { playButtonClickSound, playCutSound } from "@/utils/rendering/soundEffects"
+import { playButtonClickSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
 import { useDeviceDetection } from "@/hooks/useDeviceDetection"
 import { useTranslation } from '@/contexts/I18nContext'
@@ -18,7 +17,6 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
   const {
     state,
     dispatch,
-    generatePuzzle
   } = useGame()
   const { t } = useTranslation()
 
@@ -42,32 +40,14 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
 
   // 检查是否已生成形状
   const isShapeGenerated = state.originalShape.length > 0
-  // 检查是否已选择切割类型
-  const hasCutType = !!state.cutType
-  // 检查是否可以修改拼图设置
-  const canModifySettings = isShapeGenerated && !state.isScattered && hasCutType
-  // 检查是否有选择次数
-  const hasSelectedCount = localCutCount !== null
-  // 检查是否已切割过一次（puzzle 存在且未散开）→ 可重复切割状态
-  const isPuzzleAlreadyCut = state.puzzle !== null && !state.isScattered
+  // 检查是否可以修改拼图设置（先选难度再选切割方式：选形状后难度即可操作）
+  const canModifySettings = isShapeGenerated && !state.isScattered
 
   const handleCutCountChange = (value: number) => {
     if (!canModifySettings) return
     playButtonClickSound()
     dispatch({ type: "SET_CUT_COUNT", payload: value })
     setLocalCutCount(value)
-  }
-
-  const handleGeneratePuzzle = () => {
-    playCutSound() // 使用切割音效替代按钮点击音效
-    generatePuzzle()
-
-    // 生成拼图后自动跳转到下一个tab
-    if (goToNextTab) {
-      setTimeout(() => {
-        goToNextTab()
-      }, 300)
-    }
   }
 
   // 难度选择按钮的样式
@@ -165,49 +145,6 @@ export default function PuzzleControlsCutCount({ goToNextTab, buttonHeight = 28,
           </div>
         </div>
       </div>
-
-      {/* 切割按钮 */}
-      <button
-        onClick={handleGeneratePuzzle}
-        disabled={!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType}
-        className={cn(
-          "glass-btn-sheen w-full group overflow-hidden relative",
-          // 三态：禁用 / 首次可用（橙） / 可重复切割（青）
-          (!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType)
-            ? "glass-btn-active opacity-30 pointer-events-none"
-            : isPuzzleAlreadyCut
-              ? "glass-btn-recut"
-              : "glass-btn-active"
-        )}
-        data-testid="generate-puzzle-button"
-        style={{
-          fontSize: '14px',
-          borderRadius: 'calc(var(--panel-scale, 1) * 14px)',
-          minHeight: actionButtonHeight,
-          height: actionButtonHeight,
-          padding: '0 16px',
-          lineHeight: '18px',
-          fontWeight: 'normal',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-      >
-        <PuzzleIcon className="mr-2 group-hover:rotate-12 transition-transform duration-300" style={{ width: '18px', height: '18px' }} strokeWidth={2.5} />
-        <span style={{ fontSize: '14px' }}>
-          {isPuzzleAlreadyCut && !(!isShapeGenerated || state.isScattered || !hasSelectedCount || !hasCutType)
-            ? t('game.cutCount.recutButton')
-            : t('game.cutCount.button')
-          }
-        </span>
-      </button>
-
-      {/* 提示信息 */}
-      {isShapeGenerated && !state.isScattered && (!hasCutType || !hasSelectedCount) && (
-        <div className="text-brand-peach font-medium animate-pulse" style={{ fontSize: '11px', textAlign: 'center', marginTop: '8px', lineHeight: '16px' }}>
-          {!hasCutType ? t('game.cutCount.hints.selectCutType') : !hasSelectedCount ? t('game.cutCount.hints.selectCount') : ""}
-        </div>
-      )}
     </div>
   )
 }

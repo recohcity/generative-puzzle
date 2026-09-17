@@ -4,6 +4,7 @@
  */
 
 import type { Point, PuzzlePiece } from "@generative-puzzle/game-core";
+import { CutType } from "@generative-puzzle/game-core";
 import { generateCuts } from "./cutGenerators";
 import { splitPolygon } from "./puzzleUtils";
 
@@ -12,7 +13,7 @@ import { splitPolygon } from "./puzzleUtils";
  */
 export function generateSimplePuzzle(
   shape: Point[],
-  cutType: "straight" | "diagonal",
+  cutType: CutType,
   cutCount: number
 ): { pieces: PuzzlePiece[]; originalPositions: PuzzlePiece[] } {
   

@@ -6,6 +6,7 @@ import { RefreshCw } from "lucide-react";
 import { playButtonClickSound } from "@/utils/rendering/soundEffects";
 import PuzzleControlsCutType from "./PuzzleControlsCutType";
 import PuzzleControlsCutCount from "./PuzzleControlsCutCount";
+import PuzzleControlsCutButton from "./PuzzleControlsCutButton";
 import PuzzleControlsScatter from "./PuzzleControlsScatter";
 import ActionButtons from "./ActionButtons";
 import LeaderboardButton from "./LeaderboardButton";
@@ -36,8 +37,9 @@ const DesktopPuzzleSettings: React.FC<DesktopPuzzleSettingsProps> = ({ goToNextT
       {/* 榜单按钮 */}
       <LeaderboardButton onClick={showLeaderboard} />
 
-      <PuzzleControlsCutType goToNextTab={goToNextTab} />
       <PuzzleControlsCutCount goToNextTab={goToNextTab} />
+      <PuzzleControlsCutType goToNextTab={goToNextTab} />
+      <PuzzleControlsCutButton goToNextTab={goToNextTab} />
       <PuzzleControlsScatter goToNextTab={goToNextTab} />
       <ActionButtons layout="desktop" />
       <Button

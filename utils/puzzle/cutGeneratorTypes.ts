@@ -1,4 +1,6 @@
-import { Point } from "@generative-puzzle/game-core";
+import { Point, CutType } from "@generative-puzzle/game-core";
+
+export type { CutType };
 
 /**
  * 切割线生成器类型定义
@@ -18,8 +20,6 @@ export type CutLine = {
   y2: number;
   type: CutType;
 };
-
-export type CutType = "straight" | "diagonal" | "curve" | "mosaic-random" | "concavo-convex";
 
 export interface CutGenerationContext {
   bounds: Bounds;

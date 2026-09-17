@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import ShapeControls from "@/components/ShapeControls";
 import PuzzleControlsCutType from "@/components/PuzzleControlsCutType";
 import PuzzleControlsCutCount from "@/components/PuzzleControlsCutCount";
+import PuzzleControlsCutButton from "@/components/PuzzleControlsCutButton";
 import PuzzleControlsScatter from "@/components/PuzzleControlsScatter";
 import GlobalUtilityButtons from "@/components/GlobalUtilityButtons";
 import {
@@ -521,7 +522,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
       {!isGameCompleted && !showLeaderboard && (
         <div className="mb-0" style={{ paddingLeft: CONTENT_HORIZONTAL_PADDING, paddingRight: CONTENT_HORIZONTAL_PADDING }}>
           <div className="flex w-full bg-white/5 backdrop-blur-md rounded-2xl overflow-hidden no-scrollbar whitespace-nowrap items-center" style={{ height: isLandscape ? TAB_BUTTON_HEIGHT_LANDSCAPE : TAB_BUTTON_HEIGHT }}>
-            {(['shape', 'puzzle', 'cut', 'scatter', 'controls'] as const).map((tab, idx, arr) => (
+            {(['shape', 'cut', 'puzzle', 'scatter', 'controls'] as const).map((tab, idx, arr) => (
               <React.Fragment key={tab}>
                 {idx > 0 && (
                   <div
@@ -828,8 +829,11 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                 )}
                 {activeTab === 'puzzle' && (
                   <div className="flex flex-col items-center w-full px-0">
-                    <h2 className={CARD_TITLE_CLASS}>{t('game.cutType.title')}</h2>
+                    {/* 移动端隐藏小标题（tab 栏已有"类型"标签），释放空间避免按钮溢出 */}
                     <PuzzleControlsCutType goToNextTab={goToNextTab} buttonHeight={CUT_TYPE_BUTTON_HEIGHT} />
+                    <div className="w-full mt-1.5">
+                      <PuzzleControlsCutButton goToNextTab={goToNextTab} actionButtonHeight={ACTION_BUTTON_HEIGHT} />
+                    </div>
                   </div>
                 )}
                 {activeTab === 'cut' && (

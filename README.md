@@ -8,12 +8,16 @@
 [![Vercel Speed Insights](https://img.shields.io/badge/Speed--Insights-Optimized-blueviolet)](https://vercel.com/recohcitys-projects/generative-puzzle/speed-insights)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-15.5-black.svg)](https://nextjs.org/)
-[![Version](https://img.shields.io/badge/version-1.5.5-orange.svg)]()
+[![Version](https://img.shields.io/badge/version-1.5.6-orange.svg)]()
 
 **基于 Next.js 15 和 React 19 构建的极致前端全栈拼图引擎**
 
 *无限生成 • 无框悬浮 UI • 云端全服连线 • 移动端极致适配与标准数字审美*
 
+</div>
+
+<div align="center">
+  <img src="assets/cut-types-showcase.png" alt="Generative Puzzle 生成式拼图 · 10 种切割方式" width="100%" />
 </div>
 
 ---
@@ -40,9 +44,9 @@
 - 完全剥离逻辑算法和渲染引擎（Canvas GPU），使得未来的 React Native / 客户端多端跨全平台迁移成本趋近于零。
 
 ### 📐 随机多态智能切割模型
-- **五模拼图切割**: 同时支援五种动态解算生成：基础直线（Straight Line）、斜向切割（Diagonal）、高级仿真曲线连结（Bezier Jigsaw Curve）、**马赛克随机碎裂（Mosaic Random / Voronoi 晶格剖分）**、以及全新的 **凹凸咬合切割（Concavo-Convex / 曲边拼合）**。
+- **十模拼图切割**: 动态解算生成十种切割方式：直线（Straight）、斜线（Diagonal）、放射（Radial，星形放射式曲线）、曲线（Through Curve，贯穿贝塞尔曲线）、马赛克（Mosaic Random / Voronoi 晶格剖分）、鱼鳞（Fish Scale / 曲边拼合，原"凹凸"更名）、嵌齿（Jigsaw）、S弯（S-Curve）、折线（Zigzag）、蜂巢（Hex，六边形网格）。
 - **马赛克 Voronoi 切割引擎**: 基于泊松盘采样 (Poisson Disc Sampling) 与 Sutherland-Hodgman 多边形半平面裁剪算法，完美兼容多边形、云朵形、锯齿形全形状切割，生成宛如彩色玻璃花窗般的随机咬合多边形碎面，搭配 1.35x 专属难度得分系数。
-- **凹凸咬合切割引擎 (Concavo-Convex)**: 在马赛克碎裂基础上，通过端点哈希建立共享边索引，仅将相邻碎片共用的内部边替换为二次贝塞尔曲边（控制点沿边中垂线随机偏移），相邻碎片正逆序共用同一条曲线，实现拼图块间天然的凸凹咬合；每块碎片的曲边走向由随机种子唯一决定，缝合率与面积守恒经批量几何验证，搭配 1.4x 专属难度得分系数。
+- **鱼鳞咬合切割引擎 (Fish Scale / Concavo-Convex)**: 在马赛克碎裂基础上，通过端点哈希建立共享边索引，仅将相邻碎片共用的内部边替换为二次贝塞尔曲边（控制点沿边中垂线随机偏移），相邻碎片正逆序共用同一条曲线，实现拼图块间天然的凸凹咬合，如鱼鳞般交错贴合；每块碎片的曲边走向由随机种子唯一决定，缝合率与面积守恒经批量几何验证，搭配 1.4x 专属难度得分系数。
 - **千变万化，唯一解题**: 巧妙利用动态加密的随机生成种子保证：即便选择相同的切片刀数，每一局所切割出的每片多边形的边缘走向、中心质心坐标在全球范围内都是毫不重复的唯一解。
 
 ---

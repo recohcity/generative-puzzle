@@ -337,11 +337,11 @@ export default function CurveTestOptimized({ onReady }: { onReady?: () => void }
     setActiveTab(tab);
   };
 
-  // 添加自动切换到下一个tab的函数
+  // 添加自动切换到下一个tab的函数（操作次序：形状 → 难度 → 切割类型 → 散开 → 控制）
   const goToNextTab = () => {
-    if (activeTab === 'shape') setActiveTab('puzzle');
-    else if (activeTab === 'puzzle') setActiveTab('cut');
-    else if (activeTab === 'cut') setActiveTab('scatter');
+    if (activeTab === 'shape') setActiveTab('cut');
+    else if (activeTab === 'cut') setActiveTab('puzzle');
+    else if (activeTab === 'puzzle') setActiveTab('scatter');
     else if (activeTab === 'scatter') setActiveTab('controls');
   };
 

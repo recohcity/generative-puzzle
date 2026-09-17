@@ -22,9 +22,16 @@ export class GameDataManager {
     const CUT_TYPE_MAP: Record<string, CutType> = {
       'straight': CutType.Straight,
       'diagonal': CutType.Diagonal,
-      'curve': CutType.Curve,
+      // 旧存档迁移：v1.5.5 前 curve 即放射式曲线，映射到更名后的 Radial
+      'curve': CutType.Radial,
+      'radial': CutType.Radial,
+      'through-curve': CutType.ThroughCurve,
       'mosaic-random': CutType.MosaicRandom,
       'concavo-convex': CutType.ConcavoConvex,
+      's-curve': CutType.SCurve,
+      'zigzag': CutType.Zigzag,
+      'jigsaw': CutType.Jigsaw,
+      'hex': CutType.Hex,
     };
     const difficulty: DifficultyConfig = {
       difficultyLevel: (record.difficulty?.difficultyLevel || 'medium') as DifficultyLevel,

@@ -27,11 +27,14 @@ export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 40 }
 
   // 检查是否已生成拼图
   const isPuzzleGenerated = state.puzzle !== null
+  // 逐刀切割动画进行中禁用散开（中间态不可散）
+  const isCuttingLocked = state.isCutting
 
   // 所有按钮共用的禁用样式类
   const disabledClass = "opacity-30 pointer-events-none";
 
   const handleScatterPuzzle = () => {
+    if (state.isCutting) return
     //playButtonClickSound() // 禁用通用按钮音效
     playScatterSound() // 使用指定的散开拼图音效替代通用按钮音效
     scatterPuzzle()
@@ -48,10 +51,10 @@ export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 40 }
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0', width: '100%' }}>
       <button
         onClick={handleScatterPuzzle}
-        disabled={!isPuzzleGenerated || state.isScattered}
+        disabled={!isPuzzleGenerated || state.isScattered || isCuttingLocked}
         className={cn(
           "glass-btn-active glass-btn-sheen w-full border-none",
-          (!isPuzzleGenerated || state.isScattered) && "opacity-30 pointer-events-none"
+          (!isPuzzleGenerated || state.isScattered || isCuttingLocked) && "opacity-30 pointer-events-none"
         )}
         data-testid="scatter-puzzle-button"
         style={{

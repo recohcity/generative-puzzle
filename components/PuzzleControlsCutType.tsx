@@ -13,11 +13,11 @@ interface PuzzleControlsCutTypeProps {
 }
 
 export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 40 }: PuzzleControlsCutTypeProps) {
-  const { state, dispatch } = useGame()
+  const { state, dispatch, generatePuzzle } = useGame()
   const { t, locale } = useTranslation()
   // 添加本地状态，初始值为空字符串，表示未选择
   const [localCutType, setLocalCutType] = useState<string>("")
-  // 按钮文字统一缩放系数：5 个按钮整体适配（以最长标签为基准），多端/多语言自适应
+  // 按钮文字统一缩放系数：10 个按钮整体适配（以最长标签为基准），多端/多语言自适应
   const [scale, setScale] = useState(1)
   const gridRef = useRef<HTMLDivElement>(null)
 
@@ -27,7 +27,7 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 40 }
   }, [locale]);
 
   // 统一溢出适配：测量所有按钮，取最长文字宽度与最小可用列宽，
-  // 只要最长文字接近列宽（≥90%）就整体缩小全部按钮，保证 5 个按钮字号一致
+  // 只要最长文字接近列宽（≥90%）就整体缩小全部按钮，保证 10 个按钮字号一致
   useEffect(() => {
     const grid = gridRef.current;
     if (!grid) return;
@@ -84,8 +84,9 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 40 }
 
   // 检查是否已生成形状
   const isShapeGenerated = state.originalShape.length > 0
-  // 检查是否可以修改拼图设置
-  const canModifySettings = isShapeGenerated && !state.isScattered
+  // 检查是否可以修改拼图设置（进度门控：先选形状、再选难度、后选切割类型；逐刀切割动画中锁定）
+  // 选形状后切割类型即可选（难度不 gate：未选难度时自动切割用默认档位）
+  const canModifySettings = isShapeGenerated && !state.isScattered && !state.isCutting
 
 
   // 所有按钮共用的禁用样式类
@@ -97,18 +98,13 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 40 }
     // 更新本地状态
     setLocalCutType(value)
     // 更新全局状态
-    // 更新全局状态
     dispatch({
       type: "SET_CUT_TYPE",
       payload: value as CutType,
     })
-
-    // 自动跳转到下一个Tab
-    if (goToNextTab) {
-      setTimeout(() => {
-        goToNextTab()
-      }, 300)
-    }
+    // 选切割类型即等同点击"切割形状"按钮：直接按新类型切割（传参覆盖 dispatch 异步滞后），
+    // 下方"切割形状"按钮随即变为"再次切割"，允许重复切割
+    generatePuzzle(value as CutType)
   }
 
   return (
@@ -131,9 +127,14 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 40 }
         {[
           { id: 'straight', type: CutType.Straight, label: t('game.cutType.straight') },
           { id: 'diagonal', type: CutType.Diagonal, label: t('game.cutType.diagonal') },
-          { id: 'curve', type: CutType.Curve, label: t('game.cutType.curve') },
+          { id: 'radial', type: CutType.Radial, label: t('game.cutType.radial') },
+          { id: 'through-curve', type: CutType.ThroughCurve, label: t('game.cutType.throughCurve') },
+          { id: 's-curve', type: CutType.SCurve, label: t('game.cutType.sCurve') },
+          { id: 'zigzag', type: CutType.Zigzag, label: t('game.cutType.zigzag') },
+          { id: 'jigsaw', type: CutType.Jigsaw, label: t('game.cutType.jigsaw') },
           { id: 'mosaic-random', type: CutType.MosaicRandom, label: t('game.cutType.mosaicRandom') },
           { id: 'concavo-convex', type: CutType.ConcavoConvex, label: t('game.cutType.concavoConvex') },
+          { id: 'hex', type: CutType.Hex, label: t('game.cutType.hex') },
         ].map((item) => (
           <button
             key={item.id}

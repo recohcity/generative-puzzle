@@ -260,9 +260,14 @@ export const getDeviceMultiplier = (): number => {
 const CUT_TYPE_MULTIPLIERS: Record<string, number> = {
   [CutType.Straight]: 1.0,   // 直线：标准难度
   [CutType.Diagonal]: 1.15,  // 斜线：增加15%难度
-  [CutType.Curve]: 1.25,     // 曲线：增加25%难度（从1.5降低）
+  [CutType.Radial]: 1.25,    // 放射式曲线：增加25%难度（原 Curve，更名自 v1.5.6）
+  [CutType.ThroughCurve]: 1.3, // 贯穿曲线：增量顺序切割，形态更自由，增加30%难度
   [CutType.MosaicRandom]: 1.35, // 马赛克碎裂：增加35%难度
   [CutType.ConcavoConvex]: 1.4, // 凹凸咬合：马赛克 + 曲边替换，增加40%难度（高于马赛克）
+  [CutType.Jigsaw]: 1.3,    // 嵌齿：贯穿波形齿边，增量顺序切割，增加30%难度
+  [CutType.SCurve]: 1.2,    // S弯：贯穿双弯曲线，增加20%难度
+  [CutType.Zigzag]: 1.2,    // 折线：贯穿折线路径，增加20%难度
+  [CutType.Hex]: 1.35,      // 蜂巢：六边形网格，增加35%难度（规则网格略低于凹凸）
 };
 
 /**

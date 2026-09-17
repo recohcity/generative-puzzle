@@ -94,9 +94,9 @@ export const drawPiece = (
   index: number, // 拼图片段的索引
   isCompleted: boolean, // 拼图片段是否已完成并吸附到目标位置
   isSelected: boolean, // 拼图片段当前是否被用户选中/拖动
-  shapeType: string, // 形状类型 ('polygon' 或 'curve')
+  shapeType: string, // 形状类型 ('polygon' | 'cloud' | 'jagged')
   isScattered: boolean = false, // 游戏是否处于拼图散开的状态
-  cutType?: string // 切割类型 ('straight', 'diagonal', 'curve', 'mosaic-random')
+  cutType?: string // 切割类型 ('straight', 'diagonal', 'radial', 'through-curve', 's-curve', 'zigzag', 'jigsaw', 'mosaic-random', 'concavo-convex', 'hex')
 ) => {
   // 计算中心点用于旋转
   const center = calculateCenter(piece.points);
@@ -121,7 +121,7 @@ export const drawPiece = (
       const current = piece.points[i];
       const next = piece.points[(i + 1) % piece.points.length];
 
-      const isCurvedShape = shapeType !== "polygon" && cutType !== "mosaic-random" && cutType !== "concavo-convex";
+      const isCurvedShape = shapeType !== "polygon" && cutType !== "mosaic-random" && cutType !== "concavo-convex" && cutType !== "zigzag" && cutType !== "jigsaw" && cutType !== "hex";
       if (isCurvedShape && current.isOriginal !== false) {
         // 对于曲线形状和锯齿形状（非马赛克），使用二次贝塞尔曲线保持平滑
         const midX = (prev.x + current.x) / 2;
@@ -161,7 +161,7 @@ export const drawPiece = (
     const current = piece.points[i];
     const next = piece.points[(i + 1) % piece.points.length];
 
-    const isCurvedShape = shapeType !== "polygon" && cutType !== "mosaic-random" && cutType !== "concavo-convex";
+    const isCurvedShape = shapeType !== "polygon" && cutType !== "mosaic-random" && cutType !== "concavo-convex" && cutType !== "zigzag" && cutType !== "jigsaw" && cutType !== "hex";
     if (isCurvedShape && current.isOriginal !== false) {
       // 对于曲线形状和锯齿形状（非马赛克），使用二次贝塞尔曲线
       const midX = (prev.x + current.x) / 2;
@@ -260,7 +260,7 @@ export const drawHintOutline = (
 
   ctx.beginPath(); // Add beginPath here to ensure new path
 
-  const isCurvedShape = shapeType !== "polygon" && cutType !== "mosaic-random" && cutType !== "concavo-convex";
+  const isCurvedShape = shapeType !== "polygon" && cutType !== "mosaic-random" && cutType !== "concavo-convex" && cutType !== "zigzag" && cutType !== "jigsaw" && cutType !== "hex";
   const hasCutPoints = piece.points.some(p => p.isOriginal === false);
 
   if (!isCurvedShape || hasCutPoints) {
@@ -295,7 +295,7 @@ export const drawHintOutline = (
 export const drawCompletionEffect = (
   ctx: CanvasRenderingContext2D, // Canvas 2D 渲染上下文
   shape: Point[], // 完成形状的顶点数组
-  shapeType: string // 形状类型 ('polygon' 或 'curve')
+  shapeType: string // 形状类型 ('polygon' | 'cloud' | 'jagged')
 ) => {
   ctx.save(); // 保存当前绘图状态，以便后续恢复
 
@@ -426,7 +426,7 @@ export const drawPuzzle = (
   pieces: PuzzlePiece[], // 所有拼图片段的数据数组
   completedPieces: number[], // 已完成拼图片段的索引数组
   selectedPiece: number | null, // 当前选中的拼图片段索引 (或 null)
-  shapeType: string, // 形状类型 ('polygon' 或 'curve')
+  shapeType: string, // 形状类型 ('polygon' | 'cloud' | 'jagged')
   originalShape?: Point[], // 原始形状的顶点数组 (用于显示轮廓或完成状态)
   isScattered: boolean = false, // 游戏是否处于拼图散开的状态
   tilt: { rx: number; ry: number } = { rx: 0, ry: 0 }, // Tilt status for glaze effect

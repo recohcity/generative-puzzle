@@ -1,4 +1,5 @@
 import { CutLine, Bounds, CutType } from "./cutGeneratorTypes";
+import { CutType as GameCutType } from "@generative-puzzle/game-core";
 import { Point } from "@generative-puzzle/game-core";
 import {
   generateStraightCutLine,
@@ -24,7 +25,7 @@ export interface CutGenerationStrategy {
 // 简单难度策略
 export class SimpleCutStrategy implements CutGenerationStrategy {
   generateCut(bounds: Bounds, existingCuts: CutLine[], shape: Point[], type: CutType): CutLine | null {
-    if (type === 'curve' || type === 'mosaic-random' || type === 'concavo-convex') return null; // 不支持曲线、马赛克和凹凸模式
+    if (type === 'radial' || type === 'through-curve' || type === 's-curve' || type === 'zigzag' || type === 'jigsaw' || type === 'mosaic-random' || type === 'concavo-convex' || type === 'hex') return null; // 不支持曲线/贯穿类/网络类模式
     return generateCenterCutLine(shape, type === "straight", type);
   }
 }
@@ -32,7 +33,7 @@ export class SimpleCutStrategy implements CutGenerationStrategy {
 // 中等难度策略 - 增加相交概率
 export class MediumCutStrategy implements CutGenerationStrategy {
   generateCut(bounds: Bounds, existingCuts: CutLine[], shape: Point[], type: CutType): CutLine | null {
-    if (type === 'curve' || type === 'mosaic-random' || type === 'concavo-convex') return null;
+    if (type === 'radial' || type === 'through-curve' || type === 'mosaic-random' || type === 'concavo-convex') return null;
     // 🔧 修复：中等难度增加相交概率，确保更多随机性
     if (existingCuts.length > 1 && Math.random() < 0.7) { // 从50%提升到70%
       return this.generateSlightlyIntersectingCut(bounds, existingCuts, type);
@@ -49,7 +50,7 @@ export class MediumCutStrategy implements CutGenerationStrategy {
     }
   }
 
-  private generateSlightlyIntersectingCut(bounds: Bounds, existingCuts: CutLine[], type: "straight" | "diagonal"): CutLine {
+  private generateSlightlyIntersectingCut(bounds: Bounds, existingCuts: CutLine[], type: GameCutType): CutLine {
     // 选择一条现有的切割线
     const referenceCut = existingCuts[Math.floor(Math.random() * existingCuts.length)];
 
@@ -98,7 +99,7 @@ export class MediumCutStrategy implements CutGenerationStrategy {
 // 高难度策略 - 强制切割线相交以产生更多片段
 export class HardCutStrategy implements CutGenerationStrategy {
   generateCut(bounds: Bounds, existingCuts: CutLine[], shape: Point[], type: CutType): CutLine | null {
-    if (type === 'curve' || type === 'mosaic-random' || type === 'concavo-convex') return null;
+    if (type === 'radial' || type === 'through-curve' || type === 's-curve' || type === 'zigzag' || type === 'jigsaw' || type === 'mosaic-random' || type === 'concavo-convex' || type === 'hex') return null;
     // 🔧 修复：高难度策略强制让切割线相交以产生随机数量的片段
     if (existingCuts.length > 0) {
       // 高难度：100%概率尝试相交切割，确保随机性
@@ -111,7 +112,7 @@ export class HardCutStrategy implements CutGenerationStrategy {
       : generateDiagonalCutLine(bounds);
   }
 
-  private generateIntersectingCut(bounds: Bounds, existingCuts: CutLine[], type: "straight" | "diagonal"): CutLine {
+  private generateIntersectingCut(bounds: Bounds, existingCuts: CutLine[], type: GameCutType): CutLine {
     // 🔧 修复：改进相交切割生成，确保产生更多随机性
 
     // 选择多条现有切割线作为参考，增加随机性

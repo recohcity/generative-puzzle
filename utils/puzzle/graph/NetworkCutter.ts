@@ -144,8 +144,13 @@ export class NetworkCutter {
         }
 
         for (const curve of curves) {
-            // 降低采样率：从250减少到100
-            const points = curve.getPoints(100);
+            // 采样自适应：直线曲线（控制点在中点）1 段即可，弯曲曲线 100 段
+            // 蜂巢边为直线表示，旧实现每条采 100 点 → 4 万段 → O(S²) 求交数百毫秒卡顿
+            const isStraight = Math.hypot(
+                curve.p1.x - (curve.p0.x + curve.p2.x) / 2,
+                curve.p1.y - (curve.p0.y + curve.p2.y) / 2,
+            ) < 1e-6;
+            const points = curve.getPoints(isStraight ? 1 : 100);
             for (let i = 0; i < points.length - 1; i++) {
                 segments.push({
                     p1: points[i],

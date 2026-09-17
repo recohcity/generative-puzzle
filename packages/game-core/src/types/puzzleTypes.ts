@@ -63,11 +63,13 @@ export interface GameState {
   completedPieces: number[]
   isCompleted: boolean
   isScattered: boolean
+  isCutting: boolean // 逐刀切割动画进行中（S弯/折线专用）
   showHint: boolean
   shapeType: ShapeType
   pendingShapeType: ShapeType | null // 待生成的形状类型
   cutType: CutType | ""
   cutCount: number
+  difficultyTouched: boolean // 用户是否已主动选择难度（进度门控：切割类型需先选难度）
   originalPositions: PuzzlePiece[]
   lastShapeOffsetX?: number
   lastShapeOffsetY?: number
@@ -100,7 +102,7 @@ export interface GameContextProps {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
   backgroundCanvasRef: React.RefObject<HTMLCanvasElement | null>;
   generateShape: (shapeType?: ShapeType) => void;
-  generatePuzzle: () => void;
+  generatePuzzle: (cutTypeOverride?: CutType) => void;
   scatterPuzzle: () => void;
   rotatePiece: (clockwise: boolean) => void;
   showHintOutline: () => void;
@@ -134,6 +136,7 @@ export type GameAction =
   | { type: "SET_COMPLETED_PIECES"; payload: number[] }
   | { type: "ADD_COMPLETED_PIECE"; payload: number }
   | { type: "SET_IS_SCATTERED"; payload: boolean }
+  | { type: "SET_IS_CUTTING"; payload: boolean }
   | { type: "SET_IS_COMPLETED"; payload: boolean }
   | { type: "SET_SHOW_HINT"; payload: boolean }
   | { type: "SET_SHAPE_TYPE_WITHOUT_REGENERATE"; payload: ShapeType | null }
@@ -195,9 +198,18 @@ export enum ShapeType {
 export enum CutType {
   Straight = "straight",
   Diagonal = "diagonal",
-  Curve = "curve",
+  // 原 Curve = "curve"（星形放射式曲线切割）更名 Radial，语义与真实形态对齐
+  Radial = "radial",
+  // 新增：真正随机贯穿贝塞尔曲线（增量顺序切割，逐刀结构共享消除飞边）
+  ThroughCurve = "through-curve",
   MosaicRandom = "mosaic-random",
   ConcavoConvex = "concavo-convex",
+  // v1.5.9：贯穿类路径形态扩展（增量顺序切割）
+  Jigsaw = "jigsaw",
+  SCurve = "s-curve",
+  Zigzag = "zigzag",
+  // v1.5.9：网络类——六边形网格（蜂巢）
+  Hex = "hex",
 }
 
 import React from 'react';

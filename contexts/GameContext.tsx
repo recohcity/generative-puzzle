@@ -90,11 +90,13 @@ const initialState: GameState = {
   completedPieces: [],
   isCompleted: false,
   isScattered: false,
+  isCutting: false, // 预留：逐刀切割动画状态（当前全部切割类型已统一秒切，恒为 false）
   showHint: false,
   shapeType: "" as any, // 初始无选中
   pendingShapeType: null,
   cutType: "",
   cutCount: 1,
+  difficultyTouched: false, // 进度门控：选过难度后切割类型/切割按钮才可操作
   originalPositions: [],
   canvasSize: null, // 当前画布尺寸
   baseCanvasSize: null, // 基准画布尺寸
@@ -293,8 +295,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     case "SET_IS_COMPLETED":
       return { ...state, isCompleted: action.payload };
-    case "SET_IS_SCATTERED":
+    case "SET_IS_SCATTERED": {
       return { ...state, isScattered: action.payload };
+    }
+    case "SET_IS_CUTTING": {
+      return { ...state, isCutting: action.payload };
+    }
     case "SET_SHOW_HINT":
       return { ...state, showHint: action.payload };
     case "SET_SHAPE_TYPE":
@@ -313,6 +319,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         cutCount: newCutCount,
+        difficultyTouched: true, // 用户已主动选择难度
         angleDisplayMode: newAngleDisplayMode,
         temporaryAngleVisible: newTemporaryAngleVisible,
       };
@@ -322,6 +329,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case "GENERATE_PUZZLE":
       return { ...state };
     case "SCATTER_PUZZLE": {
+      // 预留：切割动画中不可散开（当前秒切无中间态）
+      if (state.isCutting) return state;
       // 散开拼图时启动游戏计时
       const gameStartTime = Date.now();
 
@@ -890,11 +899,13 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     puzzleRef.current = state.puzzle;
   }, [state.puzzle]);
-  const generatePuzzle = useCallback(() => {
+  const generatePuzzle = useCallback((cutTypeOverride?: CutType) => {
     if (!state.originalShape) return;
+    if (state.isCutting) return; // 预留：切割动画中防重入（当前秒切恒 false）
 
     textureCache.clear();
-    const cutTypeString = state.cutType || "straight";
+    // cutTypeOverride 用于"选切割类型即自动切割"（dispatch 异步，读 state.cutType 会滞后一帧）
+    const cutTypeString: CutType = cutTypeOverride || state.cutType || CutType.Straight;
     const { pieces, originalPositions } = PuzzleGenerator.generatePuzzle(
       state.originalShape,
       cutTypeString,
@@ -902,12 +913,13 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
       state.shapeType,
     );
 
+    // 全部切割类型统一秒切：生成完成即一次显示最终碎片（S弯/折线此前为逐刀 400ms 动画，已移除）
     dispatch({ type: "SET_PUZZLE", payload: pieces as any });
     dispatch({
       type: "SET_ORIGINAL_POSITIONS",
       payload: originalPositions as any,
     });
-  }, [state.originalShape, state.cutType, state.cutCount, dispatch]);
+  }, [state.originalShape, state.cutType, state.cutCount, state.isCutting, dispatch]);
 
   const scatterPuzzle = useCallback(() => {
     const puzzle = puzzleRef.current;

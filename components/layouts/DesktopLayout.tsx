@@ -6,6 +6,7 @@ import ShapeControls from "@/components/ShapeControls";
 import GlobalUtilityButtons from "@/components/GlobalUtilityButtons";
 import PuzzleControlsCutType from "@/components/PuzzleControlsCutType";
 import PuzzleControlsCutCount from "@/components/PuzzleControlsCutCount";
+import PuzzleControlsCutButton from "@/components/PuzzleControlsCutButton";
 import PuzzleControlsScatter from "@/components/PuzzleControlsScatter";
 import ActionButtons from "@/components/ActionButtons";
 import RestartButton from "@/components/RestartButton";
@@ -189,7 +190,12 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
     const multipliers: Record<string, number> = {
       'straight': 1.0,
       'diagonal': 1.15,
-      'curve': 1.25
+      'radial': 1.25,
+      'through-curve': 1.3,
+      's-curve': 1.2,
+      'zigzag': 1.2,
+      'jigsaw': 1.3,
+      'hex': 1.35
     };
     return multipliers[cutType || 'straight'] || 1.0;
   };
@@ -570,10 +576,11 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
               ) : (
                 // 正常游戏状态显示控制面板
                 <>
-                  {/* 游戏设置部分 */}
+                  {/* 游戏设置部分：形状 → 难度 → 切割类型 → 切割形状按钮 → 散开 */}
                   <ShapeControls goToNextTab={goToNextTab} />
-                  <PuzzleControlsCutType goToNextTab={goToNextTab} />
                   <PuzzleControlsCutCount goToNextTab={goToNextTab} />
+                  <PuzzleControlsCutType goToNextTab={goToNextTab} />
+                  <PuzzleControlsCutButton goToNextTab={goToNextTab} />
                   <PuzzleControlsScatter goToNextTab={goToNextTab} />
 
                   {/* 控制按钮部分 */}

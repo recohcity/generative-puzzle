@@ -15,7 +15,7 @@
  * - 高测试覆盖率
  */
 
-import { Point } from "@generative-puzzle/game-core";
+import { Point, CutType } from "@generative-puzzle/game-core";
 import { 
   CUT_GENERATOR_CONFIG, 
   DIFFICULTY_SETTINGS,
@@ -49,7 +49,7 @@ import { CutGeneratorController } from "./cutGeneratorController";
 export const generateCuts = (
   shape: Point[], 
   difficulty: number, 
-  type: "straight" | "diagonal"
+  type: CutType
 ): CutLine[] => {
   // 输入验证
   if (!shape || shape.length < 3) {

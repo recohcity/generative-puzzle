@@ -1,4 +1,4 @@
-import { Point } from "@generative-puzzle/game-core";
+import { Point, CutType } from "@generative-puzzle/game-core";
 import { Bounds, CutLine } from "./cutGeneratorTypes";
 import { CUT_GENERATOR_CONFIG } from "./cutGeneratorConfig";
 
@@ -121,7 +121,7 @@ export const generateStraightCutLine = (bounds: Bounds): CutLine => {
       y1: bounds.minY - 50,
       x2: x,
       y2: bounds.maxY + 50,
-      type: "straight"
+      type: CutType.Straight
     };
   } else {
     const y = bounds.minY + Math.random() * (bounds.maxY - bounds.minY);
@@ -130,7 +130,7 @@ export const generateStraightCutLine = (bounds: Bounds): CutLine => {
       y1: y,
       x2: bounds.maxX + 50,
       y2: y,
-      type: "straight"
+      type: CutType.Straight
     };
   }
 };
@@ -149,14 +149,14 @@ export const generateDiagonalCutLine = (bounds: Bounds): CutLine => {
     y1: centerY + Math.sin(angle) * length,
     x2: centerX + Math.cos(angle + Math.PI) * length,
     y2: centerY + Math.sin(angle + Math.PI) * length,
-    type: "diagonal"
+    type: CutType.Diagonal
   };
 };
 
 /**
  * 生成穿过中心的切割线
  */
-export const generateCenterCutLine = (shape: Point[], isStraight: boolean, cutType: "straight" | "diagonal"): CutLine => {
+export const generateCenterCutLine = (shape: Point[], isStraight: boolean, cutType: CutType): CutLine => {
   const bounds = calculateBounds(shape);
   const center = calculateCenter(bounds);
 
@@ -170,7 +170,7 @@ export const generateCenterCutLine = (shape: Point[], isStraight: boolean, cutTy
       y1: isVertical ? bounds.minY - height * 0.1 : center.y,
       x2: isVertical ? center.x : bounds.maxX + width * 0.1,
       y2: isVertical ? bounds.maxY + height * 0.1 : center.y,
-      type: "straight"
+      type: CutType.Straight
     };
   } else {
     const angle = Math.random() * Math.PI;
@@ -180,7 +180,7 @@ export const generateCenterCutLine = (shape: Point[], isStraight: boolean, cutTy
       y1: center.y + Math.sin(angle) * diagonal,
       x2: center.x + Math.cos(angle + Math.PI) * diagonal,
       y2: center.y + Math.sin(angle + Math.PI) * diagonal,
-      type: "diagonal"
+      type: CutType.Diagonal
     };
   }
 };
@@ -188,7 +188,7 @@ export const generateCenterCutLine = (shape: Point[], isStraight: boolean, cutTy
 /**
  * 强制生成切割线（最后手段）
  */
-export const generateForcedCutLine = (shape: Point[], existingCuts: CutLine[], cutType: "straight" | "diagonal" = "diagonal"): CutLine | null => {
+export const generateForcedCutLine = (shape: Point[], existingCuts: CutLine[], cutType: CutType = CutType.Diagonal): CutLine | null => {
   let sumX = 0, sumY = 0;
   for (const point of shape) {
     sumX += point.x;
@@ -215,7 +215,7 @@ export const generateForcedCutLine = (shape: Point[], existingCuts: CutLine[], c
       y1: isVertical ? bounds.minY - height * 0.2 : centerY,
       x2: isVertical ? centerX : bounds.maxX + width * 0.2,
       y2: isVertical ? bounds.maxY + height * 0.2 : centerY,
-      type: "straight"
+      type: CutType.Straight
     };
   }
   
@@ -227,7 +227,7 @@ export const generateForcedCutLine = (shape: Point[], existingCuts: CutLine[], c
       y1: centerY + Math.sin(angle) * diagonal,
       x2: centerX + Math.cos(angle + Math.PI) * diagonal,
       y2: centerY + Math.sin(angle + Math.PI) * diagonal,
-      type: "diagonal"
+      type: CutType.Diagonal
     };
     
     if (doesCutIntersectShape(cut, shape) >= 2) {
@@ -249,6 +249,6 @@ export const generateForcedCutLine = (shape: Point[], existingCuts: CutLine[], c
     y1: isVertical ? bounds.minY - height * 0.2 : centerY,
     x2: isVertical ? centerX : bounds.maxX + width * 0.2,
     y2: isVertical ? bounds.maxY + height * 0.2 : centerY,
-    type: "straight"
+    type: CutType.Straight
   };
 };
