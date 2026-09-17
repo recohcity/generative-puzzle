@@ -1,5 +1,19 @@
 # 生成式拼图游戏 Changelog
 
+## [v1.5.8] - 2026-09-17
+
+### 🧹 架构体检与结构整理 (Architecture Review & Cleanup)
+
+- **组件按域收拢**：`components/` 顶层 20+ 文件重组为职责域——`controls/`（切割/操作控件 12 个）、`hud/`（游戏内状态显示 7 个）、`canvas/`（PuzzleCanvas）、`panel/`（详情/记录面板 3 个）、`layout/`（页面框架 4 个）；全部 import 同步更新，tsc + 双验证基线全绿。
+- **同名组件消歧**：本地记录版排行榜面板 `LeaderboardPanel` → `LocalLeaderboardPanel`（云排行榜版保留于 `leaderboard/`），消除同名不同义风险。
+- **死代码清理**：移除 `simplePuzzleGenerator` / `simpleShapeGenerator` / `RotationScoreDisplay.example` / `SimplifiedLeaderboardPanel`（含专属 `LeaderboardItemStyles`、`leaderboard-styles.css`）/ `update-imports.cjs` / 空目录 `output/`。
+- **工程配置规范化**：`next.config.mjs` 移除不存在的 `v0-user-next.config` 残留；workspaces 移除不存在的 `apps/*`；`@generative-puzzle/game-core` 标记 `private`（源码级共享包，不发布）；`cutGenerators.ts` 精简历史重构注释。
+- **架构文档补充**：SKILL.md 增加两族切割引擎入口说明（一次性生成线族 vs 增量逐刀族，并存是设计事实）与几何边界说明（game-core 通用几何 vs cutGeneratorGeometry 切割专用几何）。
+- **全量运行自检通过**：`next build`（编译/Lint/类型/6 页生成）全绿；生产服务器 4 路由全 200（主页/管理台/keep-alive/performance-trend）；真实浏览器实测主流程（选形状→选切割自动切割→散开→游戏态进度/提示/分数/计时/角度）、i18n 中英切换（10 种切割对照）、scores 管理台登录门均正常；`keep-alive` 真查 Supabase 返回 `ok`（0 记录）、本地存储走统一键；无运行时 console 错误（旧 `.next` 残留导致的 `required-server-files.json` 缺失经 clean 重建排除）。
+- **首次加载性能修复**：`AuthContext` 初始化不再阻塞 UI——本地会话从 localStorage 同步快读立即注入（游客/已登录秒显）、`getSession()` 加 3 秒竞速超时降级，后台验证结果返回后再覆盖，消除 Supabase auth 刷新慢（海外实例/t4g.nano、Unhealthy 状态）导致的登录状态卡骨架屏 5 秒+；保留 `onAuthStateChange` 监听实时更新。验证：`tsc` 全绿、生产构建通过、无注入浏览器 3 秒内进入主页并显示登录状态（in-app 浏览器 splash 卡顿确认是其调试属性注入引发的 hydration 挂起，外部浏览器/生产模式正常）。
+
+---
+
 ## [v1.5.7] - 2026-09-17
 
 ### 🧩 可复用资产沉淀：几何核心独立 + 一键 Demo + 多端适配规范

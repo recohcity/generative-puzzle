@@ -1,17 +1,17 @@
 "use client"
 // import { GameProvider, useGame } from "@/contexts/GameContext" // useGame is called in child components now
 import { GameProvider } from "@/contexts/GameContext"
-import DynamicTitle from "@/components/DynamicTitle"
+import DynamicTitle from "../hud/DynamicTitle"
 // Removed custom ThemeProvider/useTheme import
 // import { ThemeProvider, useTheme } from "@/contexts/ThemeContext"
-import PuzzleCanvas from "@/components/PuzzleCanvas"
+import PuzzleCanvas from "../canvas/PuzzleCanvas"
 // import PuzzleControls from "@/components/PuzzleControls" // Not used directly for layout
-import ShapeControls from "@/components/ShapeControls"
-import PuzzleControlsCutType from "@/components/PuzzleControlsCutType"
-import PuzzleControlsCutCount from "@/components/PuzzleControlsCutCount"
-import PuzzleControlsScatter from "@/components/PuzzleControlsScatter"
-import PuzzleControlsGamepad from "@/components/PuzzleControlsGamepad"
-import ActionButtons from "@/components/ActionButtons"
+import ShapeControls from "../controls/ShapeControls"
+import PuzzleControlsCutType from "../controls/PuzzleControlsCutType"
+import PuzzleControlsCutCount from "../controls/PuzzleControlsCutCount"
+import PuzzleControlsScatter from "../controls/PuzzleControlsScatter"
+import PuzzleControlsGamepad from "../controls/PuzzleControlsGamepad"
+import ActionButtons from "../controls/ActionButtons"
 import { Button } from "@/components/ui/button"
 import { Volume2, VolumeX, Maximize, Minimize, RefreshCw } from "lucide-react"
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react"
@@ -22,9 +22,9 @@ import {
   playButtonClickSound, // Still needed here for other buttons
   preloadAllSoundEffects
 } from "@/utils/rendering/soundEffects"
-import DesktopPuzzleSettings from "./DesktopPuzzleSettings"; // <-- Import the new component
-import { BubbleBackground } from '../components/animate-ui/backgrounds/bubble';
-import ResponsiveBackground from "@/components/ResponsiveBackground";
+import DesktopPuzzleSettings from "../controls/DesktopPuzzleSettings"; // <-- Import the new component
+import { BubbleBackground } from '@/components/animate-ui/backgrounds/bubble';
+import ResponsiveBackground from "./ResponsiveBackground";
 
 // --- Create Inner Component for Desktop Puzzle Settings ---
 // import { useGame } from "@/contexts/GameContext"; // No longer needed here
@@ -35,9 +35,9 @@ import ResponsiveBackground from "@/components/ResponsiveBackground";
 // --- End Inner Component ---
 
 // Import new layout components
-import DesktopLayout from "./layouts/DesktopLayout";
-import PhonePortraitLayout from "./layouts/PhonePortraitLayout";
-import PhoneLandscapeLayout from "./layouts/PhoneLandscapeLayout";
+import DesktopLayout from "../layouts/DesktopLayout";
+import PhonePortraitLayout from "../layouts/PhonePortraitLayout";
+import PhoneLandscapeLayout from "../layouts/PhoneLandscapeLayout";
 import { cn } from "@/lib/utils";
 // 使用统一的设备检测系统
 import { useDeviceDetection } from '@/hooks/useDeviceDetection';

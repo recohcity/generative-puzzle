@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useRef, useMemo } from 'react';
-import PuzzleCanvas from "@/components/PuzzleCanvas";
+import PuzzleCanvas from "../canvas/PuzzleCanvas";
 import PhoneTabPanel from "./PhoneTabPanel";
-import MobileSmartHints from "@/components/MobileSmartHints";
+import MobileSmartHints from "../hud/MobileSmartHints";
 import { MOBILE_ADAPTATION } from '@/src/config/adaptationConfig';
 import { calculateMobileLandscapeCanvasSize } from '@/constants/canvasAdaptation';
 import { useDeviceDetection } from '@/hooks/useDeviceDetection';

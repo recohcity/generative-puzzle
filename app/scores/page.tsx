@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { CloudGameRepository } from '@/utils/cloud/CloudGameRepository';
-import ResponsiveBackground from '@/components/ResponsiveBackground';
+import ResponsiveBackground from '../../components/layout/ResponsiveBackground';
 import { 
   Users, 
   Trophy, 

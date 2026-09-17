@@ -1,18 +1,9 @@
 /**
- * 切割线生成器 - 重构版本
- * 
- * 🛡️ 重构完成状态：
- * - 采用模块化架构，单一职责原则
- * - 保持100%API兼容性，零破坏性迁移
- * - 所有测试通过，功能完全保持
- * - 重构已完成并稳定运行
- * 
- * 特性：
- * - 模块化架构，单一职责原则
- * - 策略模式支持不同难度级别
- * - 配置集中化管理
- * - 完整的类型安全
- * - 高测试覆盖率
+ * 切割线生成器（直线/斜线族）
+ *
+ * 模块化架构：配置在 cutGeneratorConfig、策略在 cutGeneratorStrategies、
+ * 专用几何在 cutGeneratorGeometry、校验在 cutGeneratorValidator。
+ * 增量族（曲线/S弯/折线/嵌齿）见 IncrementalCutter，两族入口见 SKILL.md。
  */
 
 import { Point, CutType } from "@generative-puzzle/game-core";

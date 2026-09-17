@@ -10,9 +10,9 @@ import PuzzleControlsCutButton from "./PuzzleControlsCutButton";
 import PuzzleControlsScatter from "./PuzzleControlsScatter";
 import ActionButtons from "./ActionButtons";
 import LeaderboardButton from "./LeaderboardButton";
-import LeaderboardPanel from "./LeaderboardPanel";
-import GameRecordDetails from "./GameRecordDetails";
-import RecentGameDetails from "./RecentGameDetails";
+import LocalLeaderboardPanel from "../panel/LocalLeaderboardPanel";
+import GameRecordDetails from "../panel/GameRecordDetails";
+import RecentGameDetails from "../panel/RecentGameDetails";
 import { useTranslation } from '@/contexts/I18nContext';
 import { usePanelState } from '@/hooks/usePanelState';
 
@@ -60,7 +60,7 @@ const DesktopPuzzleSettings: React.FC<DesktopPuzzleSettingsProps> = ({ goToNextT
   switch (panelState.currentView) {
     case 'leaderboard':
       return (
-        <LeaderboardPanel
+        <LocalLeaderboardPanel
           key={`desktop-old-leaderboard-${t('game.leaderboard.title')}`}
           onBack={showGamePanel}
           onViewDetails={showRecordDetails}

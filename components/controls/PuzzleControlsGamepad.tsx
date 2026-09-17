@@ -5,7 +5,7 @@ import { RefreshCw } from "lucide-react"
 import { playButtonClickSound } from "@/utils/rendering/soundEffects"
 import { useState, useEffect } from "react"
 import ActionButtons from "./ActionButtons"
-import RestartButton from "@/components/RestartButton"
+import RestartButton from "./RestartButton"
 import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 
 interface PuzzleControlsGamepadProps {

@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import VirtualAuthWidget from "@/components/auth/VirtualAuthWidget";
 import { motion, AnimatePresence } from "motion/react";
 
-import GameRecordDetails from '@/components/GameRecordDetails';
+import GameRecordDetails from '../panel/GameRecordDetails';
 
 import { GameRecord } from '@generative-puzzle/game-core';
 import { CloudGameRepository } from "@/utils/cloud/CloudGameRepository";

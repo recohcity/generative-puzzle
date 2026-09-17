@@ -1,11 +1,10 @@
 {
   "name": "generative-puzzle",
-  "version": "1.5.7",
+  "version": "1.5.8",
   "type": "module",
   "private": true,
   "workspaces": [
-    "packages/*",
-    "apps/*"
+    "packages/*"
   ],
   "engines": {
     "node": ">=22 <23"

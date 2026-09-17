@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import { GameDataManager } from "@/utils/data/GameDataManager";
 
-const GameInterfaceComponent = dynamic(() => import("@/components/GameInterface"), { ssr: false });
+const GameInterfaceComponent = dynamic(() => import("@/components/layout/GameInterface"), { ssr: false });
 
 export default function HomePage() {
   const [isGameReady, setIsGameReady] = useState(false);

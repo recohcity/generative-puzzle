@@ -17,8 +17,8 @@ import { PuzzlePiece } from "@generative-puzzle/game-core";
 
 import { usePuzzleInteractions } from "@/hooks/usePuzzleInteractions";
 import { useDebugToggle } from '@/hooks/useDebugToggle';
-import GameTimer from '@/components/GameTimer';
-import LiveScore from '@/components/LiveScore';
+import GameTimer from '../hud/GameTimer';
+import LiveScore from '../hud/LiveScore';
 import ScoreDisplay from '@/components/score/ScoreDisplay';
 import { triggerHaptic } from "@/utils/haptics";
 

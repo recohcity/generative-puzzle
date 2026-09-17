@@ -40,7 +40,7 @@ export default function LoadingScreen({ onLoadComplete }: LoadingScreenProps) {
     let timeoutId: NodeJS.Timeout;
     const preloadMainComponent = async () => {
       try {
-        const importPromise = import('@/components/GameInterface');
+        const importPromise = import('@/components/layout/GameInterface');
         await importPromise;
         finished = true;
         setResourceLoaded(true);

@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import ShapeControls from "@/components/ShapeControls";
-import PuzzleControlsCutType from "@/components/PuzzleControlsCutType";
-import PuzzleControlsCutCount from "@/components/PuzzleControlsCutCount";
-import PuzzleControlsCutButton from "@/components/PuzzleControlsCutButton";
-import PuzzleControlsScatter from "@/components/PuzzleControlsScatter";
-import GlobalUtilityButtons from "@/components/GlobalUtilityButtons";
+import ShapeControls from "../controls/ShapeControls";
+import PuzzleControlsCutType from "../controls/PuzzleControlsCutType";
+import PuzzleControlsCutCount from "../controls/PuzzleControlsCutCount";
+import PuzzleControlsCutButton from "../controls/PuzzleControlsCutButton";
+import PuzzleControlsScatter from "../controls/PuzzleControlsScatter";
+import GlobalUtilityButtons from "../controls/GlobalUtilityButtons";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,7 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import RestartButton from "@/components/RestartButton";
+import RestartButton from "../controls/RestartButton";
 import { Button } from "@/components/ui/button";
 import MobileScoreLayout from "@/components/score/MobileScoreLayout";
 import { GameDataManager } from '@/utils/data/GameDataManager';

@@ -24,6 +24,10 @@ description: "Generative Puzzle 项目的切割/形状/难度扩展规范与可�
 
 业务层 `utils/puzzle/IncrementalCutter.ts` 仅为 re-export，几何核心的单一事实来源是 `packages/game-core/src/utils/geometry/IncrementalCutter.ts`（无框架纯 TS）。
 
+**两族引擎入口（并存是设计事实，勿当重复重构）**：直线/斜线族走「一次性生成切割线」路径——`cutGenerators.generateCuts` → `CutGeneratorController` → `CutGenerationStrategy` 策略工厂（配置在 `cutGeneratorConfig`、专用几何在 `cutGeneratorGeometry`、校验在 `cutGeneratorValidator`）；增量族（曲线/S弯/折线/嵌齿）走 `IncrementalCutter` 逐刀路径，输出 `cutSteps` 供逐刀动画。两条路径服务于不同切割语义（一次切割线 vs 顺序逐刀），各自独立自洽。
+
+**几何边界**：`packages/game-core/src/utils/geometry/puzzleGeometry.ts` 是**通用几何**（质心、点在多边形内、旋转、角度、bounds）；`utils/puzzle/cutGeneratorGeometry.ts` 是**切割线专用几何**（CutLine/Bounds、线段相交、切割线生成与去重）。两者职责不同、无实质重复，勿合并；新增通用几何进 game-core，新增切割专用几何进 cutGeneratorGeometry。
+
 ### 十种切割类型清单
 
 枚举定义于 `packages/game-core/src/types/puzzleTypes.ts` 的 `CutType`：
