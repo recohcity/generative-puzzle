@@ -333,9 +333,14 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   // panelScale极限下限提升为0.4，保证内容极限压缩但不至于不可用
   const panelScale = Math.max(0.4, Math.min(canvasSizeFinal / 560, 1.0));
 
+  // 面板字号统一 helper：panelScale <= 0.5（--panel-scale 固定 0.4）时用固定 px 保证小屏可读，
+  // 大屏时跟随 --panel-scale 缩放（px 基准或 rem 基准）。消除重复三元硬编码。
+  const panelFont = (px: number, rem?: number): number | string =>
+    panelScale <= 0.5 ? px : `calc(${rem !== undefined ? `${rem}rem` : `${px}px`} * var(--panel-scale))`;
+
   // 面板内容区padding、gap极限压缩
   // 极限压缩下锁定为精确像素，否则自适应
-  const panelContentPadding = panelScale <= 0.5 ? 10 : 10;
+  const panelContentPadding = 10; // 恒等（<=0.5 与 >0.5 原值均为 10，收敛）
   const panelContentGap = panelScale <= 0.5 ? 10 : Math.max(2, Math.min(6, 16 * panelScale));
 
   // 移除统一的事件管理系统，使用原生事件监听
@@ -457,7 +462,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
           } as React.CSSProperties}
         >
           <div className="glass-panel h-full flex flex-col overflow-y-auto no-scrollbar"
-            style={{ padding: panelContentPadding, fontSize: panelScale <= 0.5 ? 16 : 'calc(16px * var(--panel-scale))', gap: panelContentGap }}
+            style={{ padding: panelContentPadding, fontSize: panelFont(16), gap: panelContentGap }}
           >
             <div className="flex flex-col mb-1 flex-shrink-0">
               <div className="flex items-center justify-between">
@@ -559,7 +564,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                       onClick={handleRetryCurrentGame}
                       icon="retry"
                       variant="recut"
-                      style={{ height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 14 : "calc(0.95rem * var(--panel-scale))" }}
+                      style={{ height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelFont(14, 0.95) }}
                     >
                       {t("game.controls.retryCurrent")}
                     </RestartButton>
@@ -567,7 +572,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                       onClick={handleDesktopResetGame}
                       icon="refresh"
                       variant="active"
-                      style={{ height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 14 : "calc(0.95rem * var(--panel-scale))" }}
+                      style={{ height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelFont(14, 0.95) }}
                     >
                       {t("game.controls.restartGame")}
                     </RestartButton>
@@ -584,21 +589,21 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                   <PuzzleControlsScatter goToNextTab={goToNextTab} />
 
                   {/* 控制按钮部分 */}
-                  <h2 id="section-game-controls" className="text-premium-title mt-4 mb-3" style={{ fontSize: panelScale <= 0.5 ? 16 : 'calc(0.9rem * var(--panel-scale))' }}>{t('game.controls.title')}</h2>
+                  <h2 id="section-game-controls" className="text-premium-title mt-4 mb-3" style={{ fontSize: panelFont(16, 0.9) }}>{t('game.controls.title')}</h2>
                   <ActionButtons layout="desktop" buttonHeight={DESKTOP_CONTROL_BUTTON_HEIGHT} />
                   {/* 正常游戏状态下显示重玩本局和重开游戏按钮 */}
                   <div className="flex flex-row gap-2 mt-4">
                     <RestartButton
                       onClick={handleRetryCurrentGame}
                       icon="retry"
-                      style={{ flex: 1, height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 12 : 'calc(0.95rem * var(--panel-scale))' }}
+                      style={{ flex: 1, height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelFont(12, 0.95) }}
                     >
                       {t('game.controls.retryCurrent')}
                     </RestartButton>
                     <RestartButton
                       onClick={handleDesktopResetGame}
                       icon="refresh"
-                      style={{ flex: 1, height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelScale <= 0.5 ? 12 : 'calc(0.95rem * var(--panel-scale))' }}
+                      style={{ flex: 1, height: DESKTOP_RESTART_BUTTON_HEIGHT, fontSize: panelFont(12, 0.95) }}
                     >
                       {t('game.controls.restartGame')}
                     </RestartButton>

@@ -62,7 +62,6 @@ export default function CurveTestOptimized({ onReady }: { onReady?: () => void }
   const gameContainerRef = useRef<HTMLDivElement>(null);
   // 使用统一的设备检测系统
   const device = useDeviceDetection();
-  const deviceType = device.deviceType;
   const phoneMode = device.layoutMode as 'portrait' | 'landscape';
   const supportsFullscreen = device.supportsFullscreen;
 
@@ -364,7 +363,8 @@ export default function CurveTestOptimized({ onReady }: { onReady?: () => void }
 
   let layoutToRender;
   // 🎯 智能布局选择：所有桌面端和平板设备（如 iPad）均优先使用桌面端双列布局
-  const shouldUseDesktopLayout = deviceType === 'desktop' || deviceType === 'tablet';
+  // 消费设备层单一谓词（isDesktop/isTablet），组件层不重复实现设备判定
+  const shouldUseDesktopLayout = device.isDesktop || device.isTablet;
 
   if (shouldUseDesktopLayout) {
     layoutToRender = <DesktopLayout {...commonLayoutProps} goToNextTab={goToNextTab} />;
@@ -396,7 +396,7 @@ export default function CurveTestOptimized({ onReady }: { onReady?: () => void }
 
         {/* 🎯 极致锁定：使用 fixed 定位确保背景强制铺满视口，不受任何布局偏移影响 */}
         <div className="game-background-layer fixed inset-0 w-full h-full -z-10 pointer-events-none">
-          {(deviceType === 'desktop' && !device.isIPad) ? (
+          {(device.isDesktop && !device.isIPad) ? (
             <BubbleBackground interactive className="w-full h-full" />
           ) : (
             <ResponsiveBackground />

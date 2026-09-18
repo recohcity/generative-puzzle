@@ -56,8 +56,9 @@ test("移动端核心链：选形状 → 难度 → 切割 → 散开 → 拖拽
 
   // 拖拽路径（先按下再移动再抬起，模拟真实触摸拖拽）
   const el = await canvas.elementHandle();
+  if (!el) throw new Error("canvas element not found");
   await page.evaluate(
-    ([c, sx, sy]) => {
+    ([c, sx, sy]: [Element, number, number]) => {
       const canvasEl = c as HTMLCanvasElement;
       const rect = canvasEl.getBoundingClientRect();
       const mk = (x: number, y: number) =>

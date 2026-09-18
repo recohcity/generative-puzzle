@@ -1,3 +1,13 @@
+## [v1.5.16] - 2026-09-19
+
+### 🧩 适配收敛 B/C：设备谓词单一权威 + 面板字号统一 (Adaptation Consolidation)
+
+- **B 设备判定收敛**：组件层不再重复实现设备判断——`shouldUseDesktopLayout` 消费 `device.isDesktop/isTablet`、背景渲染用 `device.isDesktop && !isIPad`、iPad 竖屏特判用 `device.isTablet`；真实 iPad 已由 DeviceLayoutManager 按 UA 精确分型（竖屏→phone、横屏→desktop），组件层单一消费，消除 3 套并存判定路径。
+- **C 面板字号统一**：DesktopLayout 新增 `panelFont(px, rem?)` helper，收敛 6 处 `panelScale<=0.5` 三元硬编码（16/14/12px 小屏特例 + calc 缩放），行为完全等价。
+- **三端回归**：Playwright 4 端（desktop / iPad 横屏 / iPad 竖屏 / 手机）全绿（20.5s）——断言布局形态（双栏/tab/touch-action none）+ 核心链切割完成 + 无阻断性错误；1.5.14 iPad 面板修复未回退。
+
+---
+
 ## [v1.5.15] - 2026-09-19
 
 ### 🧪 移动端回归防线：CI 冒烟 + 封板硬门槛 + 适配收敛 (Mobile Smoke & Release Gate)
