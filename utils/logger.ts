@@ -4,7 +4,7 @@
  * Provides component-specific loggers and common logging patterns
  */
 
-import { LoggingService, LogContext } from '../core/LoggingService';
+import { LoggingService, LogContext } from '../services/LoggingService';
 import { getLoggingConfig, COMPONENT_CONTEXTS, LOG_PATTERNS } from '../src/config/loggingConfig';
 
 // Initialize logging service with environment-specific configuration

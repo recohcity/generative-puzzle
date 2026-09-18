@@ -3,7 +3,7 @@
  * Centralized configuration for the LoggingService
  */
 
-import { LogLevel, LoggingConfig } from '../../core/LoggingService';
+import { LogLevel, LoggingConfig } from '../../services/LoggingService';
 
 // Development logging configuration
 export const DEVELOPMENT_LOGGING_CONFIG: LoggingConfig = {

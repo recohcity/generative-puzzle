@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { DeviceManager } from '../core/DeviceManager';
+import { DeviceManager } from '../services/DeviceManager';
 import { type DeviceState } from '../src/config/deviceConfig';
 
 export interface DeviceDetectionState extends DeviceState {

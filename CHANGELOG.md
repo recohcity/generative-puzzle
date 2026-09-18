@@ -1,5 +1,15 @@
 # 生成式拼图游戏 Changelog
 
+## [v1.5.10] - 2026-09-18
+
+### 🏗️ core/ 目录更名 services/ (Core Directory Rename)
+
+- **命名语义修正**：根目录 `core/`（基础设施服务层，*Service/*Manager 集合）更名为 `services/`——目录名与实际职责一致，消除"core"歧义（区别于 `packages/game-core` 几何核心包）。
+- **引用全量同步**：4 处引用更新（`hooks/useDeviceDetection.ts`、`utils/logger.ts`、`utils/puzzle/ScatterPuzzle.ts`、`src/config/loggingConfig.ts`），git rename 保留历史。
+- **验证**：`tsc` 0 错误、`next lint` 无告警、`next build` 全绿（5 页生成）、双切割 verify 脚本全绿（几何核心无回归）。
+
+---
+
 ## [v1.5.9] - 2026-09-18
 
 ### 🧹 依赖治理 · 切割验证挂 CI · 遗留清理 (Dependency Governance & CI Verification)

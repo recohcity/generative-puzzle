@@ -85,7 +85,7 @@ export class ScatterPuzzle {
       // SSR安全
     }
     // 使用统一设备检测系统
-    const { DeviceManager } = require('../../core/DeviceManager');
+    const { DeviceManager } = require('../../services/DeviceManager');
     const deviceManager = DeviceManager.getInstance();
     const deviceState = deviceManager.getState();
     // === 安全边距重构 ===
