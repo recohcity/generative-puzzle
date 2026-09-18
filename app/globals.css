@@ -862,3 +862,14 @@ svg {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
 }
+
+/* iPad 横屏桌面布局触摸锁定：no-scroll-container 的 pan-x pan-y 在 iOS Safari
+   产生橡皮筋弹动，且面板内按钮的 manipulation !important 允许平移，导致面板被"拖动"。
+   desktop 布局整层 touch-action: none（!important 覆盖 manipulation/canvas 外的
+   滚动容器）；tap/点击不受 touch-action 限制，按钮点击保持正常。仅作用于
+   GameInterface 在 desktop/tablet 布局时添加的 .desktop-layout 类。 */
+.desktop-layout,
+.desktop-layout * {
+  touch-action: none !important;
+}
+

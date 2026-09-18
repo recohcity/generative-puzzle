@@ -13,7 +13,7 @@ import type { ReactNode } from "react";
 import { ScatterPuzzle } from "@/utils/puzzle/ScatterPuzzle";
 import { ShapeService } from "@/utils/shape/ShapeService";
 import { PuzzleGenerator } from "@/utils/puzzle/PuzzleGenerator";
-import { cutPuzzleInWorker } from "@/utils/puzzle/cutInWorker";
+import { cutPuzzleInWorker, CUT_SUPERSEDED_ERROR, prewarmWorker } from "@/utils/puzzle/cutInWorker";
 import { textureCache } from "@/utils/rendering/TextureCache";
 import { calculateCenter } from "@generative-puzzle/game-core";
 import { GameDataManager } from "@/utils/data/GameDataManager";
@@ -825,6 +825,11 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
   const { calculatePieceBounds, ensurePieceInBounds } = usePhysicsBounds(state.canvasSize, canvasRef);
 
   // 初始化设备类型
+  // 页面加载即预创建切割 Worker：手机端首次切割免脚本编译冷启（数秒 → 秒切）
+  useEffect(() => {
+    prewarmWorker();
+  }, []);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       dispatch({ 
@@ -919,6 +924,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
         payload: originalPositions as any,
       });
     } catch (err) {
+      // 被抢占：旧切割被更新的请求取代（连点/切换切割类型），静默忽略
+      if (err instanceof Error && err.message === CUT_SUPERSEDED_ERROR) return;
       console.error("[cut] generate puzzle failed:", err);
     }
   }, [state.originalShape, state.cutType, state.cutCount, state.isCutting, dispatch]);

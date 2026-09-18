@@ -62,21 +62,33 @@ class TextureCache {
     cutType?: string,
     dpr: number = 1
   ): CachedPiece {
+    // 碎片离屏纹理是装饰性叠加（气孔/瓷砖），无需画布全 DPR。
+    // cap 1 使手机端纹理创建面积 ÷9：放射（大扇区）/嵌齿（复杂锯齿）与碎裂同档，
+    // 是"放射/嵌齿比碎裂慢"的根因（纹理大小 + 绘制复杂度差异）。
+    const textureDpr = Math.min(dpr || 1, 1);
     // 计算当前碎片的本地包围盒
     const bounds = this.calculateLocalBounds(points);
     const pointsSig = points.length > 0 ? `${Math.round(points[0].x)},${Math.round(points[0].y)}` : '';
     // 缓存键包含几何特征 signature，避免不同切割状态复用旧位图
-    const cacheKey = `${index}_${color}_${isCompleted}_${shapeType}_${cutType || ''}_${points.length}_${Math.round(bounds.width)}_${Math.round(bounds.height)}_${pointsSig}_d${dpr}`;
+    const cacheKey = `${index}_${color}_${isCompleted}_${shapeType}_${cutType || ''}_${points.length}_${Math.round(bounds.width)}_${Math.round(bounds.height)}_${pointsSig}_d${textureDpr}`;
     const hit = this.cache.get(cacheKey);
     if (hit) return hit;
     const padding = 2; // 留出一点边距防止切边抗锯齿问题
     const width = Math.ceil(bounds.width + padding * 2);
     const height = Math.ceil(bounds.height + padding * 2);
 
-    // 创建离屏画布：物理分辨率 = 逻辑 × dpr（Retina 锐利）；绘制仍用逻辑坐标，ctx.scale 整体缩放
+    // 纹理物理尺寸 cap（256px）：放射扇区/嵌齿大碎片在手机上创建大 canvas 是
+    // "放射/嵌齿比碎裂慢"的手机端根因。drawImage 会缩放到逻辑尺寸，降采样安全。
+    const MAX_TEXTURE_PX = 256;
+    const textureScale = Math.max(width, height) > MAX_TEXTURE_PX
+      ? MAX_TEXTURE_PX / Math.max(width, height)
+      : 1;
+    const drawScale = textureDpr * textureScale;
+
+    // 创建离屏画布：物理分辨率 = 逻辑 × drawScale；绘制仍用逻辑坐标，ctx.scale 整体缩放
     let canvas: HTMLCanvasElement | OffscreenCanvas;
-    const physW = Math.max(1, Math.round(width * dpr));
-    const physH = Math.max(1, Math.round(height * dpr));
+    const physW = Math.max(1, Math.round(width * drawScale));
+    const physH = Math.max(1, Math.round(height * drawScale));
     if (typeof OffscreenCanvas !== 'undefined') {
       canvas = new OffscreenCanvas(physW, physH);
     } else {
@@ -87,10 +99,10 @@ class TextureCache {
 
     const ctx = canvas.getContext('2d') as (CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D);
     if (!ctx) {
-      return { canvas: canvas, width: 0, height: 0, offsetX: 0, valid: false, dpr };
+      return { canvas: canvas, width: 0, height: 0, offsetX: 0, valid: false, dpr: textureDpr };
     }
 
-    if (dpr !== 1) ctx.scale(dpr, dpr);
+    if (drawScale !== 1) ctx.scale(drawScale, drawScale);
 
     // 将绘制原点移动到局部包围盒左上角（含 padding）
     ctx.translate(-bounds.minX + padding, -bounds.minY + padding);
