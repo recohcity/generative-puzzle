@@ -13,6 +13,7 @@ import type { ReactNode } from "react";
 import { ScatterPuzzle } from "@/utils/puzzle/ScatterPuzzle";
 import { ShapeService } from "@/utils/shape/ShapeService";
 import { PuzzleGenerator } from "@/utils/puzzle/PuzzleGenerator";
+import { cutPuzzleInWorker } from "@/utils/puzzle/cutInWorker";
 import { textureCache } from "@/utils/rendering/TextureCache";
 import { calculateCenter } from "@generative-puzzle/game-core";
 import { GameDataManager } from "@/utils/data/GameDataManager";
@@ -899,26 +900,31 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     puzzleRef.current = state.puzzle;
   }, [state.puzzle]);
-  const generatePuzzle = useCallback((cutTypeOverride?: CutType) => {
+  const generatePuzzle = useCallback(async (cutTypeOverride?: CutType) => {
     if (!state.originalShape) return;
-    if (state.isCutting) return; // 预留：切割动画中防重入（当前秒切恒 false）
+    if (state.isCutting) return; // 切割中防重入
 
     textureCache.clear();
     // cutTypeOverride 用于"选切割类型即自动切割"（dispatch 异步，读 state.cutType 会滞后一帧）
     const cutTypeString: CutType = cutTypeOverride || state.cutType || CutType.Straight;
-    const { pieces, originalPositions } = PuzzleGenerator.generatePuzzle(
-      state.originalShape,
-      cutTypeString,
-      state.cutCount,
-      state.shapeType,
-    );
+    try {
+      // 切割计算移入 Web Worker（高难度切割不阻塞主线程）；Worker 不可用时自动降级同步
+      const { pieces, originalPositions } = await cutPuzzleInWorker(
+        state.originalShape,
+        cutTypeString,
+        state.cutCount,
+        state.shapeType,
+      );
 
-    // 全部切割类型统一秒切：生成完成即一次显示最终碎片（S弯/折线此前为逐刀 400ms 动画，已移除）
-    dispatch({ type: "SET_PUZZLE", payload: pieces as any });
-    dispatch({
-      type: "SET_ORIGINAL_POSITIONS",
-      payload: originalPositions as any,
-    });
+      // 全部切割类型统一秒切：生成完成即一次显示最终碎片（S弯/折线此前为逐刀 400ms 动画，已移除）
+      dispatch({ type: "SET_PUZZLE", payload: pieces as any });
+      dispatch({
+        type: "SET_ORIGINAL_POSITIONS",
+        payload: originalPositions as any,
+      });
+    } catch (err) {
+      console.error("[cut] generate puzzle failed:", err);
+    }
   }, [state.originalShape, state.cutType, state.cutCount, state.isCutting, dispatch]);
 
   const scatterPuzzle = useCallback(() => {

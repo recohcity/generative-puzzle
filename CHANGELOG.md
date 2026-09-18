@@ -1,5 +1,16 @@
 # 生成式拼图游戏 Changelog
 
+## [v1.5.12] - 2026-09-18
+
+### ⚡ 切割计算移入 Web Worker + 断链修复 (Cut in Web Worker)
+
+- **切割进 Web Worker**：`PuzzleGenerator` 切割计算移入独立 Worker（`utils/puzzle/cutWorker.ts` + `cutInWorker.ts`）——高难度切割（放射难度 8 实测 136ms、移动端放大数倍）不再阻塞主线程，切割时页面交互零卡顿；Worker 不可用（SSR/低版本浏览器/异常/超时）时自动降级同步调用，功能不挂。
+- **架构不变式**：几何核心保持纯计算、同步可测（verify 脚本继续直连，零影响）；GameContext 切割接口改为异步 Worker 封装，调用点零改动。
+- **断链修复**：`constants/canvasAdaptation.ts` 3 处 `require('../core/DeviceLayoutManager')`（v1.5.10 更名遗漏，dev 模式暴露）→ `services/`；全量复查无残留。
+- **验证**：`tsc` 0 错误、`next lint` 无告警、`next build` 全绿（Worker chunk 独立构建 `1.xxx.js`）、双切割 verify 脚本全绿；浏览器实测 10 种切割正常、降级路径健壮。
+
+---
+
 ## [v1.5.11] - 2026-09-18
 
 ### 📂 目录收敛 (Directory Consolidation)

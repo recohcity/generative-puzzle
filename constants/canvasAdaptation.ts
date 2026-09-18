@@ -141,7 +141,7 @@ export const calculateMobilePortraitCanvasSize = (
         // 如果没有传入检测结果，使用DeviceManager进行检测
         if (typeof window !== 'undefined') {
             try {
-                const { DeviceLayoutManager } = require('../core/DeviceLayoutManager');
+                const { DeviceLayoutManager } = require('../services/DeviceLayoutManager');
                 const layoutManager = DeviceLayoutManager.getInstance();
                 const layoutInfo = layoutManager.getDeviceLayoutMode(windowWidth, windowHeight);
                 return {
@@ -320,7 +320,7 @@ export function calculateMobileLandscapeCanvasSize(
         // 如果没有传入检测结果，使用DeviceManager进行检测
         if (typeof window !== 'undefined') {
             try {
-                const { DeviceLayoutManager } = require('../core/DeviceLayoutManager');
+                const { DeviceLayoutManager } = require('../services/DeviceLayoutManager');
                 const layoutManager = DeviceLayoutManager.getInstance();
                 const layoutInfo = layoutManager.getDeviceLayoutMode(windowWidth, windowHeight);
                 return {
@@ -513,7 +513,7 @@ function detectiPhone16Series(windowWidth: number, windowHeight: number): iPhone
     // Try to use DeviceManager for detection
     if (typeof window !== 'undefined') {
         try {
-            const { DeviceLayoutManager } = require('../core/DeviceLayoutManager');
+            const { DeviceLayoutManager } = require('../services/DeviceLayoutManager');
             const layoutManager = DeviceLayoutManager.getInstance();
             const layoutInfo = layoutManager.getDeviceLayoutMode(windowWidth, windowHeight);
             return {
