@@ -81,3 +81,28 @@ jobs:
           body: ${{ steps.changelog.outputs.release_body }}
           generate_release_notes: false
 
+  verify-cutting:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify extension consistency (10 cut types × 8 levels × shapes/seeds)
+        run: npx tsx .agents/skills/generative-puzzle-extension/scripts/verify_extension.ts
+
+      - name: Verify incremental cutter geometry core (160 cases)
+        run: npx tsx .agents/skills/generative-puzzle-extension/scripts/verify_incremental_cutter.ts
+

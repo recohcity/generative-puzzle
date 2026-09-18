@@ -20,7 +20,7 @@ import {
   ChevronRight,
   Gamepad2
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import Link from 'next/link';
 import { useTranslation } from '@/contexts/I18nContext';
 

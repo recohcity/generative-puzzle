@@ -1,5 +1,17 @@
 # 生成式拼图游戏 Changelog
 
+## [v1.5.9] - 2026-09-18
+
+### 🧹 依赖治理 · 切割验证挂 CI · 遗留清理 (Dependency Governance & CI Verification)
+
+- **依赖治理**：全量扫描 192 个源码文件 import + 48 个 ui 组件可达性分析——移除 38 个零引用依赖（`@heroicons/react`、`next-themes`、`zod`、`@hookform/resolvers`、Radix UI 全家桶、`recharts`、`cmdk`、`sonner`、`vaul`、`react-hook-form` 等），dependencies 从 53 → 15 个，node_modules 体积明显下降；同步删除 45 个未被业务引用的 shadcn/ui 模板组件（业务实际仅用 `button`/`alert-dialog`）与 `hooks/use-toast.ts`。保留 `autoprefixer`（postcss 配置引用）。
+- **隐式依赖修复**：`app/scores/page.tsx` import `framer-motion` 但 package.json 未声明（实为 `motion` 传递依赖、干净环境脆弱）→ 统一改为 `motion/react`。
+- **切割验证挂 CI**：GitHub Actions 新增独立 `verify-cutting` job（与 build 并行）——`npm ci` 后运行 `verify_extension.ts`（10 类型 × 8 档一致性）+ `verify_incremental_cutter.ts`（160 局几何自测），任一失败即阻塞合并。
+- **旧 E2E 遗留清理**：移除无消费者的 `app/api/performance-trend` 路由与 `playwright-test-logs/` 空目录（旧版 Playwright 性能测试平台遗留，当前版本已不生成报告）、清理 `.gitignore` 对应死规则；保留 `/api/keep-alive`（cron-job.org 外部保活探活端点，功能必需）。
+- **验证**：`tsc` 0 错误、`next lint` 无告警、`next build` 全绿（5 页生成，路由收敛为 4 个）、两个切割 verify 脚本全绿（几何核心无回归）。
+
+---
+
 ## [v1.5.8] - 2026-09-17
 
 ### 🧹 架构体检与结构整理 (Architecture Review & Cleanup)
