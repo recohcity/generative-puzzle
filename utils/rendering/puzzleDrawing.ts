@@ -96,7 +96,8 @@ export const drawPiece = (
   isSelected: boolean, // 拼图片段当前是否被用户选中/拖动
   shapeType: string, // 形状类型 ('polygon' | 'cloud' | 'jagged')
   isScattered: boolean = false, // 游戏是否处于拼图散开的状态
-  cutType?: string // 切割类型 ('straight', 'diagonal', 'radial', 'through-curve', 's-curve', 'zigzag', 'jigsaw', 'mosaic-random', 'concavo-convex', 'hex')
+  cutType?: string, // 切割类型 ('straight', 'diagonal', 'radial', 'through-curve', 's-curve', 'zigzag', 'jigsaw', 'mosaic-random', 'concavo-convex', 'hex')
+  dpr: number = 1 // 设备像素比：纹理位图物理分辨率倍率
 ) => {
   // 计算中心点用于旋转
   const center = calculateCenter(piece.points);
@@ -194,7 +195,8 @@ export const drawPiece = (
       currentFillColor, 
       shapeType, 
       isCompleted,
-      cutType
+      cutType,
+      dpr
     );
 
     let minX = Infinity;
@@ -208,9 +210,11 @@ export const drawPiece = (
       // 这里的 piece.points 是未旋转的基准点
       // 我们在外部已经应用了 ctx.rotate，所以直接绘制即可
       ctx.drawImage(
-        cached.canvas, 
+        cached.canvas,
         minX - cached.offsetX,
-        minY - cached.offsetX
+        minY - cached.offsetX,
+        cached.width,
+        cached.height
       );
     }
   } catch (e) {
@@ -430,7 +434,8 @@ export const drawPuzzle = (
   originalShape?: Point[], // 原始形状的顶点数组 (用于显示轮廓或完成状态)
   isScattered: boolean = false, // 游戏是否处于拼图散开的状态
   tilt: { rx: number; ry: number } = { rx: 0, ry: 0 }, // Tilt status for glaze effect
-  cutType?: string
+  cutType?: string,
+  dpr: number = 1 // 设备像素比：纹理位图物理分辨率倍率
 ) => {
   // 清除整个画布，准备重新绘制
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -584,7 +589,7 @@ export const drawPuzzle = (
 
     completedPiecesWithIndex
       .forEach(({ piece, originalIndex }) => {
-        drawPiece(ctx, piece, originalIndex, true, false, shapeType, isScattered, cutType);
+        drawPiece(ctx, piece, originalIndex, true, false, shapeType, isScattered, cutType, dpr);
       });
 
     // 3. 最后绘制所有未完成拼图（未选中的先，选中的最后）
@@ -595,11 +600,11 @@ export const drawPuzzle = (
     uncompletedPiecesWithIndex
       .filter(({ originalIndex }) => selectedPiece === null || originalIndex !== selectedPiece)
       .forEach(({ piece, originalIndex }) => {
-        drawPiece(ctx, piece, originalIndex, false, false, shapeType, isScattered, cutType);
+        drawPiece(ctx, piece, originalIndex, false, false, shapeType, isScattered, cutType, dpr);
       });
     if (selectedPiece !== null && !completedPieces.includes(selectedPiece)) {
       const piece = pieces[selectedPiece];
-      drawPiece(ctx, piece, selectedPiece, false, true, shapeType, isScattered, cutType);
+      drawPiece(ctx, piece, selectedPiece, false, true, shapeType, isScattered, cutType, dpr);
     }
   }
 };

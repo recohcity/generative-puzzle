@@ -131,8 +131,8 @@ export function usePuzzleInteractions({
 
     // 🔧 关键修复：考虑画布缩放比例进行坐标转换
     // 画布的CSS尺寸可能与逻辑尺寸不同，需要进行缩放转换
-    const scaleX = canvas.width / rect.width
-    const scaleY = canvas.height / rect.height
+    const scaleX = 1 // I 项：DPR 后逻辑坐标 = CSS 坐标（绘制 setTransform(dpr)，物理像素在 canvas 内部）
+    const scaleY = 1
 
     const x = (e.clientX - rect.left) * scaleX
     const y = (e.clientY - rect.top) * scaleY
@@ -236,8 +236,8 @@ export function usePuzzleInteractions({
     const rect = canvas.getBoundingClientRect()
 
     // 🔧 关键修复：考虑画布缩放比例进行坐标转换
-    const scaleX = canvas.width / rect.width
-    const scaleY = canvas.height / rect.height
+    const scaleX = 1 // I 项：DPR 后逻辑坐标 = CSS 坐标（绘制 setTransform(dpr)，物理像素在 canvas 内部）
+    const scaleY = 1
 
     const x = (e.clientX - rect.left) * scaleX
     const y = (e.clientY - rect.top) * scaleY
@@ -404,8 +404,8 @@ export function usePuzzleInteractions({
     const rect = canvasRef.current.getBoundingClientRect()
 
     // 🔧 关键修复：考虑画布缩放比例进行坐标转换
-    const scaleX = canvasRef.current.width / rect.width
-    const scaleY = canvasRef.current.height / rect.height
+    const scaleX = 1 // I 项：DPR 后逻辑坐标 = CSS 坐标
+    const scaleY = 1
 
     // 检查是否是单点触摸（拖拽）或多点触摸（旋转）
     if (e.touches.length === 1) {
@@ -564,8 +564,8 @@ export function usePuzzleInteractions({
 
       // 多点触摸 - 处理旋转
       // 🔧 关键修复：考虑画布缩放比例进行坐标转换
-      const scaleX = canvas.width / rect.width
-      const scaleY = canvas.height / rect.height
+      const scaleX = 1 // I 项：DPR 后逻辑坐标 = CSS 坐标（绘制 setTransform(dpr)，物理像素在 canvas 内部）
+      const scaleY = 1
 
       const touch1 = e.touches[0]
       const touch2 = e.touches[1]
@@ -620,8 +620,8 @@ export function usePuzzleInteractions({
     } else if (e.touches.length === 1) {
       // 单点触摸 - 处理拖动
       // 🔧 关键修复：考虑画布缩放比例进行坐标转换
-      const scaleX = canvas.width / rect.width
-      const scaleY = canvas.height / rect.height
+      const scaleX = 1 // I 项：DPR 后逻辑坐标 = CSS 坐标（绘制 setTransform(dpr)，物理像素在 canvas 内部）
+      const scaleY = 1
 
       const touch = e.touches[0]
       const touchX = (touch.clientX - rect.left) * scaleX
@@ -746,8 +746,8 @@ export function usePuzzleInteractions({
       const rect = canvas.getBoundingClientRect()
 
       // 🔧 关键修复：考虑画布缩放比例进行坐标转换
-      const scaleX = canvas.width / rect.width
-      const scaleY = canvas.height / rect.height
+      const scaleX = 1 // I 项：DPR 后逻辑坐标 = CSS 坐标（绘制 setTransform(dpr)，物理像素在 canvas 内部）
+      const scaleY = 1
 
       const touch = e.touches[0]
       const touchX = (touch.clientX - rect.left) * scaleX
@@ -785,8 +785,8 @@ export function usePuzzleInteractions({
       const canvas = canvasRef.current
       if (canvas) {
         const rect = canvas.getBoundingClientRect()
-        const scaleX = canvas.width / rect.width
-        const scaleY = canvas.height / rect.height
+        const scaleX = 1 // I 项：DPR 后逻辑坐标 = CSS 坐标（绘制 setTransform(dpr)，物理像素在 canvas 内部）
+        const scaleY = 1
 
         const touch1 = e.touches[0]
         const touch2 = e.touches[1]

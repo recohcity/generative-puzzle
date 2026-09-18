@@ -2,10 +2,11 @@ import { Point } from "@generative-puzzle/game-core";
 
 export interface CachedPiece {
   canvas: HTMLCanvasElement | OffscreenCanvas;
-  width: number;
-  height: number;
+  width: number; // 逻辑尺寸（绘制用）
+  height: number; // 逻辑尺寸（绘制用）
   offsetX: number; // 绘制时的偏移补正 (padding)
   valid: boolean;
+  dpr: number; // 位图物理分辨率倍率
 }
 
 class TextureCache {
@@ -58,33 +59,38 @@ class TextureCache {
     color: string,
     shapeType: string,
     isCompleted: boolean,
-    cutType?: string
+    cutType?: string,
+    dpr: number = 1
   ): CachedPiece {
     // 计算当前碎片的本地包围盒
     const bounds = this.calculateLocalBounds(points);
     const pointsSig = points.length > 0 ? `${Math.round(points[0].x)},${Math.round(points[0].y)}` : '';
     // 缓存键包含几何特征 signature，避免不同切割状态复用旧位图
-    const cacheKey = `${index}_${color}_${isCompleted}_${shapeType}_${cutType || ''}_${points.length}_${Math.round(bounds.width)}_${Math.round(bounds.height)}_${pointsSig}`;
+    const cacheKey = `${index}_${color}_${isCompleted}_${shapeType}_${cutType || ''}_${points.length}_${Math.round(bounds.width)}_${Math.round(bounds.height)}_${pointsSig}_d${dpr}`;
     const hit = this.cache.get(cacheKey);
     if (hit) return hit;
     const padding = 2; // 留出一点边距防止切边抗锯齿问题
     const width = Math.ceil(bounds.width + padding * 2);
     const height = Math.ceil(bounds.height + padding * 2);
 
-    // 创建离屏画布
+    // 创建离屏画布：物理分辨率 = 逻辑 × dpr（Retina 锐利）；绘制仍用逻辑坐标，ctx.scale 整体缩放
     let canvas: HTMLCanvasElement | OffscreenCanvas;
+    const physW = Math.max(1, Math.round(width * dpr));
+    const physH = Math.max(1, Math.round(height * dpr));
     if (typeof OffscreenCanvas !== 'undefined') {
-      canvas = new OffscreenCanvas(width, height);
+      canvas = new OffscreenCanvas(physW, physH);
     } else {
       canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
+      canvas.width = physW;
+      canvas.height = physH;
     }
 
     const ctx = canvas.getContext('2d') as (CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D);
     if (!ctx) {
-      return { canvas: canvas, width: 0, height: 0, offsetX: 0, valid: false };
+      return { canvas: canvas, width: 0, height: 0, offsetX: 0, valid: false, dpr };
     }
+
+    if (dpr !== 1) ctx.scale(dpr, dpr);
 
     // 将绘制原点移动到局部包围盒左上角（含 padding）
     ctx.translate(-bounds.minX + padding, -bounds.minY + padding);
@@ -107,7 +113,8 @@ class TextureCache {
       width,
       height,
       offsetX: padding,
-      valid: true
+      valid: true,
+      dpr
     };
 
     this.cache.set(cacheKey, cached);

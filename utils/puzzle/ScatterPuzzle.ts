@@ -77,8 +77,10 @@ export class ScatterPuzzle {
           }
         }
         if (mainCanvas) {
-          canvasWidth = mainCanvas.width;
-          canvasHeight = mainCanvas.height;
+          // 始终中心原则：兜底也用 CSS（逻辑）尺寸，绝不使用物理像素（×dpr）
+          const rect = mainCanvas.getBoundingClientRect();
+          canvasWidth = rect.width || mainCanvas.width;
+          canvasHeight = rect.height || mainCanvas.height;
         }
       }
     } catch (e) {

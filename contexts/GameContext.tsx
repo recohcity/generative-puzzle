@@ -875,12 +875,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
       const currentShapeType =
         shapeType || state.pendingShapeType || state.shapeType;
 
-      const canvasSize = canvasRef.current
-        ? {
-            width: canvasRef.current.width || (state.canvasSize ? state.canvasSize.width : 640),
-            height: canvasRef.current.height || (state.canvasSize ? state.canvasSize.height : 640),
-          }
-        : state.canvasSize;
+      // 始终中心原则：几何计算只用逻辑坐标系（canvasSize），物理 canvas 尺寸（×dpr）绝不进入几何映射
+      const canvasSize = state.canvasSize || { width: 640, height: 640 };
 
       const { shape, actualCanvasSize } = ShapeService.generateShape(
         currentShapeType,
@@ -930,14 +926,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
   const scatterPuzzle = useCallback(() => {
     const puzzle = puzzleRef.current;
 
+    // 始终中心原则：散开分布基于逻辑坐标系（canvasSize）
     const canvasSize = state.canvasSize || { width: 640, height: 640 };
-    let canvasWidth = canvasSize.width;
-    let canvasHeight = canvasSize.height;
-
-    if (canvasRef.current) {
-      canvasWidth = canvasRef.current.width || canvasWidth;
-      canvasHeight = canvasRef.current.height || canvasHeight;
-    }
+    const canvasWidth = canvasSize.width;
+    const canvasHeight = canvasSize.height;
 
     if (!puzzle) {
       console.warn("Cannot scatter puzzle: No puzzle pieces generated");
@@ -1057,14 +1049,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
       return;
     }
 
+    // 始终中心原则：逻辑坐标系唯一权威
     const canvasSize = state.canvasSize || { width: 640, height: 640 };
-    let canvasWidth = canvasSize.width;
-    let canvasHeight = canvasSize.height;
-
-    if (canvasRef.current) {
-      canvasWidth = canvasRef.current.width || canvasWidth;
-      canvasHeight = canvasRef.current.height || canvasHeight;
-    }
+    const canvasWidth = canvasSize.width;
+    const canvasHeight = canvasSize.height;
 
     const targetShape = calculateScatterTarget(state.originalShape);
 

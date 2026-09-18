@@ -28,6 +28,9 @@ const MIN_CANVAS_HEIGHT = 400;
 const MAX_CANVAS_WIDTH = 1000;
 const MAX_CANVAS_HEIGHT = 1000;
 
+// I 项：DPR 上限——高 DPR 设备（Retina 3x）canvas 面积 × dpr² 指数膨胀，封顶防内存爆炸
+const DPR_CAP = 3;
+
 // 冻结解冻机制Hook
 function useCanvasResizeObserver(
   onResize: (width: number, height: number) => void,
@@ -213,6 +216,31 @@ export default function PuzzleCanvas() {
     return state.canvasSize || null;
   }, [state.canvasSize]);
 
+  // I 项：DPR（设备像素比）感知——canvas 物理分辨率 = 逻辑 × dpr，Retina 锐利渲染。
+  // 初始值恒 1：SSR/CSR 首帧一致（canvas 尺寸不依赖 React 属性，由客户端 ref 赋值，无 hydration mismatch）。
+  const [dpr, setDpr] = useState(1);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const updateDpr = () => setDpr(Math.min(window.devicePixelRatio || 1, DPR_CAP));
+    updateDpr(); // 挂载后：1 → 真实 DPR，触发画布尺寸更新 + 重绘
+    const media = window.matchMedia(`(resolution: ${Math.min(window.devicePixelRatio || 1, DPR_CAP)}dppx)`);
+    media.addEventListener?.("change", updateDpr);
+    return () => media.removeEventListener?.("change", updateDpr);
+  }, []);
+
+  // canvas 物理分辨率 = 逻辑尺寸 × dpr（DOM 直接赋值，绕开 React 属性避免 hydration mismatch；设置尺寸会清空画布 → 由渲染 effect 重绘）
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const canvas = canvasRef.current;
+    const backgroundCanvas = backgroundCanvasRef.current;
+    if (!canvas || !backgroundCanvas || !canvasSize) return;
+    canvas.width = Math.max(1, Math.round(canvasSize.width * dpr));
+    canvas.height = Math.max(1, Math.round(canvasSize.height * dpr));
+    backgroundCanvas.width = Math.max(1, Math.round(canvasSize.width * dpr));
+    backgroundCanvas.height = Math.max(1, Math.round(canvasSize.height * dpr));
+  }, [canvasSize, dpr, canvasRef, backgroundCanvasRef]);
+
   // 适配状态同步
   const lastCanvasSizeRef = useRef<{ width: number; height: number } | null>(null);
   const gameStateRef = useRef<string>('');
@@ -304,8 +332,12 @@ export default function PuzzleCanvas() {
 
 
 
-  // 渲染逻辑
-  useEffect(() => {
+  // 渲染逻辑：rAF 批量调度——状态变化只标记脏，下一帧统一绘制一次，
+  // 避免同帧内多次状态更新触发多次全量重绘（DPR×4 像素量下尤为重要），提升移动端高难度帧率
+  const renderScheduledRef = useRef(false);
+  const renderFrameRef = useRef<number | null>(null);
+
+  const performRender = useCallback(() => {
     const canvas = canvasRef.current;
     const backgroundCanvas = backgroundCanvasRef.current;
 
@@ -319,6 +351,10 @@ export default function PuzzleCanvas() {
     if (!ctx || !backgroundCtx) {
       return;
     }
+
+    // I 项：DPR 适配——物理像素 = 逻辑坐标 × dpr，绘制前整体缩放（Retina 锐利）
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    backgroundCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     ctx.clearRect(0, 0, canvasSize.width, canvasSize.height);
     backgroundCtx.clearRect(0, 0, canvasSize.width, canvasSize.height);
@@ -338,7 +374,8 @@ export default function PuzzleCanvas() {
         state.originalShape,
         state.isScattered,
         tilt,
-        state.cutType || undefined
+        state.cutType || undefined,
+        dpr
       );
 
       if (state.showHint && state.selectedPiece !== null && (state.originalPositions as PuzzlePiece[]).length > 0) {
@@ -440,20 +477,38 @@ export default function PuzzleCanvas() {
     state.cutType,
     state.originalShape,
     state.isScattered,
-    state.isCompleted,
     canvasSize,
     showDebugElements,
     isShaking,
     state.showHint,
     state.originalPositions,
-    state.currentScore,
     calculatePieceBounds,
     canvasRef,
     backgroundCanvasRef,
-    getRandomCompletionMessage,
-    t,
-    tilt
+    tilt,
+    dpr
   ]);
+
+  const scheduleRender = useCallback(() => {
+    if (renderScheduledRef.current) return;
+    renderScheduledRef.current = true;
+    renderFrameRef.current = window.requestAnimationFrame(() => {
+      renderScheduledRef.current = false;
+      renderFrameRef.current = null;
+      performRender();
+    });
+  }, [performRender]);
+
+  useEffect(() => {
+    scheduleRender();
+    return () => {
+      if (renderFrameRef.current !== null) {
+        window.cancelAnimationFrame(renderFrameRef.current);
+        renderFrameRef.current = null;
+      }
+      renderScheduledRef.current = false;
+    };
+  }, [scheduleRender]);
 
   return (
     <div
@@ -463,8 +518,7 @@ export default function PuzzleCanvas() {
       <canvas
         ref={backgroundCanvasRef}
         style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
-        width={canvasSize?.width || 0}
-        height={canvasSize?.height || 0}
+
       />
       <canvas
         ref={canvasRef}
@@ -485,8 +539,7 @@ export default function PuzzleCanvas() {
           zIndex: tilt.active ? 10 : 1,
           filter: state.isCompleted ? `drop-shadow(${tilt.active ? tilt.ry * -0.6 : 0}px ${tilt.active ? 20 + tilt.rx * 0.6 : 0}px ${tilt.active ? 35 : 0}px rgba(0,0,0,${tilt.active ? 0.35 : 0}))` : 'none'
         }}
-        width={canvasSize?.width || 0}
-        height={canvasSize?.height || 0}
+
         onMouseDown={onInteractStart}
         onMouseMove={onInteractMove}
         onMouseUp={onInteractEnd}
