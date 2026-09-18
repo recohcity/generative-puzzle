@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils"
 
 interface ActionButtonsProps {
   layout?: 'mobile' | 'desktop'; // Prop to differentiate layout styles if needed
-  buttonHeight?: number;
+  buttonHeight?: number | string;
 }
 
 export default function ActionButtons({ layout = 'mobile', buttonHeight = 34 }: ActionButtonsProps) {

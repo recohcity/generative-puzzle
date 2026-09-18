@@ -332,23 +332,28 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   // 面板缩放比例
   // panelScale极限下限提升为0.4，保证内容极限压缩但不至于不可用
   // panelScale极限下限提升为0.4，保证内容极限压缩但不至于不可用
-  // 1.5.17：面板内容基准 ~730px（scale=1.0 时）——画布 < 730（iPad 横屏/小窗口）时按 730 线性收缩，
-  // 防面板底部重开按钮溢出；730+ 保持原 560 基准（cap 1.0，桌面不变）；0.85 下限防过度压缩
-  const panelScale = Math.max(0.4, Math.min(canvasSizeFinal / 560, Math.max(canvasSizeFinal / 730, 0.85), 1.0));
+  // 既有适配规则：视窗大小 → 画布大小 → panelScale → --panel-scale 统一驱动面板按钮高/间距/字号。
+  // 面板内容实际基准 ~800px（scale=1.0 时，含全部控件）；0.4 下限防极端小视口不可用。
+  const panelScale = Math.max(0.4, Math.min(canvasSizeFinal / 560, canvasSizeFinal / 800, 1.0));
 
   // 面板字号统一 helper：panelScale <= 0.5（--panel-scale 固定 0.4）时用固定 px 保证小屏可读，
   // 大屏时跟随 --panel-scale 缩放（px 基准或 rem 基准）。消除重复三元硬编码。
-  // 1.5.17：空间受限（panelScale<0.9，如 iPad 横屏）时按钮高度紧凑化，防底部按钮溢出
-  const COMPACT_PANEL = panelScale < 0.9;
-  const CONTROL_BUTTON_HEIGHT = COMPACT_PANEL ? 28 : DESKTOP_CONTROL_BUTTON_HEIGHT;
-  const RESTART_BUTTON_HEIGHT = COMPACT_PANEL ? 32 : DESKTOP_RESTART_BUTTON_HEIGHT;
+  // 既有适配规则：按钮高统一乘 --panel-scale（面板 style 注入），随视窗缩放；
+  // panelScale ≤ 0.5 时 --panel-scale 固定 0.4 → 按钮过小，改固定 px 保触控/可读
+  const CONTROL_BUTTON_HEIGHT = panelScale <= 0.5 ? 24 : `calc(30px * var(--panel-scale))`;
+  const RESTART_BUTTON_HEIGHT = panelScale <= 0.5 ? 26 : `calc(32px * var(--panel-scale))`;
+  // 内容区垂直间距随视窗缩放（9px 基准，面板=画布 1:1 下保证内容完整）
+  const contentGap = panelScale <= 0.5 ? 5 : `calc(8px * var(--panel-scale))`;
+  // 小节上下 margin 随视窗缩放（8px 基准）
+  const sectionPadTop = panelScale <= 0.5 ? 5 : `calc(8px * var(--panel-scale))`;
+  const sectionMarginTop = panelScale <= 0.5 ? 6 : `calc(8px * var(--panel-scale))`;
 
   const panelFont = (px: number, rem?: number): number | string =>
     panelScale <= 0.5 ? px : `calc(${rem !== undefined ? `${rem}rem` : `${px}px`} * var(--panel-scale))`;
 
   // 面板内容区padding、gap极限压缩
   // 极限压缩下锁定为精确像素，否则自适应
-  const panelContentPadding = 10; // 恒等（<=0.5 与 >0.5 原值均为 10，收敛）
+  const panelContentPadding = 8; // 面板内边距（面板=画布 1:1 下为内容腾高度）
   const panelContentGap = panelScale <= 0.5 ? 10 : Math.max(2, Math.min(6, 16 * panelScale));
 
   // 移除统一的事件管理系统，使用原生事件监听
@@ -525,7 +530,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                 />
               </div>
             </div>
-            <div className={`${COMPACT_PANEL ? "space-y-2" : "space-y-4"} flex-1 pr-1 -mr-1`}>
+            <div className="flex-1 pr-1 -mr-1" style={{ gap: contentGap, display: 'flex', flexDirection: 'column' }}>
               {/* 根据状态显示不同的面板内容 */}
               {showRecentGameDetails ? (
                 // 最近游戏详情显示
@@ -567,7 +572,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                     <ScoreDisplay embedded={true} />
                   </div>
                   {/* 底部操作按钮 */}
-                  <div className={`flex flex-col gap-2 ${COMPACT_PANEL ? "pt-2" : "pt-3"} mt-1 shrink-0`}>
+                  <div className="flex flex-col gap-2 mt-1 shrink-0" style={{ paddingTop: sectionPadTop }}>
                     <RestartButton
                       onClick={handleRetryCurrentGame}
                       icon="retry"
@@ -592,15 +597,15 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                   {/* 游戏设置部分：形状 → 难度 → 切割类型 → 切割形状按钮 → 散开 */}
                   <ShapeControls goToNextTab={goToNextTab} />
                   <PuzzleControlsCutCount goToNextTab={goToNextTab} />
-                  <PuzzleControlsCutType goToNextTab={goToNextTab} />
-                  <PuzzleControlsCutButton goToNextTab={goToNextTab} />
-                  <PuzzleControlsScatter goToNextTab={goToNextTab} />
+                  <PuzzleControlsCutType goToNextTab={goToNextTab} buttonHeight={panelScale <= 0.5 ? 22 : 'calc(30px * var(--panel-scale))'} />
+                  <PuzzleControlsCutButton goToNextTab={goToNextTab} actionButtonHeight={panelScale <= 0.5 ? 26 : 'calc(32px * var(--panel-scale))'} />
+                  <PuzzleControlsScatter goToNextTab={goToNextTab} buttonHeight={panelScale <= 0.5 ? 26 : 'calc(32px * var(--panel-scale))'} />
 
                   {/* 控制按钮部分 */}
-                  <h2 id="section-game-controls" className={`text-premium-title ${COMPACT_PANEL ? "mt-3 mb-2" : "mt-4 mb-3"}`} style={{ fontSize: panelFont(16, 0.9) }}>{t('game.controls.title')}</h2>
+                  <h2 id="section-game-controls" className="text-premium-title" style={{ fontSize: panelFont(16, 0.9), marginTop: sectionMarginTop, marginBottom: sectionMarginTop }}>{t('game.controls.title')}</h2>
                   <ActionButtons layout="desktop" buttonHeight={CONTROL_BUTTON_HEIGHT} />
                   {/* 正常游戏状态下显示重玩本局和重开游戏按钮 */}
-                  <div className={`flex flex-row gap-2 ${COMPACT_PANEL ? "mt-2.5" : "mt-4"}`}>
+                  <div className="flex flex-row gap-2" style={{ marginTop: sectionMarginTop }}>
                     <RestartButton
                       onClick={handleRetryCurrentGame}
                       icon="retry"

@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils"
 
 interface PuzzleControlsScatterProps {
   goToNextTab?: () => void;
-  buttonHeight?: number;
+  buttonHeight?: number | string;
 }
 
 export default function PuzzleControlsScatter({ goToNextTab, buttonHeight = 40 }: PuzzleControlsScatterProps) {

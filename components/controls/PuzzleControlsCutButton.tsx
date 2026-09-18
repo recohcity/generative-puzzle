@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
 
 interface PuzzleControlsCutButtonProps {
   goToNextTab?: () => void;
-  actionButtonHeight?: number;
+  actionButtonHeight?: number | string;
 }
 
 // 切割形状按钮：独立于难度选择，位于切割类型选择之后。

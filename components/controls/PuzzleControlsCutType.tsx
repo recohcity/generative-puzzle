@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 
 interface PuzzleControlsCutTypeProps {
   goToNextTab?: () => void;
-  buttonHeight?: number;
+  buttonHeight?: number | string;
 }
 
 export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 40 }: PuzzleControlsCutTypeProps) {
@@ -149,7 +149,7 @@ export default function PuzzleControlsCutType({ goToNextTab, buttonHeight = 40 }
             style={{
               height: buttonHeight,
               fontSize: `calc(var(--panel-scale, 1) * 14px * ${scale})`,
-              lineHeight: `calc(var(--panel-scale, 1) * 20px * ${scale})`,
+              lineHeight: `calc(var(--panel-scale, 1) * 14px * ${scale})`,
               borderRadius: 'calc(var(--panel-scale, 1) * 14px)',
               width: '100%',
               minWidth: 0,

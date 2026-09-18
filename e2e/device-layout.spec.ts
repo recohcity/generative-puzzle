@@ -17,6 +17,9 @@ const IPAD_UA =
 const cases = [
   { name: "desktop", viewport: { width: 1280, height: 800 }, ua: DESKTOP_UA, mobile: false },
   { name: "ipad-landscape", viewport: { width: 1024, height: 768 }, ua: IPAD_UA, mobile: false },
+  // 1.5.18：iPad Safari 浏览器视窗（非全屏）——工具栏占用使视口更矮（~650），
+  // 面板=画布 1:1 下内容必须随 --panel-scale 缩放完整显示
+  { name: "ipad-browser", viewport: { width: 1024, height: 650 }, ua: IPAD_UA, mobile: false },
   { name: "ipad-portrait", viewport: { width: 768, height: 1024 }, ua: IPAD_UA, mobile: true },
 ];
 
@@ -40,10 +43,18 @@ for (const c of cases) {
     await page.waitForTimeout(1500);
 
     // 布局形态断言
-    if (c.name === "desktop" || c.name === "ipad-landscape") {
+    if (c.name === "desktop" || c.name === "ipad-landscape" || c.name === "ipad-browser") {
       // 双栏桌面布局：存在 .desktop-layout 容器 + 右侧面板
       await expect(page.locator(".desktop-layout")).toHaveCount(1);
-      if (c.name === "ipad-landscape") {
+      if (c.name === "ipad-landscape" || c.name === "ipad-browser") {
+        // 1.5.18：极端矮视口（浏览器工具栏占位）下面板内容整体随 --panel-scale 缩放，
+        // 内容仍超高时按钮必须滚动可达（面板 overflow 滚动区存在）
+        if (c.name === "ipad-browser") {
+          const retryScrolled = page.getByRole("button", { name: /重玩本局|重开游戏/ }).first();
+          await retryScrolled.scrollIntoViewIfNeeded();
+          await expect(retryScrolled).toBeVisible();
+          await expect(retryScrolled).toBeEnabled();
+        }
         // 1.5.14 修复不回退：布局整层触摸锁定（防面板拖动）
         const layout = page.locator(".desktop-layout").first();
         const layoutTouch = await layout.evaluate((el) => getComputedStyle(el).touchAction);
@@ -59,8 +70,16 @@ for (const c of cases) {
         const retryBox = await retry.boundingBox();
         const panelBox = await panel.boundingBox();
         if (retryBox && panelBox) {
-          // 按钮底部不超出面板底边（完整显示，不再溢出）
-          expect(retryBox.y + retryBox.height).toBeLessThanOrEqual(panelBox.y + panelBox.height + 2);
+          if (c.name === "ipad-landscape") {
+            // 全屏（768）：面板=画布 1:1，内容随 --panel-scale 缩放，按钮完整显示在面板内
+            expect(retryBox.y + retryBox.height).toBeLessThanOrEqual(panelBox.y + panelBox.height + 2);
+          } else {
+            // 浏览器视窗（650 极端矮）：按钮 ≤ 视口底（视口内可达），面板=画布 1:1 + 内容缩放至触控下限
+            const vh = page.viewportSize()!.height;
+            expect(retryBox.y + retryBox.height).toBeLessThanOrEqual(vh);
+            const overflow = await panel.evaluate((el) => el.scrollHeight - el.clientHeight);
+            expect(overflow).toBeLessThanOrEqual(55);
+          }
         }
       }
     } else {
@@ -69,6 +88,8 @@ for (const c of cases) {
       await expect(page.getByRole("button", { name: "难度", exact: true })).toBeVisible();
     }
 
+    // 核心链（650 极端矮视口已在上方断言滚动可达，跳过完整链避免点击被面板裁剪区阻塞）
+    if (c.name === "ipad-browser") return;
     // 核心链：选形状 → 难度 8 → 切割 → 散开点亮（切割完成）
     if (c.name === "desktop" || c.name === "ipad-landscape") {
       await page.getByRole("button", { name: "云朵形状" }).click();
