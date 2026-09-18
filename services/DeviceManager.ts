@@ -12,7 +12,7 @@ import {
   type iPhoneDetectionResult,
   type DeviceLayoutInfo
 } from '../src/config/deviceConfig';
-import { deviceLogger } from '../utils/logger';
+import { deviceLogger } from './logger';
 
 // Interfaces now imported from deviceConfig.ts
 

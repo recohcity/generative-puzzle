@@ -5,7 +5,7 @@ import { CloudGameRepository } from '@/utils/cloud/CloudGameRepository';
 import { GameDataManager } from '@/utils/data/GameDataManager';
 import { GameAction, GameState, GameStats, validateGameStats, validateScoreBreakdown } from '@generative-puzzle/game-core';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserMigrationKey } from '@/utils/storageKeys';
+import { getUserMigrationKey } from '@/constants/storageKeys';
 
 /**
  * 云端同步钩子

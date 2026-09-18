@@ -1,5 +1,16 @@
 # 生成式拼图游戏 Changelog
 
+## [v1.5.11] - 2026-09-18
+
+### 📂 目录收敛 (Directory Consolidation)
+
+- **layout/layouts 合并**：`components/layouts/`（设备布局 4 文件）并入 `components/layout/`——消除 layout/layouts 双目录歧义，职责统一为页面框架层；`GameInterface` 引用同步更新。
+- **utils/ 顶层归位**：`storageKeys.ts` → `constants/`（存储键常量归位）、`logger.ts` → `services/`（日志服务归位服务层）；`utils/` 顶层仅保留通用工具（`haptics`/`SimpleAdapter`），职责边界清晰。
+- **死文件清理**：删除 0 引用的 `utils/constants.ts`、`utils/helper.ts`（双重扫描确认无引用）；清理 `.DS_Store` 残留。
+- **验证**：`tsc` 0 错误、`next lint` 无告警、`next build` 全绿（5 页生成）、双切割 verify 脚本全绿（几何核心无回归）。
+
+---
+
 ## [v1.5.10] - 2026-09-18
 
 ### 🏗️ core/ 目录更名 services/ (Core Directory Rename)

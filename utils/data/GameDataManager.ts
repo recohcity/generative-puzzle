@@ -4,7 +4,7 @@
  */
 
 import { GameRecord, GameStats, DifficultyLevel, DifficultyConfig, CutType, ScoreBreakdown } from '@generative-puzzle/game-core';
-import { STORAGE_KEYS } from '@/utils/storageKeys';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 export class GameDataManager {
   private static readonly LEADERBOARD_KEY = STORAGE_KEYS.LEADERBOARD;

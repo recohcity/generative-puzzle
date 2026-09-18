@@ -9,7 +9,7 @@ import {
   ScoreBreakdown,
 } from "@generative-puzzle/game-core";
 import { getPieceCountByDifficulty } from "@/utils/difficulty/DifficultyUtils";
-import { STORAGE_KEYS } from "@/utils/storageKeys";
+import { STORAGE_KEYS } from "@/constants/storageKeys";
 
 type PublicLeaderboardRow = {
   user_id: string;

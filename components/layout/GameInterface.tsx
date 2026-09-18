@@ -35,9 +35,9 @@ import ResponsiveBackground from "./ResponsiveBackground";
 // --- End Inner Component ---
 
 // Import new layout components
-import DesktopLayout from "../layouts/DesktopLayout";
-import PhonePortraitLayout from "../layouts/PhonePortraitLayout";
-import PhoneLandscapeLayout from "../layouts/PhoneLandscapeLayout";
+import DesktopLayout from "./DesktopLayout";
+import PhonePortraitLayout from "./PhonePortraitLayout";
+import PhoneLandscapeLayout from "./PhoneLandscapeLayout";
 import { cn } from "@/lib/utils";
 // 使用统一的设备检测系统
 import { useDeviceDetection } from '@/hooks/useDeviceDetection';

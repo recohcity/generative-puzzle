@@ -42,7 +42,7 @@ import {
   type EventTimingConfig,
 } from './performanceConfig';
 
-import { logger } from '../../utils/logger';
+import { logger } from '../../services/logger';
 
 // Re-export all configurations
 export {
