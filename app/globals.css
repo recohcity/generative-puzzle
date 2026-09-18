@@ -873,3 +873,9 @@ svg {
   touch-action: none !important;
 }
 
+/* 1.5.17：面板内容超高兜底——仅 .glass-panel 滚动容器放行垂直滚动（specificity 高于
+   .desktop-layout *），面板整体与其余区域仍锁定（1.5.14 修复不回退）。 */
+.desktop-layout .glass-panel {
+  touch-action: pan-y !important;
+}
+

@@ -54,27 +54,24 @@ test("移动端核心链：选形状 → 难度 → 切割 → 散开 → 拖拽
   await page.touchscreen.tap(start.x + 30, start.y + 20);
   await page.waitForTimeout(300);
 
-  // 拖拽路径（先按下再移动再抬起，模拟真实触摸拖拽）
-  const el = await canvas.elementHandle();
-  if (!el) throw new Error("canvas element not found");
-  await page.evaluate(
-    ([c, sx, sy]: [Element, number, number]) => {
-      const canvasEl = c as HTMLCanvasElement;
-      const rect = canvasEl.getBoundingClientRect();
-      const mk = (x: number, y: number) =>
-        new Touch({
-          identifier: 2,
-          target: canvasEl,
-          clientX: rect.left + sx + x,
-          clientY: rect.top + sy + y,
-        } as any);
-      canvasEl.dispatchEvent(new TouchEvent("touchstart", { touches: [mk(0, 0)], bubbles: true, cancelable: true } as any));
-      canvasEl.dispatchEvent(new TouchEvent("touchmove", { touches: [mk(40, 30)], bubbles: true, cancelable: true } as any));
-      canvasEl.dispatchEvent(new TouchEvent("touchmove", { touches: [mk(80, 60)], bubbles: true, cancelable: true } as any));
-      canvasEl.dispatchEvent(new TouchEvent("touchend", { touches: [], bubbles: true, cancelable: true } as any));
-    },
-    [el, start.x - box.x, start.y - box.y]
-  );
+  // 拖拽路径（无参 evaluate 内取画布，模拟真实触摸拖拽）
+  await page.evaluate(() => {
+    const canvasEl = document.querySelector("canvas") as HTMLCanvasElement;
+    const rect = canvasEl.getBoundingClientRect();
+    const sx = rect.width / 2;
+    const sy = rect.height / 2;
+    const mk = (x: number, y: number) =>
+      new Touch({
+        identifier: 2,
+        target: canvasEl,
+        clientX: rect.left + sx + x,
+        clientY: rect.top + sy + y,
+      } as any);
+    canvasEl.dispatchEvent(new TouchEvent("touchstart", { touches: [mk(0, 0)], bubbles: true, cancelable: true } as any));
+    canvasEl.dispatchEvent(new TouchEvent("touchmove", { touches: [mk(40, 30)], bubbles: true, cancelable: true } as any));
+    canvasEl.dispatchEvent(new TouchEvent("touchmove", { touches: [mk(80, 60)], bubbles: true, cancelable: true } as any));
+    canvasEl.dispatchEvent(new TouchEvent("touchend", { touches: [], bubbles: true, cancelable: true } as any));
+  });
   await page.waitForTimeout(500);
 
   // 冒烟通过：核心链走通且无阻断性错误（React hydration / 崩溃类）

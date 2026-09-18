@@ -44,11 +44,24 @@ for (const c of cases) {
       // 双栏桌面布局：存在 .desktop-layout 容器 + 右侧面板
       await expect(page.locator(".desktop-layout")).toHaveCount(1);
       if (c.name === "ipad-landscape") {
-        // 1.5.14 修复不回退：桌面布局触摸锁定
-        const panel = page.locator(".desktop-layout .glass-panel").first();
+        // 1.5.14 修复不回退：布局整层触摸锁定（防面板拖动）
+        const layout = page.locator(".desktop-layout").first();
+        const layoutTouch = await layout.evaluate((el) => getComputedStyle(el).touchAction);
+        expect(layoutTouch).toBe("none");
+
+        // 1.5.17 修复不回退：面板滚动容器放行垂直滚动 + 底部重开按钮完整显示（内容适配面板）
+        const panel = page.locator(".desktop-layout .glass-panel.overflow-y-auto");
         await expect(panel).toBeVisible();
-        const touchAction = await panel.evaluate((el) => getComputedStyle(el).touchAction);
-        expect(touchAction).toBe("none");
+        const panelTouch = await panel.evaluate((el) => getComputedStyle(el).touchAction);
+        expect(panelTouch).toBe("pan-y");
+        const retry = page.getByRole("button", { name: /重玩本局|重开游戏/ }).first();
+        await expect(retry).toBeVisible();
+        const retryBox = await retry.boundingBox();
+        const panelBox = await panel.boundingBox();
+        if (retryBox && panelBox) {
+          // 按钮底部不超出面板底边（完整显示，不再溢出）
+          expect(retryBox.y + retryBox.height).toBeLessThanOrEqual(panelBox.y + panelBox.height + 2);
+        }
       }
     } else {
       // ipad-portrait：手机 tab 布局（形状/难度/切割/散开/控制）

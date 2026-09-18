@@ -93,7 +93,8 @@ export function calculateDesktopCanvasSize(windowWidth: number, windowHeight: nu
 
     return {
         canvasSize,
-        panelHeight: canvasSize,
+        // 面板高度独立于画布：撑满可用高度容纳全部控件（1.5.17 修复 iPad 横屏底部按钮溢出）
+        panelHeight: availableHeight,
         actualPanelWidth: PANEL_WIDTH,
         actualLeftRightMargin, // 返回计算出的实际边距
         // 调试信息
