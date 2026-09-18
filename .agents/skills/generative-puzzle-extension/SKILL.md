@@ -119,10 +119,11 @@ npx tsx .agents/skills/generative-puzzle-extension/scripts/verify_incremental_cu
 
 ### 4. 多端适配规范
 
-`references/adaptive-ui.md` —— 设备分型（`getDeviceType`）、`--panel-scale` 缩放体系、移动端信息取舍、**几何层 × 端能力联动**（碎片可拾取下限随端变化）、三端验证清单。新项目直接套用该清单。
+`references/adaptive-ui.md` —— 设备分型（`getDeviceType`）、`--panel-scale` 缩放体系、移动端信息取舍、**几何层 × 端能力联动**（碎片可拾取下限随端变化）、**三端验证清单（封板硬门槛）**、移动端专属问题速查（1.5.14 修复清单，不得回退）。新项目直接套用该清单。
 
 ## 三、验证基线
 
 - `verify_extension.ts`：10 个切割类型 × 8 档 × 2 形状 × 2 seed 全部通过（2026-09-17）。
 - `verify_incremental_cutter.ts`：160 局全绿（2026-09-17）。
 - 任何新增/修改后必须重跑上述两项 + `npx tsc --noEmit`。
+- **封板硬门槛**：涉及布局/渲染/切割/交互的版本，必须真实手机实测通过（见 `references/adaptive-ui.md` 三端验证清单第 5 项），桌面测试通过不代表移动端可交付（1.5.6-1.5.13 教训）。

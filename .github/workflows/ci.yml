@@ -106,3 +106,30 @@ jobs:
       - name: Verify incremental cutter geometry core (160 cases)
         run: npx tsx .agents/skills/generative-puzzle-extension/scripts/verify_incremental_cutter.ts
 
+  smoke-mobile:
+    # 移动端核心链轻量冒烟（1.5.14 教训：桌面通过 ≠ 移动端可交付）
+    # 只防真实回归：选形状 → 难度 → 切割 → 散开 → 拖拽 + 无阻断性错误
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Mobile core-chain smoke (iPhone viewport)
+        run: npx playwright test
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}"
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: "${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}"
+

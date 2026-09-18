@@ -389,11 +389,8 @@ export default function CurveTestOptimized({ onReady }: { onReady?: () => void }
           // 移除默认的padding和flex居中，让子布局完全控制
           padding: 0,
           display: 'block', // 改为block，不使用flex
-          // iPad 横屏（desktop 布局）触摸锁定：no-scroll-container 的 pan-x pan-y
-          // 在 iOS Safari 上产生橡皮筋弹动，导致右侧面板被"拖动"。desktop 布局下
-          // 整层 touch-action: none 消除弹动；按钮有 manipulation !important 仍可点击，
-          // 手机布局（phone）不受影响。
-          ...(shouldUseDesktopLayout ? { touchAction: 'none' as const } : {}),
+          // iPad 横屏触摸锁定由 .desktop-layout CSS 类统一处理（globals.css，
+          // touch-action: none !important），单一权威，此处不再内联。
         }}
       >
 
