@@ -1,3 +1,16 @@
+## [v1.5.22] - 2026-09-19
+
+### 🧩 ScoreCalculator 拆分（1292 → 295 行）
+
+- **纯逻辑搬家，零行为改动**：`ScoreCalculator.ts` 从 1292 行按职责拆成 4 个子模块 + 主文件保留 re-export。
+  - `difficultyMultiplier.ts`（140 行）：难度系数 / 基础分 / 形状 / 设备 / 切割类型倍率
+  - `hintScore.ts`（57 行）：提示配置 / 额度 / 提示分
+  - `rotationScore.ts`（189 行）：旋转效率 / 最优旋转 / 旋转分
+  - `timeBonus.ts`（264 行）：时间奖励 / 速度描述 / 时间记录检查
+  - `ScoreCalculator.ts`（295 行）：总分计算 / 格式化 / 排行榜 / 工具函数 + re-export 所有公共 API
+- **零破坏**：外部 `import { calculateFinalScore } from './ScoreCalculator'` 路径不变，re-export 保证所有公共函数可用。
+- **验证全绿**：tsc / build / verify_extension（10 切割类型 × 8 档）。
+
 ## [v1.5.21] - 2026-09-19
 
 ### 🧹 GameContext 拆分 + 完成态纹理 bug 修复
