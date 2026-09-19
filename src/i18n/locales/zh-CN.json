@@ -92,8 +92,8 @@
       "cutShape": "请切割形状",
       "scatterPuzzle": "请散开拼图，开始游戏",
       "gameInProgress": "请选择拼图拖到正确位置",
-      "completed": "🎉 游戏完成！",
-      "newRecord": "🌟 新纪录！",
+      "completed": "游戏完成！",
+      "newRecord": "新纪录！",
       "progress": "{completed} / {total} 块拼图已完成",
       "gameStats": "拼图{completed}/{total} 提示{hints}/{allowedHints}",
       "completionMessages": [
@@ -172,7 +172,7 @@
       "angleHiddenHint": "点击提示按钮查看角度信息",
       "angleHidden": "当前角度：???",
       "useHintToReveal": "点击提示按钮查看角度",
-      "angleTemporary": "当前角度：{angle}° ✨",
+      "angleTemporary": "当前角度：{angle}°",
       "hintRevealedAngle": "（提示显示中 - 即将隐藏）",
       "angleDisplayModeChanged": "角度显示模式已更新",
       "temporaryAngleVisible": "角度临时显示已激活"

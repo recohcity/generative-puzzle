@@ -2,7 +2,7 @@ import React from 'react';
 import { GameStats, ScoreBreakdown, getSpeedBonusDetails } from '@generative-puzzle/game-core';
 import { useTranslation } from '@/contexts/I18nContext';
 import { cn } from "@/lib/utils";
-import { Trophy, Star, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
+import { Trophy, Star, ChevronDown, ChevronUp, RefreshCw, Zap, Target, Focus} from "lucide-react";
 import { calculateStarRating, getBadges } from '@/utils/score/scoreVisualUtils';
 import { getSpeedTierLabel } from '@/utils/score/speedTierLabels';
 import { getDifficultyMetadata } from '@/utils/difficulty/difficultyMetadata';
@@ -129,7 +129,7 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
           <div className="flex gap-8 mt-1">
             {badges.map((badge, idx) => (
               <div key={idx} className="flex flex-col items-center gap-0.5 opacity-80">
-                <span className="text-xl filter drop-shadow-sm">{badge.icon}</span>
+                {(() => { const I = ({zap: Zap, target: Target, focus: Focus} as const)[badge.icon as "zap"|"target"|"focus"]; return I ? <I className="w-5 h-5" /> : badge.icon; })()}
                 <span className="text-[10px] text-white/50 font-bold uppercase tracking-tighter whitespace-nowrap">
                   {badge.id === 'speed' ? '速度' : badge.id === 'accuracy' ? '空间推理' : '专注力'}
                 </span>
@@ -223,7 +223,7 @@ export const MobileScoreLayout: React.FC<MobileScoreLayoutProps> = ({
         <div className="flex justify-center gap-x-10 px-2 mt-1">
           {badges.map((badge) => (
             <div key={badge.id} className={cn("flex flex-col items-center", badge.colorClass)}>
-              <span className="text-3xl mb-0.5 filter drop-shadow-sm">{badge.icon}</span>
+              {(() => { const I = ({zap: Zap, target: Target, focus: Focus} as const)[badge.icon as "zap"|"target"|"focus"]; return I ? <I className="w-8 h-8" /> : badge.icon; })()}
               <span className="text-[10px] font-black tracking-widest uppercase text-white/70">
                 {t(badge.labelKey)}
               </span>

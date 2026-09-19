@@ -92,8 +92,8 @@
       "cutShape": "Cut the shape",
       "scatterPuzzle": "Scatter puzzle to start",
       "gameInProgress": "Drag pieces to place",
-      "completed": "🎉 Complete!",
-      "newRecord": "🌟 New Record!",
+      "completed": "Complete!",
+      "newRecord": "New Record!",
       "progress": "{completed}/{total} pieces done",
       "gameStats": "P:{completed}/{total} H:{hints}/{allowedHints}",
       "completionMessages": [
@@ -171,7 +171,7 @@
       "angleHiddenHint": "Click hint button to view angle info",
       "angleHidden": "Current Angle: ???",
       "useHintToReveal": "Use hint to reveal angle",
-      "angleTemporary": "Current Angle: {angle}° ✨",
+      "angleTemporary": "Current Angle: {angle}°",
       "hintRevealedAngle": "(Showing via hint - will hide soon)",
       "angleDisplayModeChanged": "Angle display mode updated",
       "temporaryAngleVisible": "Temporary angle display activated"

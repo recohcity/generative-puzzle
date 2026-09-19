@@ -148,6 +148,9 @@ const executeGameCompletion = (
   );
   const finalScore = scoreBreakdown.finalScore;
 
+  // 写回旋转效率（ScoreCalculator 返回 0-100 百分比，归一化为 0-1 小数，供勋章判定）
+  completedStats.rotationEfficiency = Math.min(1, Math.max(0, scoreBreakdown.rotationEfficiency / 100));
+
   const saveSuccess = GameDataManager.saveGameRecord(
     completedStats,
     finalScore,

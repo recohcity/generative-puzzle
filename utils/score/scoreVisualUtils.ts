@@ -47,21 +47,21 @@ export const getBadges = (
   return [
     {
       id: 'speed',
-      icon: '⚡',
+      icon: 'zap',
       labelKey: 'score.badges.speedster',
       colorClass: 'text-brand-orange',
       active: timeBonus > 0
     },
     {
       id: 'accuracy',
-      icon: '🎯',
+      icon: 'target',
       labelKey: 'score.badges.deadshot',
       colorClass: 'text-brand-amber',
       active: rotationEfficiency > 0.9
     },
     {
       id: 'focus',
-      icon: '🧘',
+      icon: 'focus',
       labelKey: 'score.badges.focus',
       colorClass: 'text-brand-peach',
       active: hintsUsed === 0

@@ -20,7 +20,7 @@ import RestartButton from "../controls/RestartButton";
 import { Button } from "@/components/ui/button";
 import MobileScoreLayout from "@/components/score/MobileScoreLayout";
 import { GameDataManager } from '@/utils/data/GameDataManager';
-import { Lightbulb, RotateCcw, RotateCw, Trophy, User, X, Globe, History as HistoryIcon, Loader2, RefreshCw } from "lucide-react";
+import { Lightbulb, RotateCcw, RotateCw, Trophy, User, X, Globe, History as HistoryIcon, Loader2, RefreshCw, Medal} from "lucide-react";
 import { useGame } from "@/contexts/GameContext";
 import { playRotateSound, playButtonClickSound } from "@/utils/rendering/soundEffects";
 import { useTranslation } from '@/contexts/I18nContext';
@@ -640,7 +640,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                         {leaderboardData.length > 0 ? (
                           leaderboardData.slice(0, 3).map((record, index) => {
                             const isTop3 = index < 3;
-                            const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : null;
+                            const medal = index === 0 ? <Medal className="w-4 h-4 text-yellow-400" /> : index === 1 ? <Medal className="w-4 h-4 text-slate-300" /> : index === 2 ? <Medal className="w-4 h-4 text-amber-600" /> : null;
                             const getCutTypeStr = (ct?: string) => {
                               if (!ct) return '';
                               try {
@@ -713,7 +713,7 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
                             const difficultyLabel = cutCount ? t(`difficulty.levels.${cutCount}`) : '';
                             const playerName = r.nickname || r.displayName || t('game.leaderboard.anonymous');
                             const sessions = r.sessionsCount ?? 0;
-                            const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : null;
+                            const medal = index === 0 ? <Medal className="w-4 h-4 text-yellow-400" /> : index === 1 ? <Medal className="w-4 h-4 text-slate-300" /> : index === 2 ? <Medal className="w-4 h-4 text-amber-600" /> : null;
                             return (
                               <div
                                 key={`global-${record.id || index}`}

@@ -27,7 +27,7 @@ export default defineConfig({
       "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
   },
   webServer: {
-    command: isCI ? "npm run build && npm run start -p 3000" : "npm run dev",
+    command: isCI ? "npm run build && npm run start -- -p 3000" : "npm run dev",
     url: "http://localhost:3000",
     timeout: 240_000,
     reuseExistingServer: !isCI,

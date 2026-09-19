@@ -1,3 +1,4 @@
+import { Zap, Target, Focus } from "lucide-react";
 import React from 'react';
 import { useTranslation } from '@/contexts/I18nContext';
 import { GameStats, ScoreBreakdown, getSpeedBonusDetails } from '@generative-puzzle/game-core';
@@ -122,7 +123,7 @@ export const DesktopScoreLayout: React.FC<DesktopScoreLayoutProps> = ({
         <div className="flex justify-center gap-x-8 px-4">
           {badges.map((badge) => (
             <div key={badge.id} className={cn("flex flex-col items-center transition-all hover:scale-110", badge.colorClass)}>
-              <span className="text-2xl mb-0.5 filter drop-shadow-md">{badge.icon}</span>
+              {(() => { const I = ({zap: Zap, target: Target, focus: Focus} as const)[badge.icon as "zap"|"target"|"focus"]; return I ? <I className="w-6 h-6" /> : badge.icon; })()}
               <span className="text-[10px] font-black tracking-wider text-white/80 uppercase">
                 {t(badge.labelKey)}
               </span>

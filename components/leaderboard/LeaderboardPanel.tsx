@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 
-import { Trophy, Globe, User, Loader2, History, RotateCw } from "lucide-react";
+import { Trophy, Globe, User, Loader2, History, RotateCw, Medal} from "lucide-react";
 import { useTranslation } from '@/contexts/I18nContext';
 import { playButtonClickSound } from "@/utils/rendering/soundEffects";
 import { useAuth } from "@/contexts/AuthContext";
@@ -181,14 +181,9 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({
   };
 
   const getRankIcon = (rank: number) => {
-    switch (rank) {
-      case 1: return '🥇';
-      case 2: return '🥈';
-      case 3: return '🥉';
-      case 4: return '4';
-      case 5: return '5';
-      default: return rank.toString();
-    }
+    const medalColor = rank === 1 ? "text-yellow-400" : rank === 2 ? "text-slate-300" : rank === 3 ? "text-amber-600" : "";
+    if (rank <= 3) return <Medal className={`w-4 h-4 ${medalColor}`} />;
+    return rank.toString();
   };
 
   const formatTime = (duration: number) => {

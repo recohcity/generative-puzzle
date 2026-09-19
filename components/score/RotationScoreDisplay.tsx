@@ -134,7 +134,7 @@ export const RotationScoreDisplay: React.FC<RotationScoreDisplayProps> = ({
     
     if (displayMode === 'mobile') {
       // 移动端模式：显示简化标签
-      const label = config.showFullLabel ? t('rotation.label') : '🔄';
+      const label = config.showFullLabel ? t('rotation.label') : '';
       return `${label} ${result.displayText}`;
     }
     

@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Trophy, Clock, RotateCcw, Lightbulb } from "lucide-react";
+import { ArrowLeft, Trophy, Clock, RotateCcw, Lightbulb, Medal} from "lucide-react";
 import { playButtonClickSound } from "@/utils/rendering/soundEffects";
 import { useTranslation } from '@/contexts/I18nContext';
 import { GameDataManager } from "@/utils/data/GameDataManager";
@@ -136,12 +136,9 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
   };
 
   const getRankIcon = (index: number) => {
-    switch (index) {
-      case 0: return "🥇";
-      case 1: return "🥈";
-      case 2: return "🥉";
-      default: return `${index + 1}`;
-    }
+    const color = index === 0 ? "text-yellow-400" : index === 1 ? "text-slate-300" : index === 2 ? "text-amber-600" : "";
+    if (index < 3) return <Medal className={`w-4 h-4 ${color}`} />;
+    return `${index + 1}`;
   };
 
   // 获取形状显示名称
@@ -296,7 +293,6 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
               {/* 点击提示 - 右上角 */}
               <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 <div className="flex flex-col items-center gap-1">
-                  <div className="text-lg animate-bounce">👆</div>
                   <div className="text-xs text-brand-peach whitespace-nowrap bg-brand-peach bg-opacity-20 px-2 py-1 rounded">
                     {t('stats.viewDetails') || '查看详情'}
                   </div>
@@ -362,7 +358,6 @@ const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ onBack, onViewDetai
             </div>
           ) : (
             <div className="text-center py-8">
-              <div className="text-4xl mb-2 opacity-50">🎮</div>
               <div className="text-brand-peach opacity-60 text-sm">
                 {t('leaderboard.empty')}
               </div>

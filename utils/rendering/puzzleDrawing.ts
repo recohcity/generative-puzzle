@@ -254,13 +254,13 @@ export const drawHintOutline = (
 
   ctx.save();
 
-  // 使用固定透明度，移除闪烁效果
-  // 绿色轮廓线
-  ctx.strokeStyle = "rgba(0, 255, 0, 0.8)";
-  // 绿色半透明填充
-  ctx.fillStyle = "rgba(0, 255, 0, 0.25)";
-  ctx.setLineDash([5, 5]);
-  ctx.lineWidth = 4;
+  // 提示轮廓：柔和薄荷绿 + 圆头虚线（与拼图块柔暖风格一致，避免刺眼方块感）
+  ctx.strokeStyle = "rgba(80, 220, 130, 0.9)";
+  ctx.fillStyle = "rgba(80, 220, 130, 0.15)";
+  ctx.setLineDash([4, 4]);
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
 
   ctx.beginPath(); // Add beginPath here to ensure new path
 

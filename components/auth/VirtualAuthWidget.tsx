@@ -3,7 +3,7 @@ import { VirtualAuthService, PlayerProfile } from "@/utils/cloud/VirtualAuthServ
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { CloudGameRepository } from "@/utils/cloud/CloudGameRepository";
-import { ShieldCheck, User, Key, RotateCw, LogOut, ChevronRight, AlertCircle, Info } from "lucide-react";
+import { ShieldCheck, User, Key, RotateCw, LogOut, ChevronRight, AlertCircle, Info, Trophy, Flame} from "lucide-react";
 import { useTranslation } from "@/contexts/I18nContext";
 import { cn } from "@/lib/utils";
 
@@ -237,8 +237,8 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
                       <div className="min-w-0">
                         <div className="font-bold text-xs group-hover:text-brand-peach transition-colors truncate">{acc.nickname}</div>
                         <div className="flex gap-2 text-[9px] opacity-40 mt-0.5">
-                          <span>🏆 {acc.best_score}</span>
-                          <span>🔥 {acc.challenge_count}</span>
+                          <span className="inline-flex items-center gap-0.5"><Trophy className="w-2.5 h-2.5" />{acc.best_score}</span>
+                          <span className="inline-flex items-center gap-0.5"><Flame className="w-2.5 h-2.5" />{acc.challenge_count}</span>
                         </div>
                       </div>
                       <ChevronRight className="w-3.5 h-3.5 opacity-20 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
@@ -281,8 +281,8 @@ export default function VirtualAuthWidget({ onAuthSuccess, isLandscape }: { onAu
                 <div className="min-w-0">
                   <div className="font-bold text-sm group-hover:text-brand-peach transition-colors truncate">{acc.nickname}</div>
                   <div className="flex gap-2 text-[10px] opacity-40 mt-0.5">
-                    <span>🏆 {acc.best_score}</span>
-                    <span>🔥 {acc.challenge_count}</span>
+                    <span className="inline-flex items-center gap-0.5"><Trophy className="w-2.5 h-2.5" />{acc.best_score}</span>
+                    <span className="inline-flex items-center gap-0.5"><Flame className="w-2.5 h-2.5" />{acc.challenge_count}</span>
                   </div>
                 </div>
                 <ChevronRight className="w-4 h-4 opacity-20 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />

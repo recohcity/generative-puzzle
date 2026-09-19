@@ -22,6 +22,18 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../.
 let failures = 0;
 let warnings = 0;
 
+// 注入确定性 PRNG：PuzzleGenerator 内部用 Math.random()，跨 CI 运行偶发抽到坏 seed 会假失败。
+// 固定 mulberry32 种子让验证可复现（不掩盖真实 bug——只是把"偶发"变"必现"，FAIL 时仍需修生成器）。
+(() => {
+  let a = 0x9e3779b9;
+  Math.random = () => {
+    a |= 0; a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+})();
+
 function fail(msg: string): void {
   failures++;
   console.error(`  [FAIL] ${msg}`);

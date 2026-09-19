@@ -474,7 +474,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
             ...(panelScale <= 0.5 ? { '--panel-scale': 0.4 } : { '--panel-scale': panelScale })
           } as React.CSSProperties}
         >
-          <div className="glass-panel h-full flex flex-col overflow-y-auto no-scrollbar"
+          <div className="glass-panel relative h-full flex flex-col overflow-y-auto no-scrollbar"
             style={{ padding: panelContentPadding, fontSize: panelFont(16), gap: panelContentGap }}
           >
             <div className="flex flex-col mb-1 flex-shrink-0">
@@ -568,7 +568,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
               ) : state.isCompleted && state.gameStats ? (
                 // 游戏完成时 - 使用统一组件 (SOP Refined)
                 <div className="flex flex-col h-full">
-                  <div className="flex-1 overflow-y-auto no-scrollbar min-h-0">
+                  <div className="flex-1 overflow-y-auto no-scrollbar min-h-0 pb-4">
                     <ScoreDisplay embedded={true} />
                   </div>
                   {/* 底部操作按钮 */}
@@ -625,17 +625,18 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
               )}
             </div>
           </div>
+          {/* 版权浮层：钉在面板可视底（absolute bottom，不占流不挤压内容） */}
+          <div
+            className="absolute bottom-1 left-0 right-0 text-center pointer-events-none z-10"
+            style={{ fontSize: panelFont(9, 0.9), lineHeight: 1.2 }}
+          >
+            <span className="text-white/40 font-medium">
+              recoh AI project 2025-2026 | generative puzzle V{process.env.APP_VERSION || '1.3.51'}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* 🎯 极致锁定：版权信息紧贴游戏面板，缩窄留空，提升视觉聚合感 */}
-      {!isFullscreen && (
-        <div className="mt-8 flex justify-center z-10 transition-opacity duration-300">
-          <div className="text-white/40 text-[10px] text-center leading-relaxed font-medium">
-            recoh AI project 2025-2026 | generative puzzle V{process.env.APP_VERSION || '1.3.51'}
-          </div>
-        </div>
-      )}
 
       {/* 登出确认弹窗 */}
       <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>

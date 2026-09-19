@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generative Puzzle · 生成式拼图 — 一页看懂</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='4' y='4' width='24' height='24' rx='5' fill='%23ffd9b8'/%3E%3Crect x='36' y='4' width='24' height='24' rx='5' fill='%239d7bff' opacity='0.85'/%3E%3Crect x='4' y='36' width='24' height='24' rx='5' fill='%239d7bff' opacity='0.65'/%3E%3Crect x='36' y='36' width='24' height='24' rx='5' fill='%23ffd9b8' opacity='0.8'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg-deep: #141021;
+    --bg-panel: rgba(255,255,255,0.045);
+    --bg-panel-hover: rgba(255,255,255,0.08);
+    --line: rgba(255,255,255,0.10);
+    --peach: #ffd9b8;
+    --peach-soft: #ffb98a;
+    --violet: #9d7bff;
+    --text: #f2e9d8;
+    --text-dim: #b3a68a;
+    --ok: #8fd0a6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif;
+    background: linear-gradient(160deg, #1a1430 0%, #141021 55%, #1c1335 100%);
+    color: var(--text);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 56px 24px 40px; }
+
+  /* ===== Hero ===== */
+  .hero { text-align: center; margin-bottom: 44px; }
+  .hero .kicker {
+    display: inline-block; font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--violet); border: 1px solid rgba(157,123,255,0.35); border-radius: 999px;
+    padding: 5px 16px; margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(30px, 5.2vw, 46px); font-weight: 800; letter-spacing: -0.5px;
+    background: linear-gradient(120deg, var(--peach), #fff3e4 45%, var(--violet));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero .sub { margin-top: 14px; font-size: 15px; color: var(--text-dim); max-width: 560px; margin-left: auto; margin-right: auto; }
+  .hero .sub b { color: var(--peach-soft); font-weight: 600; }
+
+  /* ===== Section title ===== */
+  .sec-title {
+    display: flex; align-items: center; gap: 12px; margin: 40px 0 18px;
+    font-size: 18px; font-weight: 700;
+  }
+  .sec-title .no {
+    flex-shrink: 0; width: 26px; height: 26px; border-radius: 8px;
+    background: rgba(157,123,255,0.16); color: var(--violet);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800;
+  }
+  .sec-title::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+  /* ===== Cut banner ===== */
+  .cut-banner {
+    border-radius: 16px; overflow: hidden; border: 1px solid var(--line);
+    background: rgba(0,0,0,0.2);
+  }
+  .cut-banner img { display: block; width: 100%; height: auto; }
+  .cut-caption { margin-top: 10px; font-size: 14px; color: var(--text-dim); text-align: center; }
+
+  /* ===== Highlight cards ===== */
+  .hl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .hl {
+    background: var(--bg-panel); border: 1px solid var(--line); border-radius: 14px;
+    padding: 18px 16px; transition: background 0.2s ease, transform 0.2s ease;
+  }
+  .hl:hover { background: var(--bg-panel-hover); transform: translateY(-2px); }
+  .hl .tag { font-size: 12px; color: var(--ok); font-weight: 700; letter-spacing: 0.06em; }
+  .hl .t { margin: 8px 0 6px; font-size: 15px; font-weight: 700; }
+  .hl .d { font-size: 14px; color: var(--text-dim); }
+
+  /* ===== Timeline ===== */
+  .timeline { margin-top: 4px; }
+  .tl-row {
+    display: grid; grid-template-columns: 92px 28px 1fr;
+    gap: 0; align-items: center;
+  }
+  .tl-time {
+    font-size: 14px; font-weight: 600; color: var(--peach-soft);
+    text-align: right; padding-right: 16px; line-height: 1.4;
+  }
+  .tl-axis { position: relative; align-self: stretch; display: flex; justify-content: center; }
+  .tl-dot {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 11px; height: 11px; border-radius: 50%;
+    background: var(--peach); border: 2px solid #1c1335;
+    box-shadow: 0 0 0 3px rgba(255,217,184,0.18);
+  }
+  .tl-line {
+    position: absolute; top: 0; bottom: 0; width: 2px;
+    background: linear-gradient(to bottom, rgba(157,123,255,0.4), rgba(157,123,255,0.08));
+  }
+  .tl-row:first-child .tl-line { top: 50%; }
+  .tl-row:last-child .tl-line { bottom: 50%; }
+  .tl-body {
+    padding: 14px 0 14px 18px; border-bottom: 1px dashed var(--line);
+  }
+  .tl-row:last-child .tl-body { border-bottom: none; }
+  .tl-title { font-size: 14.5px; font-weight: 700; }
+  .tl-desc { font-size: 14px; color: var(--text-dim); margin-top: 2px; }
+  .tl-desc b { color: var(--peach-soft); }
+
+  /* ===== Closing story ===== */
+  .story {
+    margin-top: 44px; border-radius: 16px; padding: 26px 24px;
+    background: linear-gradient(135deg, rgba(157,123,255,0.12), rgba(255,217,184,0.07));
+    border: 1px solid rgba(157,123,255,0.22);
+  }
+  .story .st-title { font-size: 16px; font-weight: 800; margin-bottom: 10px; color: var(--peach); }
+  .story p { font-size: 14px; color: var(--text); margin-bottom: 10px; }
+  .story p:last-child { margin-bottom: 0; }
+  .story .quote {
+    font-size: 13.5px; color: var(--text-dim); border-left: 3px solid var(--violet);
+    padding-left: 14px; margin-top: 12px; font-style: normal;
+  }
+
+  /* ===== Footer ===== */
+  .foot {
+    margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--line);
+    font-size: 12px; color: var(--text-dim); display: flex; justify-content: space-between;
+    flex-wrap: wrap; gap: 8px;
+  }
+  .foot .v { font-weight: 600; color: var(--peach-soft); }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 640px) {
+    .wrap { padding: 40px 16px 32px; }
+    .hl-grid { grid-template-columns: 1fr; }
+    .tl-row { grid-template-columns: 74px 24px 1fr; }
+    .hero h1 { font-size: 30px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .hl { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===== Hero ===== -->
+  <header class="hero">
+    <span class="kicker">Open Source · 2025 - 2026</span>
+    <h1>Generative Puzzle 生成式拼图</h1>
+    <p class="sub">一个<b>"人 + 多代 AI 大模型"</b>长期打磨的开源项目——从单页 demo 到前后端在线游戏，131 个版本见证：<b>每一局拼图都独一无二</b>。</p>
+  </header>
+
+  <!-- ===== 10 cut types ===== -->
+  <section>
+    <div class="sec-title"><span class="no">1</span>10 种切割方式，同一块云朵，每局不同</div>
+    <div class="cut-banner">
+      <img src="../assets/cut-types-showcase.png" alt="十种切割方式效果展示：直线、斜线、放射、曲线、S弯、折线、嵌齿、碎裂、鱼鳞、蜂巢">
+    </div>
+    <p class="cut-caption">直线 · 斜线 · 放射 · 曲线 · S弯 · 折线 · 嵌齿 · 碎裂 · 鱼鳞 · 蜂巢（均同一云朵形状、同一难度）</p>
+  </section>
+
+  <!-- ===== Highlights ===== -->
+  <section>
+    <div class="sec-title"><span class="no">2</span>三个亮点</div>
+    <div class="hl-grid">
+      <div class="hl">
+        <div class="tag">UNIQUE EVERY ROUND</div>
+        <div class="t">每一局都独一无二</div>
+        <div class="d">10 种切割 × 8 档难度 × 随机角度位置，每次生成都是新的拼图，永远玩不重样。</div>
+      </div>
+      <div class="hl">
+        <div class="tag">GEOMETRY</div>
+        <div class="t">攻克曲线切割飞边</div>
+        <div class="d">独创"一刀一刀顺序切"架构，自由曲线从此不再相交出错；碎片面积误差精确到万亿分之一。</div>
+      </div>
+      <div class="hl">
+        <div class="tag">AI CO-CREATION</div>
+        <div class="t">长期验证 AI 的进步</div>
+        <div class="d">早期多代模型都搞不定的曲线切割，如今稳定解决——这个项目就是 AI 能力成长的活样本。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Timeline ===== -->
+  <section>
+    <div class="sec-title"><span class="no">3</span>131 个版本，只有一次真正改变方向</div>
+    <div class="timeline">
+      <div class="tl-row">
+        <div class="tl-time">2025.04<br>v1.0</div>
+        <div class="tl-axis"><span class="tl-line"></span><span class="tl-dot"></span></div>
+        <div class="tl-body">
+          <div class="tl-title">单页 demo 起步</div>
+          <div class="tl-desc">一个 HTML 页面，多种形状 + 多种切割 + 拖拽旋转。</div>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-time">2025.05-2026.03<br>v1.1-v1.3</div>
+        <div class="tl-axis"><span class="tl-line"></span><span class="tl-dot"></span></div>
+        <div class="tl-body">
+          <div class="tl-title">单机版打磨</div>
+          <div class="tl-desc">移动端适配、组件化重构、渲染性能优化——多次"重大重构"，回头看并非每次都成立。</div>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-time">2026.04<br>v1.4</div>
+        <div class="tl-axis"><span class="tl-line"></span><span class="tl-dot"></span></div>
+        <div class="tl-body">
+          <div class="tl-title">云端版重构 · 最值的一次</div>
+          <div class="tl-desc">在<b>纯净单机版</b>基础上重构云端版：排行榜、登录、数据同步，从此走上规范的路。</div>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-time">2026.09<br>v1.5.8</div>
+        <div class="tl-axis"><span class="tl-line"></span><span class="tl-dot"></span></div>
+        <div class="tl-body">
+          <div class="tl-title">架构定音 · 今日</div>
+          <div class="tl-desc">增量顺序切割 + 10 种切割方式 + CI/CD 自动构建发布。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Closing story ===== -->
+  <section class="story">
+    <div class="st-title">这个项目，为什么值得做下去</div>
+    <p>很多人用 AI 做项目是"自嗨模式"——做完了，就没有然后了，只剩一段经验。</p>
+    <p>而这个项目选择了一条更长的路：<b>把它一直做下去，让每一代 AI 大模型的能力在真实项目中接受检验。</b></p>
+    <p>131 个版本就是 131 次检验：工具在进步，会用工具的人也在进步。连"国产的豆包也能这么优秀"，是这条路上意想不到的收获。</p>
+    <div class="quote">这不是一个"AI 生成"的项目，而是一个"人用 AI 长期打磨"的项目——前者是快消品，后者才是作品。</div>
+  </section>
+
+  <!-- ===== Footer ===== -->
+  <footer class="foot">
+    <span>Generative Puzzle · 开源 · 单作者 + 多代 AI 协同</span>
+    <span class="v">V1.5.8</span>
+  </footer>
+
+</div>
+</body>
+</html>
