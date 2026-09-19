@@ -1,3 +1,11 @@
+## [v1.5.20] - 2026-09-19
+
+### ⚡ 首屏用户信息加载优化
+
+- **消除重复 getSession**：`VirtualAuthService.getCurrentProfile(userId?)` 支持调用方直接传 `user.id`，跳过 AuthContext 已做过的 `getSession()` 网络请求——之前首屏串行两个 RTT（getSession + profile select），现在只查 profile 一次。
+- **3s 超时降级**：PhoneTabPanel 加载用户昵称加 `withTimeout(3000, null)`，海外 Supabase 慢网不再一直转圈，超时显示默认昵称。
+- **体检报告**：新增 `docs/architecture-audit-v1.5.19.md`（分层架构/代码分布/巨石文件/健康信号/P0-P2 建议）。
+
 ## [v1.5.19] - 2026-09-18
 
 ### 🎨 视觉打磨 + 勋章数据修复

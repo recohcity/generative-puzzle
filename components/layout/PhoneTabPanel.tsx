@@ -149,10 +149,16 @@ const PhoneTabPanel: React.FC<PhoneTabPanelProps> = ({
     }
   }, [state.isCompleted, state.gameStats]);
 
-  // 加载用户 Profile
+  // 加载用户 Profile（传 user.id 跳过重复 getSession，加 3s 超时避免海外网络慢时一直 loading）
   useEffect(() => {
     if (user) {
-      VirtualAuthService.getCurrentProfile()
+      const withTimeout = <T,>(promise: Promise<T>, ms: number, fallback: T): Promise<T> => new Promise<T>(resolve => {
+        let done = false;
+        promise.then(v => { if (!done) { done = true; resolve(v); } },
+                 () => { if (!done) { done = true; resolve(fallback); } });
+        setTimeout(() => { if (!done) { done = true; resolve(fallback); } }, ms);
+      });
+      withTimeout(VirtualAuthService.getCurrentProfile(user.id), 3000, null)
         .then(p => setUserProfile(p))
         .catch(() => setUserProfile(null));
     } else {

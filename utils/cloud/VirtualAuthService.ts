@@ -110,16 +110,22 @@ export class VirtualAuthServiceClass {
   /**
    * Convenience method: Fetch current user profile if logged in
    */
-  async getCurrentProfile(): Promise<Omit<PlayerProfile, 'virtual_email'> | null> {
+  async getCurrentProfile(userId?: string): Promise<Omit<PlayerProfile, 'virtual_email'> | null> {
     if (!isSupabaseConfigured || !supabase) return null;
-    
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) return null;
+
+    // 调用方已拿到 user（AuthContext 乐观注入）时可直接传 userId，跳过重复 getSession
+    // （getSession 在网络慢时会挂起数秒，是首屏用户信息加载慢的主因之一）
+    let uid = userId;
+    if (!uid) {
+      const { data: { session } } = await supabase.auth.getSession();
+      uid = session?.user?.id;
+    }
+    if (!uid) return null;
 
     const { data, error } = await supabase
       .from("player_profiles")
       .select("id, nickname, best_score")
-      .eq("id", session.user.id)
+      .eq("id", uid)
       .single();
 
     if (error || !data) return null;
