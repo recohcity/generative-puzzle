@@ -492,10 +492,15 @@ export const drawPuzzle = (
           if (p.x < minX) minX = p.x;
           if (p.y < minY) minY = p.y;
         }
+        // 修：纹理 canvas 按 textureDpr=1 生成（行68 cap），但 ctx 已 setTransform(dpr)
+        // 目标宽高直接用 cachedFull.width/height（逻辑尺寸，含 padding）
+        // ctx 的 dpr 变换自动把逻辑坐标映射到物理像素，纹理覆盖整个形状
         ctx.drawImage(
           cachedFull.canvas, 
           minX - cachedFull.offsetX,
-          minY - cachedFull.offsetX
+          minY - cachedFull.offsetX,
+          cachedFull.width,
+          cachedFull.height
         );
       }
     } catch (e) {

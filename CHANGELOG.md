@@ -1,3 +1,10 @@
+## [v1.5.21] - 2026-09-19
+
+### 🧹 GameContext 拆分 + 完成态纹理 bug 修复
+
+- **GameContext 纯函数外迁**：`executeGameCompletion`（75 行）与 `calculateScatterTarget`（22 行）从 1210 行的 `GameContext.tsx` 抽到 `utils/game/gameCompletion.ts` 与 `utils/game/scatterTarget.ts`，文件降到 1112 行；纯物理搬家，零逻辑改动。
+- **修复完成态左上角半透明小形状**：纹理叠加 `drawImage` 未指定目标宽高，在 Retina(dpr=2) 下纹理位图（按 textureDpr=1 生成）被缩小一半，画成左上角小碎片；改为显式指定 `cachedFull.width/height` 逻辑尺寸，纹理完整覆盖完成形状。
+
 ## [v1.5.20] - 2026-09-19
 
 ### ⚡ 首屏用户信息加载优化

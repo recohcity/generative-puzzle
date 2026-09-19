@@ -45,6 +45,8 @@ import { useCloudSync } from "@/hooks/useCloudSync";
 import { useDebugState } from "@/hooks/useDebugState";
 import { usePhysicsBounds } from "@/hooks/usePhysicsBounds";
 import { handleCanvasResize } from "@/utils/rendering/CanvasAdapter";
+import { executeGameCompletion } from "@/utils/game/gameCompletion";
+import { calculateScatterTarget } from "@/utils/game/scatterTarget";
 
 // 获取设备类型的工具函数
 const getDeviceType = ():
@@ -115,106 +117,6 @@ const initialState: GameState = {
   isNewRecord: false,
   currentRank: null,
   deviceType: "desktop",
-};
-
-// 辅助函数：执行游戏完成逻辑（共享逻辑，避免漂移）
-const executeGameCompletion = (
-  state: GameState,
-  dispatch: React.Dispatch<GameAction>
-) => {
-  // 1. 状态锁：如果已经标记为完成，则不再执行
-  if (!state.gameStats || !state.isGameActive || state.isGameComplete) return;
-
-  // console.log("✅ [GameContext] 执行游戏完成逻辑!");
-
-  // 1. 计算完成统计
-  const gameEndTime = Date.now();
-  const totalDuration = Math.round(
-    (gameEndTime - state.gameStats.gameStartTime) / 1000
-  );
-
-  const completedStats: GameStats = {
-    ...state.gameStats,
-    gameEndTime,
-    totalDuration,
-  };
-
-  // 2. 计算并持久化结果
-  const currentLeaderboard = GameDataManager.getLeaderboard();
-  const scoreBreakdown = calculateFinalScore(
-    completedStats,
-    state.puzzle || [],
-    currentLeaderboard
-  );
-  const finalScore = scoreBreakdown.finalScore;
-
-  // 写回旋转效率（ScoreCalculator 返回 0-100 百分比，归一化为 0-1 小数，供勋章判定）
-  completedStats.rotationEfficiency = Math.min(1, Math.max(0, scoreBreakdown.rotationEfficiency / 100));
-
-  const saveSuccess = GameDataManager.saveGameRecord(
-    completedStats,
-    finalScore,
-    scoreBreakdown
-  );
-
-  let isNewRecord = false;
-  let rank = 999;
-
-  if (saveSuccess) {
-    const recordCheck = GameDataManager.checkNewRecord({
-      timestamp: gameEndTime,
-      finalScore,
-      totalDuration,
-      difficulty: completedStats.difficulty,
-      deviceType: completedStats.deviceType,
-      totalRotations: completedStats.totalRotations,
-      hintUsageCount: completedStats.hintUsageCount,
-      dragOperations: completedStats.dragOperations,
-      rotationEfficiency: completedStats.rotationEfficiency,
-      scoreBreakdown,
-    } as any);
-    isNewRecord = recordCheck.isNewRecord;
-    rank = recordCheck.rank;
-  }
-
-  const updatedLeaderboard = GameDataManager.getLeaderboard();
-
-  // 3. 最终分派
-  dispatch({
-    type: "GAME_COMPLETED",
-    payload: {
-      gameStats: completedStats,
-      finalScore,
-      scoreBreakdown,
-      isNewRecord,
-      currentRank: rank,
-      leaderboard: updatedLeaderboard,
-    },
-  });
-};
-
-// 辅助函数：计算打散拼图时的目标形状限制
-const calculateScatterTarget = (originalShape: Point[] | null) => {
-  if (!originalShape || originalShape.length === 0) return null;
-
-  const bounds = originalShape.reduce(
-    (acc, point) => ({
-      minX: Math.min(acc.minX, point.x),
-      minY: Math.min(acc.minY, point.y),
-      maxX: Math.max(acc.maxX, point.x),
-      maxY: Math.max(acc.maxY, point.y),
-    }),
-    { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity },
-  );
-
-  const centerX = (bounds.minX + bounds.maxX) / 2;
-  const centerY = (bounds.minY + bounds.maxY) / 2;
-  const radius = Math.max((bounds.maxX - bounds.minX) / 2, (bounds.maxY - bounds.minY) / 2) * 1.2;
-
-  return {
-    center: { x: centerX, y: centerY },
-    radius: radius,
-  };
 };
 
 function gameReducer(state: GameState, action: GameAction): GameState {
