@@ -1,3 +1,11 @@
+## [v1.5.23] - 2026-09-19
+
+### 📝 README 文案修订 + GitHub Social Preview 封面图
+
+- **README 文案校准**：「马赛克」更名「碎裂」、修正 Multi-touch 拼写、framer-motion → motion、补充增量顺序切割架构说明、技术栈表新增 Web Worker 行。
+- **新增 GitHub Social Preview 封面图**：`assets/social-preview.png`（1280×486），10 种切割方式 2 行 5 列缩略图 + 中英标题。
+- **docs 补充**：`cut-modes-expansion-design` 新增第 13 章「待评估切割类型候选」，记录 Delaunay 三角剖分（mapbox/delaunator）候选。
+
 ## [v1.5.22] - 2026-09-19
 
 ### 🧩 ScoreCalculator 拆分（1292 → 295 行）

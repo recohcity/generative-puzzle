@@ -8,7 +8,7 @@
 [![Vercel Speed Insights](https://img.shields.io/badge/Speed--Insights-Optimized-blueviolet)](https://vercel.com/recohcitys-projects/generative-puzzle/speed-insights)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-15.5-black.svg)](https://nextjs.org/)
-[![Version](https://img.shields.io/badge/version-1.5.22-orange.svg)]()
+[![Version](https://img.shields.io/badge/version-1.5.23-orange.svg)]()
 
 **基于 Next.js 15 和 React 19 构建的极致前端全栈拼图引擎**
 
@@ -44,8 +44,9 @@
 - 完全剥离逻辑算法和渲染引擎（Canvas GPU），使得未来的 React Native / 客户端多端跨全平台迁移成本趋近于零。
 
 ### 📐 随机多态智能切割模型
-- **十模拼图切割**: 动态解算生成十种切割方式：直线（Straight）、斜线（Diagonal）、放射（Radial，星形放射式曲线）、曲线（Through Curve，贯穿贝塞尔曲线）、马赛克（Mosaic Random / Voronoi 晶格剖分）、鱼鳞（Fish Scale / 曲边拼合，原"凹凸"更名）、嵌齿（Jigsaw）、S弯（S-Curve）、折线（Zigzag）、蜂巢（Hex，六边形网格）。
-- **马赛克 Voronoi 切割引擎**: 基于泊松盘采样 (Poisson Disc Sampling) 与 Sutherland-Hodgman 多边形半平面裁剪算法，完美兼容多边形、云朵形、锯齿形全形状切割，生成宛如彩色玻璃花窗般的随机咬合多边形碎面，搭配 1.35x 专属难度得分系数。
+- **十模拼图切割**: 动态解算生成十种切割方式：直线（Straight）、斜线（Diagonal）、放射（Radial，星形放射式曲线）、曲线（Through Curve，贯穿贝塞尔曲线）、碎裂（Mosaic Random / Voronoi 晶格剖分）、鱼鳞（Fish Scale / 曲边拼合，原"凹凸"更名）、嵌齿（Jigsaw）、S弯（S-Curve）、折线（Zigzag）、蜂巢（Hex，六边形网格）。
+- **增量顺序切割架构**: 曲线 / S弯 / 折线 / 嵌齿四类切割走逐刀顺序切割器，每刀只切当前最大碎片、共享交点对象，从根本上消除贝塞尔飞边与缝隙，是项目经多轮实测验证的几何鲁棒性最优路径。
+- **碎裂 Voronoi 切割引擎**: 基于泊松盘采样 (Poisson Disc Sampling) 与 Sutherland-Hodgman 多边形半平面裁剪算法，完美兼容多边形、云朵形、锯齿形全形状切割，生成宛如彩色玻璃花窗般的随机咬合多边形碎面，搭配 1.35x 专属难度得分系数。
 - **鱼鳞咬合切割引擎 (Fish Scale / Concavo-Convex)**: 在马赛克碎裂基础上，通过端点哈希建立共享边索引，仅将相邻碎片共用的内部边替换为二次贝塞尔曲边（控制点沿边中垂线随机偏移），相邻碎片正逆序共用同一条曲线，实现拼图块间天然的凸凹咬合，如鱼鳞般交错贴合；每块碎片的曲边走向由随机种子唯一决定，缝合率与面积守恒经批量几何验证，搭配 1.4x 专属难度得分系数。
 - **千变万化，唯一解题**: 巧妙利用动态加密的随机生成种子保证：即便选择相同的切片刀数，每一局所切割出的每片多边形的边缘走向、中心质心坐标在全球范围内都是毫不重复的唯一解。
 
@@ -53,9 +54,9 @@
 
 ## 🎮 人机交互与体验
 
-- **硬核触控优化手势识别**：不仅支持 PC 的快捷键映射，移动端更专门重制了多点触控（Mutli-touch）。玩家可直接靠双指甚至多指进行拼图（Two-finger rotating）、并具有边界回弹震荡动画（Bouncing animation）反馈系统。
+- **硬核触控优化手势识别**：不仅支持 PC 的快捷键映射，移动端更专门重制了多点触控（Multi-touch）。玩家可直接靠双指甚至多指进行拼图（Two-finger rotating）、并具有边界回弹震荡动画（Bouncing animation）反馈系统。
 - **音频系统与磁吸定位**：拖拽拼图接近目标吻合卡槽位时，散发出真实的“咔嗒”音效并启用阈值自动吸附（Magnetic Snap）；附带环境音乐渐入渐变音箱。
-- **国际化 (i18n) 与全局无缝操作**：提供中、英双语实时无刷新热切换。配合 `framer-motion` 构筑物理级平滑视图转场。
+- **国际化 (i18n) 与全局无缝操作**：提供中、英双语实时无刷新热切换。配合 `motion` 构筑物理级平滑视图转场。
 
 ---
 
@@ -67,7 +68,8 @@
 | **云端服务** | Supabase, Vercel | 高效的 PostgreSQL 与全球边缘节点加速支持 |
 | **工程模式** | Monorepo (NPM Workspaces)| 领域驱动与依赖管控核心设计，保障项目纵向扩展自由度 |
 | **基础 UI 组件**| Shadcn UI, Tailwind CSS | 原生扩展的预构积木与 Utility-first CSS 的极致原子化控制 |
-| **动画/动效** | Framer Motion | 稳定 60FPS 的布局测算动画与物理惯性转场 |
+| **动画/动效** | Motion | 稳定 60FPS 的布局测算动画与物理惯性转场 |
+| **后台计算** | Web Worker | 切割计算隔离到 Worker 线程，主线程不阻塞渲染 |
 | **底层绘图** | HTML5 Canvas + Web API | 面向移动设备定制的低功耗、高性能二维重叠绘制 |
 | **渲染管线** | OffscreenCanvas AOT Cache | 游戏引擎级的位图缓存架构，确保百级碎片量下的 60FPS 稳定性 |
 
