@@ -297,7 +297,16 @@ export class NetworkCutter {
             }
             if (isOverflow) continue;
 
-            const markedFace = face.map(p => ({ ...p, isOriginal: false }));
+            // 形状边界原始顶点标记 isOriginal:true（渲染走曲线平滑），
+            // 网格交点/边界交点标记 isOriginal:false（渲染走直线）
+            const shapeVertexSet = new Set(
+                shape.map(v => `${v.x.toFixed(2)},${v.y.toFixed(2)}`)
+            );
+            const markedFace = face.map(p => {
+                const key = `${p.x.toFixed(2)},${p.y.toFixed(2)}`;
+                const isBoundary = shapeVertexSet.has(key);
+                return { ...p, isOriginal: isBoundary ? true : false };
+            });
             validShapes.push(markedFace);
         }
 

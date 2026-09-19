@@ -65,7 +65,7 @@ class TextureCache {
     // 碎片离屏纹理是装饰性叠加（气孔/瓷砖），无需画布全 DPR。
     // cap 1 使手机端纹理创建面积 ÷9：放射（大扇区）/嵌齿（复杂锯齿）与碎裂同档，
     // 是"放射/嵌齿比碎裂慢"的根因（纹理大小 + 绘制复杂度差异）。
-    const textureDpr = Math.min(dpr || 1, 1);
+    const textureDpr = Math.min(dpr || 1, 2);
     // 计算当前碎片的本地包围盒
     const bounds = this.calculateLocalBounds(points);
     const pointsSig = points.length > 0 ? `${Math.round(points[0].x)},${Math.round(points[0].y)}` : '';
@@ -79,7 +79,7 @@ class TextureCache {
 
     // 纹理物理尺寸 cap（256px）：放射扇区/嵌齿大碎片在手机上创建大 canvas 是
     // "放射/嵌齿比碎裂慢"的手机端根因。drawImage 会缩放到逻辑尺寸，降采样安全。
-    const MAX_TEXTURE_PX = 256;
+    const MAX_TEXTURE_PX = 512;
     const textureScale = Math.max(width, height) > MAX_TEXTURE_PX
       ? MAX_TEXTURE_PX / Math.max(width, height)
       : 1;
@@ -150,7 +150,7 @@ class TextureCache {
     ctx.beginPath();
     ctx.moveTo(points[0].x, points[0].y);
 
-    const isCurvedShape = shapeType !== "polygon" && cutType !== "mosaic-random" && cutType !== "concavo-convex" && cutType !== "zigzag" && cutType !== "jigsaw" && cutType !== "hex";
+    const isCurvedShape = shapeType !== "polygon" && cutType !== "mosaic-random" && cutType !== "concavo-convex";
 
     for (let i = 1; i < points.length; i++) {
       const prev = points[i - 1];

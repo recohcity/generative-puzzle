@@ -122,7 +122,7 @@ export const drawPiece = (
       const current = piece.points[i];
       const next = piece.points[(i + 1) % piece.points.length];
 
-      const isCurvedShape = shapeType !== "polygon" && cutType !== "mosaic-random" && cutType !== "concavo-convex" && cutType !== "zigzag" && cutType !== "jigsaw" && cutType !== "hex";
+      const isCurvedShape = shapeType !== "polygon" && cutType !== "mosaic-random" && cutType !== "concavo-convex";
       if (isCurvedShape && current.isOriginal !== false) {
         // 对于曲线形状和锯齿形状（非马赛克），使用二次贝塞尔曲线保持平滑
         const midX = (prev.x + current.x) / 2;
@@ -162,7 +162,7 @@ export const drawPiece = (
     const current = piece.points[i];
     const next = piece.points[(i + 1) % piece.points.length];
 
-    const isCurvedShape = shapeType !== "polygon" && cutType !== "mosaic-random" && cutType !== "concavo-convex" && cutType !== "zigzag" && cutType !== "jigsaw" && cutType !== "hex";
+    const isCurvedShape = shapeType !== "polygon" && cutType !== "mosaic-random" && cutType !== "concavo-convex";
     if (isCurvedShape && current.isOriginal !== false) {
       // 对于曲线形状和锯齿形状（非马赛克），使用二次贝塞尔曲线
       const midX = (prev.x + current.x) / 2;
@@ -264,7 +264,7 @@ export const drawHintOutline = (
 
   ctx.beginPath(); // Add beginPath here to ensure new path
 
-  const isCurvedShape = shapeType !== "polygon" && cutType !== "mosaic-random" && cutType !== "concavo-convex" && cutType !== "zigzag" && cutType !== "jigsaw" && cutType !== "hex";
+  const isCurvedShape = shapeType !== "polygon" && cutType !== "mosaic-random" && cutType !== "concavo-convex";
   const hasCutPoints = piece.points.some(p => p.isOriginal === false);
 
   if (!isCurvedShape || hasCutPoints) {

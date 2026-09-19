@@ -1,3 +1,13 @@
+## [v1.5.24] - 2026-09-19
+
+### 🐛 修复锯齿形状在蜂巢/折线/嵌齿切割后边缘变直线
+
+- **根因**：渲染层 `isCurvedShape` 排除了 zigzag/jigsaw/hex 三种切割类型，导致锯齿形状（jagged）在这三种切割后边缘走 `lineTo` 直线而非 `quadraticCurveTo` 曲线平滑；NetworkCutter 将所有面片顶点（含形状边界原始顶点）统一标记为 `isOriginal:false`。
+- **修复**：
+  - `puzzleDrawing.ts`（3 处）+ `TextureCache.ts`（1 处）：`isCurvedShape` 定义移除 zigzag/jigsaw/hex 排除，仅排除 polygon/mosaic-random/concavo-convex。
+  - `NetworkCutter.ts`：面片顶点标记时，坐标匹配形状边界原始顶点的点保留 `isOriginal:true`，内部网格交点标记 `isOriginal:false`。
+- **效果**：锯齿形状在全部 10 种切割方式下边缘 100% 与原始形状吻合；云朵等曲线形状同步改善。
+
 ## [v1.5.23] - 2026-09-19
 
 ### 📝 README 文案修订 + GitHub Social Preview 封面图
