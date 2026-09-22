@@ -134,12 +134,7 @@ export default function RootLayout({
           })();
         `}} />
         <SpeedInsights />
-        <Analytics
-          scriptSrc="https://va.vercel-scripts.com/v1/script.js"
-          {...(process.env.NEXT_PUBLIC_VERCEL_ANALYTICS_DSN
-            ? { dsn: process.env.NEXT_PUBLIC_VERCEL_ANALYTICS_DSN }
-            : {})}
-        />
+        <Analytics />
       </body>
     </html>
   )
