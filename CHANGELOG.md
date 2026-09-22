@@ -1,3 +1,14 @@
+## [v1.5.25] - 2026-09-22
+
+### 🚀 部署架构切换：阿里云静态托管上线 + 保活迁入 GitHub Actions
+
+- **背景**：阿里云备案核查要求域名解析指向阿里云内地服务器；实测境内服务器出口对 `*.vercel.app` 存在 SNI 连接重置，无法以反向代理方式访问 Vercel。
+- **变更**：
+  - 移除 `app/api/keep-alive` 路由（静态导出模式不支持 API 路由）；Supabase 保活改由新增 `keepalive.yml` 定时任务接管（每 12 小时一次 REST 轻查询）。
+  - 新增 `deploy.yml`：push main / 打 tag 时执行静态导出构建（`BUILD_STATIC=true`）并 rsync 至阿里云服务器 `/var/www/generative-puzzle`。
+  - Nginx：443 由反代 Vercel 改为直接服务静态产物，证书验证路径独立于站点目录，部署不覆盖验证文件。
+- **效果**：`www.citylivepark.com` 由阿里云服务器直接提供（备案合规 + 国内访问稳定）；`generative-puzzle.vercel.app` 保留作海外/预览入口；Supabase 云端存档与排行榜功能不变。
+
 ## [v1.5.24] - 2026-09-19
 
 ### 🐛 修复锯齿形状在蜂巢/折线/嵌齿切割后边缘变直线
