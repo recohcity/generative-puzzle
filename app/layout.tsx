@@ -7,6 +7,7 @@ import { I18nProvider } from "@/contexts/I18nContext"
 import EnvModeClient from "../components/layout/EnvModeClient"
 import FontScaleLock from "../components/layout/FontScaleLock"
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/next"
 import { cn } from "@/lib/utils"
 
 const inter = Inter({
@@ -133,6 +134,12 @@ export default function RootLayout({
           })();
         `}} />
         <SpeedInsights />
+        <Analytics
+          scriptSrc="https://va.vercel-scripts.com/v1/script.js"
+          {...(process.env.NEXT_PUBLIC_VERCEL_ANALYTICS_DSN
+            ? { dsn: process.env.NEXT_PUBLIC_VERCEL_ANALYTICS_DSN }
+            : {})}
+        />
       </body>
     </html>
   )

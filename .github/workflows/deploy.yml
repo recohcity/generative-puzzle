@@ -29,6 +29,7 @@ jobs:
           BUILD_STATIC: 'true'
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_VERCEL_ANALYTICS_DSN: ${{ secrets.NEXT_PUBLIC_VERCEL_ANALYTICS_DSN }}
 
       - name: Deploy out/ to Aliyun server
         env:
