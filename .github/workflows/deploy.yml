@@ -1,0 +1,44 @@
+name: Deploy to Aliyun Server
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*.*.*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build static export
+        run: npm run build
+        env:
+          BUILD_STATIC: 'true'
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+      - name: Deploy out/ to Aliyun server
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o ConnectTimeout=15" \
+            ./out/ "$SSH_USER@$SSH_HOST:/var/www/generative-puzzle/"

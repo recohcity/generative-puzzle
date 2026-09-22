@@ -1,0 +1,22 @@
+name: Supabase Keep-Alive
+
+on:
+  schedule:
+    - cron: '0 */12 * * *'
+  workflow_dispatch:
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            "$SUPABASE_URL/rest/v1/game_sessions?select=id&limit=1")
+          echo "Supabase ping HTTP $code"
+          [ "$code" = "200" ] || [ "$code" = "204" ] || exit 1
